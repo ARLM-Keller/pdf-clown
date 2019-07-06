@@ -31,65 +31,65 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.fonts
 {
-  /**
-    <summary>Predefined encodings [PDF:1.6:5.5.5,D].</summary>
-  */
-  // TODO: This hierarchy is going to be superseded by org.pdfclown.tokens.Encoding.
-  internal class Encoding
-  {
-    #region static
-    #region fields
-    private static readonly Dictionary<PdfName,Encoding> Encodings = new Dictionary<PdfName,Encoding>();
-    #endregion
-
-    #region constructors
-    static Encoding(
-      )
+    /**
+      <summary>Predefined encodings [PDF:1.6:5.5.5,D].</summary>
+    */
+    // TODO: This hierarchy is going to be superseded by org.pdfclown.tokens.Encoding.
+    internal class Encoding
     {
-    //TODO:this collection MUST be automatically populated looking for Encoding subclasses!
-      Encodings[PdfName.StandardEncoding] = new StandardEncoding();
-      Encodings[PdfName.MacRomanEncoding] = new MacRomanEncoding();
-      Encodings[PdfName.WinAnsiEncoding] = new WinAnsiEncoding();
-      Encodings[PdfName.Identity] = new IdentityEncoding();
-      Encodings[PdfName.Symbol] = new SymbolEncoding();
-      Encodings[PdfName.ZapfDingbats] = new ZapfDingbatsEncoding();
+        #region static
+        #region fields
+        private static readonly Dictionary<PdfName, Encoding> Encodings = new Dictionary<PdfName, Encoding>();
+        #endregion
+
+        #region constructors
+        static Encoding(
+          )
+        {
+            //TODO:this collection MUST be automatically populated looking for Encoding subclasses!
+            Encodings[PdfName.StandardEncoding] = new StandardEncoding();
+            Encodings[PdfName.MacRomanEncoding] = new MacRomanEncoding();
+            Encodings[PdfName.WinAnsiEncoding] = new WinAnsiEncoding();
+            Encodings[PdfName.Identity] = new IdentityEncoding();
+            Encodings[PdfName.Symbol] = new SymbolEncoding();
+            Encodings[PdfName.ZapfDingbats] = new ZapfDingbatsEncoding();
+        }
+        #endregion
+
+        #region interface
+        public static Encoding Get(
+          PdfName name
+          )
+        { return Encodings[name]; }
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region fields
+        private readonly Dictionary<ByteArray, int> codes = new Dictionary<ByteArray, int>();
+        #endregion
+
+        #region interface
+        #region public
+        public Dictionary<ByteArray, int> GetCodes(
+          )
+        { return new Dictionary<ByteArray, int>(codes); }
+        #endregion
+
+        #region protected
+        protected void Put(
+          int charCode,
+          string charName
+          )
+        { Put(charCode, GlyphMapping.NameToCode(charName).Value); }
+
+        protected void Put(
+          int charCode,
+          int unicode
+          )
+        { codes[new ByteArray(new byte[] { (byte)charCode })] = unicode; }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-
-    #region interface
-    public static Encoding Get(
-      PdfName name
-      )
-    {return Encodings[name];}
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region fields
-    private readonly Dictionary<ByteArray,int> codes = new Dictionary<ByteArray,int>();
-    #endregion
-
-    #region interface
-    #region public
-    public Dictionary<ByteArray,int> GetCodes(
-      )
-    {return new Dictionary<ByteArray,int>(codes);}
-    #endregion
-
-    #region protected
-    protected void Put(
-      int charCode,
-      string charName
-      )
-    {Put(charCode, GlyphMapping.NameToCode(charName).Value);}
-
-    protected void Put(
-      int charCode,
-      int unicode
-      )
-    {codes[new ByteArray(new byte[]{(byte)charCode})] = unicode;}
-    #endregion
-    #endregion
-    #endregion
-  }
 }

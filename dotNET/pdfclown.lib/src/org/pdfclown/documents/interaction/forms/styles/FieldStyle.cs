@@ -29,83 +29,83 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.interaction.forms.styles
 {
-  /**
-    <summary>Abstract field appearance style.</summary>
-    <remarks>It automates the definition of field appearance, applying a common look.</remarks>
-  */
-  public abstract class FieldStyle
-  {
-    #region dynamic
-    #region fields
-    private Color backColor = DeviceRGBColor.White;
-    private char checkSymbol = (char)52;
-    private double fontSize = 10;
-    private Color foreColor = DeviceRGBColor.Black;
-    private bool graphicsVisibile = false;
-    private char radioSymbol = (char)108;
-    #endregion
-
-    #region constructors
-    protected FieldStyle(
-      )
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public abstract void Apply(
-      Field field
-      );
-
-    public Color BackColor
+    /**
+      <summary>Abstract field appearance style.</summary>
+      <remarks>It automates the definition of field appearance, applying a common look.</remarks>
+    */
+    public abstract class FieldStyle
     {
-      get
-      {return backColor;}
-      set
-      {backColor = value;}
-    }
+        #region dynamic
+        #region fields
+        private Color backColor = DeviceRGBColor.White;
+        private char checkSymbol = (char)52;
+        private double fontSize = 10;
+        private Color foreColor = DeviceRGBColor.Black;
+        private bool graphicsVisibile = false;
+        private char radioSymbol = (char)108;
+        #endregion
 
-    public char CheckSymbol
-    {
-      get
-      {return checkSymbol;}
-      set
-      {checkSymbol = value;}
-    }
+        #region constructors
+        protected FieldStyle(
+          )
+        { }
+        #endregion
 
-    public double FontSize
-    {
-      get
-      {return fontSize;}
-      set
-      {fontSize = value;}
-    }
+        #region interface
+        #region public
+        public abstract void Apply(
+          Field field
+          );
 
-    public Color ForeColor
-    {
-      get
-      {return foreColor;}
-      set
-      {foreColor = value;}
-    }
+        public Color BackColor
+        {
+            get
+            { return backColor; }
+            set
+            { backColor = value; }
+        }
 
-    public bool GraphicsVisibile
-    {
-      get
-      {return graphicsVisibile;}
-      set
-      {graphicsVisibile = value;}
-    }
+        public char CheckSymbol
+        {
+            get
+            { return checkSymbol; }
+            set
+            { checkSymbol = value; }
+        }
 
-    public char RadioSymbol
-    {
-      get
-      {return radioSymbol;}
-      set
-      {radioSymbol = value;}
+        public double FontSize
+        {
+            get
+            { return fontSize; }
+            set
+            { fontSize = value; }
+        }
+
+        public Color ForeColor
+        {
+            get
+            { return foreColor; }
+            set
+            { foreColor = value; }
+        }
+
+        public bool GraphicsVisibile
+        {
+            get
+            { return graphicsVisibile; }
+            set
+            { graphicsVisibile = value; }
+        }
+
+        public char RadioSymbol
+        {
+            get
+            { return radioSymbol; }
+            set
+            { radioSymbol = value; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

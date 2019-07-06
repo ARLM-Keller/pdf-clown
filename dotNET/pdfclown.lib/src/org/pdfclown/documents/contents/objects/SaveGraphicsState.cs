@@ -29,28 +29,28 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Save the current graphics state on the graphics state stack' operation [PDF:1.6:4.3.3].
-    Practically, it begins a local graphics state.</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class SaveGraphicsState
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "q";
+    /**
+      <summary>'Save the current graphics state on the graphics state stack' operation [PDF:1.6:4.3.3].
+      Practically, it begins a local graphics state.</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class SaveGraphicsState
+      : Operation
+    {
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "q";
 
-    public static readonly SaveGraphicsState Value = new SaveGraphicsState();
-    #endregion
-    #endregion
+        public static readonly SaveGraphicsState Value = new SaveGraphicsState();
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    private SaveGraphicsState(
-      ) : base(OperatorKeyword)
-    {}
-    #endregion
-    #endregion
-  }
+        #region dynamic
+        #region constructors
+        private SaveGraphicsState(
+          ) : base(OperatorKeyword)
+        { }
+        #endregion
+        #endregion
+    }
 }

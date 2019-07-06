@@ -31,67 +31,67 @@ using System;
 
 namespace org.pdfclown.documents.interaction.annotations
 {
-  /**
-    <summary>Appearance [PDF:1.6:8.4.4].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class Appearance
-    : PdfObjectWrapper<PdfDictionary>
-  {
-    #region static
-    #region interface
-    #region public
-    public static Appearance Wrap(
-      PdfDirectObject baseObject
-      )
-    {return baseObject != null ? new Appearance(baseObject) : null;}
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public Appearance(
-      Document context
-      ) : base(context, new PdfDictionary())
-    {}
-
-    private Appearance(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the annotation's down appearance.</summary>
+      <summary>Appearance [PDF:1.6:8.4.4].</summary>
     */
-    public AppearanceStates Down
+    [PDF(VersionEnum.PDF12)]
+    public sealed class Appearance
+      : PdfObjectWrapper<PdfDictionary>
     {
-      get
-      {return new AppearanceStates(PdfName.D, this);}
-    }
+        #region static
+        #region interface
+        #region public
+        public static Appearance Wrap(
+          PdfDirectObject baseObject
+          )
+        { return baseObject != null ? new Appearance(baseObject) : null; }
+        #endregion
+        #endregion
+        #endregion
 
-    /**
-      <summary>Gets the annotation's normal appearance.</summary>
-    */
-    public AppearanceStates Normal
-    {
-      get
-      {return new AppearanceStates(PdfName.N, this);}
-    }
+        #region dynamic
+        #region constructors
+        public Appearance(
+          Document context
+          ) : base(context, new PdfDictionary())
+        { }
 
-    /**
-      <summary>Gets the annotation's rollover appearance.</summary>
-    */
-    public AppearanceStates Rollover
-    {
-      get
-      {return new AppearanceStates(PdfName.R, this);}
+        private Appearance(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the annotation's down appearance.</summary>
+        */
+        public AppearanceStates Down
+        {
+            get
+            { return new AppearanceStates(PdfName.D, this); }
+        }
+
+        /**
+          <summary>Gets the annotation's normal appearance.</summary>
+        */
+        public AppearanceStates Normal
+        {
+            get
+            { return new AppearanceStates(PdfName.N, this); }
+        }
+
+        /**
+          <summary>Gets the annotation's rollover appearance.</summary>
+        */
+        public AppearanceStates Rollover
+        {
+            get
+            { return new AppearanceStates(PdfName.R, this); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

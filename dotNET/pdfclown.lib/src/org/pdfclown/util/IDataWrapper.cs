@@ -27,16 +27,16 @@ using System;
 
 namespace org.pdfclown.util
 {
-  /**
-    <summary>Generic data buffer.</summary>
-  */
-  public interface IDataWrapper
-  {
     /**
-      <summary>Gets the buffer data copied to a newly-allocated byte array.</summary>
+      <summary>Generic data buffer.</summary>
     */
-    byte[] ToByteArray(
-      );
-  }
+    public interface IDataWrapper
+    {
+        /**
+          <summary>Gets the buffer data copied to a newly-allocated byte array.</summary>
+        */
+        byte[] ToByteArray(
+          );
+    }
 }
 

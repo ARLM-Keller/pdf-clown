@@ -32,43 +32,43 @@ using System;
 
 namespace org.pdfclown.documents.interaction.forms
 {
-  /**
-    <summary>Pushbutton field [PDF:1.6:8.6.3].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class PushButton
-    : ButtonField
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new pushbutton within the given document context.</summary>
+      <summary>Pushbutton field [PDF:1.6:8.6.3].</summary>
     */
-    public PushButton(
-      string name,
-      Widget widget,
-      string caption
-      ) : base(name, widget)
+    [PDF(VersionEnum.PDF12)]
+    public sealed class PushButton
+      : ButtonField
     {
-      Flags = EnumUtils.Mask(Flags, FlagsEnum.Pushbutton, true);
-      Value = caption;
-    }
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new pushbutton within the given document context.</summary>
+        */
+        public PushButton(
+          string name,
+          Widget widget,
+          string caption
+          ) : base(name, widget)
+        {
+            Flags = EnumUtils.Mask(Flags, FlagsEnum.Pushbutton, true);
+            Value = caption;
+        }
 
-    internal PushButton(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal PushButton(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #region public
-    public override object Value
-    {
-      set
-      {/* NOOP: This type of button retains no permanent value. */}
+        #region interface
+        #region public
+        public override object Value
+        {
+            set
+            {/* NOOP: This type of button retains no permanent value. */}
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

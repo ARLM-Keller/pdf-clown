@@ -34,79 +34,79 @@ using System;
 
 namespace org.pdfclown.documents.multimedia
 {
-  /**
-    <summary>Media clip object [PDF:1.7:9.1.3].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public abstract class MediaClip
-    : PdfObjectWrapper<PdfDictionary>
-  {
-    #region static
-    #region interface
-    #region public
     /**
-      <summary>Wraps a clip base object into a clip object.</summary>
+      <summary>Media clip object [PDF:1.7:9.1.3].</summary>
     */
-    public static MediaClip Wrap(
-      PdfDirectObject baseObject
-      )
+    [PDF(VersionEnum.PDF15)]
+    public abstract class MediaClip
+      : PdfObjectWrapper<PdfDictionary>
     {
-      if(baseObject == null)
-        return null;
+        #region static
+        #region interface
+        #region public
+        /**
+          <summary>Wraps a clip base object into a clip object.</summary>
+        */
+        public static MediaClip Wrap(
+          PdfDirectObject baseObject
+          )
+        {
+            if (baseObject == null)
+                return null;
 
-      PdfName subtype = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.S];
-      if(PdfName.MCD.Equals(subtype))
-        return new MediaClipData(baseObject);
-      else if(PdfName.MCS.Equals(subtype))
-        return new MediaClipSection(baseObject);
-      else
-        throw new ArgumentException("It doesn't represent a valid clip object.", "baseObject");
-    }
-    #endregion
-    #endregion
-    #endregion
+            PdfName subtype = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.S];
+            if (PdfName.MCD.Equals(subtype))
+                return new MediaClipData(baseObject);
+            else if (PdfName.MCS.Equals(subtype))
+                return new MediaClipSection(baseObject);
+            else
+                throw new ArgumentException("It doesn't represent a valid clip object.", "baseObject");
+        }
+        #endregion
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    protected MediaClip(
-      Document context,
-      PdfName subtype
-      ) : base(
-        context,
-        new PdfDictionary(
-          new PdfName[]
-          {
+        #region dynamic
+        #region constructors
+        protected MediaClip(
+          Document context,
+          PdfName subtype
+          ) : base(
+            context,
+            new PdfDictionary(
+              new PdfName[]
+              {
             PdfName.Type,
             PdfName.S
-          },
-          new PdfDirectObject[]
-          {
+              },
+              new PdfDirectObject[]
+              {
             PdfName.MediaClip,
             subtype
-          }
-          )
-        )
-    {}
+              }
+              )
+            )
+        { }
 
-    protected MediaClip(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        protected MediaClip(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the actual media data.</summary>
-      <returns>Either a <see cref="FullFileSpecification"/> or a <see cref="FormXObject"/>.</returns>
-    */
-    public abstract PdfObjectWrapper Data
-    {
-      get;
-      set;
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the actual media data.</summary>
+          <returns>Either a <see cref="FullFileSpecification"/> or a <see cref="FormXObject"/>.</returns>
+        */
+        public abstract PdfObjectWrapper Data
+        {
+            get;
+            set;
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

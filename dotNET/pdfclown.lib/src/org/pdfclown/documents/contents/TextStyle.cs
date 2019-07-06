@@ -29,87 +29,87 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Text style.</summary>
-  */
-  public sealed class TextStyle
-  {
-    #region dynamic
-    #region fields
-    private readonly Color fillColor;
-    private readonly ColorSpace fillColorSpace;
-    private readonly Font font;
-    private readonly double fontSize;
-    private readonly TextRenderModeEnum renderMode;
-    private readonly double scaleX;
-    private readonly double scaleY;
-    private readonly Color strokeColor;
-    private readonly ColorSpace strokeColorSpace;
-    #endregion
-
-    #region constructors
-    public TextStyle(
-      Font font,
-      double fontSize,
-      TextRenderModeEnum renderMode,
-      Color strokeColor,
-      ColorSpace strokeColorSpace,
-      Color fillColor,
-      ColorSpace fillColorSpace,
-      double scaleX,
-      double scaleY
-      )
-    {
-      this.font = font;
-      this.fontSize = fontSize;
-      this.renderMode = renderMode;
-      this.strokeColor = strokeColor;
-      this.strokeColorSpace = strokeColorSpace;
-      this.fillColor = fillColor;
-      this.fillColorSpace = fillColorSpace;
-      this.scaleX = scaleX;
-      this.scaleY = scaleY;
-    }
-    #endregion
-
-    #region interface
-    #region public
-    public Color FillColor
-    {get{return fillColor;}}
-
-    public ColorSpace FillColorSpace
-    {get{return fillColorSpace;}}
-
-    public Font Font
-    {get{return font;}}
-
-    public double FontSize
-    {get{return fontSize;}}
-
     /**
-      <exception cref="EncodeException"/>
+      <summary>Text style.</summary>
     */
-    public double GetWidth(
-      char textChar
-      )
-    {return font.GetWidth(textChar, fontSize) * scaleX / scaleY;}
+    public sealed class TextStyle
+    {
+        #region dynamic
+        #region fields
+        private readonly Color fillColor;
+        private readonly ColorSpace fillColorSpace;
+        private readonly Font font;
+        private readonly double fontSize;
+        private readonly TextRenderModeEnum renderMode;
+        private readonly double scaleX;
+        private readonly double scaleY;
+        private readonly Color strokeColor;
+        private readonly ColorSpace strokeColorSpace;
+        #endregion
 
-    public TextRenderModeEnum RenderMode
-    {get{return renderMode;}}
+        #region constructors
+        public TextStyle(
+          Font font,
+          double fontSize,
+          TextRenderModeEnum renderMode,
+          Color strokeColor,
+          ColorSpace strokeColorSpace,
+          Color fillColor,
+          ColorSpace fillColorSpace,
+          double scaleX,
+          double scaleY
+          )
+        {
+            this.font = font;
+            this.fontSize = fontSize;
+            this.renderMode = renderMode;
+            this.strokeColor = strokeColor;
+            this.strokeColorSpace = strokeColorSpace;
+            this.fillColor = fillColor;
+            this.fillColorSpace = fillColorSpace;
+            this.scaleX = scaleX;
+            this.scaleY = scaleY;
+        }
+        #endregion
 
-    public double ScaleX
-    {get{return scaleX;}}
+        #region interface
+        #region public
+        public Color FillColor
+        { get { return fillColor; } }
 
-    public double ScaleY
-    {get{return scaleY;}}
+        public ColorSpace FillColorSpace
+        { get { return fillColorSpace; } }
 
-    public Color StrokeColor
-    {get{return strokeColor;}}
+        public Font Font
+        { get { return font; } }
 
-    public ColorSpace StrokeColorSpace
-    {get{return strokeColorSpace;}}
-    #endregion
-    #endregion
-    #endregion
-  }
+        public double FontSize
+        { get { return fontSize; } }
+
+        /**
+          <exception cref="EncodeException"/>
+        */
+        public double GetWidth(
+          char textChar
+          )
+        { return font.GetWidth(textChar, fontSize) * scaleX / scaleY; }
+
+        public TextRenderModeEnum RenderMode
+        { get { return renderMode; } }
+
+        public double ScaleX
+        { get { return scaleX; } }
+
+        public double ScaleY
+        { get { return scaleY; } }
+
+        public Color StrokeColor
+        { get { return strokeColor; } }
+
+        public ColorSpace StrokeColorSpace
+        { get { return strokeColorSpace; } }
+        #endregion
+        #endregion
+        #endregion
+    }
 }

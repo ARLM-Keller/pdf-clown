@@ -31,80 +31,80 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Set the text font' operation [PDF:1.6:5.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class SetFont
-    : Operation,
-      IResourceReference<Font>
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "Tf";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public SetFont(
-      PdfName name,
-      double size
-      ) : base(OperatorKeyword, name, PdfReal.Get(size))
-    {}
-
-    public SetFont(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the <see cref="Font">font</see> resource to be set.</summary>
-      <param name="context">Content context.</param>
+      <summary>'Set the text font' operation [PDF:1.6:5.2].</summary>
     */
-    public Font GetFont(
-      IContentContext context
-      )
-    {return GetResource(context);}
-
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
+    [PDF(VersionEnum.PDF10)]
+    public sealed class SetFont
+      : Operation,
+        IResourceReference<Font>
     {
-      state.Font = GetFont(state.Scanner.ContentContext);
-      state.FontSize = Size;
-    }
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "Tf";
+        #endregion
+        #endregion
 
-    /**
-      <summary>Gets/Sets the font size to be set.</summary>
-    */
-    public double Size
-    {
-      get
-      {return ((IPdfNumber)operands[1]).RawValue;}
-      set
-      {operands[1] = PdfReal.Get(value);}
-    }
+        #region dynamic
+        #region constructors
+        public SetFont(
+          PdfName name,
+          double size
+          ) : base(OperatorKeyword, name, PdfReal.Get(size))
+        { }
 
-    #region IResourceReference
-    public Font GetResource(
-      IContentContext context
-      )
-    {return context.Resources.Fonts[Name];}
+        public SetFont(
+          IList<PdfDirectObject> operands
+          ) : base(OperatorKeyword, operands)
+        { }
+        #endregion
 
-    public PdfName Name
-    {
-      get
-      {return (PdfName)operands[0];}
-      set
-      {operands[0] = value;}
+        #region interface
+        #region public
+        /**
+          <summary>Gets the <see cref="Font">font</see> resource to be set.</summary>
+          <param name="context">Content context.</param>
+        */
+        public Font GetFont(
+          IContentContext context
+          )
+        { return GetResource(context); }
+
+        public override void Scan(
+          ContentScanner.GraphicsState state
+          )
+        {
+            state.Font = GetFont(state.Scanner.ContentContext);
+            state.FontSize = Size;
+        }
+
+        /**
+          <summary>Gets/Sets the font size to be set.</summary>
+        */
+        public double Size
+        {
+            get
+            { return ((IPdfNumber)operands[1]).RawValue; }
+            set
+            { operands[1] = PdfReal.Get(value); }
+        }
+
+        #region IResourceReference
+        public Font GetResource(
+          IContentContext context
+          )
+        { return context.Resources.Fonts[Name]; }
+
+        public PdfName Name
+        {
+            get
+            { return (PdfName)operands[0]; }
+            set
+            { operands[0] = value; }
+        }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }

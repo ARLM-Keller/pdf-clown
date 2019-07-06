@@ -27,18 +27,18 @@ using System;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>PDF object wrapper interface.</summary>
-  */
-  public interface IPdfObjectWrapper
-  {
     /**
-      <summary>Gets the underlying reference object, if available; otherwise, gets the underlying 
-      data object.</summary>
+      <summary>PDF object wrapper interface.</summary>
     */
-    PdfDirectObject BaseObject
+    public interface IPdfObjectWrapper
     {
-      get;
+        /**
+          <summary>Gets the underlying reference object, if available; otherwise, gets the underlying 
+          data object.</summary>
+        */
+        PdfDirectObject BaseObject
+        {
+            get;
+        }
     }
-  }
 }

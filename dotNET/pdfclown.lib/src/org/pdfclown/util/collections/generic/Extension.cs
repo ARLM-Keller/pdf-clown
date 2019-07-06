@@ -28,39 +28,39 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.util.collections.generic
 {
-  public static class Extension
-  {
-    public static void AddAll<T>(
-      this ICollection<T> collection,
-      IEnumerable<T> enumerable
-      )
+    public static class Extension
     {
-      foreach(T item in enumerable)
-      {collection.Add(item);}
-    }
+        public static void AddAll<T>(
+          this ICollection<T> collection,
+          IEnumerable<T> enumerable
+          )
+        {
+            foreach (T item in enumerable)
+            { collection.Add(item); }
+        }
 
-    public static void RemoveAll<T>(
-      this ICollection<T> collection,
-      IEnumerable<T> enumerable
-      )
-    {
-      foreach(T item in enumerable)
-      {collection.Remove(item);}
-    }
+        public static void RemoveAll<T>(
+          this ICollection<T> collection,
+          IEnumerable<T> enumerable
+          )
+        {
+            foreach (T item in enumerable)
+            { collection.Remove(item); }
+        }
 
-    /**
-      <summary>Sets all the specified entries into this dictionary.</summary>
-      <remarks>The effect of this call is equivalent to that of calling the indexer on this dictionary
-      once for each entry in the specified enumerable.</remarks>
-    */
-    public static void SetAll<TKey,TValue>(
-      this IDictionary<TKey,TValue> dictionary,
-      IEnumerable<KeyValuePair<TKey,TValue>> enumerable
-      )
-    {
-      foreach(KeyValuePair<TKey,TValue> entry in enumerable)
-      {dictionary[entry.Key] = entry.Value;}
+        /**
+          <summary>Sets all the specified entries into this dictionary.</summary>
+          <remarks>The effect of this call is equivalent to that of calling the indexer on this dictionary
+          once for each entry in the specified enumerable.</remarks>
+        */
+        public static void SetAll<TKey, TValue>(
+          this IDictionary<TKey, TValue> dictionary,
+          IEnumerable<KeyValuePair<TKey, TValue>> enumerable
+          )
+        {
+            foreach (KeyValuePair<TKey, TValue> entry in enumerable)
+            { dictionary[entry.Key] = entry.Value; }
+        }
     }
-  }
 }
 

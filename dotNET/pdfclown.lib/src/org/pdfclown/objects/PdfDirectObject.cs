@@ -31,62 +31,62 @@ using System;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>Abstract PDF direct object.</summary>
-  */
-  public abstract class PdfDirectObject
-    : PdfDataObject,
-      IComparable<PdfDirectObject>
-  {
-    #region static
-    #region fields
-    private static readonly byte[] NullChunk = Encoding.Pdf.Encode(Keyword.Null);
-    #endregion
-
-    #region interface
-    #region internal
     /**
-      <summary>Ensures that the given direct object is properly represented as string.</summary>
-      <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
+      <summary>Abstract PDF direct object.</summary>
     */
-    internal static string ToString(
-      PdfDirectObject obj
-      )
-    {return (obj == null ? Keyword.Null : obj.ToString());}
-
-    /**
-      <summary>Ensures that the given direct object is properly serialized.</summary>
-      <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
-    */
-    internal static void WriteTo(
-      IOutputStream stream,
-      File context,
-      PdfDirectObject obj
-      )
+    public abstract class PdfDirectObject
+      : PdfDataObject,
+        IComparable<PdfDirectObject>
     {
-      if(obj == null)
-      {stream.Write(NullChunk);}
-      else
-      {obj.WriteTo(stream, context);}
+        #region static
+        #region fields
+        private static readonly byte[] NullChunk = Encoding.Pdf.Encode(Keyword.Null);
+        #endregion
+
+        #region interface
+        #region internal
+        /**
+          <summary>Ensures that the given direct object is properly represented as string.</summary>
+          <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
+        */
+        internal static string ToString(
+          PdfDirectObject obj
+          )
+        { return (obj == null ? Keyword.Null : obj.ToString()); }
+
+        /**
+          <summary>Ensures that the given direct object is properly serialized.</summary>
+          <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
+        */
+        internal static void WriteTo(
+          IOutputStream stream,
+          File context,
+          PdfDirectObject obj
+          )
+        {
+            if (obj == null)
+            { stream.Write(NullChunk); }
+            else
+            { obj.WriteTo(stream, context); }
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        protected PdfDirectObject(
+          )
+        { }
+        #endregion
+
+        #region public
+        #region IComparable
+        public abstract int CompareTo(
+          PdfDirectObject obj
+          );
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    protected PdfDirectObject(
-      )
-    {}
-    #endregion
-
-    #region public
-    #region IComparable
-    public abstract int CompareTo(
-      PdfDirectObject obj
-      );
-    #endregion
-    #endregion
-    #endregion
-  }
 }

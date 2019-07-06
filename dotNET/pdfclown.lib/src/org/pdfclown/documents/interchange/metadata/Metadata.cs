@@ -32,79 +32,79 @@ using System.Xml;
 
 namespace org.pdfclown.documents.interchange.metadata
 {
-  /**
-    <summary>Metadata stream [PDF:1.6:10.2.2].</summary>
-  */
-  [PDF(VersionEnum.PDF14)]
-  public sealed class Metadata
-    : PdfObjectWrapper<PdfStream>
-  {
-    #region dynamic
-    #region constructors
-    public Metadata(
-      Document context
-      ) : base(
-        context,
-        new PdfStream(
-          new PdfDictionary(
-            new PdfName[]
-            {
+    /**
+      <summary>Metadata stream [PDF:1.6:10.2.2].</summary>
+    */
+    [PDF(VersionEnum.PDF14)]
+    public sealed class Metadata
+      : PdfObjectWrapper<PdfStream>
+    {
+        #region dynamic
+        #region constructors
+        public Metadata(
+          Document context
+          ) : base(
+            context,
+            new PdfStream(
+              new PdfDictionary(
+                new PdfName[]
+                {
               PdfName.Type,
               PdfName.Subtype
-            },
-            new PdfDirectObject[]
-            {
+                },
+                new PdfDirectObject[]
+                {
               PdfName.Metadata,
               PdfName.XML
-            }
-            ))
-        )
-    {}
+                }
+                ))
+            )
+        { }
 
-    public Metadata(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        public Metadata(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the metadata contents.</summary>
-    */
-    public XmlDocument Content
-    {
-      get
-      {
-        XmlDocument content;
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the metadata contents.</summary>
+        */
+        public XmlDocument Content
         {
-          using(var contentStream = new MemoryStream(BaseDataObject.Body.ToByteArray()))
-          {
-            if(contentStream.Length > 0)
+            get
             {
-              content = new XmlDocument();
-              content.Load(contentStream);
+                XmlDocument content;
+                {
+                    using (var contentStream = new MemoryStream(BaseDataObject.Body.ToByteArray()))
+                    {
+                        if (contentStream.Length > 0)
+                        {
+                            content = new XmlDocument();
+                            content.Load(contentStream);
+                        }
+                        else
+                        { content = null; }
+                    }
+                }
+                return content;
             }
-            else
-            {content = null;}
-          }
-        }
-        return content;
-      }
-      set
-      {
-        using(var contentStream = new MemoryStream())
-        {
-          value.Save(contentStream);
+            set
+            {
+                using (var contentStream = new MemoryStream())
+                {
+                    value.Save(contentStream);
 
-          IBuffer body = BaseDataObject.Body;
-          body.Clear();
-          body.Write(contentStream.ToArray());
+                    IBuffer body = BaseDataObject.Body;
+                    body.Clear();
+                    body.Write(contentStream.ToArray());
+                }
+            }
         }
-      }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

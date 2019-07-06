@@ -29,18 +29,18 @@ using System.Text;
 
 namespace org.pdfclown.util.metadata
 {
-  /**
-    <summary>Generic software version number.</summary>
-  */
-  public interface IVersion
-    : IComparable<IVersion>
-  {
     /**
-      <summary>Gets the version numbers.</summary>
+      <summary>Generic software version number.</summary>
     */
-    IList<int> Numbers
+    public interface IVersion
+      : IComparable<IVersion>
     {
-      get;
+        /**
+          <summary>Gets the version numbers.</summary>
+        */
+        IList<int> Numbers
+        {
+            get;
+        }
     }
-  }
 }

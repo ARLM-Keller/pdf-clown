@@ -30,69 +30,69 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Set the specified graphics state parameters' operation [PDF:1.6:4.3.3].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class ApplyExtGState
-    : Operation,
-      IResourceReference<ExtGState>
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "gs";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public ApplyExtGState(
-      PdfName name
-      ) : base(OperatorKeyword, name)
-    {}
-
-    public ApplyExtGState(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the <see cref="ExtGState">graphics state parameters</see> resource to be set.
-      </summary>
-      <param name="context">Content context.</param>
+      <summary>'Set the specified graphics state parameters' operation [PDF:1.6:4.3.3].</summary>
     */
-    public ExtGState GetExtGState(
-      IContentContext context
-      )
-    {return GetResource(context);}
-
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
+    [PDF(VersionEnum.PDF12)]
+    public sealed class ApplyExtGState
+      : Operation,
+        IResourceReference<ExtGState>
     {
-      ExtGState extGState = GetExtGState(state.Scanner.ContentContext);
-      extGState.ApplyTo(state);
-    }
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "gs";
+        #endregion
+        #endregion
 
-    #region IResourceReference
-    public ExtGState GetResource(
-      IContentContext context
-      )
-    {return context.Resources.ExtGStates[Name];}
+        #region dynamic
+        #region constructors
+        public ApplyExtGState(
+          PdfName name
+          ) : base(OperatorKeyword, name)
+        { }
 
-    public PdfName Name
-    {
-      get
-      {return (PdfName)operands[0];}
-      set
-      {operands[0] = value;}
+        public ApplyExtGState(
+          IList<PdfDirectObject> operands
+          ) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the <see cref="ExtGState">graphics state parameters</see> resource to be set.
+          </summary>
+          <param name="context">Content context.</param>
+        */
+        public ExtGState GetExtGState(
+          IContentContext context
+          )
+        { return GetResource(context); }
+
+        public override void Scan(
+          ContentScanner.GraphicsState state
+          )
+        {
+            ExtGState extGState = GetExtGState(state.Scanner.ContentContext);
+            extGState.ApplyTo(state);
+        }
+
+        #region IResourceReference
+        public ExtGState GetResource(
+          IContentContext context
+          )
+        { return context.Resources.ExtGStates[Name]; }
+
+        public PdfName Name
+        {
+            get
+            { return (PdfName)operands[0]; }
+            set
+            { operands[0] = value; }
+        }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }

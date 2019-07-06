@@ -28,15 +28,15 @@ using System.IO;
 
 namespace org.pdfclown.util.io
 {
-  /**
-    <summary>IO utilities.</summary>
-  */
-  public class IOUtils
-  {
-    public static bool Exists(
-      string path
-      )
-    {return Directory.Exists(path) || File.Exists(path);}
-  }
+    /**
+      <summary>IO utilities.</summary>
+    */
+    public class IOUtils
+    {
+        public static bool Exists(
+          string path
+          )
+        { return Directory.Exists(path) || File.Exists(path); }
+    }
 }
 

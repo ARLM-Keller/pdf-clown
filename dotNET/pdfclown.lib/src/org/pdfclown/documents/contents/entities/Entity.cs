@@ -34,26 +34,26 @@ using System;
 
 namespace org.pdfclown.documents.contents.entities
 {
-  /**
-    <summary>Abstract specialized graphic object.</summary>
-  */
-  public abstract class Entity
-    : IContentEntity
-  {
-    #region dynamic
-    #region interface
-    #region public
-    #region IContentEntity
-    public abstract ContentObject ToInlineObject(
-      PrimitiveComposer composer
-      );
+    /**
+      <summary>Abstract specialized graphic object.</summary>
+    */
+    public abstract class Entity
+      : IContentEntity
+    {
+        #region dynamic
+        #region interface
+        #region public
+        #region IContentEntity
+        public abstract ContentObject ToInlineObject(
+          PrimitiveComposer composer
+          );
 
-    public abstract xObjects::XObject ToXObject(
-      Document context
-      );
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
+        public abstract xObjects::XObject ToXObject(
+          Document context
+          );
+        #endregion
+        #endregion
+        #endregion
+        #endregion
+    }
 }

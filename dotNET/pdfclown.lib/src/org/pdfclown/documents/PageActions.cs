@@ -32,51 +32,51 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Page actions [PDF:1.6:8.5.2].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class PageActions
-    : PdfObjectWrapper<PdfDictionary>
-  {
-    #region dynamic
-    #region constructors
-    public PageActions(
-      Document context
-      ) : base(context, new PdfDictionary())
-    {}
-
-    internal PageActions(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets the action to be performed when the page is closed.</summary>
+      <summary>Page actions [PDF:1.6:8.5.2].</summary>
     */
-    public Action OnClose
+    [PDF(VersionEnum.PDF12)]
+    public sealed class PageActions
+      : PdfObjectWrapper<PdfDictionary>
     {
-      get
-      {return Action.Wrap(BaseDataObject[PdfName.C]);}
-      set
-      {BaseDataObject[PdfName.C] = value.BaseObject;}
-    }
+        #region dynamic
+        #region constructors
+        public PageActions(
+          Document context
+          ) : base(context, new PdfDictionary())
+        { }
 
-    /**
-      <summary>Gets/Sets the action to be performed when the page is opened.</summary>
-    */
-    public Action OnOpen
-    {
-      get
-      {return Action.Wrap(BaseDataObject[PdfName.O]);}
-      set
-      {BaseDataObject[PdfName.O] = value.BaseObject;}
+        internal PageActions(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the action to be performed when the page is closed.</summary>
+        */
+        public Action OnClose
+        {
+            get
+            { return Action.Wrap(BaseDataObject[PdfName.C]); }
+            set
+            { BaseDataObject[PdfName.C] = value.BaseObject; }
+        }
+
+        /**
+          <summary>Gets/Sets the action to be performed when the page is opened.</summary>
+        */
+        public Action OnOpen
+        {
+            get
+            { return Action.Wrap(BaseDataObject[PdfName.O]); }
+            set
+            { BaseDataObject[PdfName.O] = value.BaseObject; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

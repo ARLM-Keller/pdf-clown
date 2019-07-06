@@ -30,48 +30,48 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Set the miter limit' operation [PDF:1.6:4.3.3].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class SetMiterLimit
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "M";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public SetMiterLimit(
-      double value
-      ) : base(OperatorKeyword, PdfReal.Get(value))
-    {}
-
-    public SetMiterLimit(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {state.MiterLimit = Value;}
-
-    public double Value
+    /**
+      <summary>'Set the miter limit' operation [PDF:1.6:4.3.3].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class SetMiterLimit
+      : Operation
     {
-      get
-      {return ((IPdfNumber)operands[0]).RawValue;}
-      set
-      {operands[0] = PdfReal.Get(value);}
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "M";
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public SetMiterLimit(
+          double value
+          ) : base(OperatorKeyword, PdfReal.Get(value))
+        { }
+
+        public SetMiterLimit(
+          IList<PdfDirectObject> operands
+          ) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override void Scan(
+          ContentScanner.GraphicsState state
+          )
+        { state.MiterLimit = Value; }
+
+        public double Value
+        {
+            get
+            { return ((IPdfNumber)operands[0]).RawValue; }
+            set
+            { operands[0] = PdfReal.Get(value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

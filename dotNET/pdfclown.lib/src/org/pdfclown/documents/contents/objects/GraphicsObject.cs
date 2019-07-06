@@ -29,29 +29,23 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Graphics object [PDF:1.6:4.1].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public abstract class GraphicsObject
-    : CompositeObject
-  {
-    #region dynamic
-    #region constructors
-    protected GraphicsObject(
-      )
-    {}
+    /**
+      <summary>Graphics object [PDF:1.6:4.1].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public abstract class GraphicsObject : CompositeObject
+    {
+        #region dynamic
+        #region constructors
+        protected GraphicsObject()
+        { }
 
-    protected GraphicsObject(
-      ContentObject obj
-      )
-    {objects.Add(obj);}
+        protected GraphicsObject(ContentObject obj)
+        { objects.Add(obj); }
 
-    protected GraphicsObject(
-      IList<ContentObject> objects
-      ) : base(objects)
-    {}
-    #endregion
-    #endregion
-  }
+        protected GraphicsObject(IList<ContentObject> objects) : base(objects)
+        { }
+        #endregion
+        #endregion
+    }
 }

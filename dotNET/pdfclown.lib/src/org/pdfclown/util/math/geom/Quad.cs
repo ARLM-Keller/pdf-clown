@@ -24,143 +24,132 @@
 */
 
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.util.math.geom
 {
-  /**
-    <summary>Quadrilateral shape.</summary>
-  */
-  public class Quad
-  {
-    #region static
-    #region interface
-    #region public
-    public static Quad Get(
-      RectangleF rectangle
-      )
-    {return new Quad(GetPoints(rectangle));}
-
-    public static PointF[] GetPoints(
-      RectangleF rectangle
-      )
-    {
-      PointF[] points = new PointF[4];
-      {
-        points[0] = new PointF(rectangle.Left, rectangle.Top);
-        points[1] = new PointF(rectangle.Right, rectangle.Top);
-        points[2] = new PointF(rectangle.Right, rectangle.Bottom);
-        points[3] = new PointF(rectangle.Left, rectangle.Bottom);
-      }
-      return points;
-    }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region fields
-    private PointF[] points;
-
-    private GraphicsPath path;
-    #endregion
-
-    #region constructors
-    public Quad(
-      params PointF[] points
-      )
-    {Points = points;}
-    #endregion
-
-    #region interface
-    #region public
-    public bool Contains(
-      PointF point
-      )
-    {return Path.IsVisible(point);}
-
-    public bool Contains(
-      float x,
-      float y
-      )
-    {return Path.IsVisible(x, y);}
-
-    public RectangleF GetBounds(
-      )
-    {return Path.GetBounds();}
-
-    public GraphicsPathIterator GetPathIterator(
-      )
-    {return new GraphicsPathIterator(Path);}
-
     /**
-      <summary>Expands the size of this quad stretching around its center.</summary>
-      <param name="value">Expansion extent.</param>
-      <returns>This quad.</returns>
+      <summary>Quadrilateral shape.</summary>
     */
-    public Quad Inflate(
-      float value
-      )
-    {return Inflate(value, value);}
-
-    /**
-      <summary>Expands the size of this quad stretching around its center.</summary>
-      <param name="valueX">Expansion's horizontal extent.</param>
-      <param name="valueY">Expansion's vertical extent.</param>
-      <returns>This quad.</returns>
-    */
-    public Quad Inflate(
-      float valueX,
-      float valueY
-      )
+    public class Quad
     {
-      Matrix matrix = new Matrix();
-      RectangleF oldBounds = Path.GetBounds();
-      matrix.Translate(-oldBounds.X, -oldBounds.Y);
-      path.Transform(matrix);
-      matrix = new Matrix();
-      matrix.Scale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height);
-      path.Transform(matrix);
-      RectangleF newBounds = path.GetBounds();
-      matrix = new Matrix();
-      matrix.Translate(oldBounds.X - (newBounds.Width - oldBounds.Width) / 2, oldBounds.Y - (newBounds.Height - oldBounds.Height) / 2);
-      path.Transform(matrix);
+        #region static
+        #region interface
+        #region public
+        public static Quad Get(SKRect rectangle)
+        { return new Quad(GetPoints(rectangle)); }
 
-      points = path.PathPoints;
-      return this;
-    }
-
-    public PointF[] Points
-    {
-      get
-      {return points;}
-      set
-      {
-        if(value.Length != 4)
-          throw new ArgumentException("Cardinality MUST be 4.","points");
-
-        points = value;
-        path = null;
-      }
-    }
-    #endregion
-
-    #region private
-    private GraphicsPath Path
-    {
-      get
-      {
-        if(path == null)
+        public static SKPoint[] GetPoints(SKRect rectangle)
         {
-          path = new GraphicsPath(FillMode.Alternate);
-          path.AddPolygon(points);
+            SKPoint[] points = new SKPoint[4];
+            {
+                points[0] = new SKPoint(rectangle.Left, rectangle.Top);
+                points[1] = new SKPoint(rectangle.Right, rectangle.Top);
+                points[2] = new SKPoint(rectangle.Right, rectangle.Bottom);
+                points[3] = new SKPoint(rectangle.Left, rectangle.Bottom);
+            }
+            return points;
         }
-        return path;
-      }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region fields
+        private SKPoint[] points;
+
+        private SKPath path;
+        #endregion
+
+        #region constructors
+        public Quad(params SKPoint[] points)
+        {
+            Points = points;
+        }
+        #endregion
+
+        #region interface
+        #region public
+        public bool Contains(SKPoint SKPoint)
+        {
+            return Path.Contains(SKPoint.X, SKPoint.Y);
+        }
+
+        public bool Contains(float x, float y)
+        {
+            return Path.Contains(x, y);
+        }
+
+        public SKRect GetBounds()
+        {
+            return Path.GetBounds(out var rect) ? rect : SKRect.Empty;
+        }
+
+        public SKPath GetPathIterator()
+        {
+            return new SKPath(Path);
+        }
+
+        /**
+          <summary>Expands the size of this quad stretching around its center.</summary>
+          <param name="value">Expansion extent.</param>
+          <returns>This quad.</returns>
+        */
+        public Quad Inflate(float value)
+        {
+            return Inflate(value, value);
+        }
+
+        /**
+          <summary>Expands the size of this quad stretching around its center.</summary>
+          <param name="valueX">Expansion's horizontal extent.</param>
+          <param name="valueY">Expansion's vertical extent.</param>
+          <returns>This quad.</returns>
+        */
+        public Quad Inflate(float valueX, float valueY)
+        {
+            SKRect oldBounds = GetBounds();
+            SKMatrix matrix = SKMatrix.MakeTranslation(-oldBounds.Left, -oldBounds.Top);
+            path.Transform(matrix);
+            matrix = SKMatrix.MakeScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height);
+            path.Transform(matrix);
+            SKRect newBounds = GetBounds();
+            matrix = SKMatrix.MakeTranslation(oldBounds.Left - (newBounds.Width - oldBounds.Width) / 2, oldBounds.Top - (newBounds.Height - oldBounds.Height) / 2);
+            path.Transform(matrix);
+            points = path.Points;
+            return this;
+        }
+
+        public SKPoint[] Points
+        {
+            get
+            { return points; }
+            set
+            {
+                if (value.Length != 4)
+                    throw new ArgumentException("Cardinality MUST be 4.", "points");
+
+                points = value;
+                path = null;
+            }
+        }
+        #endregion
+
+        #region private
+        private SKPath Path
+        {
+            get
+            {
+                if (path == null)
+                {
+                    path = new SKPath();//FillMode.Alternate
+                    path.AddPoly(points);
+                }
+                return path;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

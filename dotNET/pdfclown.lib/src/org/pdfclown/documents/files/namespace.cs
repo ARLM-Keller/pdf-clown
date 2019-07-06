@@ -5,4 +5,4 @@ using org.pdfclown;
   files [PDF:1.6:3.10].</summary>
 */
 namespace org.pdfclown.documents.files
-{}
+{ }

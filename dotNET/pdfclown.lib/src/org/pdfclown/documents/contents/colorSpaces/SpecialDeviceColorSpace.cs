@@ -30,87 +30,90 @@ using org.pdfclown.util;
 
 using System;
 using System.Collections.Generic;
-using drawing = System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Special device color space [PDF:1.6:4.5.5].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public abstract class SpecialDeviceColorSpace
-    : SpecialColorSpace
-  {
-    #region static
-    #region fields
     /**
-      <summary>Special colorant name never producing any visible output.</summary>
-      <remarks>When a color space with this component name is the current color space, painting
-      operators have no effect.</remarks>
+      <summary>Special device color space [PDF:1.6:4.5.5].</summary>
     */
-    public static readonly string NoneComponentName = (string)PdfName.None.Value;
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    //TODO:IMPL new element constructor!
-
-    internal SpecialDeviceColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets the alternate color space used in case any of the <see cref="ComponentNames">component names</see>
-      in the color space do not correspond to a component available on the device.</summary>
-    */
-    public ColorSpace AlternateSpace
+    [PDF(VersionEnum.PDF12)]
+    public abstract class SpecialDeviceColorSpace : SpecialColorSpace
     {
-      get
-      {return ColorSpace.Wrap(((PdfArray)BaseDataObject)[2]);}
-    }
+        #region static
+        #region fields
+        /**
+          <summary>Special colorant name never producing any visible output.</summary>
+          <remarks>When a color space with this component name is the current color space, painting
+          operators have no effect.</remarks>
+        */
+        public static readonly string NoneComponentName = (string)PdfName.None.Value;
+        #endregion
+        #endregion
 
-    /**
-      <summary>Gets the names of the color components.</summary>
-    */
-    public abstract IList<string> ComponentNames
-    {
-      get;
-    }
+        #region dynamic
+        #region constructors
+        //TODO:IMPL new element constructor!
 
-    public override drawing::Brush GetPaint(
-      Color color
-      )
-    {
-      //TODO:enable!!!
-  //    IList<PdfDirectObject> alternateColorComponents = TintFunction.Calculate(color.Components);
-  //    ColorSpace alternateSpace = AlternateSpace;
-  //    return alternateSpace.GetPaint(
-  //      alternateSpace.GetColor(
-  //        alternateColorComponents,
-  //        null
-  //        )
-  //      );
+        internal SpecialDeviceColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        { }
+        #endregion
 
-      //TODO: remove (temporary hack)!
-      return new drawing::SolidBrush(drawing::Color.Black);
-    }
+        #region interface
+        #region public
+        /**
+          <summary>Gets the alternate color space used in case any of the <see cref="ComponentNames">component names</see>
+          in the color space do not correspond to a component available on the device.</summary>
+        */
+        public ColorSpace AlternateSpace
+        {
+            get { return ColorSpace.Wrap(((PdfArray)BaseDataObject)[2]); }
+        }
 
-    /**
-      <summary>Gets the function to transform a tint value into color component values
-      in the <see cref="AlternateSpace">alternate color space</see>.</summary>
-    */
-    public Function TintFunction
-    {
-      get
-      {return Function.Wrap(((PdfArray)BaseDataObject)[3]);}
+        /**
+          <summary>Gets the names of the color components.</summary>
+        */
+        public abstract IList<string> ComponentNames
+        {
+            get;
+        }
+
+        public override SKColor GetColor(Color color)
+        {           
+           
+            return SKColors.Black;
+        }
+
+        public override SKPaint GetPaint(Color color)
+        {
+            //TODO:enable!!!
+            IList<PdfDirectObject> alternateColorComponents = TintFunction.Calculate(color.Components);
+            ColorSpace alternateSpace = AlternateSpace;
+            return alternateSpace.GetPaint(
+              alternateSpace.GetColor(
+                alternateColorComponents,
+                null
+                )
+              );
+
+            //TODO: remove (temporary hack)!
+            //return new SKPaint
+            //{
+            //    Color = GetColor(color),
+            //    Style = SKPaintStyle.Fill
+            //};
+        }
+
+        /**
+          <summary>Gets the function to transform a tint value into color component values
+          in the <see cref="AlternateSpace">alternate color space</see>.</summary>
+        */
+        public Function TintFunction
+        {
+            get { return Function.Wrap(((PdfArray)BaseDataObject)[3]); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

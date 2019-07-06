@@ -30,48 +30,48 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Set the line cap style' operation [PDF:1.6:4.3.3].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class SetLineCap
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "J";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public SetLineCap(
-      LineCapEnum value
-      ) : base(OperatorKeyword, PdfInteger.Get((int)value))
-    {}
-
-    public SetLineCap(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {state.LineCap = Value;}
-
-    public LineCapEnum Value
+    /**
+      <summary>'Set the line cap style' operation [PDF:1.6:4.3.3].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class SetLineCap
+      : Operation
     {
-      get
-      {return (LineCapEnum)((IPdfNumber)operands[0]).Value;}
-      set
-      {operands[0] = PdfInteger.Get((int)value);}
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "J";
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public SetLineCap(
+          LineCapEnum value
+          ) : base(OperatorKeyword, PdfInteger.Get((int)value))
+        { }
+
+        public SetLineCap(
+          IList<PdfDirectObject> operands
+          ) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override void Scan(
+          ContentScanner.GraphicsState state
+          )
+        { state.LineCap = Value; }
+
+        public LineCapEnum Value
+        {
+            get
+            { return (LineCapEnum)((IPdfNumber)operands[0]).Value; }
+            set
+            { operands[0] = PdfInteger.Get((int)value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

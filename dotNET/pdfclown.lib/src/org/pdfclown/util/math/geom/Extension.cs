@@ -24,67 +24,61 @@
 */
 
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.util.math.geom
 {
-  public static class Extension
-  {
-    public static void Add(
-      this RectangleF rectangle,
-      PointF point
-      )
+    public static class Extension
     {
-      if(point.X < rectangle.Left)
-      {
-        rectangle.Width += (rectangle.X - point.X);
-        rectangle.X = point.X;
-      }
-      else if(point.X > rectangle.Right)
-      {rectangle.Width = point.X - rectangle.X;}
-      if(point.Y < rectangle.Top)
-      {
-        rectangle.Height += (rectangle.Y - point.Y);
-        rectangle.Y = point.Y;
-      }
-      else if(point.Y > rectangle.Bottom)
-      {rectangle.Height = point.Y - rectangle.Y;}
+        public static void Add(this SKRect rectangle, SKPoint point)
+        {
+            if (point.X < rectangle.Left)
+            {
+                //rectangle.Width += (rectangle.X - point.X);
+                rectangle.Left = point.X;
+            }
+            else if (point.X > rectangle.Right)
+            { rectangle.Right = point.X; }
+            if (point.Y < rectangle.Top)
+            {
+                //rectangle.Height += (rectangle.Y - point.Y);
+                rectangle.Top = point.Y;
+            }
+            else if (point.Y > rectangle.Bottom)
+            { rectangle.Bottom = point.Y; }
+        }
+
+        public static SKPoint Center(this SKRect rectangle)
+        {
+            return new SKPoint(rectangle.CenterX(), rectangle.CenterY());
+        }
+
+        public static float CenterX(this SKRect rectangle)
+        {
+            return rectangle.Left + rectangle.Width / 2;
+        }
+
+        public static float CenterY(this SKRect rectangle)
+        {
+            return rectangle.Top + rectangle.Height / 2;
+        }
+
+        public static SKPath ToPath(this SKRect rectangle)
+        {
+            var path = new SKPath();
+            path.AddRect(rectangle);
+            return path;
+        }
+
+        //public static SKPoint Transform(
+        //  this SKMatrix matrix,
+        //  SKPoint point
+        //  )
+        //{
+        //  var points = new SKPoint[]{point};
+        //  matrix.MapPoints(points);
+        //  return points[0];
+        //}
     }
-
-    public static PointF Center(
-      this RectangleF rectangle
-      )
-    {return new PointF(rectangle.CenterX(), rectangle.CenterY());}
-
-    public static float CenterX(
-      this RectangleF rectangle
-      )
-    {return rectangle.Left + rectangle.Width / 2;}
-
-    public static float CenterY(
-      this RectangleF rectangle
-      )
-    {return rectangle.Top + rectangle.Height / 2;}
-
-    public static GraphicsPath ToPath(
-      this RectangleF rectangle
-      )
-    {
-      var path = new GraphicsPath();
-      path.AddRectangle(rectangle);
-      return path;
-    }
-
-    public static PointF Transform(
-      this Matrix matrix,
-      PointF point
-      )
-    {
-      var points = new PointF[]{point};
-      matrix.TransformPoints(points);
-      return points[0];
-    }
-  }
 }
 

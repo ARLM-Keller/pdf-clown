@@ -32,223 +32,202 @@ using org.pdfclown.files;
 using org.pdfclown.objects;
 
 using System;
-using drawing = System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.xObjects
 {
-  /**
-    <summary>Form external object [PDF:1.6:4.9].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class FormXObject
-    : XObject,
-      IContentContext
-  {
-    #region static
-    #region interface
-    #region public
-    public static new FormXObject Wrap(
-      PdfDirectObject baseObject
-      )
-    {
-      if(baseObject == null)
-        return null;
-
-      PdfDictionary header = ((PdfStream)PdfObject.Resolve(baseObject)).Header;
-      PdfName subtype = (PdfName)header[PdfName.Subtype];
-      /*
-        NOTE: Sometimes the form stream's header misses the mandatory Subtype entry; therefore, here
-        we force integrity for convenience (otherwise, content resource allocation may fail, for
-        example in case of Acroform flattening).
-      */
-      if(subtype == null && header.ContainsKey(PdfName.BBox))
-      {header[PdfName.Subtype] = PdfName.Form;}
-      else if(!subtype.Equals(PdfName.Form))
-        return null;
-
-      return new FormXObject(baseObject);
-    }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new form within the specified document context.</summary>
-      <param name="context">Document where to place this form.</param>
-      <param name="size">Form size.</param>
+      <summary>Form external object [PDF:1.6:4.9].</summary>
     */
-    public FormXObject(
-      Document context,
-      drawing::SizeF size
-      ) : this(context, new drawing::RectangleF(new drawing::PointF(0, 0), size))
-    {}
-
-    /**
-      <summary>Creates a new form within the specified document context.</summary>
-      <param name="context">Document where to place this form.</param>
-      <param name="box">Form box.</param>
-    */
-    public FormXObject(
-      Document context,
-      drawing::RectangleF box
-      ) : base(context)
+    [PDF(VersionEnum.PDF10)]
+    public sealed class FormXObject
+      : XObject,
+        IContentContext
     {
-      BaseDataObject.Header[PdfName.Subtype] = PdfName.Form;
-      Box = box;
-    }
+        #region static
+        #region interface
+        #region public
+        public static new FormXObject Wrap(
+          PdfDirectObject baseObject
+          )
+        {
+            if (baseObject == null)
+                return null;
 
-    private FormXObject(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+            PdfDictionary header = ((PdfStream)PdfObject.Resolve(baseObject)).Header;
+            PdfName subtype = (PdfName)header[PdfName.Subtype];
+            /*
+              NOTE: Sometimes the form stream's header misses the mandatory Subtype entry; therefore, here
+              we force integrity for convenience (otherwise, content resource allocation may fail, for
+              example in case of Acroform flattening).
+            */
+            if (subtype == null && header.ContainsKey(PdfName.BBox))
+            { header[PdfName.Subtype] = PdfName.Form; }
+            else if (!subtype.Equals(PdfName.Form))
+                return null;
 
-    #region interface
-    #region public
-    public override Matrix Matrix
-    {
-      get
-      {
-        /*
-          NOTE: Form-space-to-user-space matrix is identity [1 0 0 1 0 0] by default,
-          but may be adjusted by setting the Matrix entry in the form dictionary [PDF:1.6:4.9].
+            return new FormXObject(baseObject);
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new form within the specified document context.</summary>
+          <param name="context">Document where to place this form.</param>
+          <param name="size">Form size.</param>
         */
-        PdfArray matrix = (PdfArray)BaseDataObject.Header.Resolve(PdfName.Matrix);
-        if(matrix == null)
-          return new Matrix();
-        else
-          return new Matrix(
-            ((IPdfNumber)matrix[0]).FloatValue,
-            ((IPdfNumber)matrix[1]).FloatValue,
-            ((IPdfNumber)matrix[2]).FloatValue,
-            ((IPdfNumber)matrix[3]).FloatValue,
-            ((IPdfNumber)matrix[4]).FloatValue,
-            ((IPdfNumber)matrix[5]).FloatValue
-            );
-      }
-      set
-      {
-        BaseDataObject.Header[PdfName.Matrix] = value != null
-          ? new PdfArray(
-            PdfReal.Get(value.Elements[0]),
-            PdfReal.Get(value.Elements[1]),
-            PdfReal.Get(value.Elements[2]),
-            PdfReal.Get(value.Elements[3]),
-            PdfReal.Get(value.Elements[4]),
-            PdfReal.Get(value.Elements[5])
-            )
-          : null;
-      }
+        public FormXObject(
+          Document context,
+          SKSize size
+          ) : this(context, SKRect.Create(new SKPoint(0, 0), size))
+        { }
+
+        /**
+          <summary>Creates a new form within the specified document context.</summary>
+          <param name="context">Document where to place this form.</param>
+          <param name="box">Form box.</param>
+        */
+        public FormXObject(
+          Document context,
+          SKRect box
+          ) : base(context)
+        {
+            BaseDataObject.Header[PdfName.Subtype] = PdfName.Form;
+            Box = box;
+        }
+
+        private FormXObject(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override SKMatrix Matrix
+        {
+            get
+            {
+                /*
+                  NOTE: Form-space-to-user-space matrix is identity [1 0 0 1 0 0] by default,
+                  but may be adjusted by setting the matrix entry in the form dictionary [PDF:1.6:4.9].
+                */
+                PdfArray matrix = (PdfArray)BaseDataObject.Header.Resolve(PdfName.Matrix);
+                if (matrix == null)
+                    return SKMatrix.MakeIdentity();
+                else
+                    return new SKMatrix
+                    {
+                        ScaleX = ((IPdfNumber)matrix[0]).FloatValue,
+                        SkewX = ((IPdfNumber)matrix[1]).FloatValue,
+                        SkewY = ((IPdfNumber)matrix[2]).FloatValue,
+                        ScaleY = ((IPdfNumber)matrix[3]).FloatValue,
+                        TransX = ((IPdfNumber)matrix[4]).FloatValue,
+                        TransY = ((IPdfNumber)matrix[5]).FloatValue,
+                        Persp2 = 1
+                    };
+            }
+            set
+            {
+                BaseDataObject.Header[PdfName.Matrix] =
+                 new PdfArray(
+                    PdfReal.Get(value.ScaleX),
+                    PdfReal.Get(value.SkewX),
+                    PdfReal.Get(value.SkewY),
+                    PdfReal.Get(value.ScaleY),
+                    PdfReal.Get(value.TransX),
+                    PdfReal.Get(value.TransY)
+                    )
+                ;
+            }
+        }
+
+        public override SKSize Size
+        {
+            get
+            {
+                PdfArray box = (PdfArray)BaseDataObject.Header.Resolve(PdfName.BBox);
+                return new SKSize(
+                  ((IPdfNumber)box[2]).FloatValue - ((IPdfNumber)box[0]).FloatValue,
+                  ((IPdfNumber)box[3]).FloatValue - ((IPdfNumber)box[1]).FloatValue
+                  );
+            }
+            set
+            {
+                PdfArray boxObject = (PdfArray)BaseDataObject.Header.Resolve(PdfName.BBox);
+                boxObject[2] = PdfReal.Get(value.Width + ((IPdfNumber)boxObject[0]).FloatValue);
+                boxObject[3] = PdfReal.Get(value.Height + ((IPdfNumber)boxObject[1]).FloatValue);
+            }
+        }
+        #endregion
+
+        #region internal
+        #region IContentContext
+        public SKRect Box
+        {
+            get { return Rectangle.Wrap(BaseDataObject.Header[PdfName.BBox]).ToRectangleF(); }
+            set { BaseDataObject.Header[PdfName.BBox] = new Rectangle(value).BaseDataObject; }
+        }
+
+        public Contents Contents
+        {
+            get { return Contents.Wrap(BaseObject, this); }
+        }
+
+        public void Render(SKCanvas context, SKSize size)
+        {
+            ContentScanner scanner = new ContentScanner(Contents);
+            scanner.Render(context, size);
+        }
+
+        public Resources Resources
+        {
+            get { return Resources.Wrap(BaseDataObject.Header.Get<PdfDictionary>(PdfName.Resources)); }
+            set { BaseDataObject.Header[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value); }
+        }
+
+        public RotationEnum Rotation
+        {
+            get { return RotationEnum.Downward; }
+        }
+
+        #region IAppDataHolder
+        public AppDataCollection AppData
+        {
+            get { return AppDataCollection.Wrap(BaseDataObject.Header.Get<PdfDictionary>(PdfName.PieceInfo), this); }
+        }
+
+        public AppData GetAppData(PdfName appName)
+        { return AppData.Ensure(appName); }
+
+        public DateTime? ModificationDate
+        {
+            get { return (DateTime?)PdfSimpleObject<object>.GetValue(BaseDataObject.Header[PdfName.LastModified]); }
+        }
+
+        public void Touch(PdfName appName)
+        { Touch(appName, DateTime.Now); }
+
+        public void Touch(PdfName appName, DateTime modificationDate)
+        {
+            GetAppData(appName).ModificationDate = modificationDate;
+            BaseDataObject.Header[PdfName.LastModified] = new PdfDate(modificationDate);
+        }
+        #endregion
+
+        #region IContentEntity
+        public ContentObject ToInlineObject(PrimitiveComposer composer)
+        { throw new NotImplementedException(); }
+
+        public XObject ToXObject(Document context)
+        { return (XObject)Clone(context); }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-
-    public override drawing::SizeF Size
-    {
-      get
-      {
-        PdfArray box = (PdfArray)BaseDataObject.Header.Resolve(PdfName.BBox);
-        return new drawing::SizeF(
-          ((IPdfNumber)box[2]).FloatValue - ((IPdfNumber)box[0]).FloatValue,
-          ((IPdfNumber)box[3]).FloatValue - ((IPdfNumber)box[1]).FloatValue
-          );
-      }
-      set
-      {
-        PdfArray boxObject = (PdfArray)BaseDataObject.Header.Resolve(PdfName.BBox);
-        boxObject[2] = PdfReal.Get(value.Width + ((IPdfNumber)boxObject[0]).FloatValue);
-        boxObject[3] = PdfReal.Get(value.Height + ((IPdfNumber)boxObject[1]).FloatValue);
-      }
-    }
-    #endregion
-
-    #region internal
-    #region IContentContext
-    public drawing::RectangleF Box
-    {
-      get
-      {return Rectangle.Wrap(BaseDataObject.Header[PdfName.BBox]).ToRectangleF();}
-      set
-      {BaseDataObject.Header[PdfName.BBox] = new Rectangle(value).BaseDataObject;}
-    }
-
-    public Contents Contents
-    {
-      get
-      {return Contents.Wrap(BaseObject, this);}
-    }
-
-    public void Render(
-      drawing::Graphics context,
-      drawing::SizeF size
-      )
-    {
-      ContentScanner scanner = new ContentScanner(Contents);
-      scanner.Render(context, size);
-    }
-
-    public Resources Resources
-    {
-      get
-      {return Resources.Wrap(BaseDataObject.Header.Get<PdfDictionary>(PdfName.Resources));}
-      set
-      {BaseDataObject.Header[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value);}
-    }
-
-    public RotationEnum Rotation
-    {
-      get
-      {return RotationEnum.Downward;}
-    }
-
-    #region IAppDataHolder
-    public AppDataCollection AppData
-    {
-      get
-      {return AppDataCollection.Wrap(BaseDataObject.Header.Get<PdfDictionary>(PdfName.PieceInfo), this);}
-    }
-
-    public AppData GetAppData(
-      PdfName appName
-      )
-    {return AppData.Ensure(appName);}
-
-    public DateTime? ModificationDate
-    {
-      get
-      {return (DateTime?)PdfSimpleObject<object>.GetValue(BaseDataObject.Header[PdfName.LastModified]);}
-    }
-
-    public void Touch(
-      PdfName appName
-      )
-    {Touch(appName, DateTime.Now);}
-
-    public void Touch(
-      PdfName appName,
-      DateTime modificationDate
-      )
-    {
-      GetAppData(appName).ModificationDate = modificationDate;
-      BaseDataObject.Header[PdfName.LastModified] = new PdfDate(modificationDate);
-    }
-    #endregion
-
-    #region IContentEntity
-    public ContentObject ToInlineObject(
-      PrimitiveComposer composer
-      )
-    {throw new NotImplementedException();}
-
-    public XObject ToXObject(
-      Document context
-      )
-    {return (XObject)Clone(context);}
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -31,187 +31,187 @@ using System;
 
 namespace org.pdfclown.documents.contents.layers
 {
-  /**
-    <summary>Visibility expression, used to compute visibility of content based on a set of layers
-    [PDF:1.7:4.10.1].</summary>
-  */
-  [@PDF(VersionEnum.PDF16)]
-  public class VisibilityExpression
-    : PdfObjectWrapper<PdfArray>
-  {
-    #region types
-    public enum OperatorEnum
+    /**
+      <summary>Visibility expression, used to compute visibility of content based on a set of layers
+      [PDF:1.7:4.10.1].</summary>
+    */
+    [@PDF(VersionEnum.PDF16)]
+    public class VisibilityExpression
+      : PdfObjectWrapper<PdfArray>
     {
-      And,
-      Or,
-      Not
-    }
+        #region types
+        public enum OperatorEnum
+        {
+            And,
+            Or,
+            Not
+        }
 
-    private class OperandsImpl
-      : Array<IPdfObjectWrapper>
-    {
-      private class ItemWrapper
-        : IWrapper<IPdfObjectWrapper>
-      {
-        public IPdfObjectWrapper Wrap(
+        private class OperandsImpl
+          : Array<IPdfObjectWrapper>
+        {
+            private class ItemWrapper
+              : IWrapper<IPdfObjectWrapper>
+            {
+                public IPdfObjectWrapper Wrap(
+                  PdfDirectObject baseObject
+                  )
+                {
+                    if (baseObject.Resolve() is PdfArray)
+                        return VisibilityExpression.Wrap(baseObject);
+                    else
+                        return Layer.Wrap(baseObject);
+                }
+            }
+
+            private static readonly ItemWrapper Wrapper = new ItemWrapper();
+
+            public OperandsImpl(
+              PdfDirectObject baseObject
+              ) : base(Wrapper, baseObject)
+            { }
+
+            public override int Count
+            {
+                get
+                { return base.Count - 1; }
+            }
+
+            public override int IndexOf(
+              IPdfObjectWrapper item
+              )
+            {
+                int index = base.IndexOf(item);
+                return index > 0 ? index - 1 : -1;
+            }
+
+            public override void Insert(
+              int index,
+              IPdfObjectWrapper item
+              )
+            {
+                if (PdfName.Not.Equals(base[0]) && base.Count >= 2)
+                    throw new ArgumentException("'Not' operator requires only one operand.");
+
+                ValidateItem(item);
+                base.Insert(index + 1, item);
+            }
+
+            public override void RemoveAt(
+              int index
+              )
+            { base.RemoveAt(index + 1); }
+
+            public override IPdfObjectWrapper this[
+              int index
+              ]
+            {
+                get
+                { return base[index + 1]; }
+                set
+                {
+                    ValidateItem(value);
+                    base[index + 1] = value;
+                }
+            }
+
+            private void ValidateItem(
+              IPdfObjectWrapper item
+              )
+            {
+                if (!(item is VisibilityExpression
+                  || item is Layer))
+                    throw new ArgumentException("Operand MUST be either VisibilityExpression or Layer");
+            }
+        }
+        #endregion
+
+        #region static
+        #region interface
+        #region public
+        public static VisibilityExpression Wrap(
           PdfDirectObject baseObject
           )
+        { return baseObject != null ? new VisibilityExpression(baseObject) : null; }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public VisibilityExpression(
+          Document context,
+          OperatorEnum @operator,
+          params IPdfObjectWrapper[] operands
+          ) : base(context, new PdfArray((PdfDirectObject)null))
         {
-          if(baseObject.Resolve() is PdfArray)
-            return VisibilityExpression.Wrap(baseObject);
-          else
-            return Layer.Wrap(baseObject);
+            Operator = @operator;
+            var operands_ = Operands;
+            foreach (var operand in operands)
+            { operands_.Add(operand); }
         }
-      }
 
-      private static readonly ItemWrapper Wrapper = new ItemWrapper();
+        protected VisibilityExpression(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-      public OperandsImpl(
-        PdfDirectObject baseObject
-        ) : base(Wrapper, baseObject)
-      {}
-
-      public override int Count
-      {
-        get
-        {return base.Count - 1;}
-      }
-
-      public override int IndexOf(
-        IPdfObjectWrapper item
-        )
-      {
-        int index = base.IndexOf(item);
-        return index > 0 ? index - 1 : -1;
-      }
-
-      public override void Insert(
-        int index,
-        IPdfObjectWrapper item
-        )
-      {
-        if(PdfName.Not.Equals(base[0]) && base.Count >=2)
-          throw new ArgumentException("'Not' operator requires only one operand.");
-
-        ValidateItem(item);
-        base.Insert(index + 1, item);
-      }
-
-      public override void RemoveAt(
-        int index
-        )
-      {base.RemoveAt(index + 1);}
-
-      public override IPdfObjectWrapper this[
-        int index
-        ]
-      {
-        get
-        {return base[index + 1];}
-        set
+        #region interface
+        #region public
+        public Array<IPdfObjectWrapper> Operands
         {
-          ValidateItem(value);
-          base[index + 1] = value;
+            get
+            { return new OperandsImpl(BaseObject); }
         }
-      }
 
-      private void ValidateItem(
-        IPdfObjectWrapper item
-        )
-      {
-        if(!(item is VisibilityExpression
-          || item is Layer))
-          throw new ArgumentException("Operand MUST be either VisibilityExpression or Layer");
-      }
+        public OperatorEnum Operator
+        {
+            get
+            { return OperatorEnumExtension.Get((PdfName)BaseDataObject[0]); }
+            set
+            {
+                if (value == OperatorEnum.Not && BaseDataObject.Count > 2)
+                    throw new ArgumentException("'Not' operator requires only one operand.");
+
+                BaseDataObject[0] = value.GetName();
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
 
-    #region static
-    #region interface
-    #region public
-    public static VisibilityExpression Wrap(
-      PdfDirectObject baseObject
-      )
-    {return baseObject != null ? new VisibilityExpression(baseObject) : null;}
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public VisibilityExpression(
-      Document context,
-      OperatorEnum @operator,
-      params IPdfObjectWrapper[] operands
-      ) : base(context, new PdfArray((PdfDirectObject)null))
+    internal static class OperatorEnumExtension
     {
-      Operator = @operator;
-      var operands_ = Operands;
-      foreach(var operand in operands)
-      {operands_.Add(operand);}
+        private static readonly BiDictionary<VisibilityExpression.OperatorEnum, PdfName> codes;
+
+        static OperatorEnumExtension()
+        {
+            codes = new BiDictionary<VisibilityExpression.OperatorEnum, PdfName>();
+            codes[VisibilityExpression.OperatorEnum.And] = PdfName.And;
+            codes[VisibilityExpression.OperatorEnum.Not] = PdfName.Not;
+            codes[VisibilityExpression.OperatorEnum.Or] = PdfName.Or;
+        }
+
+        public static VisibilityExpression.OperatorEnum Get(
+          PdfName name
+          )
+        {
+            if (name == null)
+                throw new ArgumentNullException();
+
+            VisibilityExpression.OperatorEnum? @operator = codes.GetKey(name);
+            if (!@operator.HasValue)
+                throw new NotSupportedException("Operator unknown: " + name);
+
+            return @operator.Value;
+        }
+
+        public static PdfName GetName(
+          this VisibilityExpression.OperatorEnum @operator
+          )
+        { return codes[@operator]; }
     }
-
-    protected VisibilityExpression(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public Array<IPdfObjectWrapper> Operands
-    {
-      get
-      {return new OperandsImpl(BaseObject);}
-    }
-
-    public OperatorEnum Operator
-    {
-      get
-      {return OperatorEnumExtension.Get((PdfName)BaseDataObject[0]);}
-      set
-      {
-        if(value == OperatorEnum.Not && BaseDataObject.Count > 2)
-          throw new ArgumentException("'Not' operator requires only one operand.");
-
-        BaseDataObject[0] = value.GetName();
-      }
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
-
-  internal static class OperatorEnumExtension
-  {
-    private static readonly BiDictionary<VisibilityExpression.OperatorEnum,PdfName> codes;
-
-    static OperatorEnumExtension()
-    {
-      codes = new BiDictionary<VisibilityExpression.OperatorEnum,PdfName>();
-      codes[VisibilityExpression.OperatorEnum.And] = PdfName.And;
-      codes[VisibilityExpression.OperatorEnum.Not] = PdfName.Not;
-      codes[VisibilityExpression.OperatorEnum.Or] = PdfName.Or;
-    }
-
-    public static VisibilityExpression.OperatorEnum Get(
-      PdfName name
-      )
-    {
-      if(name == null)
-        throw new ArgumentNullException();
-
-      VisibilityExpression.OperatorEnum? @operator = codes.GetKey(name);
-      if(!@operator.HasValue)
-        throw new NotSupportedException("Operator unknown: " + name);
-
-      return @operator.Value;
-    }
-
-    public static PdfName GetName(
-      this VisibilityExpression.OperatorEnum @operator
-      )
-    {return codes[@operator];}
-  }
 }
 

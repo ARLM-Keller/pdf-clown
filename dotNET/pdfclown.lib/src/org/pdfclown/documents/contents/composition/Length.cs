@@ -27,85 +27,85 @@ using System;
 
 namespace org.pdfclown.documents.contents.composition
 {
-  /**
-    <summary>Distance measure.</summary>
-  */
-  public sealed class Length
-  {
     /**
-      <summary>Measurement mode.</summary>
+      <summary>Distance measure.</summary>
     */
-    public enum UnitModeEnum
+    public sealed class Length
     {
-      /**
-        <summary>Values are expressed as absolute measures.</summary>
-      */
-      Absolute,
-      /**
-        <summary>Values are expressed as ratios relative to a specified base value.</summary>
-      */
-      Relative
+        /**
+          <summary>Measurement mode.</summary>
+        */
+        public enum UnitModeEnum
+        {
+            /**
+              <summary>Values are expressed as absolute measures.</summary>
+            */
+            Absolute,
+            /**
+              <summary>Values are expressed as ratios relative to a specified base value.</summary>
+            */
+            Relative
+        }
+
+        private UnitModeEnum unitMode;
+        private double value;
+
+        public Length(
+          double value,
+          UnitModeEnum unitMode
+          )
+        {
+            this.value = value;
+            this.unitMode = unitMode;
+        }
+
+        /**
+          <summary>Gets the resolved distance value.</summary>
+          <remarks>This method ensures that relative distance values are transformed according
+          to the specified base value.</remarks>
+          <param name="baseValue">Value used to resolve relative values.</param>
+        */
+        public double GetValue(
+          double baseValue
+          )
+        {
+            switch (unitMode)
+            {
+                case UnitModeEnum.Absolute:
+                    return value;
+                case UnitModeEnum.Relative:
+                    return baseValue * value;
+                default:
+                    throw new NotSupportedException(unitMode.GetType().Name + " not supported.");
+            }
+        }
+
+        public override string ToString(
+          )
+        { return value + " (" + unitMode + ")"; }
+
+        /**
+          <summary>Gets/Sets the measurement mode applied to the distance value.</summary>
+        */
+        public UnitModeEnum UnitMode
+        {
+            get
+            { return unitMode; }
+            set
+            { unitMode = value; }
+        }
+
+        /**
+          <summary>Gets/Sets the distance value.</summary>
+          <remarks>According to the applied unit mode, this value can be
+          either an absolute measure or a ratio to be resolved through a base value.</remarks>
+        */
+        public double Value
+        {
+            get
+            { return value; }
+            set
+            { this.value = value; }
+        }
     }
-
-    private UnitModeEnum unitMode;
-    private double value;
-
-    public Length(
-      double value,
-      UnitModeEnum unitMode
-      )
-    {
-      this.value = value;
-      this.unitMode = unitMode;
-    }
-
-    /**
-      <summary>Gets the resolved distance value.</summary>
-      <remarks>This method ensures that relative distance values are transformed according
-      to the specified base value.</remarks>
-      <param name="baseValue">Value used to resolve relative values.</param>
-    */
-    public double GetValue(
-      double baseValue
-      )
-    {
-      switch(unitMode)
-      {
-        case UnitModeEnum.Absolute:
-          return value;
-        case UnitModeEnum.Relative:
-          return baseValue * value;
-        default:
-          throw new NotSupportedException(unitMode.GetType().Name + " not supported.");
-      }
-    }
-
-    public override string ToString(
-      )
-    {return value + " (" + unitMode + ")";}
-
-    /**
-      <summary>Gets/Sets the measurement mode applied to the distance value.</summary>
-    */
-    public UnitModeEnum UnitMode
-    {
-      get
-      {return unitMode;}
-      set
-      {unitMode = value;}
-    }
-
-    /**
-      <summary>Gets/Sets the distance value.</summary>
-      <remarks>According to the applied unit mode, this value can be
-      either an absolute measure or a ratio to be resolved through a base value.</remarks>
-    */
-    public double Value
-    {
-      get
-      {return value;}
-      set
-      {this.value = value;}
-    }
-  }
 }

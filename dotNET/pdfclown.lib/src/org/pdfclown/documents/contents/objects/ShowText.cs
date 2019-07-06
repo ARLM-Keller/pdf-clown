@@ -29,190 +29,180 @@ using org.pdfclown.objects;
 
 using System;
 using System.Collections.Generic;
-using drawing = System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Abstract 'show a text string' operation [PDF:1.6:5.3.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public abstract class ShowText
-    : Operation
-  {
-    #region types
-    public interface IScanner
-    {
-      /**
-        <summary>Notifies the scanner about a text character.</summary>
-        <param name="textChar">Scanned character.</param>
-        <param name="textCharBox">Bounding box of the scanned character.</param>
-      */
-      void ScanChar(
-        char textChar,
-        drawing::RectangleF textCharBox
-        );
-    }
-    #endregion
-
-    #region dynamic
-    #region constructors
-    protected ShowText(
-      string @operator
-      ) : base(@operator)
-    {}
-
-    protected ShowText(
-      string @operator,
-      params PdfDirectObject[] operands
-      ) : base(@operator, operands)
-    {}
-
-    protected ShowText(
-      string @operator,
-      IList<PdfDirectObject> operands
-      ) : base(@operator, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {Scan(state, null);}
-
     /**
-      <summary>Executes scanning on this operation.</summary>
-      <param name="state">Graphics state context.</param>
-      <param name="textScanner">Scanner to be notified about text contents.
-      In case it's null, the operation is applied to the graphics state context.</param>
+      <summary>Abstract 'show a text string' operation [PDF:1.6:5.3.2].</summary>
     */
-    public void Scan(
-      ContentScanner.GraphicsState state,
-      IScanner textScanner
-      )
+    [PDF(VersionEnum.PDF10)]
+    public abstract class ShowText : Operation
     {
-      /*
-        TODO: I really dislike this solution -- it's a temporary hack until the event-driven
-        parsing mechanism is implemented...
-      */
-      /*
-        TODO: support to vertical writing mode.
-      */
-
-      double contextHeight = state.Scanner.ContextSize.Height;
-      Font font = state.Font;
-      double fontSize = state.FontSize;
-      double scaledFactor = Font.GetScalingFactor(fontSize) * state.Scale;
-      bool wordSpaceSupported = !(font is CompositeFont);
-      double wordSpace = wordSpaceSupported ? state.WordSpace * state.Scale : 0;
-      double charSpace = state.CharSpace * state.Scale;
-      Matrix ctm = state.Ctm.Clone();
-      Matrix tm = state.Tm;
-      if(this is ShowTextToNextLine)
-      {
-        ShowTextToNextLine showTextToNextLine = (ShowTextToNextLine)this;
-        double? newWordSpace = showTextToNextLine.WordSpace;
-        if(newWordSpace != null)
+        #region types
+        public interface IScanner
         {
-          if(textScanner == null)
-          {state.WordSpace = newWordSpace.Value;}
-          if(wordSpaceSupported)
-          {wordSpace = newWordSpace.Value * state.Scale;}
+            /**
+              <summary>Notifies the scanner about a text character.</summary>
+              <param name="textChar">Scanned character.</param>
+              <param name="textCharBox">Bounding box of the scanned character.</param>
+            */
+            void ScanChar(
+              char textChar,
+              SKRect textCharBox
+              );
         }
-        double? newCharSpace = showTextToNextLine.CharSpace;
-        if(newCharSpace != null)
-        {
-          if(textScanner == null)
-          {state.CharSpace = newCharSpace.Value;}
-          charSpace = newCharSpace.Value * state.Scale;
-        }
-        tm = state.Tlm.Clone();
-        tm.Multiply(new Matrix(1, 0, 0, 1, 0, (float)-state.Lead));
-      }
-      else
-      {tm = state.Tm.Clone();}
+        #endregion
 
-      foreach(object textElement in Value)
-      {
-        if(textElement is byte[]) // Text string.
-        {
-          string textString = font.Decode((byte[])textElement);
-          foreach(char textChar in textString)
-          {
-            double charWidth = font.GetWidth(textChar) * scaledFactor;
+        #region dynamic
+        #region constructors
+        protected ShowText(string @operator) : base(@operator)
+        { }
 
-            if(textScanner != null)
+        protected ShowText(string @operator, params PdfDirectObject[] operands) : base(@operator, operands)
+        { }
+
+        protected ShowText(string @operator, IList<PdfDirectObject> operands) : base(@operator, operands) { }
+        #endregion
+
+        #region interface
+        #region public
+        public override void Scan(ContentScanner.GraphicsState state) { Scan(state, null); }
+
+        /**
+          <summary>Executes scanning on this operation.</summary>
+          <param name="state">Graphics state context.</param>
+          <param name="textScanner">Scanner to be notified about text contents.
+          In case it's null, the operation is applied to the graphics state context.</param>
+        */
+        public void Scan(ContentScanner.GraphicsState state, IScanner textScanner)
+        {
+            /*
+              TODO: I really dislike this solution -- it's a temporary hack until the event-driven
+              parsing mechanism is implemented...
+            */
+            /*
+              TODO: support to vertical writing mode.
+            */
+
+            double contextHeight = state.Scanner.ContextSize.Height;
+            Font font = state.Font;
+            double fontSize = state.FontSize;
+            double scaledFactor = Font.GetScalingFactor(fontSize) * state.Scale;
+            bool wordSpaceSupported = !(font is CompositeFont);
+            double wordSpace = wordSpaceSupported ? state.WordSpace * state.Scale : 0;
+            double charSpace = state.CharSpace * state.Scale;
+            SKMatrix ctm = state.Ctm;
+            SKMatrix tm = state.Tm;
+            if (this is ShowTextToNextLine showTextToNextLine)
             {
-              /*
-                NOTE: The text rendering matrix is recomputed before each glyph is painted
-                during a text-showing operation.
-              */
-              Matrix trm = ctm.Clone(); trm.Multiply(tm);
-              double charHeight = font.GetHeight(textChar,fontSize);
-              drawing::RectangleF charBox = new drawing::RectangleF(
-                trm.Elements[4],
-                (float)(contextHeight - trm.Elements[5] - font.GetAscent(fontSize) * trm.Elements[3]),
-                (float)charWidth * trm.Elements[0],
-                (float)charHeight * trm.Elements[3]
-                );
-              textScanner.ScanChar(textChar,charBox);
+                double? newWordSpace = showTextToNextLine.WordSpace;
+                if (newWordSpace != null)
+                {
+                    if (textScanner == null)
+                    { state.WordSpace = newWordSpace.Value; }
+                    if (wordSpaceSupported)
+                    { wordSpace = newWordSpace.Value * state.Scale; }
+                }
+                double? newCharSpace = showTextToNextLine.CharSpace;
+                if (newCharSpace != null)
+                {
+                    if (textScanner == null)
+                    { state.CharSpace = newCharSpace.Value; }
+                    charSpace = newCharSpace.Value * state.Scale;
+                }
+                tm = state.Tlm;
+                SKMatrix.PreConcat(ref tm, new SKMatrix { Values = new float[] { 1, 0, 0, 0, 1, (float)-state.Lead, 0, 0, 1 } });
+            }
+            else
+            { tm = state.Tm; }
+
+            foreach (object textElement in Value)
+            {
+                if (textElement is byte[] byteElement) // Text string.
+                {
+                    string textString = font.Decode(byteElement);
+                    foreach (char textChar in textString)
+                    {
+                        double charWidth = font.GetWidth(textChar) * scaledFactor;
+
+                        if (textScanner != null)
+                        {
+                            /*
+                              NOTE: The text rendering matrix is recomputed before each glyph is painted
+                              during a text-showing operation.
+                            */
+                            SKMatrix trm = ctm;
+                            SKMatrix.PreConcat(ref trm, tm);
+                            double charHeight = font.GetHeight(textChar, fontSize);
+                            SKRect charBox = SKRect.Create(
+                              trm.TransX,
+                              (float)(contextHeight - trm.TransY - font.GetAscent(fontSize) * trm.ScaleY),
+                              (float)charWidth * trm.ScaleX,
+                              (float)charHeight * trm.ScaleY
+                              );
+                            textScanner.ScanChar(textChar, charBox);
+                        }
+
+                        if (state.Scanner.RenderContext != null)
+                        {
+
+                        }
+
+                        /*
+                          NOTE: After the glyph is painted, the text matrix is updated
+                          according to the glyph displacement and any applicable spacing parameter.
+                        */
+                        SKMatrix.PreConcat(ref tm, SKMatrix.MakeTranslation((float)(charWidth + charSpace + (textChar == ' ' ? wordSpace : 0)), 0));
+                    }
+                }
+                else // Text position adjustment.
+                {
+                    SKMatrix.PreConcat(ref tm, SKMatrix.MakeTranslation((float)(-Convert.ToSingle(textElement) * scaledFactor), 0));
+                }
             }
 
-            /*
-              NOTE: After the glyph is painted, the text matrix is updated
-              according to the glyph displacement and any applicable spacing parameter.
-            */
-            tm.Translate((float)(charWidth + charSpace + (textChar == ' ' ? wordSpace : 0)), 0);
-          }
+            if (textScanner == null)
+            {
+                state.Tm = tm;
+
+                if (this is ShowTextToNextLine)
+                { state.Tlm = tm; }
+            }
         }
-        else // Text position adjustment.
-        {tm.Translate((float)(-Convert.ToSingle(textElement) * scaledFactor), 0);}
-      }
 
-      if(textScanner == null)
-      {
-        state.Tm = tm;
+        /**
+          <summary>Gets/Sets the encoded text.</summary>
+          <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
+          to the decode method of the corresponding font.</remarks>
+        */
+        public abstract byte[] Text
+        {
+            get;
+            set;
+        }
 
-        if(this is ShowTextToNextLine)
-        {state.Tlm = tm.Clone();}
-      }
+        /**
+          <summary>Gets/Sets the encoded text elements along with their adjustments.</summary>
+          <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
+          to the decode method of the corresponding font.</remarks>
+          <returns>Each element can be either a byte array or a number:
+            <list type="bullet">
+              <item>if it's a byte array (encoded text), the operator shows text glyphs;</item>
+              <item>if it's a number (glyph adjustment), the operator inversely adjusts the next glyph position
+              by that amount (that is: a positive value reduces the distance between consecutive glyphs).</item>
+            </list>
+          </returns>
+        */
+        public virtual IList<object> Value
+        {
+            get
+            { return new List<object>() { Text }; }
+            set
+            { Text = (byte[])value[0]; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    /**
-      <summary>Gets/Sets the encoded text.</summary>
-      <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
-      to the decode method of the corresponding font.</remarks>
-    */
-    public abstract byte[] Text
-    {
-      get;
-      set;
-    }
-
-    /**
-      <summary>Gets/Sets the encoded text elements along with their adjustments.</summary>
-      <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
-      to the decode method of the corresponding font.</remarks>
-      <returns>Each element can be either a byte array or a number:
-        <list type="bullet">
-          <item>if it's a byte array (encoded text), the operator shows text glyphs;</item>
-          <item>if it's a number (glyph adjustment), the operator inversely adjusts the next glyph position
-          by that amount (that is: a positive value reduces the distance between consecutive glyphs).</item>
-        </list>
-      </returns>
-    */
-    public virtual IList<object> Value
-    {
-      get
-      {return new List<object>(){Text};}
-      set
-      {Text = (byte[])value[0];}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -31,75 +31,67 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Paint the specified XObject' operation [PDF:1.6:4.7].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class PaintXObject
-    : Operation,
-      IResourceReference<xObjects::XObject>
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "Do";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public PaintXObject(
-      PdfName name
-      ) : base(OperatorKeyword,name)
-    {}
-
-    public PaintXObject(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword,operands)
-    {}
-    #endregion
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the scanner for the contents of the painted external object.</summary>
-      <param name="context">Scanning context.</param>
+      <summary>'Paint the specified XObject' operation [PDF:1.6:4.7].</summary>
     */
-    public ContentScanner GetScanner(
-      ContentScanner context
-      )
+    [PDF(VersionEnum.PDF10)]
+    public sealed class PaintXObject
+      : Operation,
+        IResourceReference<xObjects::XObject>
     {
-      xObjects::XObject xObject = GetXObject(context.ContentContext);
-      return xObject is xObjects::FormXObject
-        ? new ContentScanner((xObjects::FormXObject)xObject, context)
-        : null;
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "Do";
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public PaintXObject(
+          PdfName name
+          ) : base(OperatorKeyword, name)
+        { }
+
+        public PaintXObject(
+          IList<PdfDirectObject> operands
+          ) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the scanner for the contents of the painted external object.</summary>
+          <param name="context">Scanning context.</param>
+        */
+        public ContentScanner GetScanner(ContentScanner context)
+        {
+            xObjects::XObject xObject = GetXObject(context.ContentContext);
+            return xObject is xObjects::FormXObject
+              ? new ContentScanner((xObjects::FormXObject)xObject, context)
+              : null;
+        }
+
+        /**
+          <summary>Gets the <see cref="xObjects::XObject">external object</see> resource to be painted.
+          </summary>
+          <param name="context">Content context.</param>
+        */
+        public xObjects::XObject GetXObject(IContentContext context)
+        { return GetResource(context); }
+
+        #region IResourceReference
+        public xObjects::XObject GetResource(IContentContext context)
+        { return context.Resources.XObjects[Name]; }
+
+        public PdfName Name
+        {
+            get { return (PdfName)operands[0]; }
+            set { operands[0] = value; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    /**
-      <summary>Gets the <see cref="xObjects::XObject">external object</see> resource to be painted.
-      </summary>
-      <param name="context">Content context.</param>
-    */
-    public xObjects::XObject GetXObject(
-      IContentContext context
-      )
-    {return GetResource(context);}
-
-    #region IResourceReference
-    public xObjects::XObject GetResource(
-      IContentContext context
-      )
-    {return context.Resources.XObjects[Name];}
-
-    public PdfName Name
-    {
-      get
-      {return (PdfName)operands[0];}
-      set
-      {operands[0] = value;}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

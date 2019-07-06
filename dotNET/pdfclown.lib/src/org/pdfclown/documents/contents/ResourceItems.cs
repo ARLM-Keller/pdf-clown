@@ -33,166 +33,127 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Collection of a specific resource type.</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public abstract class ResourceItems<TValue>
-    : PdfObjectWrapper<PdfDictionary>,
-      IDictionary<PdfName,TValue>
-    where TValue : PdfObjectWrapper
-  {
-    #region dynamic
-    #region constructors
-    protected ResourceItems(
-      Document context
-      ) : base(context, new PdfDictionary())
-    {}
-
-    internal ResourceItems(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      Gets the key associated to a given value.
+      <summary>Collection of a specific resource type.</summary>
     */
-    public PdfName GetKey(
-      TValue value
-      )
-    {return BaseDataObject.GetKey(value.BaseObject);}
-
-    #region IDictionary
-    public void Add(
-      PdfName key,
-      TValue value
-      )
-    {BaseDataObject.Add(key,value.BaseObject);}
-
-    public bool ContainsKey(
-      PdfName key
-      )
-    {return BaseDataObject.ContainsKey(key);}
-
-    public ICollection<PdfName> Keys
+    [PDF(VersionEnum.PDF10)]
+    public abstract class ResourceItems<TValue> : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, TValue>
+        where TValue : PdfObjectWrapper
     {
-      get
-      {return BaseDataObject.Keys;}
-    }
+        #region dynamic
+        #region constructors
+        protected ResourceItems(Document context) : base(context, new PdfDictionary())
+        { }
 
-    public bool Remove(
-      PdfName key
-      )
-    {return BaseDataObject.Remove(key);}
+        internal ResourceItems(PdfDirectObject baseObject) : base(baseObject)
+        { }
+        #endregion
 
-    public TValue this[
-      PdfName key
-      ]
-    {
-      get
-      {return Wrap(BaseDataObject[key]);}
-      set
-      {BaseDataObject[key] = value.BaseObject;}
-    }
+        #region interface
+        #region public
+        /**
+          Gets the key associated to a given value.
+        */
+        public PdfName GetKey(TValue value)
+        { return BaseDataObject.GetKey(value.BaseObject); }
 
-    public bool TryGetValue(
-      PdfName key,
-      out TValue value
-      )
-    {return ((value = this[key]) != null || ContainsKey(key));}
+        #region IDictionary
+        public void Add(PdfName key, TValue value)
+        { BaseDataObject.Add(key, value.BaseObject); }
 
-    public ICollection<TValue> Values
-    {
-      get
-      {
-        ICollection<TValue> values;
+        public bool ContainsKey(PdfName key)
+        { return BaseDataObject.ContainsKey(key); }
+
+        public ICollection<PdfName> Keys
         {
-          // Get the low-level objects!
-          ICollection<PdfDirectObject> valueObjects = BaseDataObject.Values;
-          // Populating the high-level collection...
-          values = new List<TValue>(valueObjects.Count);
-          foreach(PdfDirectObject valueObject in valueObjects)
-          {values.Add(Wrap(valueObject));}
+            get { return BaseDataObject.Keys; }
         }
-        return values;
-      }
+
+        public bool Remove(PdfName key)
+        { return BaseDataObject.Remove(key); }
+
+        public TValue this[PdfName key]
+        {
+            get { return Wrap(BaseDataObject[key]); }
+            set { BaseDataObject[key] = value.BaseObject; }
+        }
+
+        public bool TryGetValue(PdfName key, out TValue value)
+        { return ((value = this[key]) != null || ContainsKey(key)); }
+
+        public ICollection<TValue> Values
+        {
+            get
+            {
+                ICollection<TValue> values;
+                {
+                    // Get the low-level objects!
+                    ICollection<PdfDirectObject> valueObjects = BaseDataObject.Values;
+                    // Populating the high-level collection...
+                    values = new List<TValue>(valueObjects.Count);
+                    foreach (PdfDirectObject valueObject in valueObjects)
+                    { values.Add(Wrap(valueObject)); }
+                }
+                return values;
+            }
+        }
+
+        #region ICollection
+        void ICollection<KeyValuePair<PdfName, TValue>>.Add(KeyValuePair<PdfName, TValue> entry)
+        { Add(entry.Key, entry.Value); }
+
+        public void Clear()
+        { BaseDataObject.Clear(); }
+
+        bool ICollection<KeyValuePair<PdfName, TValue>>.Contains(KeyValuePair<PdfName, TValue> entry)
+        { return entry.Value.BaseObject.Equals(BaseDataObject[entry.Key]); }
+
+        public void CopyTo(KeyValuePair<PdfName, TValue>[] entries, int index)
+        { throw new NotImplementedException(); }
+
+        public int Count
+        {
+            get { return BaseDataObject.Count; }
+        }
+
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
+
+        public bool Remove(KeyValuePair<PdfName, TValue> entry)
+        {
+            return BaseDataObject.Remove(
+              new KeyValuePair<PdfName, PdfDirectObject>(
+                entry.Key,
+                entry.Value.BaseObject
+                )
+              );
+        }
+
+        #region IEnumerable<KeyValuePair<PdfName,TValue>>
+        IEnumerator<KeyValuePair<PdfName, TValue>> IEnumerable<KeyValuePair<PdfName, TValue>>.GetEnumerator()
+        {
+            foreach (PdfName key in Keys)
+            { yield return new KeyValuePair<PdfName, TValue>(key, this[key]); }
+        }
+
+        #region IEnumerable
+        IEnumerator IEnumerable.GetEnumerator()
+        { return ((IEnumerable<KeyValuePair<PdfName, TValue>>)this).GetEnumerator(); }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
+        #endregion
+
+        #region protected
+        /**
+          <summary>Wraps a base object within its corresponding high-level representation.</summary>
+        */
+        protected abstract TValue Wrap(PdfDirectObject baseObject);
+        #endregion
+        #endregion
+        #endregion
     }
-
-    #region ICollection
-    void ICollection<KeyValuePair<PdfName,TValue>>.Add(
-      KeyValuePair<PdfName,TValue> entry
-      )
-    {Add(entry.Key,entry.Value);}
-
-    public void Clear(
-      )
-    {BaseDataObject.Clear();}
-
-    bool ICollection<KeyValuePair<PdfName,TValue>>.Contains(
-      KeyValuePair<PdfName,TValue> entry
-      )
-    {return entry.Value.BaseObject.Equals(BaseDataObject[entry.Key]);}
-
-    public void CopyTo(
-      KeyValuePair<PdfName,TValue>[] entries,
-      int index
-      )
-    {throw new NotImplementedException();}
-
-    public int Count
-    {
-      get
-      {return BaseDataObject.Count;}
-    }
-
-    public bool IsReadOnly
-    {
-      get
-      {return false;}
-    }
-
-    public bool Remove(
-      KeyValuePair<PdfName,TValue> entry
-      )
-    {
-      return BaseDataObject.Remove(
-        new KeyValuePair<PdfName,PdfDirectObject>(
-          entry.Key,
-          entry.Value.BaseObject
-          )
-        );
-    }
-
-    #region IEnumerable<KeyValuePair<PdfName,TValue>>
-    IEnumerator<KeyValuePair<PdfName,TValue>> IEnumerable<KeyValuePair<PdfName,TValue>>.GetEnumerator(
-      )
-    {
-      foreach(PdfName key in Keys)
-      {yield return new KeyValuePair<PdfName,TValue>(key,this[key]);}
-    }
-
-    #region IEnumerable
-    IEnumerator IEnumerable.GetEnumerator(
-      )
-    {return ((IEnumerable<KeyValuePair<PdfName,TValue>>)this).GetEnumerator();}
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-
-    #region protected
-    /**
-      <summary>Wraps a base object within its corresponding high-level representation.</summary>
-    */
-    protected abstract TValue Wrap(
-      PdfDirectObject baseObject
-      );
-    #endregion
-    #endregion
-    #endregion
-  }
 }

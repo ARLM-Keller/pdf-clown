@@ -31,143 +31,143 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Abstract content marker [PDF:1.6:10.5].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public abstract class ContentMarker
-    : Operation,
-      IResourceReference<PropertyList>
-  {
-    #region dynamic
-    #region constructors
-    protected ContentMarker(
-      PdfName tag
-      ) : this(tag, null)
-    {}
-
-    protected ContentMarker(
-      PdfName tag,
-      PdfDirectObject properties
-      ) : base(null, tag)
-    {
-      if(properties != null)
-      {
-        operands.Add(properties);
-        @operator = PropertyListOperator;
-      }
-      else
-      {@operator = SimpleOperator;}
-    }
-
-    protected ContentMarker(
-      string @operator,
-      IList<PdfDirectObject> operands
-      ) : base(@operator, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the private information meaningful to the program (application or plugin extension)
-      creating the marked content.</summary>
-      <param name="context">Content context.</param>
+      <summary>Abstract content marker [PDF:1.6:10.5].</summary>
     */
-    public PropertyList GetProperties(
-      IContentContext context
-      )
+    [PDF(VersionEnum.PDF12)]
+    public abstract class ContentMarker
+      : Operation,
+        IResourceReference<PropertyList>
     {
-      object properties = Properties;
-      return properties is PdfName
-        ? context.Resources.PropertyLists[(PdfName)properties]
-        : (PropertyList)properties;
-    }
+        #region dynamic
+        #region constructors
+        protected ContentMarker(
+          PdfName tag
+          ) : this(tag, null)
+        { }
 
-    /**
-      <summary>Gets/Sets the private information meaningful to the program (application or plugin
-      extension) creating the marked content. It can be either an inline <see cref="PropertyList"/>
-      or the <see cref="PdfName">name</see> of an external PropertyList resource.</summary>
-    */
-    public object Properties
-    {
-      get
-      {
-        PdfDirectObject propertiesObject = operands[1];
-        if(propertiesObject == null)
-          return null;
-        else if(propertiesObject is PdfName)
-          return propertiesObject;
-        else if(propertiesObject is PdfDictionary)
-          return PropertyList.Wrap(propertiesObject);
-        else
-          throw new NotSupportedException("Property list type unknown: " + propertiesObject.GetType().Name);
-      }
-      set
-      {
-        if(value == null)
+        protected ContentMarker(
+          PdfName tag,
+          PdfDirectObject properties
+          ) : base(null, tag)
         {
-          @operator = SimpleOperator;
-          if(operands.Count > 1)
-          {operands.RemoveAt(1);}
+            if (properties != null)
+            {
+                operands.Add(properties);
+                @operator = PropertyListOperator;
+            }
+            else
+            { @operator = SimpleOperator; }
         }
-        else
+
+        protected ContentMarker(
+          string @operator,
+          IList<PdfDirectObject> operands
+          ) : base(@operator, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the private information meaningful to the program (application or plugin extension)
+          creating the marked content.</summary>
+          <param name="context">Content context.</param>
+        */
+        public PropertyList GetProperties(
+          IContentContext context
+          )
         {
-          PdfDirectObject operand;
-          if(value is PdfName)
-          {operand = (PdfName)value;}
-          else if(value is PropertyList)
-          {operand = ((PropertyList)value).BaseDataObject;}
-          else
-            throw new ArgumentException("value MUST be a PdfName or a PropertyList.");
-
-          @operator = PropertyListOperator;
-          if(operands.Count > 1)
-          {operands[1] = operand;}
-          else
-          {operands.Add(operand);}
+            object properties = Properties;
+            return properties is PdfName
+              ? context.Resources.PropertyLists[(PdfName)properties]
+              : (PropertyList)properties;
         }
-      }
+
+        /**
+          <summary>Gets/Sets the private information meaningful to the program (application or plugin
+          extension) creating the marked content. It can be either an inline <see cref="PropertyList"/>
+          or the <see cref="PdfName">name</see> of an external PropertyList resource.</summary>
+        */
+        public object Properties
+        {
+            get
+            {
+                PdfDirectObject propertiesObject = operands[1];
+                if (propertiesObject == null)
+                    return null;
+                else if (propertiesObject is PdfName)
+                    return propertiesObject;
+                else if (propertiesObject is PdfDictionary)
+                    return PropertyList.Wrap(propertiesObject);
+                else
+                    throw new NotSupportedException("Property list type unknown: " + propertiesObject.GetType().Name);
+            }
+            set
+            {
+                if (value == null)
+                {
+                    @operator = SimpleOperator;
+                    if (operands.Count > 1)
+                    { operands.RemoveAt(1); }
+                }
+                else
+                {
+                    PdfDirectObject operand;
+                    if (value is PdfName)
+                    { operand = (PdfName)value; }
+                    else if (value is PropertyList)
+                    { operand = ((PropertyList)value).BaseDataObject; }
+                    else
+                        throw new ArgumentException("value MUST be a PdfName or a PropertyList.");
+
+                    @operator = PropertyListOperator;
+                    if (operands.Count > 1)
+                    { operands[1] = operand; }
+                    else
+                    { operands.Add(operand); }
+                }
+            }
+        }
+
+        /**
+          <summary>Gets/Sets the marker indicating the role or significance of the marked content.</summary>
+        */
+        public PdfName Tag
+        {
+            get
+            { return (PdfName)operands[0]; }
+            set
+            { operands[0] = value; }
+        }
+
+        #region IResourceReference
+        public PropertyList GetResource(
+          IContentContext context
+          )
+        { return GetProperties(context); }
+
+        public PdfName Name
+        {
+            get
+            {
+                object properties = Properties;
+                return (properties is PdfName ? (PdfName)properties : null);
+            }
+            set
+            { Properties = value; }
+        }
+        #endregion
+        #endregion
+
+        #region protected
+        protected abstract string PropertyListOperator
+        { get; }
+
+        protected abstract string SimpleOperator
+        { get; }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    /**
-      <summary>Gets/Sets the marker indicating the role or significance of the marked content.</summary>
-    */
-    public PdfName Tag
-    {
-      get
-      {return (PdfName)operands[0];}
-      set
-      {operands[0] = value;}
-    }
-
-    #region IResourceReference
-    public PropertyList GetResource(
-      IContentContext context
-      )
-    {return GetProperties(context);}
-
-    public PdfName Name
-    {
-      get
-      {
-        object properties = Properties;
-        return (properties is PdfName ? (PdfName)properties : null);
-      }
-      set
-      {Properties = value;}
-    }
-    #endregion
-    #endregion
-
-    #region protected
-    protected abstract string PropertyListOperator
-    {get;}
-
-    protected abstract string SimpleOperator
-    {get;}
-    #endregion
-    #endregion
-    #endregion
-  }
 }

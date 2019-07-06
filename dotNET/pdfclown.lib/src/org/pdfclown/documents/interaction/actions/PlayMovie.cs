@@ -32,57 +32,57 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>'Play a movie' action [PDF:1.6:8.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class PlayMovie
-    : Action
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new action within the given document context.</summary>
+      <summary>'Play a movie' action [PDF:1.6:8.5.3].</summary>
     */
-    public PlayMovie(
-      Document context,
-      Movie movie
-      ) : base(context, PdfName.Movie)
-    {Movie = movie;}
-
-    internal PlayMovie(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the movie to be played.</summary>
-    */
-    public Movie Movie
+    [PDF(VersionEnum.PDF12)]
+    public sealed class PlayMovie
+      : Action
     {
-      get
-      {
-        PdfDirectObject annotationObject = BaseDataObject[PdfName.Annotation];
-        if(annotationObject == null)
-        {
-          annotationObject = BaseDataObject[PdfName.T];
-          throw new NotImplementedException("No by-title movie annotation support currently: we have to implement a hook to the page of the referenced movie to get it from its annotations collection.");
-        }
-        return (Movie)Annotation.Wrap(annotationObject);
-      }
-      set
-      {
-        if(value == null)
-          throw new ArgumentException("Movie MUST be defined.");
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new action within the given document context.</summary>
+        */
+        public PlayMovie(
+          Document context,
+          Movie movie
+          ) : base(context, PdfName.Movie)
+        { Movie = movie; }
 
-        BaseDataObject[PdfName.Annotation] = value.BaseObject;
-      }
+        internal PlayMovie(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the movie to be played.</summary>
+        */
+        public Movie Movie
+        {
+            get
+            {
+                PdfDirectObject annotationObject = BaseDataObject[PdfName.Annotation];
+                if (annotationObject == null)
+                {
+                    annotationObject = BaseDataObject[PdfName.T];
+                    throw new NotImplementedException("No by-title movie annotation support currently: we have to implement a hook to the page of the referenced movie to get it from its annotations collection.");
+                }
+                return (Movie)Annotation.Wrap(annotationObject);
+            }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentException("Movie MUST be defined.");
+
+                BaseDataObject[PdfName.Annotation] = value.BaseObject;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

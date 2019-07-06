@@ -27,76 +27,76 @@ using System;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>PDF number interface.</summary>
-  */
-  public interface IPdfNumber
-    : IPdfSimpleObject<double>
-  {
     /**
-      <summary>Gets the double-precision floating-point representation of the value.</summary>
+      <summary>PDF number interface.</summary>
     */
-    double DoubleValue
+    public interface IPdfNumber
+      : IPdfSimpleObject<double>
     {
-      get;
+        /**
+          <summary>Gets the double-precision floating-point representation of the value.</summary>
+        */
+        double DoubleValue
+        {
+            get;
+        }
+
+        /**
+          <summary>Gets the floating-point representation of the value.</summary>
+        */
+        float FloatValue
+        {
+            get;
+        }
+
+        /**
+          <summary>Gets the integer representation of the value.</summary>
+        */
+        int IntValue
+        {
+            get;
+        }
     }
 
-    /**
-      <summary>Gets the floating-point representation of the value.</summary>
-    */
-    float FloatValue
+    internal class PdfNumber
     {
-      get;
+        public static int Compare(
+          object obj1,
+          object obj2
+          )
+        {
+            if (!(obj1 is IPdfNumber))
+                throw new ArgumentException("obj1 MUST implement IPdfNumber");
+            if (!(obj2 is IPdfNumber))
+                throw new ArgumentException("obj2 MUST implement IPdfNumber");
+
+            return ((IPdfNumber)obj1).RawValue.CompareTo(((IPdfNumber)obj2).RawValue);
+        }
+
+        public static bool Equal(
+          object obj1,
+          object obj2
+          )
+        {
+            if (!(obj1 is IPdfNumber))
+                throw new ArgumentException("obj1 MUST implement IPdfNumber");
+            if (!(obj2 is IPdfNumber))
+                throw new ArgumentException("obj2 MUST implement IPdfNumber");
+
+            return ((IPdfNumber)obj1).RawValue.Equals(((IPdfNumber)obj2).RawValue);
+        }
+
+        public static int GetHashCode(
+          object obj
+          )
+        {
+            if (!(obj is IPdfNumber))
+                throw new ArgumentException("obj MUST implement IPdfNumber");
+
+            double value = ((IPdfNumber)obj).RawValue;
+            int intValue = (int)value;
+
+            return value == intValue ? intValue.GetHashCode() : value.GetHashCode();
+        }
     }
-
-    /**
-      <summary>Gets the integer representation of the value.</summary>
-    */
-    int IntValue
-    {
-      get;
-    }
-  }
-
-  internal class PdfNumber
-  {
-    public static int Compare(
-      object obj1,
-      object obj2
-      )
-    {
-      if(!(obj1 is IPdfNumber))
-        throw new ArgumentException("obj1 MUST implement IPdfNumber");
-      if(!(obj2 is IPdfNumber))
-        throw new ArgumentException("obj2 MUST implement IPdfNumber");
-
-      return ((IPdfNumber)obj1).RawValue.CompareTo(((IPdfNumber)obj2).RawValue);
-    }
-
-    public static bool Equal(
-      object obj1,
-      object obj2
-      )
-    {
-      if(!(obj1 is IPdfNumber))
-        throw new ArgumentException("obj1 MUST implement IPdfNumber");
-      if(!(obj2 is IPdfNumber))
-        throw new ArgumentException("obj2 MUST implement IPdfNumber");
-
-      return ((IPdfNumber)obj1).RawValue.Equals(((IPdfNumber)obj2).RawValue);
-    }
-
-    public static int GetHashCode(
-      object obj
-      )
-    {
-      if(!(obj is IPdfNumber))
-        throw new ArgumentException("obj MUST implement IPdfNumber");
-
-      double value = ((IPdfNumber)obj).RawValue;
-      int intValue = (int)value;
-
-      return value == intValue ? intValue.GetHashCode() : value.GetHashCode();
-    }
-  }
 }

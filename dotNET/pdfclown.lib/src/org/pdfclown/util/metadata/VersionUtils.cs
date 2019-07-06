@@ -29,55 +29,55 @@ using System.Text;
 
 namespace org.pdfclown.util.metadata
 {
-  /**
-    <summary>Version utility.</summary>
-  */
-  public static class VersionUtils
-  {
-    #region static
-    #region interface
-    #region public
-    public static int CompareTo(
-      IVersion version1,
-      IVersion version2
-      )
+    /**
+      <summary>Version utility.</summary>
+    */
+    public static class VersionUtils
     {
-      int comparison = 0;
-      {
-        IList<int> version1Numbers = version1.Numbers;
-        IList<int> version2Numbers = version2.Numbers;
-        for(
-          int index = 0,
-            length = Math.Min(version1Numbers.Count, version2Numbers.Count);
-          index < length;
-          index++
+        #region static
+        #region interface
+        #region public
+        public static int CompareTo(
+          IVersion version1,
+          IVersion version2
           )
         {
-          comparison = version1Numbers[index] - version2Numbers[index];
-          if(comparison != 0)
-            break;
+            int comparison = 0;
+            {
+                IList<int> version1Numbers = version1.Numbers;
+                IList<int> version2Numbers = version2.Numbers;
+                for (
+                  int index = 0,
+                    length = Math.Min(version1Numbers.Count, version2Numbers.Count);
+                  index < length;
+                  index++
+                  )
+                {
+                    comparison = version1Numbers[index] - version2Numbers[index];
+                    if (comparison != 0)
+                        break;
+                }
+                if (comparison == 0)
+                { comparison = version1Numbers.Count - version2Numbers.Count; }
+            }
+            return Math.Sign(comparison);
         }
-        if(comparison == 0)
-        {comparison = version1Numbers.Count - version2Numbers.Count;}
-      }
-      return Math.Sign(comparison);
-    }
 
-    public static string ToString(
-      IVersion version
-      )
-    {
-      StringBuilder versionStringBuilder = new StringBuilder();
-      foreach(int number in version.Numbers)
-      {
-        if(versionStringBuilder.Length > 0)
-        {versionStringBuilder.Append('.');}
-        versionStringBuilder.Append(number);
-      }
-      return versionStringBuilder.ToString();
+        public static string ToString(
+          IVersion version
+          )
+        {
+            StringBuilder versionStringBuilder = new StringBuilder();
+            foreach (int number in version.Numbers)
+            {
+                if (versionStringBuilder.Length > 0)
+                { versionStringBuilder.Append('.'); }
+                versionStringBuilder.Append(number);
+            }
+            return versionStringBuilder.ToString();
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

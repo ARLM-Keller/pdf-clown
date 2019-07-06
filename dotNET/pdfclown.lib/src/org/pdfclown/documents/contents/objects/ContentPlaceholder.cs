@@ -28,26 +28,26 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Anonymous container.</summary>
-    <remarks>Having no side effects either running or persisting, this container is useful to group
-    content objects without perturbing the content stream's graphics state.</remarks>
-  */
-  public class ContentPlaceholder
-    : ContainerObject
-  {
-    #region dynamic
-    #region constructors
-    public ContentPlaceholder(
-      )
-    {}
+    /**
+      <summary>Anonymous container.</summary>
+      <remarks>Having no side effects either running or persisting, this container is useful to group
+      content objects without perturbing the content stream's graphics state.</remarks>
+    */
+    public class ContentPlaceholder
+      : ContainerObject
+    {
+        #region dynamic
+        #region constructors
+        public ContentPlaceholder(
+          )
+        { }
 
-    public ContentPlaceholder(
-      IList<ContentObject> objects
-      ) : base(objects)
-    {}
-    #endregion
-    #endregion
-  }
+        public ContentPlaceholder(
+          IList<ContentObject> objects
+          ) : base(objects)
+        { }
+        #endregion
+        #endregion
+    }
 }
 

@@ -27,96 +27,74 @@ using org.pdfclown.bytes;
 using org.pdfclown.objects;
 
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Append a straight line segment from the current point' operation [PDF:1.6:4.4.1].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class DrawLine
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "l";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
     /**
-      <param name="point">Final endpoint.</param>
+      <summary>'Append a straight line segment from the current point' operation [PDF:1.6:4.4.1].</summary>
     */
-    public DrawLine(
-      PointF point
-      ) : this(
-        point.X,
-        point.Y
-        )
-    {}
-
-    /**
-      <param name="pointX">Final endpoint X.</param>
-      <param name="pointY">Final endpoint Y.</param>
-    */
-    public DrawLine(
-      double pointX,
-      double pointY
-      ) : base(
-        OperatorKeyword,
-        new List<PdfDirectObject>(
-          new PdfDirectObject[]
-          {
-            PdfReal.Get(pointX),
-            PdfReal.Get(pointY)
-          }
-          )
-        )
-    {}
-
-    public DrawLine(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the final endpoint.</summary>
-    */
-    public PointF Point
+    [PDF(VersionEnum.PDF10)]
+    public sealed class DrawLine : Operation
     {
-      get
-      {
-        return new PointF(
-          ((IPdfNumber)operands[0]).FloatValue,
-          ((IPdfNumber)operands[1]).FloatValue
-          );
-      }
-      set
-      {
-        operands[0] = PdfReal.Get(value.X);
-        operands[1] = PdfReal.Get(value.Y);
-      }
-    }
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "l";
+        #endregion
+        #endregion
 
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {
-      GraphicsPath pathObject = state.Scanner.RenderObject;
-      if(pathObject != null)
-      {
-        PointF point = Point;
-        pathObject.AddLine(pathObject.GetLastPoint(), point);
-      }
+        #region dynamic
+        #region constructors
+        /**
+          <param name="point">Final endpoint.</param>
+        */
+        public DrawLine(SKPoint point) : this(point.X, point.Y)
+        { }
+
+        /**
+          <param name="pointX">Final endpoint X.</param>
+          <param name="pointY">Final endpoint Y.</param>
+        */
+        public DrawLine(double pointX, double pointY)
+            : base(OperatorKeyword, new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(pointX), PdfReal.Get(pointY) }))
+        { }
+
+        public DrawLine(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the final endpoint.</summary>
+        */
+        public SKPoint Point
+        {
+            get
+            {
+                return new SKPoint(
+                  ((IPdfNumber)operands[0]).FloatValue,
+                  ((IPdfNumber)operands[1]).FloatValue
+                  );
+            }
+            set
+            {
+                operands[0] = PdfReal.Get(value.X);
+                operands[1] = PdfReal.Get(value.Y);
+            }
+        }
+
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            var pathObject = state.Scanner.RenderObject;
+            if (pathObject != null)
+            {
+                SKPoint point = Point;
+                pathObject.RLineTo(Point);
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

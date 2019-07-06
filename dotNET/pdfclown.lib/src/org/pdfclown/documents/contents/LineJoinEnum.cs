@@ -24,48 +24,48 @@
 */
 
 using System;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Shape to be used at the corners of stroked paths
-    [PDF:1.6:4.3.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public enum LineJoinEnum
-  {
     /**
-      <summary>Sharp line join.</summary>
+      <summary>Shape to be used at the corners of stroked paths
+      [PDF:1.6:4.3.2].</summary>
     */
-    Miter = 0,
-    /**
-      <summary>Rounded line join.</summary>
-    */
-    Round = 1,
-    /**
-      <summary>Squared-off line join.</summary>
-    */
-    Bevel = 2
-  };
-
-  internal static class LineJoinEnumExtension
-  {
-    public static LineJoin ToGdi(
-      this LineJoinEnum lineJoin
-      )
+    [PDF(VersionEnum.PDF10)]
+    public enum LineJoinEnum
     {
-      switch(lineJoin)
-      {
-        case LineJoinEnum.Bevel:
-          return LineJoin.Bevel;
-        case LineJoinEnum.Miter:
-          return LineJoin.Miter;
-        case LineJoinEnum.Round:
-          return LineJoin.Round;
-        default:
-          throw new NotSupportedException(lineJoin + " convertion not supported.");
-      }
+        /**
+          <summary>Sharp line join.</summary>
+        */
+        Miter = 0,
+        /**
+          <summary>Rounded line join.</summary>
+        */
+        Round = 1,
+        /**
+          <summary>Squared-off line join.</summary>
+        */
+        Bevel = 2
+    };
+
+    internal static class LineJoinEnumExtension
+    {
+        public static SKStrokeJoin ToSkia(
+          this LineJoinEnum lineJoin
+          )
+        {
+            switch (lineJoin)
+            {
+                case LineJoinEnum.Bevel:
+                    return SKStrokeJoin.Bevel;
+                case LineJoinEnum.Miter:
+                    return SKStrokeJoin.Miter;
+                case LineJoinEnum.Round:
+                    return SKStrokeJoin.Round;
+                default:
+                    throw new NotSupportedException(lineJoin + " convertion not supported.");
+            }
+        }
     }
-  }
 }

@@ -36,124 +36,124 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.interaction.forms
 {
-  /**
-    <summary>Choice field [PDF:1.6:8.6.3].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public abstract class ChoiceField
-    : Field
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new choice field within the given document context.</summary>
+      <summary>Choice field [PDF:1.6:8.6.3].</summary>
     */
-    protected ChoiceField(
-      string name,
-      Widget widget
-      ) : base(PdfName.Ch, name, widget)
-    {}
-
-    protected ChoiceField(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public ChoiceItems Items
+    [PDF(VersionEnum.PDF12)]
+    public abstract class ChoiceField
+      : Field
     {
-      get
-      {return new ChoiceItems(BaseDataObject.Get<PdfArray>(PdfName.Opt));}
-      set
-      {BaseDataObject[PdfName.Opt] = value.BaseObject;}
-    }
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new choice field within the given document context.</summary>
+        */
+        protected ChoiceField(
+          string name,
+          Widget widget
+          ) : base(PdfName.Ch, name, widget)
+        { }
 
-    /**
-      <summary>Gets/Sets whether more than one of the field's items may be selected simultaneously.
-      </summary>
-    */
-    public bool MultiSelect
-    {
-      get
-      {return (Flags & FlagsEnum.MultiSelect) == FlagsEnum.MultiSelect;}
-      set
-      {Flags = EnumUtils.Mask(Flags, FlagsEnum.MultiSelect, value);}
-    }
+        protected ChoiceField(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    /**
-      <summary>Gets/Sets whether validation action is triggered as soon as a selection is made,
-      without requiring the user to exit the field.</summary>
-    */
-    public bool ValidatedOnChange
-    {
-      get
-      {return (Flags & FlagsEnum.CommitOnSelChange) == FlagsEnum.CommitOnSelChange;}
-      set
-      {Flags = EnumUtils.Mask(Flags, FlagsEnum.CommitOnSelChange, value);}
-    }
-
-    /**
-      <returns>Either a string (single-selection) or a list of strings (multi-selection).</returns>
-      <seealso cref="MultiSelect"/>
-    */
-    public override object Value
-    {
-      get
-      {
-        PdfDataObject valueObject = PdfObject.Resolve(GetInheritableAttribute(PdfName.V));
-        if(MultiSelect)
+        #region interface
+        #region public
+        public ChoiceItems Items
         {
-          IList<string> values = new List<string>();
-          if(valueObject != null)
-          {
-            if(valueObject is PdfArray)
+            get
+            { return new ChoiceItems(BaseDataObject.Get<PdfArray>(PdfName.Opt)); }
+            set
+            { BaseDataObject[PdfName.Opt] = value.BaseObject; }
+        }
+
+        /**
+          <summary>Gets/Sets whether more than one of the field's items may be selected simultaneously.
+          </summary>
+        */
+        public bool MultiSelect
+        {
+            get
+            { return (Flags & FlagsEnum.MultiSelect) == FlagsEnum.MultiSelect; }
+            set
+            { Flags = EnumUtils.Mask(Flags, FlagsEnum.MultiSelect, value); }
+        }
+
+        /**
+          <summary>Gets/Sets whether validation action is triggered as soon as a selection is made,
+          without requiring the user to exit the field.</summary>
+        */
+        public bool ValidatedOnChange
+        {
+            get
+            { return (Flags & FlagsEnum.CommitOnSelChange) == FlagsEnum.CommitOnSelChange; }
+            set
+            { Flags = EnumUtils.Mask(Flags, FlagsEnum.CommitOnSelChange, value); }
+        }
+
+        /**
+          <returns>Either a string (single-selection) or a list of strings (multi-selection).</returns>
+          <seealso cref="MultiSelect"/>
+        */
+        public override object Value
+        {
+            get
             {
-              foreach(PdfDirectObject valueItemObject in (PdfArray)valueObject)
-              {values.Add(((PdfString)valueItemObject).StringValue);}
+                PdfDataObject valueObject = PdfObject.Resolve(GetInheritableAttribute(PdfName.V));
+                if (MultiSelect)
+                {
+                    IList<string> values = new List<string>();
+                    if (valueObject != null)
+                    {
+                        if (valueObject is PdfArray)
+                        {
+                            foreach (PdfDirectObject valueItemObject in (PdfArray)valueObject)
+                            { values.Add(((PdfString)valueItemObject).StringValue); }
+                        }
+                        else
+                        { values.Add(((PdfString)valueObject).StringValue); }
+                    }
+                    return values;
+                }
+                else
+                    return valueObject != null ? ((PdfString)valueObject).Value : null;
             }
-            else
-            {values.Add(((PdfString)valueObject).StringValue);}
-          }
-          return values;
+            set
+            {
+                if (value is string)
+                { BaseDataObject[PdfName.V] = new PdfTextString((string)value); }
+                else if (value is IList<string>)
+                {
+                    if (!MultiSelect)
+                        throw new ArgumentException("IList<string> value is only allowed when MultiSelect flag is active.");
+
+                    PdfDataObject oldValueObject = BaseDataObject.Resolve(PdfName.V);
+                    PdfArray valuesObject;
+                    if (oldValueObject is PdfArray)
+                    {
+                        valuesObject = (PdfArray)oldValueObject;
+                        valuesObject.Clear();
+                    }
+                    else
+                    { valuesObject = new PdfArray(); }
+
+                    foreach (string valueItem in (IList<string>)value)
+                    { valuesObject.Add(new PdfTextString(valueItem)); }
+
+                    if (valuesObject != oldValueObject)
+                    { BaseDataObject[PdfName.V] = valuesObject; }
+                }
+                else if (value == null)
+                { BaseDataObject[PdfName.V] = null; }
+                else
+                    throw new ArgumentException("Value MUST be either a string or an IList<string>");
+            }
         }
-        else
-          return valueObject != null ? ((PdfString)valueObject).Value : null;
-      }
-      set
-      {
-        if(value is string)
-        {BaseDataObject[PdfName.V] = new PdfTextString((string)value);}
-        else if(value is IList<string>)
-        {
-          if(!MultiSelect)
-            throw new ArgumentException("IList<string> value is only allowed when MultiSelect flag is active.");
-
-          PdfDataObject oldValueObject = BaseDataObject.Resolve(PdfName.V);
-          PdfArray valuesObject;
-          if(oldValueObject is PdfArray)
-          {
-            valuesObject = (PdfArray)oldValueObject;
-            valuesObject.Clear();
-          }
-          else
-          {valuesObject = new PdfArray();}
-
-          foreach(string valueItem in (IList<string>)value)
-          {valuesObject.Add(new PdfTextString(valueItem));}
-
-          if(valuesObject != oldValueObject)
-          {BaseDataObject[PdfName.V] = valuesObject;}
-        }
-        else if(value == null)
-        {BaseDataObject[PdfName.V] = null;}
-        else
-          throw new ArgumentException("Value MUST be either a string or an IList<string>");
-      }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

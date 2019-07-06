@@ -1,4 +1,4 @@
 /**
   <summary>Specialized graphic types.</summary>
 */
-namespace org.pdfclown.documents.contents.entities{}
+namespace org.pdfclown.documents.contents.entities { }

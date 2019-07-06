@@ -30,90 +30,90 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>CIE-based red-green-blue color value [PDF:1.6:4.5.4].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class CalRGBColor
-    : LeveledColor
-  {
-    #region static
-    #region fields
-    public static readonly CalRGBColor Black = new CalRGBColor(0,0,0);
-    public static readonly CalRGBColor White = new CalRGBColor(1,1,1);
+    /**
+      <summary>CIE-based red-green-blue color value [PDF:1.6:4.5.4].</summary>
+    */
+    [PDF(VersionEnum.PDF11)]
+    public sealed class CalRGBColor
+      : LeveledColor
+    {
+        #region static
+        #region fields
+        public static readonly CalRGBColor Black = new CalRGBColor(0, 0, 0);
+        public static readonly CalRGBColor White = new CalRGBColor(1, 1, 1);
 
-    public static readonly CalRGBColor Default = Black;
-    #endregion
-    #endregion
+        public static readonly CalRGBColor Default = Black;
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    public CalRGBColor(
-      double r,
-      double g,
-      double b
-      ) : this(
-        new List<PdfDirectObject>(
-          new PdfDirectObject[]
-          {
+        #region dynamic
+        #region constructors
+        public CalRGBColor(
+          double r,
+          double g,
+          double b
+          ) : this(
+            new List<PdfDirectObject>(
+              new PdfDirectObject[]
+              {
             PdfReal.Get(NormalizeComponent(r)),
             PdfReal.Get(NormalizeComponent(g)),
             PdfReal.Get(NormalizeComponent(b))
-          }
+              }
+              )
+            )
+        { }
+
+        internal CalRGBColor(
+          IList<PdfDirectObject> components
+          ) : base(
+            null, //TODO:colorspace?
+            new PdfArray(components)
+            )
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the blue component.</summary>
+        */
+        public double B
+        {
+            get
+            { return GetComponentValue(2); }
+            set
+            { SetComponentValue(2, value); }
+        }
+
+        public override object Clone(
+          Document context
           )
-        )
-    {}
+        { throw new NotImplementedException(); }
 
-    internal CalRGBColor(
-      IList<PdfDirectObject> components
-      ) : base(
-        null, //TODO:colorspace?
-        new PdfArray(components)
-        )
-    {}
-    #endregion
+        /**
+          <summary>Gets/Sets the green component.</summary>
+        */
+        public double G
+        {
+            get
+            { return GetComponentValue(1); }
+            set
+            { SetComponentValue(1, value); }
+        }
 
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the blue component.</summary>
-    */
-    public double B
-    {
-      get
-      {return GetComponentValue(2);}
-      set
-      {SetComponentValue(2, value);}
+        /**
+          <summary>Gets the red component.</summary>
+        */
+        public double R
+        {
+            get
+            { return GetComponentValue(0); }
+            set
+            { SetComponentValue(0, value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    /**
-      <summary>Gets/Sets the green component.</summary>
-    */
-    public double G
-    {
-      get
-      {return GetComponentValue(1);}
-      set
-      {SetComponentValue(1, value);}
-    }
-
-    /**
-      <summary>Gets the red component.</summary>
-    */
-    public double R
-    {
-      get
-      {return GetComponentValue(0);}
-      set
-      {SetComponentValue(0, value);}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

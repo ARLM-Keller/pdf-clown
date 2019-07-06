@@ -30,48 +30,48 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Set the text rendering mode' operation [PDF:1.6:5.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class SetTextRenderMode
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "Tr";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public SetTextRenderMode(
-      TextRenderModeEnum value
-      ) : base(OperatorKeyword, PdfInteger.Get((int)value))
-    {}
-
-    public SetTextRenderMode(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {state.RenderMode = Value;}
-
-    public TextRenderModeEnum Value
+    /**
+      <summary>'Set the text rendering mode' operation [PDF:1.6:5.2].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class SetTextRenderMode
+      : Operation
     {
-      get
-      {return (TextRenderModeEnum)((IPdfNumber)operands[0]).Value;}
-      set
-      {operands[0] = PdfInteger.Get((int)value);}
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "Tr";
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public SetTextRenderMode(
+          TextRenderModeEnum value
+          ) : base(OperatorKeyword, PdfInteger.Get((int)value))
+        { }
+
+        public SetTextRenderMode(
+          IList<PdfDirectObject> operands
+          ) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override void Scan(
+          ContentScanner.GraphicsState state
+          )
+        { state.RenderMode = Value; }
+
+        public TextRenderModeEnum Value
+        {
+            get
+            { return (TextRenderModeEnum)((IPdfNumber)operands[0]).Value; }
+            set
+            { operands[0] = PdfInteger.Get((int)value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

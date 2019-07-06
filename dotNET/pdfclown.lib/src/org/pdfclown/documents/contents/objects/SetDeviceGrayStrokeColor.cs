@@ -31,44 +31,44 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Set the color to use for stroking operations in device gray color space'
-    operation [PDF:1.6:4.5.7].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class SetDeviceGrayStrokeColor
-    : SetStrokeColor
-  {
-    #region static
-    #region fields
-    public static readonly new string OperatorKeyword = "G";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public SetDeviceGrayStrokeColor(
-      DeviceGrayColor value
-      ) : base(OperatorKeyword, value)
-    {}
-
-    public SetDeviceGrayStrokeColor(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
+    /**
+      <summary>'Set the color to use for stroking operations in device gray color space'
+      operation [PDF:1.6:4.5.7].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class SetDeviceGrayStrokeColor
+      : SetStrokeColor
     {
-      state.StrokeColorSpace = DeviceGrayColorSpace.Default;
-      base.Scan(state);
+        #region static
+        #region fields
+        public static readonly new string OperatorKeyword = "G";
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public SetDeviceGrayStrokeColor(
+          DeviceGrayColor value
+          ) : base(OperatorKeyword, value)
+        { }
+
+        public SetDeviceGrayStrokeColor(
+          IList<PdfDirectObject> operands
+          ) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override void Scan(
+          ContentScanner.GraphicsState state
+          )
+        {
+            state.StrokeColorSpace = DeviceGrayColorSpace.Default;
+            base.Scan(state);
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

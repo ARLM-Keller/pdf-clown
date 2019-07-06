@@ -30,46 +30,40 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Show a text string' operation [PDF:1.6:5.3.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class ShowSimpleText
-    : ShowText
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "Tj";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
     /**
-      <param name="text">Text encoded using current font's encoding.</param>
+      <summary>'Show a text string' operation [PDF:1.6:5.3.2].</summary>
     */
-    public ShowSimpleText(
-      byte[] text
-      ) : base(OperatorKeyword, new PdfByteString(text))
-    {}
-
-    public ShowSimpleText(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override byte[] Text
+    [PDF(VersionEnum.PDF10)]
+    public sealed class ShowSimpleText
+      : ShowText
     {
-      get
-      {return ((PdfString)operands[0]).RawValue;}
-      set
-      {operands[0] = new PdfByteString(value);}
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "Tj";
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        /**
+          <param name="text">Text encoded using current font's encoding.</param>
+        */
+        public ShowSimpleText(byte[] text) : base(OperatorKeyword, new PdfByteString(text))
+        { }
+
+        public ShowSimpleText(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override byte[] Text
+        {
+            get { return ((PdfString)operands[0]).RawValue; }
+            set { operands[0] = new PdfByteString(value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

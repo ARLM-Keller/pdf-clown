@@ -27,44 +27,44 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.util.collections.generic
 {
-  /**
-    <summary>Extension list interface.</summary>
-  */
-  public interface IExtList<T>
-    : IExtCollection<T>
-  {
     /**
-      <summary>Creates a shallow copy of a range of items in the source list.</summary>
-      <param name="index">Lower item index (inclusive) of the copy.</param>
-      <param name="count">Number of items to copy.</param>
-      <returns>Shallow copy of the specified range of items.</returns>
+      <summary>Extension list interface.</summary>
     */
-    IList<T> GetRange(
-      int index,
-      int count
-      );
+    public interface IExtList<T>
+      : IExtCollection<T>
+    {
+        /**
+          <summary>Creates a shallow copy of a range of items in the source list.</summary>
+          <param name="index">Lower item index (inclusive) of the copy.</param>
+          <param name="count">Number of items to copy.</param>
+          <returns>Shallow copy of the specified range of items.</returns>
+        */
+        IList<T> GetRange(
+          int index,
+          int count
+          );
 
-    /**
-      <summary>Creates a shallow copy of a slice of items in the source list.</summary>
-      <param name="fromIndex">Lower item (inclusive) of the copy.</param>
-      <param name="toIndex">Higher item (exclusive) of the copy.</param>
-      <returns>Shallow copy of the specified slice of items.</returns>
-    */
-    IList<T> GetSlice(
-      int fromIndex,
-      int toIndex
-      );
+        /**
+          <summary>Creates a shallow copy of a slice of items in the source list.</summary>
+          <param name="fromIndex">Lower item (inclusive) of the copy.</param>
+          <param name="toIndex">Higher item (exclusive) of the copy.</param>
+          <returns>Shallow copy of the specified slice of items.</returns>
+        */
+        IList<T> GetSlice(
+          int fromIndex,
+          int toIndex
+          );
 
-    /**
-      <summary>Inserts all of the specified-collection's items at the specified position
-      within the list.</summary>
-      <param name="index">Insertion position.</param>
-      <param name="items">Collection of items to insert.</param>
-    */
-    void InsertAll<TVar>(
-      int index,
-      ICollection<TVar> items
-      )
-      where TVar : T;
-  }
+        /**
+          <summary>Inserts all of the specified-collection's items at the specified position
+          within the list.</summary>
+          <param name="index">Insertion position.</param>
+          <param name="items">Collection of items to insert.</param>
+        */
+        void InsertAll<TVar>(
+          int index,
+          ICollection<TVar> items
+          )
+          where TVar : T;
+    }
 }

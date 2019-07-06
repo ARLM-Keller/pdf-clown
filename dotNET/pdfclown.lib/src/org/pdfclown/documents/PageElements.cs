@@ -34,105 +34,105 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Page elements.</summary>
-  */
-  public abstract class PageElements<TItem>
-    : Array<TItem>
-    where TItem : PdfObjectWrapper<PdfDictionary>
-  {
-    #region dynamic
-    #region fields
-    private Page page;
-    #endregion
-
-    #region constructors
-    internal PageElements(
-      PdfDirectObject baseObject,
-      Page page
-      ) : base(baseObject)
-    {this.page = page;}
-
-    internal PageElements(
-      IWrapper<TItem> itemWrapper,
-      PdfDirectObject baseObject,
-      Page page
-    ) : base(itemWrapper, baseObject)
-    {this.page = page;}
-    #endregion
-
-    #region interface
-    #region public
-    public override void Add(
-      TItem @object
-      )
-    {
-      DoAdd(@object);
-      base.Add(@object);
-    }
-
-    public override object Clone(
-      Document context
-      )
-    {throw new NotSupportedException();}
-
-    public override void Insert(
-      int index,
-      TItem @object
-      )
-    {
-      DoAdd(@object);
-      base.Insert(index, @object);
-    }
-
     /**
-      <summary>Gets the page associated to these elements.</summary>
+      <summary>Page elements.</summary>
     */
-    public Page Page
+    public abstract class PageElements<TItem>
+      : Array<TItem>
+      where TItem : PdfObjectWrapper<PdfDictionary>
     {
-      get
-      {return page;}
-    }
+        #region dynamic
+        #region fields
+        private Page page;
+        #endregion
 
-    public override void RemoveAt(
-      int index
-      )
-    {
-      TItem @object = this[index];
-      base.RemoveAt(index);
-      DoRemove(@object);
-    }
+        #region constructors
+        internal PageElements(
+          PdfDirectObject baseObject,
+          Page page
+          ) : base(baseObject)
+        { this.page = page; }
 
-    public override bool Remove(
-      TItem @object
-      )
-    {
-      if(!base.Remove(@object))
-        return false;
+        internal PageElements(
+          IWrapper<TItem> itemWrapper,
+          PdfDirectObject baseObject,
+          Page page
+        ) : base(itemWrapper, baseObject)
+        { this.page = page; }
+        #endregion
 
-      DoRemove((TItem)@object);
-      return true;
-    }
-    #endregion
+        #region interface
+        #region public
+        public override void Add(
+          TItem @object
+          )
+        {
+            DoAdd(@object);
+            base.Add(@object);
+        }
 
-    #region private
-    private void DoAdd(
-      TItem @object
-      )
-    {
-      // Link the element to its page!
-      @object.BaseDataObject[PdfName.P] = page.BaseObject;
-    }
+        public override object Clone(
+          Document context
+          )
+        { throw new NotSupportedException(); }
 
-    private void DoRemove(
-      TItem @object
-      )
-    {
-      // Unlink the element from its page!
-      @object.BaseDataObject.Remove(PdfName.P);
+        public override void Insert(
+          int index,
+          TItem @object
+          )
+        {
+            DoAdd(@object);
+            base.Insert(index, @object);
+        }
+
+        /**
+          <summary>Gets the page associated to these elements.</summary>
+        */
+        public Page Page
+        {
+            get
+            { return page; }
+        }
+
+        public override void RemoveAt(
+          int index
+          )
+        {
+            TItem @object = this[index];
+            base.RemoveAt(index);
+            DoRemove(@object);
+        }
+
+        public override bool Remove(
+          TItem @object
+          )
+        {
+            if (!base.Remove(@object))
+                return false;
+
+            DoRemove((TItem)@object);
+            return true;
+        }
+        #endregion
+
+        #region private
+        private void DoAdd(
+          TItem @object
+          )
+        {
+            // Link the element to its page!
+            @object.BaseDataObject[PdfName.P] = page.BaseObject;
+        }
+
+        private void DoRemove(
+          TItem @object
+          )
+        {
+            // Unlink the element from its page!
+            @object.BaseDataObject.Remove(PdfName.P);
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

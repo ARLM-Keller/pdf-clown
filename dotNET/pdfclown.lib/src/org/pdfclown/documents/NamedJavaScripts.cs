@@ -30,34 +30,34 @@ using System;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Named JavaScript actions [PDF:1.6:3.6.3].</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public sealed class NamedJavaScripts
-    : NameTree<JavaScript>
-  {
-    #region dynamic
-    #region constructors
-    public NamedJavaScripts(
-      Document context
-      ) : base(context)
-    {}
+    /**
+      <summary>Named JavaScript actions [PDF:1.6:3.6.3].</summary>
+    */
+    [PDF(VersionEnum.PDF13)]
+    public sealed class NamedJavaScripts
+      : NameTree<JavaScript>
+    {
+        #region dynamic
+        #region constructors
+        public NamedJavaScripts(
+          Document context
+          ) : base(context)
+        { }
 
-    internal NamedJavaScripts(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal NamedJavaScripts(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #region protected
-    protected override JavaScript WrapValue(
-      PdfDirectObject baseObject
-      )
-    {return (JavaScript)interaction.actions.Action.Wrap(baseObject);}
-    #endregion
-    #endregion
-    #endregion
-  }
+        #region interface
+        #region protected
+        protected override JavaScript WrapValue(
+          PdfDirectObject baseObject
+          )
+        { return (JavaScript)interaction.actions.Action.Wrap(baseObject); }
+        #endregion
+        #endregion
+        #endregion
+    }
 }

@@ -30,37 +30,37 @@ using System.IO;
 
 namespace org.pdfclown.documents.files
 {
-  /**
-    <summary>Simple reference to the contents of another file [PDF:1.6:3.10.2].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class SimpleFileSpecification
-    : FileSpecification
-  {
-    #region dynamic
-    #region constructors
-    internal SimpleFileSpecification(
-      Document context,
-      string path
-      ) : base(context, new PdfString(path))
-    {}
-
-    internal SimpleFileSpecification(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override string Path
+    /**
+      <summary>Simple reference to the contents of another file [PDF:1.6:3.10.2].</summary>
+    */
+    [PDF(VersionEnum.PDF11)]
+    public sealed class SimpleFileSpecification
+      : FileSpecification
     {
-      get
-      {return (string)((PdfString)BaseDataObject).Value;}
+        #region dynamic
+        #region constructors
+        internal SimpleFileSpecification(
+          Document context,
+          string path
+          ) : base(context, new PdfString(path))
+        { }
+
+        internal SimpleFileSpecification(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override string Path
+        {
+            get
+            { return (string)((PdfString)BaseDataObject).Value; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }
 

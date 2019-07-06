@@ -29,32 +29,32 @@ using System;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Resource reference.</summary>
-  */
-  public interface IResourceReference<TResource>
-    where TResource : PdfObjectWrapper
-  {
     /**
-      <summary>Gets the referenced resource.</summary>
-      <remarks>Whether a <see cref="Name">resource name</see> is available or not, it can be
-        respectively either shared or private.</remarks>
-      <param name="context">Content context.</param>
+      <summary>Resource reference.</summary>
     */
-    TResource GetResource(
-      IContentContext context
-      );
-
-    /**
-      <summary>Gets/Sets the resource name.</summary>
-      <seealso cref="GetResource(IContentContext)"/>
-      <seealso cref="Resources"/>
-    */
-    PdfName Name
+    public interface IResourceReference<TResource>
+      where TResource : PdfObjectWrapper
     {
-      get;
-      set;
+        /**
+          <summary>Gets the referenced resource.</summary>
+          <remarks>Whether a <see cref="Name">resource name</see> is available or not, it can be
+            respectively either shared or private.</remarks>
+          <param name="context">Content context.</param>
+        */
+        TResource GetResource(
+          IContentContext context
+          );
+
+        /**
+          <summary>Gets/Sets the resource name.</summary>
+          <seealso cref="GetResource(IContentContext)"/>
+          <seealso cref="Resources"/>
+        */
+        PdfName Name
+        {
+            get;
+            set;
+        }
     }
-  }
 }
 

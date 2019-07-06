@@ -34,188 +34,188 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>'Control the playing of multimedia content' action [PDF:1.6:8.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public sealed class Render
-    : Action
-  {
-    #region types
-    public enum OperationEnum
-    {
-      /**
-        <summary>Play the rendition on the screen, stopping any previous one.</summary>
-      */
-      Play,
-      /**
-        <summary>Stop any rendition being played on the screen.</summary>
-      */
-      Stop,
-      /**
-        <summary>Pause any rendition being played on the screen.</summary>
-      */
-      Pause,
-      /**
-        <summary>Resume any rendition being played on the screen.</summary>
-      */
-      Resume,
-      /**
-        <summary>Play the rendition on the screen, resuming any previous one.</summary>
-      */
-      PlayResume
-    }
-    #endregion
-
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new action within the given document context.</summary>
+      <summary>'Control the playing of multimedia content' action [PDF:1.6:8.5.3].</summary>
     */
-    public Render(
-      Screen screen,
-      OperationEnum operation,
-      Rendition rendition
-      ) : base(screen.Document, PdfName.Rendition)
+    [PDF(VersionEnum.PDF15)]
+    public sealed class Render
+      : Action
     {
-      Operation = operation;
-      Screen = screen;
-      Rendition = rendition;
-    }
-
-    internal Render(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the operation to perform when the action is triggered.</summary>
-    */
-    public OperationEnum? Operation
-    {
-      get
-      {return OperationEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.OP]);}
-      set
-      {
-        PdfDictionary baseDataObject = BaseDataObject;
-        if(value == null && baseDataObject[PdfName.JS] == null)
-            throw new ArgumentException("Operation MUST be defined.");
-
-        baseDataObject[PdfName.OP] = (value.HasValue ? value.Value.GetCode() : null);
-      }
-    }
-
-    /**
-      <summary>Gets/Sets the rendition object to render.</summary>
-    */
-    public Rendition Rendition
-    {
-      get
-      {return Rendition.Wrap(BaseDataObject[PdfName.R]);}
-      set
-      {
-        if(value == null)
+        #region types
+        public enum OperationEnum
         {
-          OperationEnum? operation = Operation;
-          if(operation.HasValue)
-          {
-            switch(operation.Value)
-            {
-              case OperationEnum.Play:
-              case OperationEnum.PlayResume:
-                throw new ArgumentException("Rendition MUST be defined.");
-            }
-          }
+            /**
+              <summary>Play the rendition on the screen, stopping any previous one.</summary>
+            */
+            Play,
+            /**
+              <summary>Stop any rendition being played on the screen.</summary>
+            */
+            Stop,
+            /**
+              <summary>Pause any rendition being played on the screen.</summary>
+            */
+            Pause,
+            /**
+              <summary>Resume any rendition being played on the screen.</summary>
+            */
+            Resume,
+            /**
+              <summary>Play the rendition on the screen, resuming any previous one.</summary>
+            */
+            PlayResume
         }
-        BaseDataObject[PdfName.R] = PdfObjectWrapper.GetBaseObject(value);
-      }
-    }
+        #endregion
 
-    /**
-      <summary>Gets/Sets the screen where to render the rendition object.</summary>
-    */
-    public Screen Screen
-    {
-      get
-      {return (Screen)Annotation.Wrap(BaseDataObject[PdfName.AN]);}
-      set
-      {
-        if(value == null)
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new action within the given document context.</summary>
+        */
+        public Render(
+          Screen screen,
+          OperationEnum operation,
+          Rendition rendition
+          ) : base(screen.Document, PdfName.Rendition)
         {
-          OperationEnum? operation = Operation;
-          if(operation.HasValue)
-          {
-            switch(operation.Value)
-            {
-              case OperationEnum.Play:
-              case OperationEnum.PlayResume:
-              case OperationEnum.Pause:
-              case OperationEnum.Resume:
-              case OperationEnum.Stop:
-                throw new ArgumentException("Screen MUST be defined.");
-            }
-          }
+            Operation = operation;
+            Screen = screen;
+            Rendition = rendition;
         }
-        BaseDataObject[PdfName.AN] = PdfObjectWrapper.GetBaseObject(value);
-      }
+
+        internal Render(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the operation to perform when the action is triggered.</summary>
+        */
+        public OperationEnum? Operation
+        {
+            get
+            { return OperationEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.OP]); }
+            set
+            {
+                PdfDictionary baseDataObject = BaseDataObject;
+                if (value == null && baseDataObject[PdfName.JS] == null)
+                    throw new ArgumentException("Operation MUST be defined.");
+
+                baseDataObject[PdfName.OP] = (value.HasValue ? value.Value.GetCode() : null);
+            }
+        }
+
+        /**
+          <summary>Gets/Sets the rendition object to render.</summary>
+        */
+        public Rendition Rendition
+        {
+            get
+            { return Rendition.Wrap(BaseDataObject[PdfName.R]); }
+            set
+            {
+                if (value == null)
+                {
+                    OperationEnum? operation = Operation;
+                    if (operation.HasValue)
+                    {
+                        switch (operation.Value)
+                        {
+                            case OperationEnum.Play:
+                            case OperationEnum.PlayResume:
+                                throw new ArgumentException("Rendition MUST be defined.");
+                        }
+                    }
+                }
+                BaseDataObject[PdfName.R] = PdfObjectWrapper.GetBaseObject(value);
+            }
+        }
+
+        /**
+          <summary>Gets/Sets the screen where to render the rendition object.</summary>
+        */
+        public Screen Screen
+        {
+            get
+            { return (Screen)Annotation.Wrap(BaseDataObject[PdfName.AN]); }
+            set
+            {
+                if (value == null)
+                {
+                    OperationEnum? operation = Operation;
+                    if (operation.HasValue)
+                    {
+                        switch (operation.Value)
+                        {
+                            case OperationEnum.Play:
+                            case OperationEnum.PlayResume:
+                            case OperationEnum.Pause:
+                            case OperationEnum.Resume:
+                            case OperationEnum.Stop:
+                                throw new ArgumentException("Screen MUST be defined.");
+                        }
+                    }
+                }
+                BaseDataObject[PdfName.AN] = PdfObjectWrapper.GetBaseObject(value);
+            }
+        }
+
+        /**
+          <summary>Gets/Sets the JavaScript script to be executed when the action is triggered.</summary>
+        */
+        public String Script
+        {
+            get
+            { return JavaScript.GetScript(BaseDataObject, PdfName.JS); }
+            set
+            {
+                PdfDictionary baseDataObject = BaseDataObject;
+                if (value == null && baseDataObject[PdfName.OP] == null)
+                    throw new ArgumentException("Script MUST be defined.");
+
+                JavaScript.SetScript(baseDataObject, PdfName.JS, value);
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
 
-    /**
-      <summary>Gets/Sets the JavaScript script to be executed when the action is triggered.</summary>
-    */
-    public String Script
+    internal static class OperationEnumExtension
     {
-      get
-      {return JavaScript.GetScript(BaseDataObject, PdfName.JS);}
-      set
-      {
-        PdfDictionary baseDataObject = BaseDataObject;
-        if(value == null && baseDataObject[PdfName.OP] == null)
-            throw new ArgumentException("Script MUST be defined.");
+        private static readonly BiDictionary<Render.OperationEnum, PdfInteger> codes;
 
-        JavaScript.SetScript(baseDataObject, PdfName.JS, value);
-      }
+        static OperationEnumExtension(
+          )
+        {
+            codes = new BiDictionary<Render.OperationEnum, PdfInteger>();
+            codes[Render.OperationEnum.Play] = new PdfInteger(0);
+            codes[Render.OperationEnum.Stop] = new PdfInteger(1);
+            codes[Render.OperationEnum.Pause] = new PdfInteger(2);
+            codes[Render.OperationEnum.Resume] = new PdfInteger(3);
+            codes[Render.OperationEnum.PlayResume] = new PdfInteger(4);
+        }
+
+        public static Render.OperationEnum? Get(
+          PdfInteger code
+          )
+        {
+            if (code == null)
+                return null;
+
+            Render.OperationEnum? operation = codes.GetKey(code);
+            if (!operation.HasValue)
+                throw new NotSupportedException("Operation unknown: " + code);
+
+            return operation;
+        }
+
+        public static PdfInteger GetCode(
+          this Render.OperationEnum operation
+          )
+        { return codes[operation]; }
     }
-    #endregion
-    #endregion
-    #endregion
-  }
-
-  internal static class OperationEnumExtension
-  {
-    private static readonly BiDictionary<Render.OperationEnum,PdfInteger> codes;
-
-    static OperationEnumExtension(
-      )
-    {
-      codes = new BiDictionary<Render.OperationEnum,PdfInteger>();
-      codes[Render.OperationEnum.Play] = new PdfInteger(0);
-      codes[Render.OperationEnum.Stop] = new PdfInteger(1);
-      codes[Render.OperationEnum.Pause] = new PdfInteger(2);
-      codes[Render.OperationEnum.Resume] = new PdfInteger(3);
-      codes[Render.OperationEnum.PlayResume] = new PdfInteger(4);
-    }
-
-    public static Render.OperationEnum? Get(
-      PdfInteger code
-      )
-    {
-      if(code == null)
-        return null;
-
-      Render.OperationEnum? operation = codes.GetKey(code);
-      if(!operation.HasValue)
-        throw new NotSupportedException("Operation unknown: " + code);
-
-      return operation;
-    }
-
-    public static PdfInteger GetCode(
-      this Render.OperationEnum operation
-      )
-    {return codes[operation];}
-  }
 }

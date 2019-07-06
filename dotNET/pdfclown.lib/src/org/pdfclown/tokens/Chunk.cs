@@ -27,13 +27,13 @@ using System;
 
 namespace org.pdfclown.tokens
 {
-  /**
-    <summary>Common data chunks for serialization purposes.</summary>
-  */
-  internal static class Chunk
-  {
-    // FIXME: proper calls to Encoding.Pdf.Encode(...) could NOT be done due to an unexpected Mono runtime SIGSEGV (TOO BAD).
-    public static readonly byte[] Space = new byte[]{32}; // Encoding.Pdf.Encode(Symbol.Space);
-    public static readonly byte[] LineFeed = new byte[]{10}; // Encoding.Pdf.Encode(Symbol.LineFeed);
-  }
+    /**
+      <summary>Common data chunks for serialization purposes.</summary>
+    */
+    internal static class Chunk
+    {
+        // FIXME: proper calls to Encoding.Pdf.Encode(...) could NOT be done due to an unexpected Mono runtime SIGSEGV (TOO BAD).
+        public static readonly byte[] Space = new byte[] { 32 }; // Encoding.Pdf.Encode(Symbol.Space);
+        public static readonly byte[] LineFeed = new byte[] { 10 }; // Encoding.Pdf.Encode(Symbol.LineFeed);
+    }
 }

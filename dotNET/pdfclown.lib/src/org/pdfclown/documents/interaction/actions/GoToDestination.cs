@@ -32,49 +32,49 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>Abstract 'go to destination' action.</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public abstract class GoToDestination<T>
-    : Action,
-      IGoToAction
-    where T : Destination
-  {
-    #region dynamic
-    #region constructors
-    protected GoToDestination(
-      Document context,
-      PdfName actionType,
-      T destination
-      ) : base(context, actionType)
-    {Destination = destination;}
-
-    protected GoToDestination(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets the destination to jump to.</summary>
+      <summary>Abstract 'go to destination' action.</summary>
     */
-    public T Destination
+    [PDF(VersionEnum.PDF11)]
+    public abstract class GoToDestination<T>
+      : Action,
+        IGoToAction
+      where T : Destination
     {
-      get
-      {return Document.ResolveName<T>(BaseDataObject[PdfName.D]);}
-      set
-      {
-        if(value == null)
-          throw new ArgumentException("Destination MUST be defined.");
+        #region dynamic
+        #region constructors
+        protected GoToDestination(
+          Document context,
+          PdfName actionType,
+          T destination
+          ) : base(context, actionType)
+        { Destination = destination; }
 
-        BaseDataObject[PdfName.D] = value.NamedBaseObject;
-      }
+        protected GoToDestination(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the destination to jump to.</summary>
+        */
+        public T Destination
+        {
+            get
+            { return Document.ResolveName<T>(BaseDataObject[PdfName.D]); }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentException("Destination MUST be defined.");
+
+                BaseDataObject[PdfName.D] = value.NamedBaseObject;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

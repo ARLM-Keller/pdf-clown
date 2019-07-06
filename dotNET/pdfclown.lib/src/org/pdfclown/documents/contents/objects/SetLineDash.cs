@@ -30,58 +30,58 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Set the line dash pattern' operation [PDF:1.6:4.3.3].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class SetLineDash
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "d";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public SetLineDash(
-      LineDash lineDash
-      ) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
-    {Value = lineDash;}
-
-    public SetLineDash(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {state.LineDash = Value;}
-
-    public LineDash Value
+    /**
+      <summary>'Set the line dash pattern' operation [PDF:1.6:4.3.3].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class SetLineDash
+      : Operation
     {
-      get
-      {return LineDash.Get((PdfArray)operands[0], (IPdfNumber)operands[1]);}
-      set
-      {
-        operands.Clear();
-        // 1. Dash array.
-        double[] dashArray = value.DashArray;
-        PdfArray baseDashArray = new PdfArray(dashArray.Length);
-        foreach(double dashItem in dashArray)
-        {baseDashArray.Add(PdfReal.Get(dashItem));}
-        operands.Add(baseDashArray);
-        // 2. Dash phase.
-        operands.Add(PdfReal.Get(value.DashPhase));
-      }
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "d";
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public SetLineDash(
+          LineDash lineDash
+          ) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
+        { Value = lineDash; }
+
+        public SetLineDash(
+          IList<PdfDirectObject> operands
+          ) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override void Scan(
+          ContentScanner.GraphicsState state
+          )
+        { state.LineDash = Value; }
+
+        public LineDash Value
+        {
+            get
+            { return LineDash.Get((PdfArray)operands[0], (IPdfNumber)operands[1]); }
+            set
+            {
+                operands.Clear();
+                // 1. Dash array.
+                double[] dashArray = value.DashArray;
+                PdfArray baseDashArray = new PdfArray(dashArray.Length);
+                foreach (double dashItem in dashArray)
+                { baseDashArray.Add(PdfReal.Get(dashItem)); }
+                operands.Add(baseDashArray);
+                // 2. Dash phase.
+                operands.Add(PdfReal.Get(value.DashPhase));
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

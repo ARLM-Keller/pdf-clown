@@ -28,26 +28,26 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Device color space [PDF:1.6:4.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public abstract class DeviceColorSpace
-    : ColorSpace
-  {
-    #region dynamic
-    #region constructors
-    protected DeviceColorSpace(
-      Document context,
-      PdfName baseDataObject
-      ) : base(context, baseDataObject)
-    {}
+    /**
+      <summary>Device color space [PDF:1.6:4.5.3].</summary>
+    */
+    [PDF(VersionEnum.PDF11)]
+    public abstract class DeviceColorSpace
+      : ColorSpace
+    {
+        #region dynamic
+        #region constructors
+        protected DeviceColorSpace(
+          Document context,
+          PdfName baseDataObject
+          ) : base(context, baseDataObject)
+        { }
 
-    protected DeviceColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-    #endregion
-  }
+        protected DeviceColorSpace(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+        #endregion
+    }
 }

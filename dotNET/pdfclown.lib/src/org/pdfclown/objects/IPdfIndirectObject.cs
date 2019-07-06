@@ -27,40 +27,40 @@ using org.pdfclown.files;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>PDF indirect object interface.</summary>
-  */
-  public interface IPdfIndirectObject
-  {
-    PdfObject Clone(
-      File context
-      );
-
     /**
-      <summary>Gets/Sets the actual data associated to the indirect reference.</summary>
+      <summary>PDF indirect object interface.</summary>
     */
-    PdfDataObject DataObject
-    {get;set;}
+    public interface IPdfIndirectObject
+    {
+        PdfObject Clone(
+          File context
+          );
 
-    /**
-      <summary>Removes the object from its file context.</summary>
-      <remarks>
-        <para>The object is no more usable after this method returns.</para>
-      </remarks>
-    */
-    bool Delete(
-      );
+        /**
+          <summary>Gets/Sets the actual data associated to the indirect reference.</summary>
+        */
+        PdfDataObject DataObject
+        { get; set; }
 
-    /**
-      <summary>Gets the indirect object associated to the indirect reference.</summary>
-    */
-    PdfIndirectObject IndirectObject
-    {get;}
+        /**
+          <summary>Removes the object from its file context.</summary>
+          <remarks>
+            <para>The object is no more usable after this method returns.</para>
+          </remarks>
+        */
+        bool Delete(
+          );
 
-    /**
-      <summary>Gets the indirect reference associated to the indirect object.</summary>
-    */
-    PdfReference Reference
-    {get;}
-  }
+        /**
+          <summary>Gets the indirect object associated to the indirect reference.</summary>
+        */
+        PdfIndirectObject IndirectObject
+        { get; }
+
+        /**
+          <summary>Gets the indirect reference associated to the indirect object.</summary>
+        */
+        PdfReference Reference
+        { get; }
+    }
 }

@@ -27,50 +27,50 @@ using System;
 
 namespace org.pdfclown.tokens
 {
-  /**
-    <summary>Exception thrown in case of missing code-to-character mapping.</summary>
-  */
-  public class DecodeException
-    : Exception
-  {
-    #region dynamic
-    #region fields
-    private byte[] bytes;
-    private int index;
-    #endregion
-
-    #region constructors
-    public DecodeException(
-      byte[] bytes,
-      int index
-      ) : base(String.Format("Missing character mapping for byte sequence starting with {0:X2} at position {1}", bytes[index], index))
-    {
-      this.bytes = bytes;
-      this.index = index;
-    }
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the byte array to decode.</summary>
+      <summary>Exception thrown in case of missing code-to-character mapping.</summary>
     */
-    public byte[] Bytes
+    public class DecodeException
+      : Exception
     {
-      get
-      {return bytes;}
-    }
+        #region dynamic
+        #region fields
+        private byte[] bytes;
+        private int index;
+        #endregion
 
-    /**
-      <summary>Gets the position of the missing sequence in the byte array to decode.</summary>
-    */
-    public int Index
-    {
-      get
-      {return index;}
+        #region constructors
+        public DecodeException(
+          byte[] bytes,
+          int index
+          ) : base(String.Format("Missing character mapping for byte sequence starting with {0:X2} at position {1}", bytes[index], index))
+        {
+            this.bytes = bytes;
+            this.index = index;
+        }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the byte array to decode.</summary>
+        */
+        public byte[] Bytes
+        {
+            get
+            { return bytes; }
+        }
+
+        /**
+          <summary>Gets the position of the missing sequence in the byte array to decode.</summary>
+        */
+        public int Index
+        {
+            get
+            { return index; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

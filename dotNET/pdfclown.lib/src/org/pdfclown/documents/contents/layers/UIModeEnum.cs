@@ -30,50 +30,50 @@ using System;
 
 namespace org.pdfclown.documents.contents.layers
 {
-  /**
-    <summary>List mode specifying which layers should be displayed to the user [PDF:1.7:4.10.3].
-    </summary>
-  */
-  public enum UIModeEnum
-  {
     /**
-      <summary>All the layers are displayed.</summary>
+      <summary>List mode specifying which layers should be displayed to the user [PDF:1.7:4.10.3].
+      </summary>
     */
-    AllPages,
-    /**
-      <summary>Only the layers referenced by one or more visible pages are displayed.</summary>
-    */
-    VisiblePages
-  }
-
-  internal static class UIModeEnumExtension
-  {
-    private static readonly BiDictionary<UIModeEnum,PdfName> codes;
-
-    static UIModeEnumExtension()
+    public enum UIModeEnum
     {
-      codes = new BiDictionary<UIModeEnum,PdfName>();
-      codes[UIModeEnum.AllPages] = PdfName.AllPages;
-      codes[UIModeEnum.VisiblePages] = PdfName.VisiblePages;
+        /**
+          <summary>All the layers are displayed.</summary>
+        */
+        AllPages,
+        /**
+          <summary>Only the layers referenced by one or more visible pages are displayed.</summary>
+        */
+        VisiblePages
     }
 
-    public static UIModeEnum Get(
-      PdfName name
-      )
+    internal static class UIModeEnumExtension
     {
-      if(name == null)
-        return UIModeEnum.AllPages;
+        private static readonly BiDictionary<UIModeEnum, PdfName> codes;
 
-      UIModeEnum? uiMode = codes.GetKey(name);
-      if(!uiMode.HasValue)
-        throw new NotSupportedException("UI mode unknown: " + name);
+        static UIModeEnumExtension()
+        {
+            codes = new BiDictionary<UIModeEnum, PdfName>();
+            codes[UIModeEnum.AllPages] = PdfName.AllPages;
+            codes[UIModeEnum.VisiblePages] = PdfName.VisiblePages;
+        }
 
-      return uiMode.Value;
+        public static UIModeEnum Get(
+          PdfName name
+          )
+        {
+            if (name == null)
+                return UIModeEnum.AllPages;
+
+            UIModeEnum? uiMode = codes.GetKey(name);
+            if (!uiMode.HasValue)
+                throw new NotSupportedException("UI mode unknown: " + name);
+
+            return uiMode.Value;
+        }
+
+        public static PdfName GetName(
+          this UIModeEnum uiMode
+          )
+        { return codes[uiMode]; }
     }
-
-    public static PdfName GetName(
-      this UIModeEnum uiMode
-      )
-    {return codes[uiMode];}
-  }
 }

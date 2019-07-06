@@ -25,18 +25,18 @@
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>Action options.</summary>
-  */
-  public enum OptionsEnum
-  {
     /**
-      <summary>Whether to open the destination document in a new window.</summary>
+      <summary>Action options.</summary>
     */
-    NewWindow = 0x1,
-    /**
-      <summary>Whether to open the destination document in the current window.</summary>
-    */
-    SameWindow = 0x2
-  };
+    public enum OptionsEnum
+    {
+        /**
+          <summary>Whether to open the destination document in a new window.</summary>
+        */
+        NewWindow = 0x1,
+        /**
+          <summary>Whether to open the destination document in the current window.</summary>
+        */
+        SameWindow = 0x2
+    };
 }

@@ -28,35 +28,35 @@ using org.pdfclown.documents;
 using org.pdfclown.objects;
 
 using System;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.interaction.annotations
 {
-  /**
-    <summary>Polyline annotation [PDF:1.6:8.4.5].</summary>
-    <remarks>It represents a (possibly-open) polygon to display on a page.</remarks>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public sealed class Polyline
-    : VertexShape
-  {
-    #region dynamic
-    #region constructors
-    public Polyline(
-      Page page,
-      RectangleF box,
-      string text
-      ) : base(page, box, text, PdfName.PolyLine)
-    {}
+    /**
+      <summary>Polyline annotation [PDF:1.6:8.4.5].</summary>
+      <remarks>It represents a (possibly-open) polygon to display on a page.</remarks>
+    */
+    [PDF(VersionEnum.PDF15)]
+    public sealed class Polyline
+      : VertexShape
+    {
+        #region dynamic
+        #region constructors
+        public Polyline(
+          Page page,
+          SKRect box,
+          string text
+          ) : base(page, box, text, PdfName.PolyLine)
+        { }
 
-    internal Polyline(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal Polyline(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #endregion
-    #endregion
-  }
+        #region interface
+        #endregion
+        #endregion
+    }
 }

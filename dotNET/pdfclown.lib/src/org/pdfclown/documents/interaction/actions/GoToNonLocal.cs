@@ -33,69 +33,69 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>Abstract 'go to non-local destination' action.</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public abstract class GotoNonLocal<T>
-    : GoToDestination<T>
-    where T : Destination
-  {
-    #region dynamic
-    #region constructors
-    protected GotoNonLocal(
-      Document context,
-      PdfName actionType,
-      FileSpecification destinationFile,
-      T destination
-      ) : base(context, actionType, destination)
-    {DestinationFile = destinationFile;}
-
-    protected GotoNonLocal(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets the file in which the destination is located.</summary>
+      <summary>Abstract 'go to non-local destination' action.</summary>
     */
-    public virtual FileSpecification DestinationFile
+    [PDF(VersionEnum.PDF11)]
+    public abstract class GotoNonLocal<T>
+      : GoToDestination<T>
+      where T : Destination
     {
-      get
-      {return FileSpecification.Wrap(BaseDataObject[PdfName.F]);}
-      set
-      {BaseDataObject[PdfName.F] = (value != null ? value.BaseObject : null);}
-    }
+        #region dynamic
+        #region constructors
+        protected GotoNonLocal(
+          Document context,
+          PdfName actionType,
+          FileSpecification destinationFile,
+          T destination
+          ) : base(context, actionType, destination)
+        { DestinationFile = destinationFile; }
 
-    /**
-      <summary>Gets/Sets the action options.</summary>
-    */
-    public OptionsEnum Options
-    {
-      get
-      {
-        OptionsEnum options = 0;
-        PdfDirectObject optionsObject = BaseDataObject[PdfName.NewWindow];
-        if(optionsObject != null
-          && ((PdfBoolean)optionsObject).BooleanValue)
-        {options |= OptionsEnum.NewWindow;}
-        return options;
-      }
-      set
-      {
-        if((value & OptionsEnum.NewWindow) == OptionsEnum.NewWindow)
-        {BaseDataObject[PdfName.NewWindow] = PdfBoolean.True;}
-        else if((value & OptionsEnum.SameWindow) == OptionsEnum.SameWindow)
-        {BaseDataObject[PdfName.NewWindow] = PdfBoolean.False;}
-        else
-        {BaseDataObject.Remove(PdfName.NewWindow);} // NOTE: Forcing the absence of this entry ensures that the viewer application should behave in accordance with the current user preference.
-      }
+        protected GotoNonLocal(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the file in which the destination is located.</summary>
+        */
+        public virtual FileSpecification DestinationFile
+        {
+            get
+            { return FileSpecification.Wrap(BaseDataObject[PdfName.F]); }
+            set
+            { BaseDataObject[PdfName.F] = (value != null ? value.BaseObject : null); }
+        }
+
+        /**
+          <summary>Gets/Sets the action options.</summary>
+        */
+        public OptionsEnum Options
+        {
+            get
+            {
+                OptionsEnum options = 0;
+                PdfDirectObject optionsObject = BaseDataObject[PdfName.NewWindow];
+                if (optionsObject != null
+                  && ((PdfBoolean)optionsObject).BooleanValue)
+                { options |= OptionsEnum.NewWindow; }
+                return options;
+            }
+            set
+            {
+                if ((value & OptionsEnum.NewWindow) == OptionsEnum.NewWindow)
+                { BaseDataObject[PdfName.NewWindow] = PdfBoolean.True; }
+                else if ((value & OptionsEnum.SameWindow) == OptionsEnum.SameWindow)
+                { BaseDataObject[PdfName.NewWindow] = PdfBoolean.False; }
+                else
+                { BaseDataObject.Remove(PdfName.NewWindow); } // NOTE: Forcing the absence of this entry ensures that the viewer application should behave in accordance with the current user preference.
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

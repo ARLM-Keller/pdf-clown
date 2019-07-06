@@ -25,11 +25,11 @@
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>Go-to action.</summary>
-  */
-  public interface IGoToAction
-  {
+    /**
+      <summary>Go-to action.</summary>
+    */
+    public interface IGoToAction
+    {
 
-  }
+    }
 }

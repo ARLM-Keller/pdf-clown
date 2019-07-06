@@ -31,138 +31,138 @@ using System;
 
 namespace org.pdfclown.tokens
 {
-  /**
-    <summary>Base PDF parser [PDF:1.7:3.2].</summary>
-  */
-  public class BaseParser
-    : PostScriptParser
-  {
-    #region dynamic
-    #region constructors
-    protected BaseParser(
-      IInputStream stream
-      ) : base(stream)
-    {}
-
-    protected BaseParser(
-      byte[] data
-      ) : base(data)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override bool MoveNext(
-      )
-    {
-      bool moved;
-      while(moved = base.MoveNext())
-      {
-        TokenTypeEnum tokenType = TokenType;
-        if(tokenType == TokenTypeEnum.Comment)
-          continue; // Comments are ignored.
-
-        if(tokenType == TokenTypeEnum.Literal)
-        {
-          string literalToken = (string)Token;
-          if(literalToken.StartsWith(Keyword.DatePrefix)) // Date.
-          {
-            /*
-              NOTE: Dates are a weak extension to the PostScript language.
-            */
-            try
-            {Token = PdfDate.ToDate(literalToken);}
-            catch(ParseException)
-            {/* NOOP: gently degrade to a common literal. */}
-          }
-        }
-        break;
-      }
-      return moved;
-    }
-
     /**
-      <summary>Parses the current PDF object [PDF:1.6:3.2].</summary>
+      <summary>Base PDF parser [PDF:1.7:3.2].</summary>
     */
-    public virtual PdfDataObject ParsePdfObject(
-      )
+    public class BaseParser
+      : PostScriptParser
     {
-      switch(TokenType)
-      {
-        case TokenTypeEnum.Integer:
-          return PdfInteger.Get((int)Token);
-        case TokenTypeEnum.Name:
-          return new PdfName((string)Token,true);
-        case TokenTypeEnum.DictionaryBegin:
-        {
-          PdfDictionary dictionary = new PdfDictionary();
-          dictionary.Updateable = false;
-          while(true)
-          {
-            // Key.
-            MoveNext(); if(TokenType == TokenTypeEnum.DictionaryEnd) break;
-            PdfName key = (PdfName)ParsePdfObject();
-            // Value.
-            MoveNext();
-            PdfDirectObject value = (PdfDirectObject)ParsePdfObject();
-            // Add the current entry to the dictionary!
-            dictionary[key] = value;
-          }
-          dictionary.Updateable = true;
-          return dictionary;
-        }
-        case TokenTypeEnum.ArrayBegin:
-        {
-          PdfArray array = new PdfArray();
-          array.Updateable = false;
-          while(true)
-          {
-            // Value.
-            MoveNext(); if(TokenType == TokenTypeEnum.ArrayEnd) break;
-            // Add the current item to the array!
-            array.Add((PdfDirectObject)ParsePdfObject());
-          }
-          array.Updateable = true;
-          return array;
-        }
-        case TokenTypeEnum.Literal:
-          if(Token is DateTime)
-            return PdfDate.Get((DateTime)Token);
-          else
-            return new PdfTextString(
-              Encoding.Pdf.Encode((string)Token)
-              );
-        case TokenTypeEnum.Hex:
-          return new PdfTextString(
-            (string)Token,
-            PdfString.SerializationModeEnum.Hex
-            );
-        case TokenTypeEnum.Real:
-          return PdfReal.Get((double)Token);
-        case TokenTypeEnum.Boolean:
-          return PdfBoolean.Get((bool)Token);
-        case TokenTypeEnum.Null:
-          return null;
-        default:
-          throw new PostScriptParseException(String.Format("Unknown type beginning: '{0}'", Token), this);
-      }
-    }
+        #region dynamic
+        #region constructors
+        protected BaseParser(
+          IInputStream stream
+          ) : base(stream)
+        { }
 
-    /**
-      <summary>Parses a PDF object after moving to the given token offset.</summary>
-      <param name="offset">Number of tokens to skip before reaching the intended one.</param>
-      <seealso cref="ParsePdfObject()"/>
-    */
-    public PdfDataObject ParsePdfObject(
-      int offset
-      )
-    {
-      MoveNext(offset);
-      return ParsePdfObject();
+        protected BaseParser(
+          byte[] data
+          ) : base(data)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override bool MoveNext(
+          )
+        {
+            bool moved;
+            while (moved = base.MoveNext())
+            {
+                TokenTypeEnum tokenType = TokenType;
+                if (tokenType == TokenTypeEnum.Comment)
+                    continue; // Comments are ignored.
+
+                if (tokenType == TokenTypeEnum.Literal)
+                {
+                    string literalToken = (string)Token;
+                    if (literalToken.StartsWith(Keyword.DatePrefix)) // Date.
+                    {
+                        /*
+                          NOTE: Dates are a weak extension to the PostScript language.
+                        */
+                        try
+                        { Token = PdfDate.ToDate(literalToken); }
+                        catch (ParseException)
+                        {/* NOOP: gently degrade to a common literal. */}
+                    }
+                }
+                break;
+            }
+            return moved;
+        }
+
+        /**
+          <summary>Parses the current PDF object [PDF:1.6:3.2].</summary>
+        */
+        public virtual PdfDataObject ParsePdfObject(
+          )
+        {
+            switch (TokenType)
+            {
+                case TokenTypeEnum.Integer:
+                    return PdfInteger.Get((int)Token);
+                case TokenTypeEnum.Name:
+                    return new PdfName((string)Token, true);
+                case TokenTypeEnum.DictionaryBegin:
+                    {
+                        PdfDictionary dictionary = new PdfDictionary();
+                        dictionary.Updateable = false;
+                        while (true)
+                        {
+                            // Key.
+                            MoveNext(); if (TokenType == TokenTypeEnum.DictionaryEnd) break;
+                            PdfName key = (PdfName)ParsePdfObject();
+                            // Value.
+                            MoveNext();
+                            PdfDirectObject value = (PdfDirectObject)ParsePdfObject();
+                            // Add the current entry to the dictionary!
+                            dictionary[key] = value;
+                        }
+                        dictionary.Updateable = true;
+                        return dictionary;
+                    }
+                case TokenTypeEnum.ArrayBegin:
+                    {
+                        PdfArray array = new PdfArray();
+                        array.Updateable = false;
+                        while (true)
+                        {
+                            // Value.
+                            MoveNext(); if (TokenType == TokenTypeEnum.ArrayEnd) break;
+                            // Add the current item to the array!
+                            array.Add((PdfDirectObject)ParsePdfObject());
+                        }
+                        array.Updateable = true;
+                        return array;
+                    }
+                case TokenTypeEnum.Literal:
+                    if (Token is DateTime)
+                        return PdfDate.Get((DateTime)Token);
+                    else
+                        return new PdfTextString(
+                          Encoding.Pdf.Encode((string)Token)
+                          );
+                case TokenTypeEnum.Hex:
+                    return new PdfTextString(
+                      (string)Token,
+                      PdfString.SerializationModeEnum.Hex
+                      );
+                case TokenTypeEnum.Real:
+                    return PdfReal.Get((double)Token);
+                case TokenTypeEnum.Boolean:
+                    return PdfBoolean.Get((bool)Token);
+                case TokenTypeEnum.Null:
+                    return null;
+                default:
+                    throw new PostScriptParseException(String.Format("Unknown type beginning: '{0}'", Token), this);
+            }
+        }
+
+        /**
+          <summary>Parses a PDF object after moving to the given token offset.</summary>
+          <param name="offset">Number of tokens to skip before reaching the intended one.</param>
+          <seealso cref="ParsePdfObject()"/>
+        */
+        public PdfDataObject ParsePdfObject(
+          int offset
+          )
+        {
+            MoveNext(offset);
+            return ParsePdfObject();
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }
 

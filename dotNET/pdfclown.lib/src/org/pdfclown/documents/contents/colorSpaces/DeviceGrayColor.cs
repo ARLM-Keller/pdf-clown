@@ -30,82 +30,82 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Device Gray color value [PDF:1.6:4.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class DeviceGrayColor
-    : DeviceColor
-  {
-    #region static
-    #region fields
-    public static readonly DeviceGrayColor Black = new DeviceGrayColor(0);
-    public static readonly DeviceGrayColor White = new DeviceGrayColor(1);
-
-    public static readonly DeviceGrayColor Default = Black;
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the color corresponding to the specified components.</summary>
-      <param name="components">Color components to convert.</param>
-     */
-    public static new DeviceGrayColor Get(
-      PdfArray components
-      )
-    {
-      return (components != null
-        ? new DeviceGrayColor(components)
-        : Default
-        );
-    }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public DeviceGrayColor(
-      double g
-      ) : this(
-        new List<PdfDirectObject>(
-          new PdfDirectObject[]
-          {
-            PdfReal.Get(NormalizeComponent(g))
-          }
-        )
-      )
-    {}
-
-    internal DeviceGrayColor(
-      IList<PdfDirectObject> components
-      ) : base(
-        DeviceGrayColorSpace.Default,
-        new PdfArray(components)
-        )
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    /**
-      <summary>Gets/Sets the gray component.</summary>
+      <summary>Device Gray color value [PDF:1.6:4.5.3].</summary>
     */
-    public double G
+    [PDF(VersionEnum.PDF11)]
+    public sealed class DeviceGrayColor
+      : DeviceColor
     {
-      get
-      {return GetComponentValue(0);}
-      set
-      {SetComponentValue(0, value);}
+        #region static
+        #region fields
+        public static readonly DeviceGrayColor Black = new DeviceGrayColor(0);
+        public static readonly DeviceGrayColor White = new DeviceGrayColor(1);
+
+        public static readonly DeviceGrayColor Default = Black;
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the color corresponding to the specified components.</summary>
+          <param name="components">Color components to convert.</param>
+         */
+        public static new DeviceGrayColor Get(
+          PdfArray components
+          )
+        {
+            return (components != null
+              ? new DeviceGrayColor(components)
+              : Default
+              );
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public DeviceGrayColor(
+          double g
+          ) : this(
+            new List<PdfDirectObject>(
+              new PdfDirectObject[]
+              {
+            PdfReal.Get(NormalizeComponent(g))
+              }
+            )
+          )
+        { }
+
+        internal DeviceGrayColor(
+          IList<PdfDirectObject> components
+          ) : base(
+            DeviceGrayColorSpace.Default,
+            new PdfArray(components)
+            )
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override object Clone(
+          Document context
+          )
+        { throw new NotImplementedException(); }
+
+        /**
+          <summary>Gets/Sets the gray component.</summary>
+        */
+        public double G
+        {
+            get
+            { return GetComponentValue(0); }
+            set
+            { SetComponentValue(0, value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

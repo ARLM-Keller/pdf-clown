@@ -34,247 +34,247 @@ using System.IO;
 
 namespace org.pdfclown.documents.files
 {
-  /**
-    <summary>Embedded files referenced by another one (dependencies) [PDF:1.6:3.10.3].</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public sealed class RelatedFiles
-    : PdfObjectWrapper<PdfArray>,
-      IDictionary<string,EmbeddedFile>
-  {
-    #region static
-    #region interface
-    #region public
-    public static RelatedFiles Wrap(
-      PdfDirectObject baseObject
-      )
-    {return baseObject != null ? new RelatedFiles(baseObject) : null;}
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public RelatedFiles(
-      Document context
-      ) : base(context, new PdfArray())
-    {}
-
-    private RelatedFiles(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    #region IDictionary
-    public void Add(
-      string key,
-      EmbeddedFile value
-      )
+    /**
+      <summary>Embedded files referenced by another one (dependencies) [PDF:1.6:3.10.3].</summary>
+    */
+    [PDF(VersionEnum.PDF13)]
+    public sealed class RelatedFiles
+      : PdfObjectWrapper<PdfArray>,
+        IDictionary<string, EmbeddedFile>
     {
-      PdfArray itemPairs = BaseDataObject;
-      // New entry.
-      itemPairs.Add(new PdfTextString(key));
-      itemPairs.Add(value.BaseObject);
-    }
-
-    public bool ContainsKey(
-      string key
-      )
-    {
-      PdfArray itemPairs = BaseDataObject;
-      for(
-        int index = 0,
-          length = itemPairs.Count;
-        index < length;
-        index += 2
-        )
-      {
-        if(((PdfTextString)itemPairs[index]).Value.Equals(key))
-          return true;
-      }
-      return false;
-    }
-
-    public ICollection<string> Keys
-    {
-      get
-      {
-        List<string> keys = new List<string>();
-        PdfArray itemPairs = BaseDataObject;
-        for(
-          int index = 0,
-            length = itemPairs.Count;
-          index < length;
-          index += 2
+        #region static
+        #region interface
+        #region public
+        public static RelatedFiles Wrap(
+          PdfDirectObject baseObject
           )
-        {keys.Add((string)((PdfTextString)itemPairs[index]).Value);}
-        return keys;
-      }
-    }
+        { return baseObject != null ? new RelatedFiles(baseObject) : null; }
+        #endregion
+        #endregion
+        #endregion
 
-    public bool Remove(
-      string key
-      )
-    {
-      PdfArray itemPairs = BaseDataObject;
-      for(
-        int index = 0,
-          length = itemPairs.Count;
-        index < length;
-        index += 2
-        )
-      {
-        if(((PdfTextString)itemPairs[index]).Value.Equals(key))
-        {
-          itemPairs.RemoveAt(index); // Key removed.
-          itemPairs.RemoveAt(index); // Value removed.
-          return true;
-        }
-      }
-      return false;
-    }
+        #region dynamic
+        #region constructors
+        public RelatedFiles(
+          Document context
+          ) : base(context, new PdfArray())
+        { }
 
-    public EmbeddedFile this[
-      string key
-      ]
-    {
-      get
-      {
-        PdfArray itemPairs = BaseDataObject;
-        for(
-          int index = 0,
-            length = itemPairs.Count;
-          index < length;
-          index += 2
+        private RelatedFiles(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        #region IDictionary
+        public void Add(
+          string key,
+          EmbeddedFile value
           )
         {
-          if(((PdfTextString)itemPairs[index]).Value.Equals(key))
-            return EmbeddedFile.Wrap(itemPairs[index+1]);
+            PdfArray itemPairs = BaseDataObject;
+            // New entry.
+            itemPairs.Add(new PdfTextString(key));
+            itemPairs.Add(value.BaseObject);
         }
-        return null;
-      }
-      set
-      {
-        PdfArray itemPairs = BaseDataObject;
-        for(
-          int index = 0,
-            length = itemPairs.Count;
-          index < length;
-          index += 2
+
+        public bool ContainsKey(
+          string key
           )
         {
-          // Already existing entry?
-          if(((PdfTextString)itemPairs[index]).Value.Equals(key))
-          {
-            itemPairs[index+1] = value.BaseObject;
-            return;
-          }
+            PdfArray itemPairs = BaseDataObject;
+            for (
+              int index = 0,
+                length = itemPairs.Count;
+              index < length;
+              index += 2
+              )
+            {
+                if (((PdfTextString)itemPairs[index]).Value.Equals(key))
+                    return true;
+            }
+            return false;
         }
-        // New entry.
-        itemPairs.Add(new PdfTextString(key));
-        itemPairs.Add(value.BaseObject);
-      }
-    }
 
-    public bool TryGetValue(
-      string key,
-      out EmbeddedFile value
-      )
-    {
-      value = this[key];
-      if(value == null)
-        return ContainsKey(key);
-      else
-        return true;
-    }
+        public ICollection<string> Keys
+        {
+            get
+            {
+                List<string> keys = new List<string>();
+                PdfArray itemPairs = BaseDataObject;
+                for (
+                  int index = 0,
+                    length = itemPairs.Count;
+                  index < length;
+                  index += 2
+                  )
+                { keys.Add((string)((PdfTextString)itemPairs[index]).Value); }
+                return keys;
+            }
+        }
 
-    public ICollection<EmbeddedFile> Values
-    {
-      get
-      {
-        List<EmbeddedFile> values = new List<EmbeddedFile>();
-        PdfArray itemPairs = BaseDataObject;
-        for(
-          int index = 1,
-            length = itemPairs.Count;
-          index < length;
-          index += 2
+        public bool Remove(
+          string key
           )
-        {values.Add(EmbeddedFile.Wrap(itemPairs[index]));}
-        return values;
-      }
+        {
+            PdfArray itemPairs = BaseDataObject;
+            for (
+              int index = 0,
+                length = itemPairs.Count;
+              index < length;
+              index += 2
+              )
+            {
+                if (((PdfTextString)itemPairs[index]).Value.Equals(key))
+                {
+                    itemPairs.RemoveAt(index); // Key removed.
+                    itemPairs.RemoveAt(index); // Value removed.
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public EmbeddedFile this[
+          string key
+          ]
+        {
+            get
+            {
+                PdfArray itemPairs = BaseDataObject;
+                for (
+                  int index = 0,
+                    length = itemPairs.Count;
+                  index < length;
+                  index += 2
+                  )
+                {
+                    if (((PdfTextString)itemPairs[index]).Value.Equals(key))
+                        return EmbeddedFile.Wrap(itemPairs[index + 1]);
+                }
+                return null;
+            }
+            set
+            {
+                PdfArray itemPairs = BaseDataObject;
+                for (
+                  int index = 0,
+                    length = itemPairs.Count;
+                  index < length;
+                  index += 2
+                  )
+                {
+                    // Already existing entry?
+                    if (((PdfTextString)itemPairs[index]).Value.Equals(key))
+                    {
+                        itemPairs[index + 1] = value.BaseObject;
+                        return;
+                    }
+                }
+                // New entry.
+                itemPairs.Add(new PdfTextString(key));
+                itemPairs.Add(value.BaseObject);
+            }
+        }
+
+        public bool TryGetValue(
+          string key,
+          out EmbeddedFile value
+          )
+        {
+            value = this[key];
+            if (value == null)
+                return ContainsKey(key);
+            else
+                return true;
+        }
+
+        public ICollection<EmbeddedFile> Values
+        {
+            get
+            {
+                List<EmbeddedFile> values = new List<EmbeddedFile>();
+                PdfArray itemPairs = BaseDataObject;
+                for (
+                  int index = 1,
+                    length = itemPairs.Count;
+                  index < length;
+                  index += 2
+                  )
+                { values.Add(EmbeddedFile.Wrap(itemPairs[index])); }
+                return values;
+            }
+        }
+
+        #region ICollection
+        void ICollection<KeyValuePair<string, EmbeddedFile>>.Add(
+          KeyValuePair<string, EmbeddedFile> entry
+          )
+        { Add(entry.Key, entry.Value); }
+
+        public void Clear(
+          )
+        { BaseDataObject.Clear(); }
+
+        bool ICollection<KeyValuePair<string, EmbeddedFile>>.Contains(
+          KeyValuePair<string, EmbeddedFile> entry
+          )
+        { return entry.Value.Equals(this[entry.Key]); }
+
+        public void CopyTo(
+          KeyValuePair<string, EmbeddedFile>[] entries,
+          int index
+          )
+        { throw new NotImplementedException(); }
+
+        public int Count
+        {
+            get
+            { return BaseDataObject.Count; }
+        }
+
+        public bool IsReadOnly
+        {
+            get
+            { return false; }
+        }
+
+        public bool Remove(
+          KeyValuePair<string, EmbeddedFile> entry
+          )
+        { throw new NotImplementedException(); }
+
+        #region IEnumerable<KeyValuePair<string,EmbeddedFile>>
+        IEnumerator<KeyValuePair<string, EmbeddedFile>> IEnumerable<KeyValuePair<string, EmbeddedFile>>.GetEnumerator(
+          )
+        {
+            PdfArray itemPairs = BaseDataObject;
+            for (
+              int index = 0,
+                length = itemPairs.Count;
+              index < length;
+              index += 2
+              )
+            {
+                yield return new KeyValuePair<string, EmbeddedFile>(
+                  (string)((PdfTextString)itemPairs[index]).Value,
+                  EmbeddedFile.Wrap(itemPairs[index + 1])
+                  );
+            }
+        }
+
+        #region IEnumerable
+        IEnumerator IEnumerable.GetEnumerator(
+          )
+        { return ((IEnumerable<KeyValuePair<string, EmbeddedFile>>)this).GetEnumerator(); }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-
-    #region ICollection
-    void ICollection<KeyValuePair<string,EmbeddedFile>>.Add(
-      KeyValuePair<string,EmbeddedFile> entry
-      )
-    {Add(entry.Key,entry.Value);}
-
-    public void Clear(
-      )
-    {BaseDataObject.Clear();}
-
-    bool ICollection<KeyValuePair<string,EmbeddedFile>>.Contains(
-      KeyValuePair<string,EmbeddedFile> entry
-      )
-    {return entry.Value.Equals(this[entry.Key]);}
-
-    public void CopyTo(
-      KeyValuePair<string,EmbeddedFile>[] entries,
-      int index
-      )
-    {throw new NotImplementedException();}
-
-    public int Count
-    {
-      get
-      {return BaseDataObject.Count;}
-    }
-
-    public bool IsReadOnly
-    {
-      get
-      {return false;}
-    }
-
-    public bool Remove(
-      KeyValuePair<string,EmbeddedFile> entry
-      )
-    {throw new NotImplementedException();}
-
-    #region IEnumerable<KeyValuePair<string,EmbeddedFile>>
-    IEnumerator<KeyValuePair<string,EmbeddedFile>> IEnumerable<KeyValuePair<string,EmbeddedFile>>.GetEnumerator(
-      )
-    {
-      PdfArray itemPairs = BaseDataObject;
-      for(
-        int index = 0,
-          length = itemPairs.Count;
-        index < length;
-        index += 2
-        )
-      {
-        yield return new KeyValuePair<string,EmbeddedFile>(
-          (string)((PdfTextString)itemPairs[index]).Value,
-          EmbeddedFile.Wrap(itemPairs[index+1])
-          );
-      }
-    }
-
-    #region IEnumerable
-    IEnumerator IEnumerable.GetEnumerator(
-      )
-    {return ((IEnumerable<KeyValuePair<string,EmbeddedFile>>)this).GetEnumerator();}
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }

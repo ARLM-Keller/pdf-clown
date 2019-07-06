@@ -27,80 +27,68 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Line Dash Pattern [PDF:1.6:4.3.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class LineDash
-  {
-    #region static
-    #region interface
-    #region public
     /**
-      <summary>Gets the pattern corresponding to the specified components.</summary>
+      <summary>Line Dash Pattern [PDF:1.6:4.3.2].</summary>
     */
-    public static LineDash Get(
-      PdfArray dashArray,
-      IPdfNumber dashPhase
-      )
+    [PDF(VersionEnum.PDF10)]
+    public sealed class LineDash
     {
-      if(dashArray == null)
-        return null;
+        #region static
+        #region interface
+        #region public
+        /**
+          <summary>Gets the pattern corresponding to the specified components.</summary>
+        */
+        public static LineDash Get(PdfArray dashArray, IPdfNumber dashPhase)
+        {
+            if (dashArray == null)
+                return null;
 
-      // Dash array.
-      double[] dashArrayValue = new double[dashArray.Count];
-      for(int index = 0, length = dashArrayValue.Length; index < length; index++)
-      {dashArrayValue[index] = ((IPdfNumber)dashArray[index]).DoubleValue;}
-      // Dash phase.
-      double dashPhaseValue = dashPhase != null ? ((IPdfNumber)dashPhase).DoubleValue : 0;
+            // Dash array.
+            double[] dashArrayValue = new double[dashArray.Count];
+            for (int index = 0, length = dashArrayValue.Length; index < length; index++)
+            { dashArrayValue[index] = ((IPdfNumber)dashArray[index]).DoubleValue; }
+            // Dash phase.
+            double dashPhaseValue = dashPhase != null ? ((IPdfNumber)dashPhase).DoubleValue : 0;
 
-      return new LineDash(dashArrayValue, dashPhaseValue);
+            return new LineDash(dashArrayValue, dashPhaseValue);
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region fields
+        private readonly double[] dashArray;
+        private readonly double dashPhase;
+        #endregion
+
+        #region constructors
+        public LineDash() : this(null) { }
+
+        public LineDash(double[] dashArray) : this(dashArray, 0)
+        { }
+
+        public LineDash(double[] dashArray, double dashPhase)
+        {
+            this.dashArray = dashArray != null ? dashArray : new double[0]; // [FIX:9] NullPointerException if dashArray not initialized.
+            this.dashPhase = dashPhase;
+        }
+        #endregion
+
+        #region interface
+        #region public
+        public double[] DashArray
+        {
+            get { return dashArray; }
+        }
+
+        public double DashPhase
+        {
+            get { return dashPhase; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region fields
-    private readonly double[] dashArray;
-    private readonly double dashPhase;
-    #endregion
-
-    #region constructors
-    public LineDash(
-      ) : this(null)
-    {}
-
-    public LineDash(
-      double[] dashArray
-      ) : this(dashArray,0)
-    {}
-
-    public LineDash(
-      double[] dashArray,
-      double dashPhase
-      )
-    {
-      this.dashArray = dashArray != null ? dashArray : new double[0]; // [FIX:9] NullPointerException if dashArray not initialized.
-      this.dashPhase = dashPhase;
-    }
-    #endregion
-
-    #region interface
-    #region public
-    public double[] DashArray
-    {
-      get
-      {return dashArray;}
-    }
-
-    public double DashPhase
-    {
-      get
-      {return dashPhase;}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

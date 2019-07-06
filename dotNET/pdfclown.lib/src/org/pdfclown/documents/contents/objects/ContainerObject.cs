@@ -29,24 +29,24 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Container object. It encompasses multiple content objects.</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public abstract class ContainerObject
-    : CompositeObject
-  {
-    #region dynamic
-    #region constructors
-    protected ContainerObject(
-      )
-    {}
+    /**
+      <summary>Container object. It encompasses multiple content objects.</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public abstract class ContainerObject
+      : CompositeObject
+    {
+        #region dynamic
+        #region constructors
+        protected ContainerObject(
+          )
+        { }
 
-    protected ContainerObject(
-      IList<ContentObject> objects
-      ) : base(objects)
-    {}
-    #endregion
-    #endregion
-  }
+        protected ContainerObject(
+          IList<ContentObject> objects
+          ) : base(objects)
+        { }
+        #endregion
+        #endregion
+    }
 }

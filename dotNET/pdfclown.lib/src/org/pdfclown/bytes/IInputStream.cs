@@ -30,130 +30,130 @@ using System;
 
 namespace org.pdfclown.bytes
 {
-  /**
-    <summary>Input stream interface.</summary>
-  */
-  public interface IInputStream
-    : IStream,
-      IDataWrapper
-  {
     /**
-      <summary>Gets/Sets the byte order.</summary>
+      <summary>Input stream interface.</summary>
     */
-    ByteOrderEnum ByteOrder
+    public interface IInputStream
+      : IStream,
+        IDataWrapper
     {
-      get;
-      set;
+        /**
+          <summary>Gets/Sets the byte order.</summary>
+        */
+        ByteOrderEnum ByteOrder
+        {
+            get;
+            set;
+        }
+
+        /**
+          <summary>Gets the hash representation of the sequence.</summary>
+        */
+        int GetHashCode(
+          );
+
+        /**
+          <summary>Gets the pointer position.</summary>
+        */
+        long Position
+        {
+            get;
+        }
+
+        /**
+          <summary>Reads a sequence of bytes.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+          <param name="data">Target byte array.</param>
+        */
+        void Read(
+          byte[] data
+          );
+
+        /**
+          <summary>Reads a sequence of bytes.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+          <param name="data">Target byte array.</param>
+          <param name="offset">Location in the byte array at which storing begins.</param>
+          <param name="length">Number of bytes to read.</param>
+        */
+        void Read(
+          byte[] data,
+          int offset,
+          int length
+          );
+
+        /**
+          <summary>Reads a byte.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        int ReadByte(
+          );
+
+        /**
+          <summary>Reads an integer.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        int ReadInt(
+          );
+
+        /**
+          <summary>Reads a variable-length integer.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+          <param name="length">Number of bytes to read.</param>
+        */
+        int ReadInt(
+          int length
+          );
+
+        /**
+          <summary>Reads the next line of text.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        string ReadLine(
+          );
+
+        /**
+          <summary>Reads a short integer.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        short ReadShort(
+          );
+
+        /**
+          <summary>Reads a signed byte integer.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        sbyte ReadSignedByte(
+          );
+
+        /**
+          <summary>Reads a string.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+          <param name="length">Number of bytes to read.</param>
+        */
+        string ReadString(
+          int length
+          );
+
+        /**
+          <summary>Reads an unsigned short integer.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        ushort ReadUnsignedShort(
+          );
+
+        /**
+          <summary>Sets the pointer absolute position.</summary>
+        */
+        void Seek(
+          long position
+          );
+
+        /**
+          <summary>Sets the pointer relative position.</summary>
+        */
+        void Skip(
+          long offset
+          );
     }
-
-    /**
-      <summary>Gets the hash representation of the sequence.</summary>
-    */
-    int GetHashCode(
-      );
-
-    /**
-      <summary>Gets the pointer position.</summary>
-    */
-    long Position
-    {
-      get;
-    }
-
-    /**
-      <summary>Reads a sequence of bytes.</summary>
-      <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-      <param name="data">Target byte array.</param>
-    */
-    void Read(
-      byte[] data
-      );
-
-    /**
-      <summary>Reads a sequence of bytes.</summary>
-      <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-      <param name="data">Target byte array.</param>
-      <param name="offset">Location in the byte array at which storing begins.</param>
-      <param name="length">Number of bytes to read.</param>
-    */
-    void Read(
-      byte[] data,
-      int offset,
-      int length
-      );
-
-    /**
-      <summary>Reads a byte.</summary>
-      <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-    */
-    int ReadByte(
-      );
-
-    /**
-      <summary>Reads an integer.</summary>
-      <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-    */
-    int ReadInt(
-      );
-
-    /**
-      <summary>Reads a variable-length integer.</summary>
-      <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-      <param name="length">Number of bytes to read.</param>
-    */
-    int ReadInt(
-      int length
-      );
-
-    /**
-      <summary>Reads the next line of text.</summary>
-      <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-    */
-    string ReadLine(
-      );
-
-    /**
-      <summary>Reads a short integer.</summary>
-      <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-    */
-    short ReadShort(
-      );
-
-    /**
-      <summary>Reads a signed byte integer.</summary>
-      <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-    */
-    sbyte ReadSignedByte(
-      );
-
-    /**
-      <summary>Reads a string.</summary>
-      <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-      <param name="length">Number of bytes to read.</param>
-    */
-    string ReadString(
-      int length
-      );
-
-    /**
-      <summary>Reads an unsigned short integer.</summary>
-      <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-    */
-    ushort ReadUnsignedShort(
-      );
-
-    /**
-      <summary>Sets the pointer absolute position.</summary>
-    */
-    void Seek(
-      long position
-      );
-
-    /**
-      <summary>Sets the pointer relative position.</summary>
-    */
-    void Skip(
-      long offset
-      );
-  }
 }

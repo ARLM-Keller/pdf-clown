@@ -30,55 +30,55 @@ using System;
 
 namespace org.pdfclown.documents.contents.layers
 {
-  /**
-    <summary>Intended use of layers [PDF:1.7:4.10.1].</summary>
-  */
-  public enum IntentEnum
-  {
     /**
-      <summary>Intended for interactive use by document consumers.</summary>
+      <summary>Intended use of layers [PDF:1.7:4.10.1].</summary>
     */
-    View,
-    /**
-      <summary>Intended to represent a document designer's structural organization of artwork.
-      </summary>
-    */
-    Design,
-    /**
-      <summary>Set of all intents (valid for <see cref="ILayerConfiguration.Intents"/> only).</summary>
-    */
-    All
-  }
-
-  public static class IntentEnumExtension
-  {
-    private static readonly BiDictionary<IntentEnum,PdfName> codes;
-
-    static IntentEnumExtension()
+    public enum IntentEnum
     {
-      codes = new BiDictionary<IntentEnum,PdfName>();
-      codes[IntentEnum.View] = PdfName.View;
-      codes[IntentEnum.Design] = PdfName.Design;
-      codes[IntentEnum.All] = PdfName.All;
+        /**
+          <summary>Intended for interactive use by document consumers.</summary>
+        */
+        View,
+        /**
+          <summary>Intended to represent a document designer's structural organization of artwork.
+          </summary>
+        */
+        Design,
+        /**
+          <summary>Set of all intents (valid for <see cref="ILayerConfiguration.Intents"/> only).</summary>
+        */
+        All
     }
 
-    public static IntentEnum Get(
-      PdfName name
-      )
+    public static class IntentEnumExtension
     {
-      if(name == null)
-        return IntentEnum.View;
+        private static readonly BiDictionary<IntentEnum, PdfName> codes;
 
-      IntentEnum? intent = codes.GetKey(name);
-      if(!intent.HasValue)
-        throw new NotSupportedException("Intent unknown: " + name);
+        static IntentEnumExtension()
+        {
+            codes = new BiDictionary<IntentEnum, PdfName>();
+            codes[IntentEnum.View] = PdfName.View;
+            codes[IntentEnum.Design] = PdfName.Design;
+            codes[IntentEnum.All] = PdfName.All;
+        }
 
-      return intent.Value;
+        public static IntentEnum Get(
+          PdfName name
+          )
+        {
+            if (name == null)
+                return IntentEnum.View;
+
+            IntentEnum? intent = codes.GetKey(name);
+            if (!intent.HasValue)
+                throw new NotSupportedException("Intent unknown: " + name);
+
+            return intent.Value;
+        }
+
+        public static PdfName Name(
+          this IntentEnum intent
+          )
+        { return codes[intent]; }
     }
-
-    public static PdfName Name(
-      this IntentEnum intent
-      )
-    {return codes[intent];}
-  }
 }

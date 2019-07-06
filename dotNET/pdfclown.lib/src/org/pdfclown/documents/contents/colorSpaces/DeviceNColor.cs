@@ -30,69 +30,60 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>DeviceN color value [PDF:1.6:4.5.5].</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public sealed class DeviceNColor
-    : LeveledColor
-  {
-    #region static
-    #region interface
-    #region public
     /**
-      <summary>Gets the color corresponding to the specified components.</summary>
-      <param name="components">Color components to convert.</param>
+      <summary>DeviceN color value [PDF:1.6:4.5.5].</summary>
     */
-    public static DeviceNColor Get(
-      PdfArray components
-      )
+    [PDF(VersionEnum.PDF13)]
+    public sealed class DeviceNColor
+      : LeveledColor
     {
-      return (components != null
-        ? new DeviceNColor(components)
-        : null
-        );
+        #region static
+        #region interface
+        #region public
+        /**
+          <summary>Gets the color corresponding to the specified components.</summary>
+          <param name="components">Color components to convert.</param>
+        */
+        public static DeviceNColor Get(PdfArray components)
+        {
+            return (components != null
+              ? new DeviceNColor(components)
+              : null
+              );
+        }
+        #endregion
+
+        #region private
+        private static IList<PdfDirectObject> GetComponentValues(params double[] components)
+        {// TODO:normalize parameters!
+            IList<PdfDirectObject> componentValues = new List<PdfDirectObject>();
+            foreach (double component in components)
+            { componentValues.Add(PdfReal.Get((component))); }
+            return componentValues;
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public DeviceNColor(params double[] components) : this(GetComponentValues(components))
+        { }
+
+        internal DeviceNColor(IList<PdfDirectObject> components)
+            : base(
+            null, //TODO:colorspace?
+            new PdfArray(components)
+            )
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-
-    #region private
-    private static IList<PdfDirectObject> GetComponentValues(
-      params double[] components
-      )
-    {// TODO:normalize parameters!
-      IList<PdfDirectObject> componentValues = new List<PdfDirectObject>();
-      foreach(double component in components)
-      {componentValues.Add(PdfReal.Get((component)));}
-      return componentValues;
-    }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public DeviceNColor(
-      params double[]components
-      ) : this(GetComponentValues(components))
-    {}
-
-    internal DeviceNColor(
-      IList<PdfDirectObject> components
-      ) : base(
-        null, //TODO:colorspace?
-        new PdfArray(components)
-        )
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-    #endregion
-    #endregion
-    #endregion
-  }
 }

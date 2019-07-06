@@ -31,41 +31,41 @@ using System;
 
 namespace org.pdfclown.documents.multimedia
 {
-//TODO: this is just a stub.
-  /**
-    <summary>Sound object [PDF:1.6:9.2].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class Sound
-    : PdfObjectWrapper<PdfStream>
-  {
-    #region dynamic
-    #region constructors
+    //TODO: this is just a stub.
     /**
-      <summary>Creates a new sound within the given document context.</summary>
+      <summary>Sound object [PDF:1.6:9.2].</summary>
     */
-    public Sound(
-      Document context,
-      IInputStream stream
-      ) : base(
-        context,
-        new PdfStream(
-          new PdfDictionary(
-            new PdfName[]{PdfName.Type},
-            new PdfDirectObject[]{PdfName.Sound}
+    [PDF(VersionEnum.PDF12)]
+    public sealed class Sound
+      : PdfObjectWrapper<PdfStream>
+    {
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new sound within the given document context.</summary>
+        */
+        public Sound(
+          Document context,
+          IInputStream stream
+          ) : base(
+            context,
+            new PdfStream(
+              new PdfDictionary(
+                new PdfName[] { PdfName.Type },
+                new PdfDirectObject[] { PdfName.Sound }
+                )
+              )
             )
-          )
-        )
-    {throw new NotImplementedException("Process the sound stream!");}
+        { throw new NotImplementedException("Process the sound stream!"); }
 
-    public Sound(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        public Sound(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #endregion
-    #endregion
-  }
+        #region interface
+        #endregion
+        #endregion
+    }
 }

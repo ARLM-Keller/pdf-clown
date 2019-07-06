@@ -28,94 +28,94 @@ using org.pdfclown.files;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>PDF integer number object [PDF:1.6:3.2.2].</summary>
-  */
-  public sealed class PdfInteger
-    : PdfSimpleObject<int>,
-      IPdfNumber
-  {
-    #region static
-    #region fields
-    public static readonly PdfInteger Default = new PdfInteger(0);
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the object equivalent to the given value.</summary>
+      <summary>PDF integer number object [PDF:1.6:3.2.2].</summary>
     */
-    public static PdfInteger Get(
-      int? value
-      )
-    {return value.HasValue ? new PdfInteger(value.Value) : null;}
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public PdfInteger(
-      int value
-      )
-    {RawValue = value;}
-    #endregion
-
-    #region interface
-    #region public
-    public override PdfObject Accept(
-      IVisitor visitor,
-      object data
-      )
-    {return visitor.Visit(this, data);}
-
-    public override int CompareTo(
-      PdfDirectObject obj
-      )
-    {return PdfNumber.Compare(this,obj);}
-
-    public override bool Equals(
-      object obj
-      )
-    {return PdfNumber.Equal(this,obj);}
-
-    public override int GetHashCode(
-      )
-    {return PdfNumber.GetHashCode(this);}
-
-    public override void WriteTo(
-      IOutputStream stream,
-      File context
-      )
-    {stream.Write(RawValue.ToString());}
-
-    #region IPdfNumber
-    public double DoubleValue
+    public sealed class PdfInteger
+      : PdfSimpleObject<int>,
+        IPdfNumber
     {
-      get
-      {return RawValue;}
-    }
+        #region static
+        #region fields
+        public static readonly PdfInteger Default = new PdfInteger(0);
+        #endregion
 
-    public float FloatValue
-    {
-      get
-      {return RawValue;}
-    }
+        #region interface
+        #region public
+        /**
+          <summary>Gets the object equivalent to the given value.</summary>
+        */
+        public static PdfInteger Get(
+          int? value
+          )
+        { return value.HasValue ? new PdfInteger(value.Value) : null; }
+        #endregion
+        #endregion
+        #endregion
 
-    public int IntValue
-    {
-      get
-      {return RawValue;}
-    }
+        #region dynamic
+        #region constructors
+        public PdfInteger(
+          int value
+          )
+        { RawValue = value; }
+        #endregion
 
-    double IPdfSimpleObject<double>.RawValue
-    {
-      get
-      {return this.RawValue;}
+        #region interface
+        #region public
+        public override PdfObject Accept(
+          IVisitor visitor,
+          object data
+          )
+        { return visitor.Visit(this, data); }
+
+        public override int CompareTo(
+          PdfDirectObject obj
+          )
+        { return PdfNumber.Compare(this, obj); }
+
+        public override bool Equals(
+          object obj
+          )
+        { return PdfNumber.Equal(this, obj); }
+
+        public override int GetHashCode(
+          )
+        { return PdfNumber.GetHashCode(this); }
+
+        public override void WriteTo(
+          IOutputStream stream,
+          File context
+          )
+        { stream.Write(RawValue.ToString()); }
+
+        #region IPdfNumber
+        public double DoubleValue
+        {
+            get
+            { return RawValue; }
+        }
+
+        public float FloatValue
+        {
+            get
+            { return RawValue; }
+        }
+
+        public int IntValue
+        {
+            get
+            { return RawValue; }
+        }
+
+        double IPdfSimpleObject<double>.RawValue
+        {
+            get
+            { return this.RawValue; }
+        }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }

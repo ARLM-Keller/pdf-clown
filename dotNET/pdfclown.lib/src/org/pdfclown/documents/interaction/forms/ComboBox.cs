@@ -33,55 +33,55 @@ using System;
 
 namespace org.pdfclown.documents.interaction.forms
 {
-  /**
-    <summary>Combo box [PDF:1.6:8.6.3].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class ComboBox
-    : ChoiceField
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new combobox within the given document context.</summary>
+      <summary>Combo box [PDF:1.6:8.6.3].</summary>
     */
-    public ComboBox(
-      string name,
-      Widget widget
-      ) : base(name, widget)
-    {Flags = EnumUtils.Mask(Flags, FlagsEnum.Combo, true);}
-
-    internal ComboBox(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets whether the text is editable.</summary>
-    */
-    public bool Editable
+    [PDF(VersionEnum.PDF12)]
+    public sealed class ComboBox
+      : ChoiceField
     {
-      get
-      {return (Flags & FlagsEnum.Edit) == FlagsEnum.Edit;}
-      set
-      {Flags = EnumUtils.Mask(Flags, FlagsEnum.Edit, value);}
-    }
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new combobox within the given document context.</summary>
+        */
+        public ComboBox(
+          string name,
+          Widget widget
+          ) : base(name, widget)
+        { Flags = EnumUtils.Mask(Flags, FlagsEnum.Combo, true); }
 
-    /**
-      <summary>Gets/Sets whether the edited text is spell checked.</summary>
-    */
-    public bool SpellChecked
-    {
-      get
-      {return (Flags & FlagsEnum.DoNotSpellCheck) != FlagsEnum.DoNotSpellCheck;}
-      set
-      {Flags = EnumUtils.Mask(Flags, FlagsEnum.DoNotSpellCheck, !value);}
+        internal ComboBox(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets whether the text is editable.</summary>
+        */
+        public bool Editable
+        {
+            get
+            { return (Flags & FlagsEnum.Edit) == FlagsEnum.Edit; }
+            set
+            { Flags = EnumUtils.Mask(Flags, FlagsEnum.Edit, value); }
+        }
+
+        /**
+          <summary>Gets/Sets whether the edited text is spell checked.</summary>
+        */
+        public bool SpellChecked
+        {
+            get
+            { return (Flags & FlagsEnum.DoNotSpellCheck) != FlagsEnum.DoNotSpellCheck; }
+            set
+            { Flags = EnumUtils.Mask(Flags, FlagsEnum.DoNotSpellCheck, !value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -32,45 +32,45 @@ using System;
 
 namespace org.pdfclown.documents.multimedia
 {
-//TODO: this is just a stub.
-  /**
-    <summary>Movie object [PDF:1.6:9.3].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class Movie
-    : PdfObjectWrapper<PdfDictionary>,
-      IFileResource
-  {
-    #region dynamic
-    #region constructors
+    //TODO: this is just a stub.
     /**
-      <summary>Creates a new movie within the given document context.</summary>
+      <summary>Movie object [PDF:1.6:9.3].</summary>
     */
-    public Movie(
-      Document context,
-      FileSpecification dataFile
-      ) : base(context, new PdfDictionary())
-    {DataFile = dataFile;}
-
-    internal Movie(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    #region IFileResource
-    public FileSpecification DataFile
+    [PDF(VersionEnum.PDF12)]
+    public sealed class Movie
+      : PdfObjectWrapper<PdfDictionary>,
+        IFileResource
     {
-      get
-      {return FileSpecification.Wrap(BaseDataObject[PdfName.F]);}
-      set
-      {BaseDataObject[PdfName.F] = value.BaseObject;}
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new movie within the given document context.</summary>
+        */
+        public Movie(
+          Document context,
+          FileSpecification dataFile
+          ) : base(context, new PdfDictionary())
+        { DataFile = dataFile; }
+
+        internal Movie(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        #region IFileResource
+        public FileSpecification DataFile
+        {
+            get
+            { return FileSpecification.Wrap(BaseDataObject[PdfName.F]); }
+            set
+            { BaseDataObject[PdfName.F] = value.BaseObject; }
+        }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -25,37 +25,37 @@
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>High-level representation of a PDF object that can be referenced also through a name.
-    </summary>
-    <remarks>
-      <para>Some categories of objects in a PDF file can be also referred to by name rather than by
-      object reference. The correspondence between names and objects is established by the document's
-      name dictionary [PDF:1.6:3.6.3].</para>
-      <para>The name's purpose is to provide a further level of referential abstraction especially
-      for references across diverse PDF documents.</para>
-    </remarks>
-  */
-  public interface IPdfNamedObjectWrapper
-    : IPdfObjectWrapper
-  {
     /**
-      <summary>Gets the object name.</summary>
-      <remarks>As names are tipically loosely-coupled with their corresponding PDF objects, name
-      retrieval implies a costly reverse lookup into the document's name tree.</remarks>
+      <summary>High-level representation of a PDF object that can be referenced also through a name.
+      </summary>
+      <remarks>
+        <para>Some categories of objects in a PDF file can be also referred to by name rather than by
+        object reference. The correspondence between names and objects is established by the document's
+        name dictionary [PDF:1.6:3.6.3].</para>
+        <para>The name's purpose is to provide a further level of referential abstraction especially
+        for references across diverse PDF documents.</para>
+      </remarks>
     */
-    PdfString Name
+    public interface IPdfNamedObjectWrapper
+      : IPdfObjectWrapper
     {
-      get;
-    }
+        /**
+          <summary>Gets the object name.</summary>
+          <remarks>As names are tipically loosely-coupled with their corresponding PDF objects, name
+          retrieval implies a costly reverse lookup into the document's name tree.</remarks>
+        */
+        PdfString Name
+        {
+            get;
+        }
 
-    /**
-      <summary>Gets the object name, if available; otherwise, behaves like
-      <see cref="IPdfObjectWrapper.BaseObject">BaseObject</see>.</summary>
-    */
-    PdfDirectObject NamedBaseObject
-    {
-      get;
+        /**
+          <summary>Gets the object name, if available; otherwise, behaves like
+          <see cref="IPdfObjectWrapper.BaseObject">BaseObject</see>.</summary>
+        */
+        PdfDirectObject NamedBaseObject
+        {
+            get;
+        }
     }
-  }
 }

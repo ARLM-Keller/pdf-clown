@@ -30,35 +30,31 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.functions
 {
-  /**
-    <summary>PostScript calculator function represented as a stream containing code written in a
-    small subset of the PostScript language [PDF:1.6:3.9.4].</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public sealed class Type4Function
-    : Function
-  {
-    #region dynamic
-    #region constructors
-    //TODO:implement function creation!
-
-    internal Type4Function(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override double[] Calculate(
-      double[] inputs
-      )
+    /**
+      <summary>PostScript calculator function represented as a stream containing code written in a
+      small subset of the PostScript language [PDF:1.6:3.9.4].</summary>
+    */
+    [PDF(VersionEnum.PDF13)]
+    public sealed class Type4Function
+      : Function
     {
-      // FIXME: Auto-generated method stub
-      return null;
+        #region dynamic
+        #region constructors
+        //TODO:implement function creation!
+
+        internal Type4Function(PdfDirectObject baseObject) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override double[] Calculate(double[] inputs)
+        {
+            // FIXME: Auto-generated method stub
+            return inputs;
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -29,129 +29,129 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>Visitor object.</summary>
-  */
-  public class Visitor
-    : IVisitor
-  {
-    public virtual PdfObject Visit(
-      ObjectStream obj,
-      object data
-      )
+    /**
+      <summary>Visitor object.</summary>
+    */
+    public class Visitor
+      : IVisitor
     {
-      foreach(PdfDataObject value in obj.Values)
-      {value.Accept(this, data);}
-      return obj;
+        public virtual PdfObject Visit(
+          ObjectStream obj,
+          object data
+          )
+        {
+            foreach (PdfDataObject value in obj.Values)
+            { value.Accept(this, data); }
+            return obj;
+        }
+
+        public virtual PdfObject Visit(
+          PdfArray obj,
+          object data
+          )
+        {
+            foreach (PdfDirectObject item in obj)
+            {
+                if (item != null)
+                { item.Accept(this, data); }
+            }
+            return obj;
+        }
+
+        public virtual PdfObject Visit(
+          PdfBoolean obj,
+          object data
+          )
+        { return obj; }
+
+        public PdfObject Visit(
+          PdfDataObject obj,
+          object data
+          )
+        { return obj.Accept(this, data); }
+
+        public virtual PdfObject Visit(
+          PdfDate obj,
+          object data
+          )
+        { return obj; }
+
+        public virtual PdfObject Visit(
+          PdfDictionary obj,
+          object data
+          )
+        {
+            foreach (PdfDirectObject value in obj.Values)
+            {
+                if (value != null)
+                { value.Accept(this, data); }
+            }
+            return obj;
+        }
+
+        public virtual PdfObject Visit(
+          PdfIndirectObject obj,
+          object data
+          )
+        {
+            PdfDataObject dataObject = obj.DataObject;
+            if (dataObject != null)
+            { dataObject.Accept(this, data); }
+            return obj;
+        }
+
+        public virtual PdfObject Visit(
+          PdfInteger obj,
+          object data
+          )
+        { return obj; }
+
+        public virtual PdfObject Visit(
+          PdfName obj,
+          object data
+          )
+        { return obj; }
+
+        public virtual PdfObject Visit(
+          PdfReal obj,
+          object data
+          )
+        { return obj; }
+
+        public virtual PdfObject Visit(
+          PdfReference obj,
+          object data
+          )
+        {
+            obj.IndirectObject.Accept(this, data);
+            return obj;
+        }
+
+        public virtual PdfObject Visit(
+          PdfStream obj,
+          object data
+          )
+        {
+            obj.header.Accept(this, data);
+            return obj;
+        }
+
+        public virtual PdfObject Visit(
+          PdfString obj,
+          object data
+          )
+        { return obj; }
+
+        public virtual PdfObject Visit(
+          PdfTextString obj,
+          object data
+          )
+        { return obj; }
+
+        public virtual PdfObject Visit(
+          XRefStream obj,
+          object data
+          )
+        { return obj; }
     }
-
-    public virtual PdfObject Visit(
-      PdfArray obj,
-      object data
-      )
-    {
-      foreach(PdfDirectObject item in obj)
-      {
-        if(item != null)
-        {item.Accept(this, data);}
-      }
-      return obj;
-    }
-
-    public virtual PdfObject Visit(
-      PdfBoolean obj,
-      object data
-      )
-    {return obj;}
-
-    public PdfObject Visit(
-      PdfDataObject obj,
-      object data
-      )
-    {return obj.Accept(this, data);}
-
-    public virtual PdfObject Visit(
-      PdfDate obj,
-      object data
-      )
-    {return obj;}
-
-    public virtual PdfObject Visit(
-      PdfDictionary obj,
-      object data
-      )
-    {
-      foreach(PdfDirectObject value in obj.Values)
-      {
-        if(value != null)
-        {value.Accept(this, data);}
-      }
-      return obj;
-    }
-
-    public virtual PdfObject Visit(
-      PdfIndirectObject obj,
-      object data
-      )
-    {
-      PdfDataObject dataObject = obj.DataObject;
-      if(dataObject != null)
-      {dataObject.Accept(this, data);}
-      return obj;
-    }
-
-    public virtual PdfObject Visit(
-      PdfInteger obj,
-      object data
-      )
-    {return obj;}
-
-    public virtual PdfObject Visit(
-      PdfName obj,
-      object data
-      )
-    {return obj;}
-
-    public virtual PdfObject Visit(
-      PdfReal obj,
-      object data
-      )
-    {return obj;}
-
-    public virtual PdfObject Visit(
-      PdfReference obj,
-      object data
-      )
-    {
-      obj.IndirectObject.Accept(this, data);
-      return obj;
-    }
-
-    public virtual PdfObject Visit(
-      PdfStream obj,
-      object data
-      )
-    {
-      obj.header.Accept(this, data);
-      return obj;
-    }
-
-    public virtual PdfObject Visit(
-      PdfString obj,
-      object data
-      )
-    {return obj;}
-
-    public virtual PdfObject Visit(
-      PdfTextString obj,
-      object data
-      )
-    {return obj;}
-
-    public virtual PdfObject Visit(
-      XRefStream obj,
-      object data
-      )
-    {return obj;}
-  }
 }

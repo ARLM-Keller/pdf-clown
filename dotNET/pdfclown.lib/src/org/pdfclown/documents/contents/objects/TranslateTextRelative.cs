@@ -25,100 +25,93 @@
 
 using org.pdfclown.bytes;
 using org.pdfclown.objects;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Drawing2D;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Move to the start of the next line, offset from the start of the current line' operation
-    [PDF:1.6:5.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class TranslateTextRelative
-    : Operation
-  {
-    #region static
-    #region fields
     /**
-      <summary>No side effect.</summary>
+      <summary>'Move to the start of the next line, offset from the start of the current line' operation
+      [PDF:1.6:5.2].</summary>
     */
-    public static readonly string SimpleOperatorKeyword = "Td";
-    /**
-      <summary>Lead parameter setting.</summary>
-    */
-    public static readonly string LeadOperatorKeyword = "TD";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public TranslateTextRelative(
-      double offsetX,
-      double offsetY
-      ) : this(offsetX,offsetY,false)
-    {}
-
-    public TranslateTextRelative(
-      double offsetX,
-      double offsetY,
-      bool leadSet
-      ) : base(
-        leadSet ? LeadOperatorKeyword : SimpleOperatorKeyword,
-        PdfReal.Get(offsetX),
-        PdfReal.Get(offsetY)
-        )
-    {}
-
-    public TranslateTextRelative(
-      string @operator,
-      IList<PdfDirectObject> operands
-      ) : base(@operator,operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets whether this operation, as a side effect, sets the leading parameter in the text state.</summary>
-    */
-    public bool LeadSet
+    [PDF(VersionEnum.PDF10)]
+    public sealed class TranslateTextRelative
+      : Operation
     {
-      get
-      {return @operator.Equals(LeadOperatorKeyword);}
-      set
-      {@operator = (value ? LeadOperatorKeyword : SimpleOperatorKeyword);}
-    }
+        #region static
+        #region fields
+        /**
+          <summary>No side effect.</summary>
+        */
+        public static readonly string SimpleOperatorKeyword = "Td";
+        /**
+          <summary>Lead parameter setting.</summary>
+        */
+        public static readonly string LeadOperatorKeyword = "TD";
+        #endregion
+        #endregion
 
-    public double OffsetX
-    {
-      get
-      {return ((IPdfNumber)operands[0]).RawValue;}
-      set
-      {operands[0] = PdfReal.Get(value);}
-    }
+        #region dynamic
+        #region constructors
+        public TranslateTextRelative(
+          double offsetX,
+          double offsetY
+          ) : this(offsetX, offsetY, false)
+        { }
 
-    public double OffsetY
-    {
-      get
-      {return ((IPdfNumber)operands[1]).RawValue;}
-      set
-      {operands[1] = PdfReal.Get(value);}
-    }
+        public TranslateTextRelative(
+          double offsetX,
+          double offsetY,
+          bool leadSet
+          ) : base(
+            leadSet ? LeadOperatorKeyword : SimpleOperatorKeyword,
+            PdfReal.Get(offsetX),
+            PdfReal.Get(offsetY)
+            )
+        { }
 
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {
-      state.Tlm.Multiply(new Matrix(1, 0, 0, 1, (float)OffsetX, (float)OffsetY));
-      state.Tm = state.Tlm.Clone();
-      if(LeadSet)
-      {state.Lead = -OffsetY;}
+        public TranslateTextRelative(
+          string @operator,
+          IList<PdfDirectObject> operands
+          ) : base(@operator, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets whether this operation, as a side effect, sets the leading parameter in the text state.</summary>
+        */
+        public bool LeadSet
+        {
+            get { return @operator.Equals(LeadOperatorKeyword); }
+            set { @operator = (value ? LeadOperatorKeyword : SimpleOperatorKeyword); }
+        }
+
+        public double OffsetX
+        {
+            get { return ((IPdfNumber)operands[0]).RawValue; }
+            set { operands[0] = PdfReal.Get(value); }
+        }
+
+        public double OffsetY
+        {
+            get { return ((IPdfNumber)operands[1]).RawValue; }
+            set { operands[1] = PdfReal.Get(value); }
+        }
+
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            var tlm = state.Tlm;
+            SKMatrix.PreConcat(ref tlm, new SKMatrix { Values = new float[] { 1, 0, (float)OffsetX, 0, 1, (float)OffsetY, 0, 0, 1 } });
+            state.Tlm = tlm;
+            state.Tm = state.Tlm;
+            if (LeadSet)
+            { state.Lead = -OffsetY; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

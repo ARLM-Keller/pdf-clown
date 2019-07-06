@@ -31,114 +31,114 @@ using System.IO;
 
 namespace org.pdfclown.documents.contents.entities
 {
-  /**
-    <summary>Abstract image object [PDF:1.6:4.8].</summary>
-  */
-  public abstract class Image
-    : Entity
-  {
-    #region static
-    #region interface
-    #region public
-    public static Image Get(
-      string path
-      )
+    /**
+      <summary>Abstract image object [PDF:1.6:4.8].</summary>
+    */
+    public abstract class Image
+      : Entity
     {
-      return Get(
-        new FileStream(
-          path,
-          FileMode.Open,
-          FileAccess.Read
+        #region static
+        #region interface
+        #region public
+        public static Image Get(
+          string path
           )
-        );
+        {
+            return Get(
+              new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read
+                )
+              );
+        }
+
+        public static Image Get(
+          System.IO.Stream stream
+          )
+        {
+            // Get the format identifier!
+            byte[] formatMarkerBytes = new byte[2];
+            stream.Read(formatMarkerBytes, 0, 2);
+
+            // Is JPEG?
+            /*
+              NOTE: JPEG files are identified by a SOI (Start Of Image) marker [ISO 10918-1].
+            */
+            if (formatMarkerBytes[0] == 0xFF
+              && formatMarkerBytes[1] == 0xD8) // JPEG.
+            { return new JpegImage(stream); }
+            else // Unknown.
+            { return null; }
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region fields
+        private int bitsPerComponent;
+        private int height;
+        private int width;
+
+        private System.IO.Stream stream;
+        #endregion
+
+        #region constructors
+        protected Image(
+          System.IO.Stream stream
+          )
+        { this.stream = stream; }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the number of bits per color component
+          [PDF:1.6:4.8.2].</summary>
+        */
+        public int BitsPerComponent
+        {
+            get
+            { return bitsPerComponent; }
+            protected set
+            { bitsPerComponent = value; }
+        }
+
+        /**
+          <summary>Gets/Sets the height of the image in samples [PDF:1.6:4.8.2].</summary>
+        */
+        public int Height
+        {
+            get
+            { return height; }
+            protected set
+            { height = value; }
+        }
+
+        /**
+          <summary>Gets/Sets the width of the image in samples [PDF:1.6:4.8.2].</summary>
+        */
+        public int Width
+        {
+            get
+            { return width; }
+            protected set
+            { width = value; }
+        }
+        #endregion
+
+        #region protected
+        /**
+          <summary>Gets the underlying stream.</summary>
+        */
+        protected System.IO.Stream Stream
+        {
+            get
+            { return stream; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    public static Image Get(
-      System.IO.Stream stream
-      )
-    {
-      // Get the format identifier!
-      byte[] formatMarkerBytes = new byte[2];
-      stream.Read(formatMarkerBytes,0,2);
-
-      // Is JPEG?
-      /*
-        NOTE: JPEG files are identified by a SOI (Start Of Image) marker [ISO 10918-1].
-      */
-      if(formatMarkerBytes[0] == 0xFF
-        && formatMarkerBytes[1] == 0xD8) // JPEG.
-      {return new JpegImage(stream);}
-      else // Unknown.
-      {return null;}
-    }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region fields
-    private int bitsPerComponent;
-    private int height;
-    private int width;
-
-    private System.IO.Stream stream;
-    #endregion
-
-    #region constructors
-    protected Image(
-      System.IO.Stream stream
-      )
-    {this.stream = stream;}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the number of bits per color component
-      [PDF:1.6:4.8.2].</summary>
-    */
-    public int BitsPerComponent
-    {
-      get
-      {return bitsPerComponent;}
-      protected set
-      {bitsPerComponent = value;}
-    }
-
-    /**
-      <summary>Gets/Sets the height of the image in samples [PDF:1.6:4.8.2].</summary>
-    */
-    public int Height
-    {
-      get
-      {return height;}
-      protected set
-      {height = value;}
-    }
-
-    /**
-      <summary>Gets/Sets the width of the image in samples [PDF:1.6:4.8.2].</summary>
-    */
-    public int Width
-    {
-      get
-      {return width;}
-      protected set
-      {width = value;}
-    }
-    #endregion
-
-    #region protected
-    /**
-      <summary>Gets the underlying stream.</summary>
-    */
-    protected System.IO.Stream Stream
-    {
-      get
-      {return stream;}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

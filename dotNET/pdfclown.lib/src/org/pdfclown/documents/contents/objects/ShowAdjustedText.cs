@@ -32,104 +32,104 @@ using System.IO;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Show one or more text strings, allowing individual glyph positioning'
-    operation [PDF:1.6:5.3.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class ShowAdjustedText
-    : ShowText
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "TJ";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
     /**
-      <param name="value">Each element can be either a byte array (encoded text) or a number.
-        If the element is a byte array (encoded text), this operator shows the text glyphs.
-        If it is a number (glyph adjustment), the operator adjusts the next glyph position by that amount.</param>
+      <summary>'Show one or more text strings, allowing individual glyph positioning'
+      operation [PDF:1.6:5.3.2].</summary>
     */
-    public ShowAdjustedText(
-      IList<object> value
-      ) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
-    {Value = value;}
-
-    internal ShowAdjustedText(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override byte[] Text
+    [PDF(VersionEnum.PDF10)]
+    public sealed class ShowAdjustedText
+      : ShowText
     {
-      get
-      {
-        MemoryStream textStream = new MemoryStream();
-        foreach(PdfDirectObject element in ((PdfArray)operands[0]))
-        {
-          if(element is PdfString)
-          {
-            byte[] elementValue = ((PdfString)element).RawValue;
-            textStream.Write(elementValue,0,elementValue.Length);
-          }
-        }
-        return textStream.ToArray();
-      }
-      set
-      {Value = new List<object>(){(object)value};}
-    }
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "TJ";
+        #endregion
+        #endregion
 
-    public override IList<object> Value
-    {
-      get
-      {
-        var value = new List<object>();
-        foreach(PdfDirectObject element in ((PdfArray)operands[0]))
-        {
-          //TODO:horrible workaround to the lack of generic covariance...
-          if(element is IPdfNumber)
-          {
-            value.Add(
-              ((IPdfNumber)element).RawValue
-              );
-          }
-          else if(element is PdfString)
-          {
-            value.Add(
-              ((PdfString)element).RawValue
-              );
-          }
-          else
-            throw new NotSupportedException("Element type " + element.GetType().Name + " not supported.");
-        }
-        return value;
-      }
-      set
-      {
-        PdfArray elements = (PdfArray)operands[0];
-        elements.Clear();
-        bool textItemExpected = true;
-        foreach(object valueItem in value)
-        {
-          PdfDirectObject element;
-          if(textItemExpected)
-          {element = new PdfByteString((byte[])valueItem);}
-          else
-          {element = PdfInteger.Get(Convert.ToInt32(valueItem));}
-          elements.Add(element);
+        #region dynamic
+        #region constructors
+        /**
+          <param name="value">Each element can be either a byte array (encoded text) or a number.
+            If the element is a byte array (encoded text), this operator shows the text glyphs.
+            If it is a number (glyph adjustment), the operator adjusts the next glyph position by that amount.</param>
+        */
+        public ShowAdjustedText(
+          IList<object> value
+          ) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
+        { Value = value; }
 
-          textItemExpected = !textItemExpected;
+        internal ShowAdjustedText(
+          IList<PdfDirectObject> operands
+          ) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override byte[] Text
+        {
+            get
+            {
+                MemoryStream textStream = new MemoryStream();
+                foreach (PdfDirectObject element in ((PdfArray)operands[0]))
+                {
+                    if (element is PdfString)
+                    {
+                        byte[] elementValue = ((PdfString)element).RawValue;
+                        textStream.Write(elementValue, 0, elementValue.Length);
+                    }
+                }
+                return textStream.ToArray();
+            }
+            set
+            { Value = new List<object>() { (object)value }; }
         }
-      }
+
+        public override IList<object> Value
+        {
+            get
+            {
+                var value = new List<object>();
+                foreach (PdfDirectObject element in ((PdfArray)operands[0]))
+                {
+                    //TODO:horrible workaround to the lack of generic covariance...
+                    if (element is IPdfNumber)
+                    {
+                        value.Add(
+                          ((IPdfNumber)element).RawValue
+                          );
+                    }
+                    else if (element is PdfString)
+                    {
+                        value.Add(
+                          ((PdfString)element).RawValue
+                          );
+                    }
+                    else
+                        throw new NotSupportedException("Element type " + element.GetType().Name + " not supported.");
+                }
+                return value;
+            }
+            set
+            {
+                PdfArray elements = (PdfArray)operands[0];
+                elements.Clear();
+                bool textItemExpected = true;
+                foreach (object valueItem in value)
+                {
+                    PdfDirectObject element;
+                    if (textItemExpected)
+                    { element = new PdfByteString((byte[])valueItem); }
+                    else
+                    { element = PdfInteger.Get(Convert.ToInt32(valueItem)); }
+                    elements.Add(element);
+
+                    textItemExpected = !textItemExpected;
+                }
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

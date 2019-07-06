@@ -27,96 +27,80 @@ using org.pdfclown.bytes;
 using org.pdfclown.objects;
 
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Begin a new subpath by moving the current point' operation [PDF:1.6:4.4.1].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class BeginSubpath
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "m";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
     /**
-      <param name="point">Current point.</param>
+      <summary>'Begin a new subpath by moving the current point' operation [PDF:1.6:4.4.1].</summary>
     */
-    public BeginSubpath(
-      PointF point
-      ) : this(
-        point.X,
-        point.Y
-        )
-    {}
-
-    /**
-      <param name="pointX">Current point X.</param>
-      <param name="pointY">Current point Y.</param>
-    */
-    public BeginSubpath(
-      double pointX,
-      double pointY
-      ) : base(
-        OperatorKeyword,
-        new List<PdfDirectObject>(
-          new PdfDirectObject[]
-          {
-            PdfReal.Get(pointX),
-            PdfReal.Get(pointY)
-          }
-          )
-        )
-    {}
-
-    public BeginSubpath(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the current point.</summary>
-    */
-    public PointF Point
+    [PDF(VersionEnum.PDF10)]
+    public sealed class BeginSubpath
+      : Operation
     {
-      get
-      {
-        return new PointF(
-          ((IPdfNumber)operands[0]).FloatValue,
-          ((IPdfNumber)operands[1]).FloatValue
-          );
-      }
-      set
-      {
-        operands[0] = PdfReal.Get(value.X);
-        operands[1] = PdfReal.Get(value.Y);
-      }
-    }
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "m";
+        #endregion
+        #endregion
 
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {
-      GraphicsPath pathObject = (GraphicsPath)state.Scanner.RenderObject;
-      if(pathObject != null)
-      {
-        PointF point = Point;
-        pathObject.AddLine(point, point);
-      }
+        #region dynamic
+        #region constructors
+        /**
+          <param name="point">Current point.</param>
+        */
+        public BeginSubpath(SKPoint point) : this(point.X, point.Y)
+        { }
+
+        /**
+          <param name="pointX">Current point X.</param>
+          <param name="pointY">Current point Y.</param>
+        */
+        public BeginSubpath(double pointX, double pointY)
+            : base(OperatorKeyword, new List<PdfDirectObject>(new PdfDirectObject[]
+              {
+                  PdfReal.Get(pointX),
+                  PdfReal.Get(pointY)
+              }
+              )
+            )
+        { }
+
+        public BeginSubpath(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the current point.</summary>
+        */
+        public SKPoint Point
+        {
+            get
+            {
+                return new SKPoint(
+                  ((IPdfNumber)operands[0]).FloatValue,
+                  ((IPdfNumber)operands[1]).FloatValue
+                  );
+            }
+            set
+            {
+                operands[0] = PdfReal.Get(value.X);
+                operands[1] = PdfReal.Get(value.Y);
+            }
+        }
+
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            var pathObject = state.Scanner.RenderObject;
+            if (pathObject != null)
+            {
+                pathObject.MoveTo(Point);
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

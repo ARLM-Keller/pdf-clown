@@ -32,102 +32,102 @@ using System.Linq;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Set the color to use for stroking operations' operation [PDF:1.6:4.5.7].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public class SetStrokeColor
-    : Operation
-  {
-    #region static
-    #region fields
     /**
-      <summary>'Set the color to use for stroking operations in any color space' operator.</summary>
+      <summary>'Set the color to use for stroking operations' operation [PDF:1.6:4.5.7].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public static readonly string ExtendedOperatorKeyword = "SCN";
-    /**
-      <summary>'Set the color to use for stroking operations in a device, CIE-based (other than ICCBased),
-      or Indexed color space' operator.</summary>
-    */
-    [PDF(VersionEnum.PDF11)]
-    public static readonly string OperatorKeyword = "SC";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public SetStrokeColor(
-      Color value
-      ) : this(ExtendedOperatorKeyword, value)
-    {}
-
-    public SetStrokeColor(
-      IList<PdfDirectObject> operands
-      ) : this(ExtendedOperatorKeyword, operands)
-    {}
-
-    public SetStrokeColor(
-      string @operator,
-      IList<PdfDirectObject> operands
-      ) : base(@operator, operands)
-    {}
-
-    protected SetStrokeColor(
-      string @operator,
-      Color value
-      ) : base(@operator, new List<PdfDirectObject>(value.Components))
-    {}
-
-    /**
-      <param name="operator">Graphics operator.</param>
-      <param name="name">Name of the color resource entry (see <see cref="Pattern"/>).</param>
-     */
-    protected SetStrokeColor(
-      string @operator,
-      PdfName name
-      ) : this(@operator, name, null)
-    {}
-
-    /**
-      <param name="operator">Graphics operator.</param>
-      <param name="name">Name of the color resource entry (see <see cref="Pattern"/>).</param>
-      <param name="underlyingColor">Color used to colorize the pattern.</param>
-     */
-    protected SetStrokeColor(
-      string @operator,
-      PdfName name,
-      Color underlyingColor
-      ) : base(@operator, new List<PdfDirectObject>())
+    public class SetStrokeColor
+      : Operation
     {
-      if(underlyingColor != null)
-      {
-        foreach(PdfDirectObject component in underlyingColor.Components)
-        {operands.Add(component);}
-      }
-      operands.Add(name);
-    }
-    #endregion
+        #region static
+        #region fields
+        /**
+          <summary>'Set the color to use for stroking operations in any color space' operator.</summary>
+        */
+        [PDF(VersionEnum.PDF12)]
+        public static readonly string ExtendedOperatorKeyword = "SCN";
+        /**
+          <summary>'Set the color to use for stroking operations in a device, CIE-based (other than ICCBased),
+          or Indexed color space' operator.</summary>
+        */
+        [PDF(VersionEnum.PDF11)]
+        public static readonly string OperatorKeyword = "SC";
+        #endregion
+        #endregion
 
-    #region interface
-    #region public
-    public IList<PdfDirectObject> Components
-    {
-      get
-      {return operands;}
-    }
+        #region dynamic
+        #region constructors
+        public SetStrokeColor(
+          Color value
+          ) : this(ExtendedOperatorKeyword, value)
+        { }
 
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {
-      state.StrokeColor = state.StrokeColorSpace.GetColor(
-        operands,
-        state.Scanner.ContentContext
-        );
+        public SetStrokeColor(
+          IList<PdfDirectObject> operands
+          ) : this(ExtendedOperatorKeyword, operands)
+        { }
+
+        public SetStrokeColor(
+          string @operator,
+          IList<PdfDirectObject> operands
+          ) : base(@operator, operands)
+        { }
+
+        protected SetStrokeColor(
+          string @operator,
+          Color value
+          ) : base(@operator, new List<PdfDirectObject>(value.Components))
+        { }
+
+        /**
+          <param name="operator">Graphics operator.</param>
+          <param name="name">Name of the color resource entry (see <see cref="Pattern"/>).</param>
+         */
+        protected SetStrokeColor(
+          string @operator,
+          PdfName name
+          ) : this(@operator, name, null)
+        { }
+
+        /**
+          <param name="operator">Graphics operator.</param>
+          <param name="name">Name of the color resource entry (see <see cref="Pattern"/>).</param>
+          <param name="underlyingColor">Color used to colorize the pattern.</param>
+         */
+        protected SetStrokeColor(
+          string @operator,
+          PdfName name,
+          Color underlyingColor
+          ) : base(@operator, new List<PdfDirectObject>())
+        {
+            if (underlyingColor != null)
+            {
+                foreach (PdfDirectObject component in underlyingColor.Components)
+                { operands.Add(component); }
+            }
+            operands.Add(name);
+        }
+        #endregion
+
+        #region interface
+        #region public
+        public IList<PdfDirectObject> Components
+        {
+            get
+            { return operands; }
+        }
+
+        public override void Scan(
+          ContentScanner.GraphicsState state
+          )
+        {
+            state.StrokeColor = state.StrokeColorSpace.GetColor(
+              operands,
+              state.Scanner.ContentContext
+              );
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

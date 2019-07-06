@@ -29,131 +29,120 @@ using org.pdfclown.util;
 
 using System;
 using System.Collections.Generic;
-using drawing = System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Indexed color space [PDF:1.6:4.5.5].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class IndexedColorSpace
-    : SpecialColorSpace
-  {
-    #region dynamic
-    #region fields
-    private IDictionary<int,Color> baseColors = new Dictionary<int,Color>();
-    private byte[] baseComponentValues;
-    private ColorSpace baseSpace;
-    #endregion
-
-    #region constructors
-    //TODO:IMPL new element constructor!
-
-    internal IndexedColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the base color space in which the values in the color table
-      are to be interpreted.</summary>
+      <summary>Indexed color space [PDF:1.6:4.5.5].</summary>
     */
-    public ColorSpace BaseSpace
+    [PDF(VersionEnum.PDF11)]
+    public sealed class IndexedColorSpace : SpecialColorSpace
     {
-      get
-      {
-        if(baseSpace == null)
-        {baseSpace = ColorSpace.Wrap(((PdfArray)BaseDataObject)[1]);}
-        return baseSpace;
-      }
-    }
+        #region dynamic
+        #region fields
+        private IDictionary<int, Color> baseColors = new Dictionary<int, Color>();
+        private byte[] baseComponentValues;
+        private ColorSpace baseSpace;
+        #endregion
 
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
+        #region constructors
+        //TODO:IMPL new element constructor!
 
-    public override int ComponentCount
-    {
-      get
-      {return 1;}
-    }
+        internal IndexedColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        { }
+        #endregion
 
-    public override Color DefaultColor
-    {
-      get
-      {return IndexedColor.Default;}
-    }
-
-    /**
-      <summary>Gets the color corresponding to the specified table index resolved according to
-      the <see cref="BaseSpace">base space</see>.<summary>
-    */
-    public Color GetBaseColor(
-      IndexedColor color
-      )
-    {
-      int colorIndex = color.Index;
-      Color baseColor = baseColors[colorIndex];
-      if(baseColor == null)
-      {
-        ColorSpace baseSpace = BaseSpace;
-        IList<PdfDirectObject> components = new List<PdfDirectObject>();
+        #region interface
+        #region public
+        /**
+          <summary>Gets the base color space in which the values in the color table
+          are to be interpreted.</summary>
+        */
+        public ColorSpace BaseSpace
         {
-          int componentCount = baseSpace.ComponentCount;
-          int componentValueIndex = colorIndex * componentCount;
-          byte[] baseComponentValues = BaseComponentValues;
-          for(
-            int componentIndex = 0;
-            componentIndex < componentCount;
-            componentIndex++
-            )
-          {
-            components.Add(
-              PdfReal.Get(((int)baseComponentValues[componentValueIndex++] & 0xff) / 255d)
-              );
-          }
+            get
+            {
+                if (baseSpace == null)
+                { baseSpace = ColorSpace.Wrap(((PdfArray)BaseDataObject)[1]); }
+                return baseSpace;
+            }
         }
-        baseColor = baseSpace.GetColor(components, null);
-      }
-      return baseColor;
-    }
 
-    public override Color GetColor(
-      IList<PdfDirectObject> components,
-      IContentContext context
-      )
-    {return new IndexedColor(components);}
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
 
-    public override drawing::Brush GetPaint(
-      Color color
-      )
-    {
-      return BaseSpace.GetPaint(
-        GetBaseColor((IndexedColor)color)
-        );
-    }
-    #endregion
+        public override int ComponentCount
+        {
+            get { return 1; }
+        }
 
-    #region private
-    /**
-      <summary>Gets the color table.</summary>
-    */
-    private byte[] BaseComponentValues
-    {
-      get
-      {
-        if(baseComponentValues == null)
-        {baseComponentValues = ((IDataWrapper)((PdfArray)BaseDataObject).Resolve(3)).ToByteArray();}
-        return baseComponentValues;
-      }
+        public override Color DefaultColor
+        {
+            get { return IndexedColor.Default; }
+        }
+
+        /**
+          <summary>Gets the color corresponding to the specified table index resolved according to
+          the <see cref="BaseSpace">base space</see>.<summary>
+        */
+        public Color GetBaseColor(IndexedColor color)
+        {
+            int colorIndex = color.Index;
+            Color baseColor = baseColors[colorIndex];
+            if (baseColor == null)
+            {
+                ColorSpace baseSpace = BaseSpace;
+                IList<PdfDirectObject> components = new List<PdfDirectObject>();
+                {
+                    int componentCount = baseSpace.ComponentCount;
+                    int componentValueIndex = colorIndex * componentCount;
+                    byte[] baseComponentValues = BaseComponentValues;
+                    for (
+                      int componentIndex = 0;
+                      componentIndex < componentCount;
+                      componentIndex++
+                      )
+                    {
+                        components.Add(
+                          PdfReal.Get(((int)baseComponentValues[componentValueIndex++] & 0xff) / 255d)
+                          );
+                    }
+                }
+                baseColor = baseSpace.GetColor(components, null);
+            }
+            return baseColor;
+        }
+
+        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
+        { return new IndexedColor(components); }
+
+        public override SKColor GetColor(Color color)
+        {
+            return BaseSpace.GetColor(GetBaseColor((IndexedColor)color));
+        }
+
+        public override SKPaint GetPaint(Color color)
+        {
+            return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color));
+        }
+        #endregion
+
+        #region private
+        /**
+          <summary>Gets the color table.</summary>
+        */
+        private byte[] BaseComponentValues
+        {
+            get
+            {
+                if (baseComponentValues == null)
+                { baseComponentValues = ((IDataWrapper)((PdfArray)BaseDataObject).Resolve(3)).ToByteArray(); }
+                return baseComponentValues;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -29,78 +29,69 @@ using org.pdfclown.util;
 
 using System;
 using System.Collections.Generic;
-using drawing = System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Special color space that can contain an arbitrary number of color components [PDF:1.6:4.5.5].</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public sealed class DeviceNColorSpace
-    : SpecialDeviceColorSpace
-  {
-    #region dynamic
-    #region constructors
-    //TODO:IMPL new element constructor!
-
-    internal DeviceNColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    public override int ComponentCount
+    /**
+      <summary>Special color space that can contain an arbitrary number of color components [PDF:1.6:4.5.5].</summary>
+    */
+    [PDF(VersionEnum.PDF13)]
+    public sealed class DeviceNColorSpace : SpecialDeviceColorSpace
     {
-      get
-      {return ((PdfArray)((PdfArray)BaseDataObject)[1]).Count;}
-    }
+        #region dynamic
+        #region constructors
+        //TODO:IMPL new element constructor!
 
-    public override IList<string> ComponentNames
-    {
-      get
-      {
-        IList<string> componentNames = new List<string>();
+        internal DeviceNColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+
+        public override int ComponentCount
         {
-          PdfArray namesObject = (PdfArray)((PdfArray)BaseDataObject)[1];
-          foreach(PdfDirectObject nameObject in namesObject)
-          {componentNames.Add((string)((PdfName)nameObject).Value);}
+            get { return ((PdfArray)((PdfArray)BaseDataObject)[1]).Count; }
         }
-        return componentNames;
-      }
+
+        public override IList<string> ComponentNames
+        {
+            get
+            {
+                IList<string> componentNames = new List<string>();
+                {
+                    PdfArray namesObject = (PdfArray)((PdfArray)BaseDataObject)[1];
+                    foreach (PdfDirectObject nameObject in namesObject)
+                    { componentNames.Add((string)((PdfName)nameObject).Value); }
+                }
+                return componentNames;
+            }
+        }
+
+        public override Color DefaultColor
+        {
+            get
+            {
+                double[] components = new double[ComponentCount];
+                for (
+                  int index = 0,
+                    length = components.Length;
+                  index < length;
+                  index++
+                  )
+                { components[index] = 1; }
+
+                return new DeviceNColor(components);
+            }
+        }
+
+        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
+        { return new DeviceNColor(components); }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    public override Color DefaultColor
-    {
-      get
-      {
-        double[] components = new double[ComponentCount];
-        for(
-          int index = 0,
-            length = components.Length;
-          index < length;
-          index++
-          )
-        {components[index] = 1;}
-
-        return new DeviceNColor(components);
-      }
-    }
-
-    public override Color GetColor(
-      IList<PdfDirectObject> components,
-      IContentContext context
-      )
-    {return new DeviceNColor(components);}
-    #endregion
-    #endregion
-    #endregion
-  }
 }

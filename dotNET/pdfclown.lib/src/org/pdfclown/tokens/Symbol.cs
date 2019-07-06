@@ -25,22 +25,22 @@
 
 namespace org.pdfclown.tokens
 {
-  /**
-    <summary>PDF symbols.</summary>
-  */
-  public static class Symbol
-  {
-    public const char CapitalR = 'R';
-    public const char CarriageReturn = '\r';
-    public const char CloseAngleBracket = '>';
-    public const char CloseRoundBracket = ')';
-    public const char CloseSquareBracket = ']';
-    public const char LineFeed = '\n';
-    public const char OpenAngleBracket = '<';
-    public const char OpenRoundBracket = '(';
-    public const char OpenSquareBracket = '[';
-    public const char Percent = '%';
-    public const char Slash = '/';
-    public const char Space = ' ';
-  }
+    /**
+      <summary>PDF symbols.</summary>
+    */
+    public static class Symbol
+    {
+        public const char CapitalR = 'R';
+        public const char CarriageReturn = '\r';
+        public const char CloseAngleBracket = '>';
+        public const char CloseRoundBracket = ')';
+        public const char CloseSquareBracket = ']';
+        public const char LineFeed = '\n';
+        public const char OpenAngleBracket = '<';
+        public const char OpenRoundBracket = '(';
+        public const char OpenSquareBracket = '[';
+        public const char Percent = '%';
+        public const char Slash = '/';
+        public const char Space = ' ';
+    }
 }

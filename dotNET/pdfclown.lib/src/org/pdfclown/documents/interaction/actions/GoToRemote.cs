@@ -33,48 +33,48 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>'Change the view to a specified destination in another PDF file' action
-    [PDF:1.6:8.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class GoToRemote
-    : GotoNonLocal<RemoteDestination>
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new action within the given document context.</summary>
+      <summary>'Change the view to a specified destination in another PDF file' action
+      [PDF:1.6:8.5.3].</summary>
     */
-    public GoToRemote(
-      Document context,
-      FileSpecification destinationFile,
-      RemoteDestination destination
-      ) : base(context, PdfName.GoToR, destinationFile, destination)
-    {}
-
-    internal GoToRemote(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override FileSpecification DestinationFile
+    [PDF(VersionEnum.PDF11)]
+    public sealed class GoToRemote
+      : GotoNonLocal<RemoteDestination>
     {
-      get
-      {return base.DestinationFile;}
-      set
-      {
-        if(value == null)
-          throw new ArgumentNullException("value");
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new action within the given document context.</summary>
+        */
+        public GoToRemote(
+          Document context,
+          FileSpecification destinationFile,
+          RemoteDestination destination
+          ) : base(context, PdfName.GoToR, destinationFile, destination)
+        { }
 
-        base.DestinationFile = value;
-      }
+        internal GoToRemote(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override FileSpecification DestinationFile
+        {
+            get
+            { return base.DestinationFile; }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("value");
+
+                base.DestinationFile = value;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

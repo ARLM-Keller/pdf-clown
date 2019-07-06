@@ -31,73 +31,69 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.functions
 {
-  /**
-    <summary>Stitching function producing a single new 1-input function from the combination of the
-    subdomains of <see cref="Functions">several 1-input functions</see> [PDF:1.6:3.9.3].</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public sealed class Type3Function
-    : Function
-  {
-    #region dynamic
-    #region constructors
-    //TODO:implement function creation!
-
-    internal Type3Function(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override double[] Calculate(
-      double[] inputs
-      )
-    {
-      // FIXME: Auto-generated method stub
-      return null;
-    }
-
     /**
-      <summary>Gets the <see cref="Domains">domain</see> partition bounds whose resulting intervals
-      are respectively applied to each <see cref="Functions">function</see>.</summary>
+      <summary>Stitching function producing a single new 1-input function from the combination of the
+      subdomains of <see cref="Functions">several 1-input functions</see> [PDF:1.6:3.9.3].</summary>
     */
-    public IList<double> DomainBounds
+    [PDF(VersionEnum.PDF13)]
+    public sealed class Type3Function
+      : Function
     {
-      get
-      {
-        IList<double> domainBounds = new List<double>();
+        #region dynamic
+        #region constructors
+        //TODO:implement function creation!
+
+        internal Type3Function(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override double[] Calculate(double[] inputs)
         {
-          PdfArray domainBoundsObject = (PdfArray)Dictionary.Resolve(PdfName.Bounds);
-          foreach(PdfDirectObject domainBoundObject in domainBoundsObject)
-          {domainBounds.Add(((IPdfNumber)domainBoundObject).RawValue);}
+            // FIXME: Auto-generated method stub
+            return inputs;
         }
-        return domainBounds;
-      }
-    }
 
-    /**
-      <summary>Gets the mapping of each <see cref="DomainBounds">subdomain</see> into the domain
-      of the corresponding <see cref="Functions">function</see>.</summary>
-    */
-    public IList<Interval<double>> DomainEncodes
-    {
-      get
-      {return GetIntervals<double>(PdfName.Encode, null);}
-    }
+        /**
+          <summary>Gets the <see cref="Domains">domain</see> partition bounds whose resulting intervals
+          are respectively applied to each <see cref="Functions">function</see>.</summary>
+        */
+        public IList<double> DomainBounds
+        {
+            get
+            {
+                IList<double> domainBounds = new List<double>();
+                {
+                    PdfArray domainBoundsObject = (PdfArray)Dictionary.Resolve(PdfName.Bounds);
+                    foreach (PdfDirectObject domainBoundObject in domainBoundsObject)
+                    { domainBounds.Add(((IPdfNumber)domainBoundObject).RawValue); }
+                }
+                return domainBounds;
+            }
+        }
 
-    /**
-      <summary>Gets the 1-input functions making up this stitching function.</summary>
-      <remarks>The output dimensionality of all functions must be the same.</remarks>
-    */
-    public Functions Functions
-    {
-      get
-      {return new Functions(Dictionary[PdfName.Functions], this);}
+        /**
+          <summary>Gets the mapping of each <see cref="DomainBounds">subdomain</see> into the domain
+          of the corresponding <see cref="Functions">function</see>.</summary>
+        */
+        public IList<Interval<double>> DomainEncodes
+        {
+            get { return GetIntervals<double>(PdfName.Encode, null); }
+        }
+
+        /**
+          <summary>Gets the 1-input functions making up this stitching function.</summary>
+          <remarks>The output dimensionality of all functions must be the same.</remarks>
+        */
+        public Functions Functions
+        {
+            get { return new Functions(Dictionary[PdfName.Functions], this); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

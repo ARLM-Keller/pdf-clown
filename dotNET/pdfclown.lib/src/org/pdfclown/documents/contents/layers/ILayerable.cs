@@ -27,18 +27,18 @@ using System;
 
 namespace org.pdfclown.documents.contents.layers
 {
-  /**
-    <summary>Object that can be associated to a layer.</summary>
-  */
-  public interface ILayerable
-  {
     /**
-      <summary>Gets/Sets the layer associated to this object.</summary>
+      <summary>Object that can be associated to a layer.</summary>
     */
-    LayerEntity Layer
+    public interface ILayerable
     {
-      get;
-      set;
+        /**
+          <summary>Gets/Sets the layer associated to this object.</summary>
+        */
+        LayerEntity Layer
+        {
+            get;
+            set;
+        }
     }
-  }
 }

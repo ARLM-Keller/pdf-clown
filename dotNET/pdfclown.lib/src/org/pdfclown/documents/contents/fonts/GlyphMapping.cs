@@ -37,68 +37,68 @@ using System.Text.RegularExpressions;
 
 namespace org.pdfclown.documents.contents.fonts
 {
-  /**
-    <summary>Adobe standard glyph mapping (unicode-encoding against glyph-naming)
-    [PDF:1.6:D;AGL:2.0].</summary>
-  */
-  internal class GlyphMapping
-  {
-    private static Dictionary<string,int> codes = new Dictionary<string,int>();
-
-    static GlyphMapping(
-      )
-    {Load();}
-
-    public static int? NameToCode(
-      string name
-      )
-    {int code; return codes.TryGetValue(name, out code) ? code : (int?)null;}
-
     /**
-      <summary>Loads the glyph list mapping character names to character codes (unicode
-      encoding).</summary>
+      <summary>Adobe standard glyph mapping (unicode-encoding against glyph-naming)
+      [PDF:1.6:D;AGL:2.0].</summary>
     */
-    private static void Load(
-      )
+    internal class GlyphMapping
     {
-      StreamReader glyphListStream = null;
-      try
-      {
-        // Open the glyph list!
-        /*
-          NOTE: The Adobe Glyph List [AGL:2.0] represents the reference name-to-unicode map
-          for consumer applications.
+        private static Dictionary<string, int> codes = new Dictionary<string, int>();
+
+        static GlyphMapping(
+          )
+        { Load(); }
+
+        public static int? NameToCode(
+          string name
+          )
+        { int code; return codes.TryGetValue(name, out code) ? code : (int?)null; }
+
+        /**
+          <summary>Loads the glyph list mapping character names to character codes (unicode
+          encoding).</summary>
         */
-        glyphListStream = new StreamReader(
-          Assembly.GetExecutingAssembly().GetManifestResourceStream("fonts.AGL20")
-          );
-
-        // Parsing the glyph list...
-        string line;
-        Regex linePattern = new Regex("^(\\w+);([A-F0-9]+)$");
-        while((line = glyphListStream.ReadLine()) != null)
+        private static void Load(
+          )
         {
-          MatchCollection lineMatches = linePattern.Matches(line);
-          if(lineMatches.Count < 1)
-            continue;
+            StreamReader glyphListStream = null;
+            try
+            {
+                // Open the glyph list!
+                /*
+                  NOTE: The Adobe Glyph List [AGL:2.0] represents the reference name-to-unicode map
+                  for consumer applications.
+                */
+                glyphListStream = new StreamReader(
+                  Assembly.GetExecutingAssembly().GetManifestResourceStream("fonts.AGL20")
+                  );
 
-          Match lineMatch = lineMatches[0];
+                // Parsing the glyph list...
+                string line;
+                Regex linePattern = new Regex("^(\\w+);([A-F0-9]+)$");
+                while ((line = glyphListStream.ReadLine()) != null)
+                {
+                    MatchCollection lineMatches = linePattern.Matches(line);
+                    if (lineMatches.Count < 1)
+                        continue;
 
-          string name = lineMatch.Groups[1].Value;
-          int code = Int32.Parse(
-            lineMatch.Groups[2].Value,
-            NumberStyles.HexNumber
-            );
+                    Match lineMatch = lineMatches[0];
 
-          // Associate the character name with its corresponding character code!
-          codes[name] = code;
+                    string name = lineMatch.Groups[1].Value;
+                    int code = Int32.Parse(
+                      lineMatch.Groups[2].Value,
+                      NumberStyles.HexNumber
+                      );
+
+                    // Associate the character name with its corresponding character code!
+                    codes[name] = code;
+                }
+            }
+            finally
+            {
+                if (glyphListStream != null)
+                { glyphListStream.Close(); }
+            }
         }
-      }
-      finally
-      {
-        if(glyphListStream != null)
-        {glyphListStream.Close();}
-      }
     }
-  }
 }

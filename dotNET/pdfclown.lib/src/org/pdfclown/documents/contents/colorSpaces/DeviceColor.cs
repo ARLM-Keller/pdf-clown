@@ -27,50 +27,50 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Device color value [PDF:1.6:4.5.3].</summary>
-  */
-  public abstract class DeviceColor
-    : LeveledColor
-  {
-    #region static
-    #region interface
-    #region public
     /**
-      <summary>Gets the color corresponding to the specified components.</summary>
-      <param name="components">Color components to convert.</param>
-     */
-    public static DeviceColor Get(
-      PdfArray components
-      )
+      <summary>Device color value [PDF:1.6:4.5.3].</summary>
+    */
+    public abstract class DeviceColor
+      : LeveledColor
     {
-      if(components == null)
-        return null;
+        #region static
+        #region interface
+        #region public
+        /**
+          <summary>Gets the color corresponding to the specified components.</summary>
+          <param name="components">Color components to convert.</param>
+         */
+        public static DeviceColor Get(
+          PdfArray components
+          )
+        {
+            if (components == null)
+                return null;
 
-      switch(components.Count)
-      {
-        case 1:
-          return DeviceGrayColor.Get(components);
-        case 3:
-          return DeviceRGBColor.Get(components);
-        case 4:
-          return DeviceCMYKColor.Get(components);
-        default:
-          return null;
-      }
+            switch (components.Count)
+            {
+                case 1:
+                    return DeviceGrayColor.Get(components);
+                case 3:
+                    return DeviceRGBColor.Get(components);
+                case 4:
+                    return DeviceCMYKColor.Get(components);
+                default:
+                    return null;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        protected DeviceColor(
+          DeviceColorSpace colorSpace,
+          PdfDirectObject baseObject
+          ) : base(colorSpace, baseObject)
+        { }
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    protected DeviceColor(
-      DeviceColorSpace colorSpace,
-      PdfDirectObject baseObject
-      ) : base(colorSpace, baseObject)
-    {}
-    #endregion
-    #endregion
-  }
 }

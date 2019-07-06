@@ -30,82 +30,68 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Indexed color value [PDF:1.6:4.5.5].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class IndexedColor
-    : Color
-  {
-    #region static
-    #region fields
-    public static readonly IndexedColor Default = new IndexedColor(0);
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the color corresponding to the specified components.</summary>
-      <param name="components">Color components to convert.</param>
+      <summary>Indexed color value [PDF:1.6:4.5.5].</summary>
     */
-    public static IndexedColor Get(
-      PdfArray components
-      )
+    [PDF(VersionEnum.PDF11)]
+    public sealed class IndexedColor : Color
     {
-      return (components != null
-        ? new IndexedColor(components)
-        : Default
-        );
+        #region static
+        #region fields
+        public static readonly IndexedColor Default = new IndexedColor(0);
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the color corresponding to the specified components.</summary>
+          <param name="components">Color components to convert.</param>
+        */
+        public static IndexedColor Get(PdfArray components)
+        {
+            return (components != null
+              ? new IndexedColor(components)
+              : Default
+              );
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public IndexedColor(int index)
+            : this(new List<PdfDirectObject>(new PdfDirectObject[] { PdfInteger.Get(index) }))
+        { }
+
+        internal IndexedColor(IList<PdfDirectObject> components)
+            : base(
+            null, //TODO:consider color space reference!
+            new PdfArray(components)
+            )
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+
+        public override IList<PdfDirectObject> Components
+        {
+            get { return (PdfArray)BaseDataObject; }
+        }
+
+        /**
+          <summary>Gets the color index.</summary>
+        */
+        public int Index
+        {
+            get { return ((PdfInteger)((PdfArray)BaseDataObject)[0]).IntValue; }
+            set { ((PdfArray)BaseDataObject)[0] = PdfInteger.Get(value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public IndexedColor(
-      int index
-      ) : this(
-        new List<PdfDirectObject>(
-          new PdfDirectObject[]{PdfInteger.Get(index)}
-          )
-        )
-    {}
-
-    internal IndexedColor(
-      IList<PdfDirectObject> components
-      ) : base(
-        null, //TODO:consider color space reference!
-        new PdfArray(components)
-        )
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    public override IList<PdfDirectObject> Components
-    {
-      get
-      {return (PdfArray)BaseDataObject;}
-    }
-
-    /**
-      <summary>Gets the color index.</summary>
-    */
-    public int Index
-    {
-      get
-      {return ((PdfInteger)((PdfArray)BaseDataObject)[0]).IntValue;}
-      set
-      {((PdfArray)BaseDataObject)[0] = PdfInteger.Get(value);}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

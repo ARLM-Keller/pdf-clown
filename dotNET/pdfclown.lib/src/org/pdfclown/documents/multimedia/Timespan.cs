@@ -34,53 +34,53 @@ using System;
 
 namespace org.pdfclown.documents.multimedia
 {
-  /**
-    <summary>Timespan [PDF:1.7:9.1.5].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  internal sealed class Timespan
-    : PdfObjectWrapper<PdfDictionary>
-  {
-    #region dynamic
-    #region constructors
-    public Timespan(
-      double time
-      ) : base(
-        new PdfDictionary(
-          new PdfName[]
-          {
+    /**
+      <summary>Timespan [PDF:1.7:9.1.5].</summary>
+    */
+    [PDF(VersionEnum.PDF15)]
+    internal sealed class Timespan
+      : PdfObjectWrapper<PdfDictionary>
+    {
+        #region dynamic
+        #region constructors
+        public Timespan(
+          double time
+          ) : base(
+            new PdfDictionary(
+              new PdfName[]
+              {
             PdfName.Type,
             PdfName.S
-          },
-          new PdfDirectObject[]
-          {
+              },
+              new PdfDirectObject[]
+              {
             PdfName.Timespan,
             PdfName.S
-          }
-          )
-        )
-    {Time = time;}
+              }
+              )
+            )
+        { Time = time; }
 
-    internal Timespan(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal Timespan(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the temporal offset (in seconds).</summary>
-    */
-    public double Time
-    {
-      get
-      {return ((IPdfNumber)BaseDataObject[PdfName.V]).DoubleValue;}
-      set
-      {BaseDataObject[PdfName.V] = PdfReal.Get(value);}
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the temporal offset (in seconds).</summary>
+        */
+        public double Time
+        {
+            get
+            { return ((IPdfNumber)BaseDataObject[PdfName.V]).DoubleValue; }
+            set
+            { BaseDataObject[PdfName.V] = PdfReal.Get(value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

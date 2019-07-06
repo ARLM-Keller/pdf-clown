@@ -31,32 +31,32 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>'Import FDF (Forms Data Format) data into the document's interactive form
-    from a specified file' action [PDF:1.6:8.6.4].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class ImportData
-    : Action
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new action within the given document context.</summary>
+      <summary>'Import FDF (Forms Data Format) data into the document's interactive form
+      from a specified file' action [PDF:1.6:8.6.4].</summary>
     */
-    public ImportData(
-      Document context
-      ) : base(context, PdfName.ImportData)
-    {}
+    [PDF(VersionEnum.PDF12)]
+    public sealed class ImportData
+      : Action
+    {
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new action within the given document context.</summary>
+        */
+        public ImportData(
+          Document context
+          ) : base(context, PdfName.ImportData)
+        { }
 
-    internal ImportData(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal ImportData(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #endregion
-    #endregion
-  }
+        #region interface
+        #endregion
+        #endregion
+    }
 }

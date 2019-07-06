@@ -27,64 +27,64 @@ using System;
 
 namespace org.pdfclown.tokens
 {
-  /**
-    <summary>Exception thrown in case of missing code-to-character mapping.</summary>
-  */
-  public class EncodeException
-    : Exception
-  {
-    #region dynamic
-    #region fields
-    private int index;
-    private string text;
-    #endregion
-
-    #region constructors
-    public EncodeException(
-      char textChar
-    ) : this(new String(textChar, 1), 0)
-    {}
-
-    public EncodeException(
-      string text,
-      int index
-      ) : base(String.Format("Missing code mapping for character {0} ('{1}') at position {2} in \"{3}\"", (int)text[index], text[index], index, text))
-    {
-      this.text = text;
-      this.index = index;
-    }
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the position of the missing character in the string to encode.</summary>
+      <summary>Exception thrown in case of missing code-to-character mapping.</summary>
     */
-    public int Index
+    public class EncodeException
+      : Exception
     {
-      get
-      {return index;}
-    }
+        #region dynamic
+        #region fields
+        private int index;
+        private string text;
+        #endregion
 
-    /**
-      <summary>Gets the string to encode.</summary>
-    */
-    public string Text
-    {
-      get
-      {return text;}
-    }
+        #region constructors
+        public EncodeException(
+          char textChar
+        ) : this(new String(textChar, 1), 0)
+        { }
 
-    /**
-      <summary>Gets the missing character.</summary>
-    */
-    public char UndefinedChar
-    {
-      get
-      {return text[index];}
+        public EncodeException(
+          string text,
+          int index
+          ) : base(String.Format("Missing code mapping for character {0} ('{1}') at position {2} in \"{3}\"", (int)text[index], text[index], index, text))
+        {
+            this.text = text;
+            this.index = index;
+        }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the position of the missing character in the string to encode.</summary>
+        */
+        public int Index
+        {
+            get
+            { return index; }
+        }
+
+        /**
+          <summary>Gets the string to encode.</summary>
+        */
+        public string Text
+        {
+            get
+            { return text; }
+        }
+
+        /**
+          <summary>Gets the missing character.</summary>
+        */
+        public char UndefinedChar
+        {
+            get
+            { return text[index]; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

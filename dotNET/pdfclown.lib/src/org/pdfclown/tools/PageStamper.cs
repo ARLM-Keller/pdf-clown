@@ -32,134 +32,134 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.tools
 {
-  /**
-    <summary>Tool for content insertion into existing pages.</summary>
-  */
-  public sealed class PageStamper
-  {
-    #region dynamic
-    #region fields
-    private Page page;
-
-    private PrimitiveComposer background;
-    private PrimitiveComposer foreground;
-    #endregion
-
-    #region constructors
-    public PageStamper(
-      ) : this(null)
-    {}
-
-    public PageStamper(
-      Page page
-      )
-    {Page = page;}
-    #endregion
-
-    #region interface
-    #region public
-    public void Flush(
-      )
+    /**
+      <summary>Tool for content insertion into existing pages.</summary>
+    */
+    public sealed class PageStamper
     {
-      // Ensuring that there's room for the new content chunks inside the page's content stream...
-      /*
-        NOTE: This specialized stamper is optimized for content insertion without modifying
-        existing content representations, leveraging the peculiar feature of page structures
-        to express their content streams as arrays of data streams.
-      */
-      PdfArray streams;
-      {
-        PdfDirectObject contentsObject = page.BaseDataObject[PdfName.Contents];
-        PdfDataObject contentsDataObject = PdfObject.Resolve(contentsObject);
-        // Single data stream?
-        if(contentsDataObject is PdfStream)
-        {
-          /*
-            NOTE: Content stream MUST be expressed as an array of data streams in order to host
-            background- and foreground-stamped contents.
-          */
-          streams = new PdfArray();
-          streams.Add(contentsObject);
-          page.BaseDataObject[PdfName.Contents] = streams;
-        }
-        else
-        {streams = (PdfArray)contentsDataObject;}
-      }
+        #region dynamic
+        #region fields
+        private Page page;
 
-      // Background.
-      // Serialize the content!
-      background.Flush();
-      // Insert the serialized content into the page's content stream!
-      streams.Insert(0, background.Scanner.Contents.BaseObject);
+        private PrimitiveComposer background;
+        private PrimitiveComposer foreground;
+        #endregion
 
-      // Foreground.
-      // Serialize the content!
-      foreground.Flush();
-      // Append the serialized content into the page's content stream!
-      streams.Add(foreground.Scanner.Contents.BaseObject);
-    }
+        #region constructors
+        public PageStamper(
+          ) : this(null)
+        { }
 
-    public PrimitiveComposer Background
-    {
-      get
-      {return background;}
-    }
-
-    public PrimitiveComposer Foreground
-    {
-      get
-      {return foreground;}
-    }
-
-    public Page Page
-    {
-      get
-      {return page;}
-      set
-      {
-        page = value;
-        if(page == null)
-        {
-          background = null;
-          foreground = null;
-        }
-        else
-        {
-          // Background.
-          background = CreateFilter();
-          // Open the background local state!
-          background.Add(SaveGraphicsState.Value);
-          // Close the background local state!
-          background.Add(RestoreGraphicsState.Value);
-          // Open the middleground local state!
-          background.Add(SaveGraphicsState.Value);
-          // Move into the background!
-          background.Scanner.Move(1);
-
-          // Foregrond.
-          foreground = CreateFilter();
-          // Close the middleground local state!
-          foreground.Add(RestoreGraphicsState.Value);
-        }
-      }
-    }
-    #endregion
-
-    #region private
-    private PrimitiveComposer CreateFilter(
-      )
-    {
-      return new PrimitiveComposer(
-        new ContentScanner(
-          Contents.Wrap(
-            page.File.Register(new PdfStream()),
-            page
-            )
+        public PageStamper(
+          Page page
           )
-        );
+        { Page = page; }
+        #endregion
+
+        #region interface
+        #region public
+        public void Flush(
+          )
+        {
+            // Ensuring that there's room for the new content chunks inside the page's content stream...
+            /*
+              NOTE: This specialized stamper is optimized for content insertion without modifying
+              existing content representations, leveraging the peculiar feature of page structures
+              to express their content streams as arrays of data streams.
+            */
+            PdfArray streams;
+            {
+                PdfDirectObject contentsObject = page.BaseDataObject[PdfName.Contents];
+                PdfDataObject contentsDataObject = PdfObject.Resolve(contentsObject);
+                // Single data stream?
+                if (contentsDataObject is PdfStream)
+                {
+                    /*
+                      NOTE: Content stream MUST be expressed as an array of data streams in order to host
+                      background- and foreground-stamped contents.
+                    */
+                    streams = new PdfArray();
+                    streams.Add(contentsObject);
+                    page.BaseDataObject[PdfName.Contents] = streams;
+                }
+                else
+                { streams = (PdfArray)contentsDataObject; }
+            }
+
+            // Background.
+            // Serialize the content!
+            background.Flush();
+            // Insert the serialized content into the page's content stream!
+            streams.Insert(0, background.Scanner.Contents.BaseObject);
+
+            // Foreground.
+            // Serialize the content!
+            foreground.Flush();
+            // Append the serialized content into the page's content stream!
+            streams.Add(foreground.Scanner.Contents.BaseObject);
+        }
+
+        public PrimitiveComposer Background
+        {
+            get
+            { return background; }
+        }
+
+        public PrimitiveComposer Foreground
+        {
+            get
+            { return foreground; }
+        }
+
+        public Page Page
+        {
+            get
+            { return page; }
+            set
+            {
+                page = value;
+                if (page == null)
+                {
+                    background = null;
+                    foreground = null;
+                }
+                else
+                {
+                    // Background.
+                    background = CreateFilter();
+                    // Open the background local state!
+                    background.Add(SaveGraphicsState.Value);
+                    // Close the background local state!
+                    background.Add(RestoreGraphicsState.Value);
+                    // Open the middleground local state!
+                    background.Add(SaveGraphicsState.Value);
+                    // Move into the background!
+                    background.Scanner.Move(1);
+
+                    // Foregrond.
+                    foreground = CreateFilter();
+                    // Close the middleground local state!
+                    foreground.Add(RestoreGraphicsState.Value);
+                }
+            }
+        }
+        #endregion
+
+        #region private
+        private PrimitiveComposer CreateFilter(
+          )
+        {
+            return new PrimitiveComposer(
+              new ContentScanner(
+                Contents.Wrap(
+                  page.File.Register(new PdfStream()),
+                  page
+                  )
+                )
+              );
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

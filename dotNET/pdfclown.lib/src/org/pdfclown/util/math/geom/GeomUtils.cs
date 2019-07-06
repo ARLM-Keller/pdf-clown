@@ -24,80 +24,69 @@
 */
 
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.util.math.geom
 {
-  /**
-    <summary>Geometric utilities.</summary>
-  */
-  public class GeomUtils
-  {
-    public static RectangleF Align(
-      RectangleF rectangle,
-      PointF anchor,
-      Point alignment
-      )
-    {
-      return new RectangleF(
-        anchor.X - rectangle.Width * (1 - alignment.X.CompareTo(0)) / 2,
-        anchor.Y - rectangle.Height * (1 - alignment.Y.CompareTo(0)) / 2,
-        rectangle.Width,
-        rectangle.Height
-        );
-    }
-
     /**
-      <summary>Gets the size scaled to the specified limit.</summary>
-      <remarks>In particular, the limit matches the largest dimension and proportionally scales the
-      other one; for example, a limit 300 applied to size Dimension2D(100, 200) returns
-      Dimension2D(150, 300).</remarks>
-      <param name="size">Size to scale.</param>
-      <param name="limit">Scale limit.</param>
-      <returns>Scaled size.</returns>
+      <summary>Geometric utilities.</summary>
     */
-    public static SizeF Scale(
-      SizeF size,
-      float limit
-      )
+    public class GeomUtils
     {
-      if(limit == 0)
-        return new SizeF(size);
-      else
-      {
-        float sizeRatio = size.Width / size.Height;
-        return sizeRatio > 1
-          ? new SizeF(limit, limit / sizeRatio)
-          : new SizeF(limit * sizeRatio, limit);
-      }
-    }
+        public static SKRect Align(SKRect rectangle, SKPoint anchor, SKPoint alignment)
+        {
+            return SKRect.Create(
+              anchor.X - rectangle.Width * (1 - alignment.X.CompareTo(0)) / 2,
+              anchor.Y - rectangle.Height * (1 - alignment.Y.CompareTo(0)) / 2,
+              rectangle.Width,
+              rectangle.Height
+              );
+        }
 
-    /**
-      <summary>Gets the size scaled to the specified limit.</summary>
-      <remarks>In particular, implicit (zero-valued) limit dimensions correspond to proportional
-      dimensions; for example, a limit Dimension2D(0, 300) means 300 high and proportionally wide.
-      </remarks>
-      <param name="size">Size to scale.</param>
-      <param name="limit">Scale limit.</param>
-      <returns>Scaled size.</returns>
-    */
-    public static SizeF Scale(
-      SizeF size,
-      SizeF limit
-      )
-    {
-      if(limit.Width == 0)
-      {
-        if(limit.Height == 0)
-          return new SizeF(size);
-        else
-          return new SizeF(limit.Height * size.Width / size.Height, limit.Height);
-      }
-      else if(limit.Height == 0)
-        return new SizeF(limit.Width, limit.Width * size.Height / size.Width);
-      else
-        return new SizeF(limit);
+        /**
+          <summary>Gets the size scaled to the specified limit.</summary>
+          <remarks>In particular, the limit matches the largest dimension and proportionally scales the
+          other one; for example, a limit 300 applied to size Dimension2D(100, 200) returns
+          Dimension2D(150, 300).</remarks>
+          <param name="size">Size to scale.</param>
+          <param name="limit">Scale limit.</param>
+          <returns>Scaled size.</returns>
+        */
+        public static SKSize Scale(SKSize size, float limit)
+        {
+            if (limit == 0)
+                return size;
+            else
+            {
+                float sizeRatio = size.Width / size.Height;
+                return sizeRatio > 1
+                  ? new SKSize(limit, limit / sizeRatio)
+                  : new SKSize(limit * sizeRatio, limit);
+            }
+        }
+
+        /**
+          <summary>Gets the size scaled to the specified limit.</summary>
+          <remarks>In particular, implicit (zero-valued) limit dimensions correspond to proportional
+          dimensions; for example, a limit Dimension2D(0, 300) means 300 high and proportionally wide.
+          </remarks>
+          <param name="size">Size to scale.</param>
+          <param name="limit">Scale limit.</param>
+          <returns>Scaled size.</returns>
+        */
+        public static SKSize Scale(SKSize size, SKSize limit)
+        {
+            if (limit.Width == 0)
+            {
+                if (limit.Height == 0)
+                    return size;
+                else
+                    return new SKSize(limit.Height * size.Width / size.Height, limit.Height);
+            }
+            else if (limit.Height == 0)
+                return new SKSize(limit.Width, limit.Width * size.Height / size.Width);
+            else
+                return limit;
+        }
     }
-  }
 }

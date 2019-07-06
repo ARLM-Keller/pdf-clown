@@ -25,12 +25,12 @@
 
 namespace org.pdfclown.util.io
 {
-  /**
-    <summary>Byte order.</summary>
-  */
-  public enum ByteOrderEnum
-  {
-    BigEndian,
-    LittleEndian
-  }
+    /**
+      <summary>Byte order.</summary>
+    */
+    public enum ByteOrderEnum
+    {
+        BigEndian,
+        LittleEndian
+    }
 }

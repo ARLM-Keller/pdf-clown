@@ -29,77 +29,77 @@ using org.pdfclown.objects;
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.interaction.annotations
 {
-  /**
-    <summary>Abstract vertexed shape annotation.</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public abstract class VertexShape
-    : Shape
-  {
-    #region dynamic
-    #region constructors
-    protected VertexShape(
-      Page page,
-      RectangleF box,
-      string text,
-      PdfName subtype
-      ) : base(page, box, text, subtype)
-    {}
-
-    protected VertexShape(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets the coordinates of each vertex.</summary>
+      <summary>Abstract vertexed shape annotation.</summary>
     */
-    public IList<PointF> Vertices
+    [PDF(VersionEnum.PDF15)]
+    public abstract class VertexShape
+      : Shape
     {
-      get
-      {
-        PdfArray verticesObject = (PdfArray)BaseDataObject[PdfName.Vertices];
-        IList<PointF> vertices = new List<PointF>();
-        float pageHeight = Page.Box.Height;
-        for(
-          int index = 0,
-            length = verticesObject.Count;
-          index < length;
-          index += 2
-          )
-        {
-          vertices.Add(
-            new PointF(
-              ((IPdfNumber)verticesObject[index]).FloatValue,
-              pageHeight - ((IPdfNumber)verticesObject[index+1]).FloatValue
-              )
-            );
-        }
+        #region dynamic
+        #region constructors
+        protected VertexShape(
+          Page page,
+          SKRect box,
+          string text,
+          PdfName subtype
+          ) : base(page, box, text, subtype)
+        { }
 
-        return vertices;
-      }
-      set
-      {
-        PdfArray verticesObject = new PdfArray();
-        float pageHeight = Page.Box.Height;
-        foreach(PointF vertex in value)
-        {
-          verticesObject.Add(PdfReal.Get(vertex.X)); // x.
-          verticesObject.Add(PdfReal.Get(pageHeight-vertex.Y)); // y.
-        }
+        protected VertexShape(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-        BaseDataObject[PdfName.Vertices] = verticesObject;
-      }
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the coordinates of each vertex.</summary>
+        */
+        public IList<SKPoint> Vertices
+        {
+            get
+            {
+                PdfArray verticesObject = (PdfArray)BaseDataObject[PdfName.Vertices];
+                IList<SKPoint> vertices = new List<SKPoint>();
+                float pageHeight = Page.Box.Height;
+                for (
+                  int index = 0,
+                    length = verticesObject.Count;
+                  index < length;
+                  index += 2
+                  )
+                {
+                    vertices.Add(
+                      new SKPoint(
+                        ((IPdfNumber)verticesObject[index]).FloatValue,
+                        pageHeight - ((IPdfNumber)verticesObject[index + 1]).FloatValue
+                        )
+                      );
+                }
+
+                return vertices;
+            }
+            set
+            {
+                PdfArray verticesObject = new PdfArray();
+                float pageHeight = Page.Box.Height;
+                foreach (SKPoint vertex in value)
+                {
+                    verticesObject.Add(PdfReal.Get(vertex.X)); // x.
+                    verticesObject.Add(PdfReal.Get(pageHeight - vertex.Y)); // y.
+                }
+
+                BaseDataObject[PdfName.Vertices] = verticesObject;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

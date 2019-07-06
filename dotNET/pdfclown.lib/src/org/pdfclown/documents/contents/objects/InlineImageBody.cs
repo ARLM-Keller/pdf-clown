@@ -28,46 +28,46 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Inline image data (anonymous) operation [PDF:1.6:4.8.6].</summary>
-    <remarks>This is a figurative operation necessary to constrain the inline image data section
-    within the content stream model.</remarks>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class InlineImageBody
-    : Operation
-  {
-    #region static
-    #region fields
-    private IBuffer value;
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public InlineImageBody(
-      IBuffer value
-      ) : base(null)
-    {this.value = value;}
-    #endregion
-
-    #region interface
-    #region public
-    public IBuffer Value
+    /**
+      <summary>Inline image data (anonymous) operation [PDF:1.6:4.8.6].</summary>
+      <remarks>This is a figurative operation necessary to constrain the inline image data section
+      within the content stream model.</remarks>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class InlineImageBody
+      : Operation
     {
-      get
-      {return value;}
-      set
-      {this.value = value;}
-    }
+        #region static
+        #region fields
+        private IBuffer value;
+        #endregion
+        #endregion
 
-    public override void WriteTo(
-      IOutputStream stream,
-      Document context
-      )
-    {stream.Write(value);}
-    #endregion
-    #endregion
-    #endregion
-  }
+        #region dynamic
+        #region constructors
+        public InlineImageBody(
+          IBuffer value
+          ) : base(null)
+        { this.value = value; }
+        #endregion
+
+        #region interface
+        #region public
+        public IBuffer Value
+        {
+            get
+            { return value; }
+            set
+            { this.value = value; }
+        }
+
+        public override void WriteTo(
+          IOutputStream stream,
+          Document context
+          )
+        { stream.Write(value); }
+        #endregion
+        #endregion
+        #endregion
+    }
 }

@@ -30,93 +30,93 @@ using System;
 
 namespace org.pdfclown.bytes.filters
 {
-  /**
-    <summary>Abstract filter [PDF:1.6:3.3].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public abstract class Filter
-  {
-    #region static
-    #region fields
-    private static readonly Filter ASCII85Filter = new ASCII85Filter();
-    private static readonly Filter FlateDecode = new FlateFilter();
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets a specific filter object.</summary>
-      <param name="name">Name of the requested filter.</param>
-      <returns>Filter object associated to the name.</returns>
+      <summary>Abstract filter [PDF:1.6:3.3].</summary>
     */
-    public static Filter Get(
-      PdfName name
-      )
+    [PDF(VersionEnum.PDF10)]
+    public abstract class Filter
     {
-      /*
-        NOTE: This is a factory singleton method for any filter-derived object.
-      */
-      if(name == null)
-        return null;
+        #region static
+        #region fields
+        private static readonly Filter ASCII85Filter = new ASCII85Filter();
+        private static readonly Filter FlateDecode = new FlateFilter();
+        #endregion
 
-      if(name.Equals(PdfName.FlateDecode)
-        || name.Equals(PdfName.Fl))
-        return FlateDecode;
-      else if(name.Equals(PdfName.LZWDecode)
-        || name.Equals(PdfName.LZW))
-        throw new NotImplementedException("LZWDecode");
-      else if(name.Equals(PdfName.ASCIIHexDecode)
-        || name.Equals(PdfName.AHx))
-        throw new NotImplementedException("ASCIIHexDecode");
-      else if(name.Equals(PdfName.ASCII85Decode)
-        || name.Equals(PdfName.A85))
-        return ASCII85Filter;
-      else if(name.Equals(PdfName.RunLengthDecode)
-        || name.Equals(PdfName.RL))
-        throw new NotImplementedException("RunLengthDecode");
-      else if(name.Equals(PdfName.CCITTFaxDecode)
-        || name.Equals(PdfName.CCF))
-        throw new NotImplementedException("CCITTFaxDecode");
-      else if(name.Equals(PdfName.JBIG2Decode))
-        throw new NotImplementedException("JBIG2Decode");
-      else if(name.Equals(PdfName.DCTDecode)
-        || name.Equals(PdfName.DCT))
-        throw new NotImplementedException("DCTDecode");
-      else if(name.Equals(PdfName.JPXDecode))
-        throw new NotImplementedException("JPXDecode");
-      else if(name.Equals(PdfName.Crypt))
-        throw new NotImplementedException("Crypt");
+        #region interface
+        #region public
+        /**
+          <summary>Gets a specific filter object.</summary>
+          <param name="name">Name of the requested filter.</param>
+          <returns>Filter object associated to the name.</returns>
+        */
+        public static Filter Get(
+          PdfName name
+          )
+        {
+            /*
+              NOTE: This is a factory singleton method for any filter-derived object.
+            */
+            if (name == null)
+                return null;
 
-      return null;
+            if (name.Equals(PdfName.FlateDecode)
+              || name.Equals(PdfName.Fl))
+                return FlateDecode;
+            else if (name.Equals(PdfName.LZWDecode)
+              || name.Equals(PdfName.LZW))
+                throw new NotImplementedException("LZWDecode");
+            else if (name.Equals(PdfName.ASCIIHexDecode)
+              || name.Equals(PdfName.AHx))
+                throw new NotImplementedException("ASCIIHexDecode");
+            else if (name.Equals(PdfName.ASCII85Decode)
+              || name.Equals(PdfName.A85))
+                return ASCII85Filter;
+            else if (name.Equals(PdfName.RunLengthDecode)
+              || name.Equals(PdfName.RL))
+                throw new NotImplementedException("RunLengthDecode");
+            else if (name.Equals(PdfName.CCITTFaxDecode)
+              || name.Equals(PdfName.CCF))
+                throw new NotImplementedException("CCITTFaxDecode");
+            else if (name.Equals(PdfName.JBIG2Decode))
+                throw new NotImplementedException("JBIG2Decode");
+            else if (name.Equals(PdfName.DCTDecode)
+              || name.Equals(PdfName.DCT))
+                throw new NotImplementedException("DCTDecode");
+            else if (name.Equals(PdfName.JPXDecode))
+                throw new NotImplementedException("JPXDecode");
+            else if (name.Equals(PdfName.Crypt))
+                throw new NotImplementedException("Crypt");
+
+            return null;
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        protected Filter(
+          )
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public abstract byte[] Decode(
+          byte[] data,
+          int offset,
+          int length,
+          PdfDictionary parameters
+          );
+
+        public abstract byte[] Encode(
+          byte[] data,
+          int offset,
+          int length,
+          PdfDictionary parameters
+          );
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    protected Filter(
-      )
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public abstract byte[] Decode(
-      byte[] data,
-      int offset,
-      int length,
-      PdfDictionary parameters
-      );
-
-    public abstract byte[] Encode(
-      byte[] data,
-      int offset,
-      int length,
-      PdfDictionary parameters
-      );
-    #endregion
-    #endregion
-    #endregion
-  }
 }

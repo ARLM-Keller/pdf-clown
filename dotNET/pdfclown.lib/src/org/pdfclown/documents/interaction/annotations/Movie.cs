@@ -29,52 +29,52 @@ using multimedia = org.pdfclown.documents.multimedia;
 using org.pdfclown.objects;
 
 using System;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.interaction.annotations
 {
-  /**
-    <summary>Movie annotation [PDF:1.6:8.4.5].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class Movie
-    : Annotation
-  {
-    #region dynamic
-    #region constructors
-    public Movie(
-      Page page,
-      RectangleF box,
-      string text,
-      multimedia::Movie content
-      ) : base(page, PdfName.Movie, box, text)
-    {Content = content;}
-
-    internal Movie(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets the movie to be played.</summary>
+      <summary>Movie annotation [PDF:1.6:8.4.5].</summary>
     */
-    public multimedia::Movie Content
+    [PDF(VersionEnum.PDF12)]
+    public sealed class Movie
+      : Annotation
     {
-      get
-      {return new multimedia::Movie(BaseDataObject[PdfName.Movie]);}
-      set
-      {
-        if(value == null)
-          throw new ArgumentException("Movie MUST be defined.");
+        #region dynamic
+        #region constructors
+        public Movie(
+          Page page,
+          SKRect box,
+          string text,
+          multimedia::Movie content
+          ) : base(page, PdfName.Movie, box, text)
+        { Content = content; }
 
-        BaseDataObject[PdfName.Movie] = value.BaseObject;
-      }
+        internal Movie(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the movie to be played.</summary>
+        */
+        public multimedia::Movie Content
+        {
+            get
+            { return new multimedia::Movie(BaseDataObject[PdfName.Movie]); }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentException("Movie MUST be defined.");
+
+                BaseDataObject[PdfName.Movie] = value.BaseObject;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

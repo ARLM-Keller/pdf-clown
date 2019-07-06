@@ -26,36 +26,36 @@
 
 namespace org.pdfclown.documents.contents.composition
 {
-  /**
-    <summary>Line alignment.</summary>
-  */
-  public enum LineAlignmentEnum
-  {
     /**
-      <summary>The top of the element is aligned with the top of the tallest element on the line.
-      </summary>
+      <summary>Line alignment.</summary>
     */
-    Top,
-    /**
-      <summary>Aligns the baseline of the element with the baseline of the parent element. This is
-      default.</summary>
-    */
-    BaseLine,
-    /**
-      <summary>The element is placed in the middle of the parent element.</summary>
-    */
-    Middle,
-    /**
-      <summary>The bottom of the element is aligned with the lowest element on the line.</summary>
-    */
-    Bottom,
-    /**
-      <summary>Aligns the element as it was superscript.</summary>
-    */
-    Super,
-    /**
-      <summary>Aligns the element as it was subscript.</summary>
-    */
-    Sub
+    public enum LineAlignmentEnum
+    {
+        /**
+          <summary>The top of the element is aligned with the top of the tallest element on the line.
+          </summary>
+        */
+        Top,
+        /**
+          <summary>Aligns the baseline of the element with the baseline of the parent element. This is
+          default.</summary>
+        */
+        BaseLine,
+        /**
+          <summary>The element is placed in the middle of the parent element.</summary>
+        */
+        Middle,
+        /**
+          <summary>The bottom of the element is aligned with the lowest element on the line.</summary>
+        */
+        Bottom,
+        /**
+          <summary>Aligns the element as it was superscript.</summary>
+        */
+        Super,
+        /**
+          <summary>Aligns the element as it was subscript.</summary>
+        */
+        Sub
     };
-  }
+}

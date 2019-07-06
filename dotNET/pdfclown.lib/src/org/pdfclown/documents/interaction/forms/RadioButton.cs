@@ -33,92 +33,92 @@ using System;
 
 namespace org.pdfclown.documents.interaction.forms
 {
-  /**
-    <summary>Radio button field [PDF:1.6:8.6.3].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class RadioButton
-    : ButtonField
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new radiobutton within the given document context.</summary>
-      <param name="name"></param>
-      <param name="widgets">Dual-state widgets representing the available options.</param>
-      <param name="value"></param>
+      <summary>Radio button field [PDF:1.6:8.6.3].</summary>
     */
-    public RadioButton(
-      string name,
-      Widget[] widgets,
-      string value
-      ) : base(name, widgets[0])
+    [PDF(VersionEnum.PDF12)]
+    public sealed class RadioButton
+      : ButtonField
     {
-      Flags = EnumUtils.Mask(
-        EnumUtils.Mask(Flags, FlagsEnum.Radio, true),
-        FlagsEnum.NoToggleToOff,
-        true
-        );
-
-      FieldWidgets fieldWidgets = Widgets;
-      for(int index = 1, length = widgets.Length; index < length; index++)
-      {fieldWidgets.Add(widgets[index]);}
-
-      Value = value;
-    }
-
-    internal RadioButton(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets whether all the field buttons can be deselected at the same time.</summary>
-    */
-    public bool Toggleable
-    {
-      get
-      {return (Flags & FlagsEnum.NoToggleToOff) != FlagsEnum.NoToggleToOff;}
-      set
-      {Flags = EnumUtils.Mask(Flags, FlagsEnum.NoToggleToOff, !value);}
-    }
-
-    public override object Value
-    {
-      get
-      {return base.Value;}
-      set
-      {
-        /*
-          NOTE: The parent field's V entry holds a name object corresponding to the appearance state
-          of whichever child field is currently in the on state; the default value for this entry is
-          Off.
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new radiobutton within the given document context.</summary>
+          <param name="name"></param>
+          <param name="widgets">Dual-state widgets representing the available options.</param>
+          <param name="value"></param>
         */
-        PdfName selectedValue = new PdfName((string)value);
-        bool selected = false;
-        // Selecting the current appearance state for each widget...
-        foreach(Widget widget in Widgets)
+        public RadioButton(
+          string name,
+          Widget[] widgets,
+          string value
+          ) : base(name, widgets[0])
         {
-          PdfName currentState;
-          if(widget.Value.Equals(value)) // Selected state.
-          {
-            selected = true;
-            currentState = selectedValue;
-          }
-          else // Unselected state.
-          {currentState = PdfName.Off;}
+            Flags = EnumUtils.Mask(
+              EnumUtils.Mask(Flags, FlagsEnum.Radio, true),
+              FlagsEnum.NoToggleToOff,
+              true
+              );
 
-          widget.BaseDataObject[PdfName.AS] = currentState;
+            FieldWidgets fieldWidgets = Widgets;
+            for (int index = 1, length = widgets.Length; index < length; index++)
+            { fieldWidgets.Add(widgets[index]); }
+
+            Value = value;
         }
-        // Select the current widget!
-        BaseDataObject[PdfName.V] = (selected ? selectedValue : null);
-      }
+
+        internal RadioButton(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets whether all the field buttons can be deselected at the same time.</summary>
+        */
+        public bool Toggleable
+        {
+            get
+            { return (Flags & FlagsEnum.NoToggleToOff) != FlagsEnum.NoToggleToOff; }
+            set
+            { Flags = EnumUtils.Mask(Flags, FlagsEnum.NoToggleToOff, !value); }
+        }
+
+        public override object Value
+        {
+            get
+            { return base.Value; }
+            set
+            {
+                /*
+                  NOTE: The parent field's V entry holds a name object corresponding to the appearance state
+                  of whichever child field is currently in the on state; the default value for this entry is
+                  Off.
+                */
+                PdfName selectedValue = new PdfName((string)value);
+                bool selected = false;
+                // Selecting the current appearance state for each widget...
+                foreach (Widget widget in Widgets)
+                {
+                    PdfName currentState;
+                    if (widget.Value.Equals(value)) // Selected state.
+                    {
+                        selected = true;
+                        currentState = selectedValue;
+                    }
+                    else // Unselected state.
+                    { currentState = PdfName.Off; }
+
+                    widget.BaseDataObject[PdfName.AS] = currentState;
+                }
+                // Select the current widget!
+                BaseDataObject[PdfName.V] = (selected ? selectedValue : null);
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

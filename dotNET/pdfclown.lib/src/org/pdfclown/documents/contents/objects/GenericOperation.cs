@@ -31,32 +31,32 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Weakly-typed operation.</summary>
-    <remarks>This is used to model operations which do not have a dedicated type.</remarks>
-  */
-  public sealed class GenericOperation
-    : Operation
-  {
-    #region dynamic
-    #region constructors
-    public GenericOperation(
-      string @operator
-      ) : base(@operator)
-    {}
+    /**
+      <summary>Weakly-typed operation.</summary>
+      <remarks>This is used to model operations which do not have a dedicated type.</remarks>
+    */
+    public sealed class GenericOperation
+      : Operation
+    {
+        #region dynamic
+        #region constructors
+        public GenericOperation(
+          string @operator
+          ) : base(@operator)
+        { }
 
-    public GenericOperation(
-      string @operator,
-      PdfDirectObject operand
-      ) : base(@operator,operand)
-    {}
+        public GenericOperation(
+          string @operator,
+          PdfDirectObject operand
+          ) : base(@operator, operand)
+        { }
 
-    public GenericOperation(
-      string @operator,
-      IList<PdfDirectObject> operands
-      ) : base(@operator,operands)
-    {}
-    #endregion
-    #endregion
-  }
+        public GenericOperation(
+          string @operator,
+          IList<PdfDirectObject> operands
+          ) : base(@operator, operands)
+        { }
+        #endregion
+        #endregion
+    }
 }

@@ -32,56 +32,56 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>'Play a sound' action [PDF:1.6:8.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class PlaySound
-    : Action
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new action within the given document context.</summary>
+      <summary>'Play a sound' action [PDF:1.6:8.5.3].</summary>
     */
-    public PlaySound(
-      Document context,
-      Sound sound
-      ) : base(context, PdfName.Sound)
-    {Sound = sound;}
-
-    internal PlaySound(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the sound to be played.</summary>
-    */
-    public Sound Sound
+    [PDF(VersionEnum.PDF12)]
+    public sealed class PlaySound
+      : Action
     {
-      get
-      {
-        /*
-          NOTE: 'Sound' entry MUST exist.
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new action within the given document context.</summary>
         */
-        return new Sound(
-          BaseDataObject[PdfName.Sound]
-          );
-      }
-      set
-      {
-        if(value == null)
-          throw new ArgumentException("Sound MUST be defined.");
+        public PlaySound(
+          Document context,
+          Sound sound
+          ) : base(context, PdfName.Sound)
+        { Sound = sound; }
 
-        BaseDataObject[PdfName.Sound] = value.BaseObject;
-      }
+        internal PlaySound(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the sound to be played.</summary>
+        */
+        public Sound Sound
+        {
+            get
+            {
+                /*
+                  NOTE: 'Sound' entry MUST exist.
+                */
+                return new Sound(
+                  BaseDataObject[PdfName.Sound]
+                  );
+            }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentException("Sound MUST be defined.");
+
+                BaseDataObject[PdfName.Sound] = value.BaseObject;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

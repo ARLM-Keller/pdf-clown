@@ -28,77 +28,70 @@ using org.pdfclown.objects;
 
 using System;
 using System.Collections.Generic;
-using drawing = System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Device Gray color space [PDF:1.6:4.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class DeviceGrayColorSpace
-    : DeviceColorSpace
-  {
-    #region static
-    #region fields
-    /*
-      NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
-      of the contextual resource dictionary) [PDF:1.6:4.5.7].
+    /**
+      <summary>Device Gray color space [PDF:1.6:4.5.3].</summary>
     */
-    public static readonly DeviceGrayColorSpace Default = new DeviceGrayColorSpace(PdfName.DeviceGray);
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public DeviceGrayColorSpace(
-      Document context
-      ) : base(context, PdfName.DeviceGray)
-    {}
-
-    internal DeviceGrayColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    public override int ComponentCount
+    [PDF(VersionEnum.PDF11)]
+    public sealed class DeviceGrayColorSpace : DeviceColorSpace
     {
-      get
-      {return 1;}
-    }
+        #region static
+        #region fields
+        /*
+          NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
+          of the contextual resource dictionary) [PDF:1.6:4.5.7].
+        */
+        public static readonly DeviceGrayColorSpace Default = new DeviceGrayColorSpace(PdfName.DeviceGray);
+        #endregion
+        #endregion
 
-    public override Color DefaultColor
-    {
-      get
-      {return DeviceGrayColor.Default;}
-    }
+        #region dynamic
+        #region constructors
+        public DeviceGrayColorSpace(Document context) : base(context, PdfName.DeviceGray)
+        { }
 
-    public override Color GetColor(
-      IList<PdfDirectObject> components,
-      IContentContext context
-      )
-    {return new DeviceGrayColor(components);}
+        internal DeviceGrayColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        { }
+        #endregion
 
-    public override drawing::Brush GetPaint(
-      Color color
-      )
-    {
-      DeviceGrayColor spaceColor = (DeviceGrayColor)color;
-      int g = (int)Math.Round(spaceColor.G * 255);
-      return new drawing::SolidBrush(
-        drawing::Color.FromArgb(g, g, g)
-        );
+        #region interface
+        #region public
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+
+        public override int ComponentCount
+        {
+            get { return 1; }
+        }
+
+        public override Color DefaultColor
+        {
+            get { return DeviceGrayColor.Default; }
+        }
+
+        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
+        { return new DeviceGrayColor(components); }
+
+        public override SKColor GetColor(Color color)
+        {
+            var spaceColor = (DeviceGrayColor)color;
+            var g = (byte)Math.Round(spaceColor.G * 255);
+            return new SKColor(g, g, g);
+        }
+
+        public override SKPaint GetPaint(Color color)
+        {
+            return new SKPaint
+            {
+                Color = GetColor(color),
+                Style = SKPaintStyle.Fill
+            };
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

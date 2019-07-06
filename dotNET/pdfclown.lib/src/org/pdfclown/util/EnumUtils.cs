@@ -27,30 +27,30 @@ using System;
 
 namespace org.pdfclown.util
 {
-  /**
-    <summary>Enumeration utility.</summary>
-  */
-  public static class EnumUtils
-  {
-    #region static
-    #region interface
-    #region public
-    public static T Mask<T>(
-      T map,
-      T key,
-      bool enabled
-      ) where T : struct
+    /**
+      <summary>Enumeration utility.</summary>
+    */
+    public static class EnumUtils
     {
-      int mapValue = (int)(object)map;
-      int keyValue = (int)(object)key;
-      if(enabled)
-      {mapValue |= keyValue;}
-      else
-      {mapValue ^= keyValue;}
-      return (T)(object)mapValue;
+        #region static
+        #region interface
+        #region public
+        public static T Mask<T>(
+          T map,
+          T key,
+          bool enabled
+          ) where T : struct
+        {
+            int mapValue = (int)(object)map;
+            int keyValue = (int)(object)key;
+            if (enabled)
+            { mapValue |= keyValue; }
+            else
+            { mapValue ^= keyValue; }
+            return (T)(object)mapValue;
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -34,21 +34,21 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Page annotations [PDF:1.6:3.6.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class PageAnnotations
-    : PageElements<Annotation>
-  {
-    #region dynamic
-    #region constructors
-    internal PageAnnotations(
-      PdfDirectObject baseObject,
-      Page page
-      ) : base(baseObject, page)
-    {}
-    #endregion
-    #endregion
-  }
+    /**
+      <summary>Page annotations [PDF:1.6:3.6.2].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class PageAnnotations
+      : PageElements<Annotation>
+    {
+        #region dynamic
+        #region constructors
+        internal PageAnnotations(
+          PdfDirectObject baseObject,
+          Page page
+          ) : base(baseObject, page)
+        { }
+        #endregion
+        #endregion
+    }
 }

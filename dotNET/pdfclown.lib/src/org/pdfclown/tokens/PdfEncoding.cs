@@ -28,41 +28,41 @@ using text = System.Text;
 
 namespace org.pdfclown.tokens
 {
-  /**
-    <summary>PDF serialization encoding [PDF:1.6:3.1].</summary>
-    <remarks>PDF can be entirely represented using byte values corresponding to the visible
-    printable subset of the ASCII character set, plus white space characters such as space, tab,
-    carriage return, and line feed characters. However, a PDF file is not restricted to the ASCII
-    character set; it can contain arbitrary 8-bit bytes.</remarks>
-  */
-  public sealed class PdfEncoding
-    : Encoding
-  {
-    #region dynamic
-    #region constructors
-    internal PdfEncoding(
-      )
-    {}
-    #endregion
+    /**
+      <summary>PDF serialization encoding [PDF:1.6:3.1].</summary>
+      <remarks>PDF can be entirely represented using byte values corresponding to the visible
+      printable subset of the ASCII character set, plus white space characters such as space, tab,
+      carriage return, and line feed characters. However, a PDF file is not restricted to the ASCII
+      character set; it can contain arbitrary 8-bit bytes.</remarks>
+    */
+    public sealed class PdfEncoding
+      : Encoding
+    {
+        #region dynamic
+        #region constructors
+        internal PdfEncoding(
+          )
+        { }
+        #endregion
 
-    #region interface
-    public override string Decode(
-      byte[] value
-      )
-    {return Charset.ISO88591.GetString(value);}
+        #region interface
+        public override string Decode(
+          byte[] value
+          )
+        { return Charset.ISO88591.GetString(value); }
 
-    public override string Decode(
-      byte[] value,
-      int index,
-      int length
-      )
-    {return Charset.ISO88591.GetString(value, index, length);}
+        public override string Decode(
+          byte[] value,
+          int index,
+          int length
+          )
+        { return Charset.ISO88591.GetString(value, index, length); }
 
-    public override byte[] Encode(
-      string value
-      )
-    {return Charset.ISO88591.GetBytes(value);}
-    #endregion
-    #endregion
-  }
+        public override byte[] Encode(
+          string value
+          )
+        { return Charset.ISO88591.GetBytes(value); }
+        #endregion
+        #endregion
+    }
 }

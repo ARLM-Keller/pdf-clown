@@ -28,74 +28,68 @@ using org.pdfclown.objects;
 using org.pdfclown.tokens;
 
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Local graphics state [PDF:1.6:4.3.1].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class LocalGraphicsState
-    : ContainerObject
-  {
-    #region static
-    #region fields
-    public static readonly string BeginOperatorKeyword = SaveGraphicsState.OperatorKeyword;
-    public static readonly string EndOperatorKeyword = RestoreGraphicsState.OperatorKeyword;
-
-    private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(BeginOperatorKeyword + Symbol.LineFeed);
-    private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public LocalGraphicsState(
-      )
-    {}
-
-    public LocalGraphicsState(
-      IList<ContentObject> objects
-      ) : base(objects)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
+    /**
+      <summary>Local graphics state [PDF:1.6:4.3.1].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class LocalGraphicsState
+      : ContainerObject
     {
-      Graphics context = state.Scanner.RenderContext;
-      if(context != null)
-      {
-        /*
-          NOTE: Local graphics state is purposely isolated from surrounding graphics state,
-          so no inner operation can alter its subsequent scanning.
-        */
-        // Save outer graphics state!
-        GraphicsState contextState = context.Save();
+        #region static
+        #region fields
+        public static readonly string BeginOperatorKeyword = SaveGraphicsState.OperatorKeyword;
+        public static readonly string EndOperatorKeyword = RestoreGraphicsState.OperatorKeyword;
 
-        Render(state);
+        private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(BeginOperatorKeyword + Symbol.LineFeed);
+        private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
+        #endregion
+        #endregion
 
-        // Restore outer graphics state!
-        context.Restore(contextState);
-      }
+        #region dynamic
+        #region constructors
+        public LocalGraphicsState(
+          )
+        { }
+
+        public LocalGraphicsState(
+          IList<ContentObject> objects
+          ) : base(objects)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            var context = state.Scanner.RenderContext;
+            if (context != null)
+            {
+                /*
+                  NOTE: Local graphics state is purposely isolated from surrounding graphics state,
+                  so no inner operation can alter its subsequent scanning.
+                */
+                // Save outer graphics state!
+                var contextState = context.Save();
+
+                Render(state);
+
+                // Restore outer graphics state!
+                context.RestoreToCount(contextState);
+            }
+        }
+
+        public override void WriteTo(IOutputStream stream, Document context)
+        {
+            stream.Write(BeginChunk);
+            base.WriteTo(stream, context);
+            stream.Write(EndChunk);
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    public override void WriteTo(
-      IOutputStream stream,
-      Document context
-      )
-    {
-      stream.Write(BeginChunk);
-      base.WriteTo(stream, context);
-      stream.Write(EndChunk);
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

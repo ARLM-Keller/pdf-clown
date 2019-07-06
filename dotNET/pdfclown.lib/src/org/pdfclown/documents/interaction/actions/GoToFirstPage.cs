@@ -31,32 +31,32 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>'Go to the first page of the document' action [PDF:1.6:8.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class GoToFirstPage
-    : NamedAction,
-      IGoToAction
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new action within the given document context.</summary>
+      <summary>'Go to the first page of the document' action [PDF:1.6:8.5.3].</summary>
     */
-    public GoToFirstPage(
-      Document context
-      ) : base(context, PdfName.FirstPage)
-    {}
+    [PDF(VersionEnum.PDF12)]
+    public sealed class GoToFirstPage
+      : NamedAction,
+        IGoToAction
+    {
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new action within the given document context.</summary>
+        */
+        public GoToFirstPage(
+          Document context
+          ) : base(context, PdfName.FirstPage)
+        { }
 
-    internal GoToFirstPage(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal GoToFirstPage(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #endregion
-    #endregion
-  }
+        #region interface
+        #endregion
+        #endregion
+    }
 }

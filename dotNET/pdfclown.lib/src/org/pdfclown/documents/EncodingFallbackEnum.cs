@@ -27,22 +27,22 @@ using System;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Encoding behavior in case of missing character mapping.</summary>
-  */
-  public enum EncodingFallbackEnum
-  {
     /**
-      <summary>Missing character is silently ignored.</summary>
+      <summary>Encoding behavior in case of missing character mapping.</summary>
     */
-    Exclusion,
-    /**
-      <summary>Missing character is replaced with default glyph.</summary>
-    */
-    Substitution,
-    /**
-      <summary>Missing character causes an exception to be thrown.</summary>
-    */
-    Exception
-  }
+    public enum EncodingFallbackEnum
+    {
+        /**
+          <summary>Missing character is silently ignored.</summary>
+        */
+        Exclusion,
+        /**
+          <summary>Missing character is replaced with default glyph.</summary>
+        */
+        Substitution,
+        /**
+          <summary>Missing character causes an exception to be thrown.</summary>
+        */
+        Exception
+    }
 }

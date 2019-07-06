@@ -27,85 +27,85 @@ using System;
 
 namespace org.pdfclown.files
 {
-  /**
-    <summary>File configuration.</summary>
-  */
-  public sealed class FileConfiguration
-  {
-    #region dynamic
-    #region fields
-    private string realFormat;
-    private bool streamFilterEnabled;
-    private XRefModeEnum xrefMode = XRefModeEnum.Plain;
-
-    private readonly File file;
-    #endregion
-
-    #region constructors
-    internal FileConfiguration(
-      File file
-      )
-    {
-      this.file = file;
-
-      RealPrecision = 0;
-      StreamFilterEnabled = true;
-    }
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the file associated with this configuration.</summary>
+      <summary>File configuration.</summary>
     */
-    public File File
+    public sealed class FileConfiguration
     {
-      get
-      {return file;}
-    }
+        #region dynamic
+        #region fields
+        private string realFormat;
+        private bool streamFilterEnabled;
+        private XRefModeEnum xrefMode = XRefModeEnum.Plain;
 
-    /**
-      <summary>Gets/Sets the number of decimal places applied to real numbers' serialization.</summary>
-    */
-    public int RealPrecision
-    {
-      get
-      {return realFormat.Length - realFormat.IndexOf('.') - 1;}
-      set
-      {realFormat = "0." + new string('#', value <= 0 ? 5 : value);}
-    }
+        private readonly File file;
+        #endregion
 
-    /**
-      <summary>Gets/Sets whether PDF stream objects have to be filtered for compression.</summary>
-    */
-    public bool StreamFilterEnabled
-    {
-      get
-      {return streamFilterEnabled;}
-      set
-      {streamFilterEnabled = value;}
-    }
+        #region constructors
+        internal FileConfiguration(
+          File file
+          )
+        {
+            this.file = file;
 
-    /**
-      <summary>Gets the document's cross-reference mode.</summary>
-    */
-    public XRefModeEnum XRefMode
-    {
-      get
-      {return xrefMode;}
-      set
-      {file.Document.CheckCompatibility(xrefMode = value);}
-    }
-    #endregion
+            RealPrecision = 0;
+            StreamFilterEnabled = true;
+        }
+        #endregion
 
-    #region internal
-    internal string RealFormat
-    {
-      get
-      {return realFormat;}
+        #region interface
+        #region public
+        /**
+          <summary>Gets the file associated with this configuration.</summary>
+        */
+        public File File
+        {
+            get
+            { return file; }
+        }
+
+        /**
+          <summary>Gets/Sets the number of decimal places applied to real numbers' serialization.</summary>
+        */
+        public int RealPrecision
+        {
+            get
+            { return realFormat.Length - realFormat.IndexOf('.') - 1; }
+            set
+            { realFormat = "0." + new string('#', value <= 0 ? 5 : value); }
+        }
+
+        /**
+          <summary>Gets/Sets whether PDF stream objects have to be filtered for compression.</summary>
+        */
+        public bool StreamFilterEnabled
+        {
+            get
+            { return streamFilterEnabled; }
+            set
+            { streamFilterEnabled = value; }
+        }
+
+        /**
+          <summary>Gets the document's cross-reference mode.</summary>
+        */
+        public XRefModeEnum XRefMode
+        {
+            get
+            { return xrefMode; }
+            set
+            { file.Document.CheckCompatibility(xrefMode = value); }
+        }
+        #endregion
+
+        #region internal
+        internal string RealFormat
+        {
+            get
+            { return realFormat; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -31,32 +31,32 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>'Jump to a specified bead on an article thread' action [PDF:1.6:8.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class GoToThread
-    : Action,
-      IGoToAction
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new action within the given document context.</summary>
+      <summary>'Jump to a specified bead on an article thread' action [PDF:1.6:8.5.3].</summary>
     */
-    public GoToThread(
-      Document context
-      ) : base(context, PdfName.Thread)
-    {}
+    [PDF(VersionEnum.PDF11)]
+    public sealed class GoToThread
+      : Action,
+        IGoToAction
+    {
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new action within the given document context.</summary>
+        */
+        public GoToThread(
+          Document context
+          ) : base(context, PdfName.Thread)
+        { }
 
-    internal GoToThread(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal GoToThread(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #endregion
-    #endregion
-  }
+        #region interface
+        #endregion
+        #endregion
+    }
 }

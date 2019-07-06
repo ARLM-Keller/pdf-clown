@@ -30,113 +30,107 @@ using org.pdfclown.documents.interaction.forms;
 using org.pdfclown.objects;
 
 using System.Collections.Generic;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.tools
 {
-  /**
-    <summary>Tool to flatten Acroforms.</summary>
-  */
-  public sealed class FormFlattener
-  {
-    private bool hiddenRendered;
-    private bool nonPrintableRendered;
-
     /**
-      <summary>Replaces the Acroform fields with their corresponding graphics representation.</summary>
-      <param name="document">Document to flatten.</param>
+      <summary>Tool to flatten Acroforms.</summary>
     */
-    public void Flatten(
-      Document document
-      )
+    public sealed class FormFlattener
     {
-      Dictionary<Page,PageStamper> pageStampers = new Dictionary<Page, PageStamper>();
-      Form form = document.Form;
-      Fields formFields = form.Fields;
-      foreach(Field field in formFields.Values)
-      {
-        foreach(Widget widget in field.Widgets)
+        private bool hiddenRendered;
+        private bool nonPrintableRendered;
+
+        /**
+          <summary>Replaces the Acroform fields with their corresponding graphics representation.</summary>
+          <param name="document">Document to flatten.</param>
+        */
+        public void Flatten(Document document)
         {
-          Page widgetPage = widget.Page;
-          Annotation.FlagsEnum flags = widget.Flags;
-          // Is the widget to be rendered?
-          if(((flags & Annotation.FlagsEnum.Hidden) == 0 || hiddenRendered)
-            && ((flags & Annotation.FlagsEnum.Print) > 0 || nonPrintableRendered))
-          {
-            // Stamping the current state appearance of the widget...
-            PdfName widgetCurrentState = (PdfName)widget.BaseDataObject[PdfName.AS];
-            FormXObject widgetCurrentAppearance = widget.Appearance.Normal[widgetCurrentState];
-            if(widgetCurrentAppearance != null)
+            Dictionary<Page, PageStamper> pageStampers = new Dictionary<Page, PageStamper>();
+            Form form = document.Form;
+            Fields formFields = form.Fields;
+            foreach (Field field in formFields.Values)
             {
-              PageStamper widgetStamper;
-              if(!pageStampers.TryGetValue(widgetPage, out widgetStamper))
-              {pageStampers[widgetPage] = widgetStamper = new PageStamper(widgetPage);}
+                foreach (Widget widget in field.Widgets)
+                {
+                    Page widgetPage = widget.Page;
+                    Annotation.FlagsEnum flags = widget.Flags;
+                    // Is the widget to be rendered?
+                    if (((flags & Annotation.FlagsEnum.Hidden) == 0 || hiddenRendered)
+                      && ((flags & Annotation.FlagsEnum.Print) > 0 || nonPrintableRendered))
+                    {
+                        // Stamping the current state appearance of the widget...
+                        PdfName widgetCurrentState = (PdfName)widget.BaseDataObject[PdfName.AS];
+                        FormXObject widgetCurrentAppearance = widget.Appearance.Normal[widgetCurrentState];
+                        if (widgetCurrentAppearance != null)
+                        {
+                            PageStamper widgetStamper;
+                            if (!pageStampers.TryGetValue(widgetPage, out widgetStamper))
+                            { pageStampers[widgetPage] = widgetStamper = new PageStamper(widgetPage); }
 
-              RectangleF widgetBox = widget.Box;
-              widgetStamper.Foreground.ShowXObject(widgetCurrentAppearance, widgetBox.Location, widgetBox.Size);
+                            SKRect widgetBox = widget.Box;
+                            widgetStamper.Foreground.ShowXObject(widgetCurrentAppearance, widgetBox.Location, widgetBox.Size);
+                        }
+                    }
+
+                    // Removing the widget from the page annotations...
+                    PageAnnotations widgetPageAnnotations = widgetPage.Annotations;
+                    widgetPageAnnotations.Remove(widget);
+                    if (widgetPageAnnotations.Count == 0)
+                    {
+                        widgetPage.Annotations = null;
+                        widgetPageAnnotations.Delete();
+                    }
+
+                    // Removing the field references relating the widget...
+                    PdfDictionary fieldPartDictionary = widget.BaseDataObject;
+                    while (fieldPartDictionary != null)
+                    {
+                        PdfDictionary parentFieldPartDictionary = (PdfDictionary)fieldPartDictionary.Resolve(PdfName.Parent);
+
+                        PdfArray kidsArray;
+                        if (parentFieldPartDictionary != null)
+                        { kidsArray = (PdfArray)parentFieldPartDictionary.Resolve(PdfName.Kids); }
+                        else
+                        { kidsArray = formFields.BaseDataObject; }
+
+                        kidsArray.Remove(fieldPartDictionary.Reference);
+                        fieldPartDictionary.Delete();
+                        if (kidsArray.Count > 0)
+                            break;
+
+                        fieldPartDictionary = parentFieldPartDictionary;
+                    }
+                }
             }
-          }
-
-          // Removing the widget from the page annotations...
-          PageAnnotations widgetPageAnnotations = widgetPage.Annotations;
-          widgetPageAnnotations.Remove(widget);
-          if(widgetPageAnnotations.Count == 0)
-          {
-            widgetPage.Annotations = null;
-            widgetPageAnnotations.Delete();
-          }
-
-          // Removing the field references relating the widget...
-          PdfDictionary fieldPartDictionary = widget.BaseDataObject;
-          while (fieldPartDictionary != null)
-          {
-            PdfDictionary parentFieldPartDictionary = (PdfDictionary)fieldPartDictionary.Resolve(PdfName.Parent);
-
-            PdfArray kidsArray;
-            if(parentFieldPartDictionary != null)
-            {kidsArray = (PdfArray)parentFieldPartDictionary.Resolve(PdfName.Kids);}
-            else
-            {kidsArray = formFields.BaseDataObject;}
-
-            kidsArray.Remove(fieldPartDictionary.Reference);
-            fieldPartDictionary.Delete();
-            if(kidsArray.Count > 0)
-              break;
-
-            fieldPartDictionary = parentFieldPartDictionary;
-          }
+            if (formFields.Count == 0)
+            {
+                // Removing the form root...
+                document.Form = null;
+                form.Delete();
+            }
+            foreach (PageStamper pageStamper in pageStampers.Values)
+            { pageStamper.Flush(); }
         }
-      }
-      if(formFields.Count == 0)
-      {
-        // Removing the form root...
-        document.Form = null;
-        form.Delete();
-      }
-      foreach(PageStamper pageStamper in pageStampers.Values)
-      {pageStamper.Flush();}
-    }
 
-    /**
-      <summary>Gets/Sets whether hidden fields have to be rendered.</summary>
-    */
-    public bool HiddenRendered
-    {
-      get
-      {return hiddenRendered;}
-      set
-      {hiddenRendered = value;}
-    }
+        /**
+          <summary>Gets/Sets whether hidden fields have to be rendered.</summary>
+        */
+        public bool HiddenRendered
+        {
+            get { return hiddenRendered; }
+            set { hiddenRendered = value; }
+        }
 
-    /**
-      <summary>Gets/Sets whether non-printable fields have to be rendered.</summary>
-    */
-    public bool NonPrintableRendered
-    {
-      get
-      {return nonPrintableRendered;}
-      set
-      {nonPrintableRendered = value;}
+        /**
+          <summary>Gets/Sets whether non-printable fields have to be rendered.</summary>
+        */
+        public bool NonPrintableRendered
+        {
+            get { return nonPrintableRendered; }
+            set { nonPrintableRendered = value; }
+        }
     }
-  }
 }

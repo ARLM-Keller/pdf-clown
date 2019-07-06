@@ -30,138 +30,138 @@ using org.pdfclown.objects;
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.interaction.annotations
 {
-  /**
-    <summary>Sound annotation [PDF:1.6:8.4.5].</summary>
-    <remarks>When the annotation is activated, the sound is played.</remarks>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class Sound
-    : Markup
-  {
-    #region types
     /**
-      <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
+      <summary>Sound annotation [PDF:1.6:8.4.5].</summary>
+      <remarks>When the annotation is activated, the sound is played.</remarks>
     */
-    public enum IconTypeEnum
+    [PDF(VersionEnum.PDF12)]
+    public sealed class Sound
+      : Markup
     {
-      /**
-        <summary>Speaker.</summary>
-      */
-      Speaker,
-      /**
-        <summary>Microphone.</summary>
-      */
-      Microphone
-    };
-    #endregion
+        #region types
+        /**
+          <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
+        */
+        public enum IconTypeEnum
+        {
+            /**
+              <summary>Speaker.</summary>
+            */
+            Speaker,
+            /**
+              <summary>Microphone.</summary>
+            */
+            Microphone
+        };
+        #endregion
 
-    #region static
-    #region fields
-    private static readonly IconTypeEnum DefaultIconType = IconTypeEnum.Speaker;
+        #region static
+        #region fields
+        private static readonly IconTypeEnum DefaultIconType = IconTypeEnum.Speaker;
 
-    private static readonly Dictionary<IconTypeEnum,PdfName> IconTypeEnumCodes;
-    #endregion
+        private static readonly Dictionary<IconTypeEnum, PdfName> IconTypeEnumCodes;
+        #endregion
 
-    #region constructors
-    static Sound()
-    {
-      IconTypeEnumCodes = new Dictionary<IconTypeEnum,PdfName>();
-      IconTypeEnumCodes[IconTypeEnum.Speaker] = PdfName.Speaker;
-      IconTypeEnumCodes[IconTypeEnum.Microphone] = PdfName.Mic;
+        #region constructors
+        static Sound()
+        {
+            IconTypeEnumCodes = new Dictionary<IconTypeEnum, PdfName>();
+            IconTypeEnumCodes[IconTypeEnum.Speaker] = PdfName.Speaker;
+            IconTypeEnumCodes[IconTypeEnum.Microphone] = PdfName.Mic;
+        }
+        #endregion
+
+        #region interface
+        #region private
+        /**
+          <summary>Gets the code corresponding to the given value.</summary>
+        */
+        private static PdfName ToCode(
+          IconTypeEnum value
+          )
+        { return IconTypeEnumCodes[value]; }
+
+        /**
+          <summary>Gets the icon type corresponding to the given value.</summary>
+        */
+        private static IconTypeEnum ToIconTypeEnum(
+          PdfName value
+          )
+        {
+            foreach (KeyValuePair<IconTypeEnum, PdfName> iconType in IconTypeEnumCodes)
+            {
+                if (iconType.Value.Equals(value))
+                    return iconType.Key;
+            }
+            return DefaultIconType;
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public Sound(
+          Page page,
+          SKRect box,
+          string text,
+          multimedia::Sound content
+          ) : base(page, PdfName.Sound, box, text)
+        { Content = content; }
+
+        internal Sound(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the sound to be played.</summary>
+        */
+        public multimedia::Sound Content
+        {
+            get
+            {
+                return new multimedia::Sound(
+                  BaseDataObject[PdfName.Sound]
+                  );
+            }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentException("Content MUST be defined.");
+
+                BaseDataObject[PdfName.Sound] = value.BaseObject;
+            }
+        }
+
+        /**
+          <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
+        */
+        public IconTypeEnum IconType
+        {
+            get
+            { return ToIconTypeEnum((PdfName)BaseDataObject[PdfName.Name]); }
+            set
+            { BaseDataObject[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null; }
+        }
+
+        /**
+          <summary>Popups not supported.</summary>
+        */
+        public override Popup Popup
+        {
+            set
+            { throw new NotSupportedException(); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-
-    #region interface
-    #region private
-    /**
-      <summary>Gets the code corresponding to the given value.</summary>
-    */
-    private static PdfName ToCode(
-      IconTypeEnum value
-      )
-    {return IconTypeEnumCodes[value];}
-
-    /**
-      <summary>Gets the icon type corresponding to the given value.</summary>
-    */
-    private static IconTypeEnum ToIconTypeEnum(
-      PdfName value
-      )
-    {
-      foreach(KeyValuePair<IconTypeEnum,PdfName> iconType in IconTypeEnumCodes)
-      {
-        if(iconType.Value.Equals(value))
-          return iconType.Key;
-      }
-      return DefaultIconType;
-    }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public Sound(
-      Page page,
-      RectangleF box,
-      string text,
-      multimedia::Sound content
-      ) : base(page, PdfName.Sound, box, text)
-    {Content = content;}
-
-    internal Sound(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the sound to be played.</summary>
-    */
-    public multimedia::Sound Content
-    {
-      get
-      {
-        return new multimedia::Sound(
-          BaseDataObject[PdfName.Sound]
-          );
-      }
-      set
-      {
-        if(value == null)
-          throw new ArgumentException("Content MUST be defined.");
-
-        BaseDataObject[PdfName.Sound] = value.BaseObject;
-      }
-    }
-
-    /**
-      <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
-    */
-    public IconTypeEnum IconType
-    {
-      get
-      {return ToIconTypeEnum((PdfName)BaseDataObject[PdfName.Name]);}
-      set
-      {BaseDataObject[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;}
-    }
-
-    /**
-      <summary>Popups not supported.</summary>
-    */
-    public override Popup Popup
-    {
-      set
-      {throw new NotSupportedException();}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -25,20 +25,20 @@
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>Visitable interface.</summary>
-  */
-  public interface IVisitable
-  {
     /**
-      <summary>Accepts a visit.</summary>
-      <param name="visitor">Visiting object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
+      <summary>Visitable interface.</summary>
     */
-    PdfObject Accept(
-      IVisitor visitor,
-      object data
-      );
-  }
+    public interface IVisitable
+    {
+        /**
+          <summary>Accepts a visit.</summary>
+          <param name="visitor">Visiting object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Accept(
+          IVisitor visitor,
+          object data
+          );
+    }
 }

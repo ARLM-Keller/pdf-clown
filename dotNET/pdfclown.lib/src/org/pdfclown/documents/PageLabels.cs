@@ -32,34 +32,34 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Page label ranges [PDF:1.6:3.6.1].</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public sealed class PageLabels
-    : NumberTree<PageLabel>
-  {
-    #region dynamic
-    #region constructors
-    public PageLabels(
-      Document context
-      ) : base(context)
-    {}
+    /**
+      <summary>Page label ranges [PDF:1.6:3.6.1].</summary>
+    */
+    [PDF(VersionEnum.PDF13)]
+    public sealed class PageLabels
+      : NumberTree<PageLabel>
+    {
+        #region dynamic
+        #region constructors
+        public PageLabels(
+          Document context
+          ) : base(context)
+        { }
 
-    internal PageLabels(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal PageLabels(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #region protected
-    protected override PageLabel WrapValue(
-      PdfDirectObject baseObject
-      )
-    {return PageLabel.Wrap(baseObject);}
-    #endregion
-    #endregion
-    #endregion
-  }
+        #region interface
+        #region protected
+        protected override PageLabel WrapValue(
+          PdfDirectObject baseObject
+          )
+        { return PageLabel.Wrap(baseObject); }
+        #endregion
+        #endregion
+        #endregion
+    }
 }

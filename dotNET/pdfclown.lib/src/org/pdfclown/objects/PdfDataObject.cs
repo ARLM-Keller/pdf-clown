@@ -25,18 +25,18 @@
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>PDF data object.</summary>
-  */
-  public abstract class PdfDataObject
-    : PdfObject
-  {
-    #region dynamic
-    #region constructors
-    protected PdfDataObject(
-      )
-    {}
-    #endregion
-    #endregion
-  }
+    /**
+      <summary>PDF data object.</summary>
+    */
+    public abstract class PdfDataObject
+      : PdfObject
+    {
+        #region dynamic
+        #region constructors
+        protected PdfDataObject(
+          )
+        { }
+        #endregion
+        #endregion
+    }
 }

@@ -34,87 +34,87 @@ using System.Reflection;
 
 namespace org.pdfclown.documents.contents.fonts
 {
-  /**
-    <summary>Character map [PDF:1.6:5.6.4].</summary>
-  */
-  internal sealed class CMap
-  {
-    #region static
-    #region interface
     /**
-      <summary>Gets the character map extracted from the given data.</summary>
-      <param name="stream">Character map data.</param>
+      <summary>Character map [PDF:1.6:5.6.4].</summary>
     */
-    public static IDictionary<ByteArray,int> Get(
-      bytes::IInputStream stream
-      )
+    internal sealed class CMap
     {
-      CMapParser parser = new CMapParser(stream);
-      return parser.Parse();
+        #region static
+        #region interface
+        /**
+          <summary>Gets the character map extracted from the given data.</summary>
+          <param name="stream">Character map data.</param>
+        */
+        public static IDictionary<ByteArray, int> Get(
+          bytes::IInputStream stream
+          )
+        {
+            CMapParser parser = new CMapParser(stream);
+            return parser.Parse();
+        }
+
+        /**
+          <summary>Gets the character map extracted from the given encoding object.</summary>
+          <param name="encodingObject">Encoding object.</param>
+        */
+        public static IDictionary<ByteArray, int> Get(
+          PdfDataObject encodingObject
+          )
+        {
+            if (encodingObject == null)
+                return null;
+
+            if (encodingObject is PdfName) // Predefined CMap.
+                return Get((PdfName)encodingObject);
+            else if (encodingObject is PdfStream) // Embedded CMap file.
+                return Get((PdfStream)encodingObject);
+            else
+                throw new NotSupportedException("Unknown encoding object type: " + encodingObject.GetType().Name);
+        }
+
+        /**
+          <summary>Gets the character map extracted from the given data.</summary>
+          <param name="stream">Character map data.</param>
+        */
+        public static IDictionary<ByteArray, int> Get(
+          PdfStream stream
+          )
+        { return Get(stream.Body); }
+
+        /**
+          <summary>Gets the character map corresponding to the given name.</summary>
+          <param name="name">Predefined character map name.</param>
+          <returns>null, in case no name matching occurs.</returns>
+        */
+        public static IDictionary<ByteArray, int> Get(
+          PdfName name
+          )
+        { return Get((string)name.Value); }
+
+        /**
+          <summary>Gets the character map corresponding to the given name.</summary>
+          <param name="name">Predefined character map name.</param>
+          <returns>null, in case no name matching occurs.</returns>
+        */
+        public static IDictionary<ByteArray, int> Get(
+          string name
+          )
+        {
+            using (Stream cmapResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("fonts.cmap." + name))
+            {
+                if (cmapResourceStream == null)
+                    return null;
+
+                return Get(new bytes::Buffer(cmapResourceStream));
+            }
+        }
+        #endregion
+        #endregion
+
+        #region constructors
+        private CMap(
+          )
+        { }
+        #endregion
     }
-
-    /**
-      <summary>Gets the character map extracted from the given encoding object.</summary>
-      <param name="encodingObject">Encoding object.</param>
-    */
-    public static IDictionary<ByteArray,int> Get(
-      PdfDataObject encodingObject
-      )
-    {
-      if(encodingObject == null)
-        return null;
-
-      if(encodingObject is PdfName) // Predefined CMap.
-        return Get((PdfName)encodingObject);
-      else if(encodingObject is PdfStream) // Embedded CMap file.
-        return Get((PdfStream)encodingObject);
-      else
-        throw new NotSupportedException("Unknown encoding object type: " + encodingObject.GetType().Name);
-    }
-
-    /**
-      <summary>Gets the character map extracted from the given data.</summary>
-      <param name="stream">Character map data.</param>
-    */
-    public static IDictionary<ByteArray,int> Get(
-      PdfStream stream
-      )
-    {return Get(stream.Body);}
-
-    /**
-      <summary>Gets the character map corresponding to the given name.</summary>
-      <param name="name">Predefined character map name.</param>
-      <returns>null, in case no name matching occurs.</returns>
-    */
-    public static IDictionary<ByteArray,int> Get(
-      PdfName name
-      )
-    {return Get((string)name.Value);}
-
-    /**
-      <summary>Gets the character map corresponding to the given name.</summary>
-      <param name="name">Predefined character map name.</param>
-      <returns>null, in case no name matching occurs.</returns>
-    */
-    public static IDictionary<ByteArray,int> Get(
-      string name
-      )
-    {
-      using(Stream cmapResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("fonts.cmap." + name))
-      {
-        if(cmapResourceStream == null)
-          return null;
-
-        return Get(new bytes::Buffer(cmapResourceStream));
-      }
-    }
-    #endregion
-    #endregion
-
-    #region constructors
-    private CMap(
-      )
-    {}
-    #endregion
-  }
 }

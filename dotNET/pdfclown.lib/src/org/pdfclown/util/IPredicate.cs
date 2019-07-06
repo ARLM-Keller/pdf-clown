@@ -27,14 +27,14 @@ using System;
 
 namespace org.pdfclown.util
 {
-  /**
-    <summary>Predicate interface.</summary>
-  */
-  public interface IPredicate
-  {
-    bool Evaluate(
-      object @object
-      );
-  }
+    /**
+      <summary>Predicate interface.</summary>
+    */
+    public interface IPredicate
+    {
+        bool Evaluate(
+          object @object
+          );
+    }
 }
 

@@ -35,63 +35,63 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.interchange.access
 {
-  /**
-    <summary>Language identifier [PDF:1.7:10.8.1][RFC 3066].</summary>
-    <remarks>
-      <para>Language identifiers can be based on codes defined by the International Organization for
-      Standardization in ISO 639 (language code) and ISO 3166 (country code) or registered with the
-      Internet Assigned Numbers Authority (<a href="http://iana.org">IANA</a>), or they can include
-      codes created for private use.</para>
-      <para>A language identifier consists of a primary code optionally followed by one or more
-      subcodes (each preceded by a hyphen).</para>
-    </remarks>
-  */
-  [PDF(VersionEnum.PDF14)]
-  public sealed class LanguageIdentifier
-    : PdfObjectWrapper<PdfTextString>
-  {
-    #region static
-    #region interface
-    #region public
     /**
-      <summary>Wraps a language identifier base object into a language identifier object.</summary>
+      <summary>Language identifier [PDF:1.7:10.8.1][RFC 3066].</summary>
+      <remarks>
+        <para>Language identifiers can be based on codes defined by the International Organization for
+        Standardization in ISO 639 (language code) and ISO 3166 (country code) or registered with the
+        Internet Assigned Numbers Authority (<a href="http://iana.org">IANA</a>), or they can include
+        codes created for private use.</para>
+        <para>A language identifier consists of a primary code optionally followed by one or more
+        subcodes (each preceded by a hyphen).</para>
+      </remarks>
     */
-    public static LanguageIdentifier Wrap(
-      PdfDirectObject baseObject
-      )
+    [PDF(VersionEnum.PDF14)]
+    public sealed class LanguageIdentifier
+      : PdfObjectWrapper<PdfTextString>
     {
-      if(baseObject == null)
-        return null;
+        #region static
+        #region interface
+        #region public
+        /**
+          <summary>Wraps a language identifier base object into a language identifier object.</summary>
+        */
+        public static LanguageIdentifier Wrap(
+          PdfDirectObject baseObject
+          )
+        {
+            if (baseObject == null)
+                return null;
 
-      if(baseObject.Resolve() is PdfTextString)
-        return new LanguageIdentifier(baseObject);
-      else
-        throw new ArgumentException("It doesn't represent a valid language identifier object.", "baseObject");
+            if (baseObject.Resolve() is PdfTextString)
+                return new LanguageIdentifier(baseObject);
+            else
+                throw new ArgumentException("It doesn't represent a valid language identifier object.", "baseObject");
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public LanguageIdentifier(
+          string code
+          ) : base(new PdfTextString(code))
+        { }
+
+        internal LanguageIdentifier(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override string ToString(
+          )
+        { return BaseDataObject.StringValue; }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public LanguageIdentifier(
-      string code
-      ) : base(new PdfTextString(code))
-    {}
-
-    internal LanguageIdentifier(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override string ToString(
-      )
-    {return BaseDataObject.StringValue;}
-    #endregion
-    #endregion
-    #endregion
-  }
 }

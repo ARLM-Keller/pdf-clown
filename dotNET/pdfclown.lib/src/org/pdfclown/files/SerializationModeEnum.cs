@@ -25,30 +25,30 @@
 
 namespace org.pdfclown.files
 {
-  /**
-    <summary>PDF file serialization mode [PDF:1.6:3.4].</summary>
-  */
-  public enum SerializationModeEnum
-  {
     /**
-      <summary>Standard complete file serialization [PDF:1.6:3.4].</summary>
-      <remarks>It <i>writes the entire file</i>, generating a single-section cross-reference table
-      and removing obsolete data structures.
-      It reduces the serialization size, but it's more computationally-intensive (slower).</remarks>
+      <summary>PDF file serialization mode [PDF:1.6:3.4].</summary>
     */
-    Standard = 0,
-    /**
-      <summary>Standard incremental file serialization [PDF:1.6:2.2.7].</summary>
-      <remarks>It <i>leaves original contents intact, appending changes to the end of the file</i>
-      along with an additional cross-reference table section.
-      It increases the serialization size, but it's faster.</remarks>
-    */
-    Incremental = 1,
-    /**
-      <summary>Linearized file serialization [PDF:1.6:F].</summary>
-      <remarks>It organizes the file to enable <i>efficient incremental access in a network environment</i>.
-      It increases the serialization size and it's more computationally-intensive (slower).</remarks>
-    */
-    Linearized = 2
-  }
+    public enum SerializationModeEnum
+    {
+        /**
+          <summary>Standard complete file serialization [PDF:1.6:3.4].</summary>
+          <remarks>It <i>writes the entire file</i>, generating a single-section cross-reference table
+          and removing obsolete data structures.
+          It reduces the serialization size, but it's more computationally-intensive (slower).</remarks>
+        */
+        Standard = 0,
+        /**
+          <summary>Standard incremental file serialization [PDF:1.6:2.2.7].</summary>
+          <remarks>It <i>leaves original contents intact, appending changes to the end of the file</i>
+          along with an additional cross-reference table section.
+          It increases the serialization size, but it's faster.</remarks>
+        */
+        Incremental = 1,
+        /**
+          <summary>Linearized file serialization [PDF:1.6:F].</summary>
+          <remarks>It organizes the file to enable <i>efficient incremental access in a network environment</i>.
+          It increases the serialization size and it's more computationally-intensive (slower).</remarks>
+        */
+        Linearized = 2
+    }
 }

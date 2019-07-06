@@ -31,78 +31,78 @@ using System;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Named renditions [PDF:1.6:3.6.3].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public sealed class NamedRenditions
-    : NameTree<Rendition>
-  {
-    #region dynamic
-    #region constructors
-    public NamedRenditions(
-      Document context
-      ) : base(context)
-    {}
-
-    internal NamedRenditions(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override bool Remove(
-      PdfString key
-      )
-    {
-      Rendition oldValue = this[key];
-      bool removed = base.Remove(key);
-      UpdateName(oldValue, null);
-      return removed;
-    }
-
-    public override Rendition this[
-      PdfString key
-      ]
-    {
-      get
-      {return base[key];}
-      set
-      {
-        Rendition oldValue = base[key];
-        base[key] = value;
-        UpdateName(oldValue, null);
-        UpdateName(value, key);
-      }
-    }
-    #endregion
-
-    #region protected
-    protected override Rendition WrapValue(
-      PdfDirectObject baseObject
-      )
-    {return Rendition.Wrap(baseObject);}
-    #endregion
-
-    #region private
     /**
-      <summary>Ensures name reference synchronization for the specified rendition [PDF:1.7:9.1.2].
-      </summary>
+      <summary>Named renditions [PDF:1.6:3.6.3].</summary>
     */
-    private void UpdateName(
-      Rendition rendition,
-      PdfString name
-      )
+    [PDF(VersionEnum.PDF15)]
+    public sealed class NamedRenditions
+      : NameTree<Rendition>
     {
-      if(rendition == null)
-        return;
+        #region dynamic
+        #region constructors
+        public NamedRenditions(
+          Document context
+          ) : base(context)
+        { }
 
-      rendition.BaseDataObject[PdfName.N] = name;
+        internal NamedRenditions(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override bool Remove(
+          PdfString key
+          )
+        {
+            Rendition oldValue = this[key];
+            bool removed = base.Remove(key);
+            UpdateName(oldValue, null);
+            return removed;
+        }
+
+        public override Rendition this[
+          PdfString key
+          ]
+        {
+            get
+            { return base[key]; }
+            set
+            {
+                Rendition oldValue = base[key];
+                base[key] = value;
+                UpdateName(oldValue, null);
+                UpdateName(value, key);
+            }
+        }
+        #endregion
+
+        #region protected
+        protected override Rendition WrapValue(
+          PdfDirectObject baseObject
+          )
+        { return Rendition.Wrap(baseObject); }
+        #endregion
+
+        #region private
+        /**
+          <summary>Ensures name reference synchronization for the specified rendition [PDF:1.7:9.1.2].
+          </summary>
+        */
+        private void UpdateName(
+          Rendition rendition,
+          PdfString name
+          )
+        {
+            if (rendition == null)
+                return;
+
+            rendition.BaseDataObject[PdfName.N] = name;
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

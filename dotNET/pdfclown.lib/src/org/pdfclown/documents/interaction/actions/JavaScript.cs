@@ -31,108 +31,108 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>'Cause a script to be compiled and executed by the JavaScript interpreter'
-    action [PDF:1.6:8.6.4].</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public sealed class JavaScript
-    : Action
-  {
-    #region static
-    #region interface
-    #region internal
     /**
-      <summary>Gets the Javascript script from the specified base data object.</summary>
+      <summary>'Cause a script to be compiled and executed by the JavaScript interpreter'
+      action [PDF:1.6:8.6.4].</summary>
     */
-    internal static string GetScript(
-      PdfDictionary baseDataObject,
-      PdfName key
-      )
+    [PDF(VersionEnum.PDF13)]
+    public sealed class JavaScript
+      : Action
     {
-      PdfDataObject scriptObject = baseDataObject.Resolve(key);
-      if(scriptObject == null)
-        return null;
-      else if(scriptObject is PdfTextString)
-        return ((PdfTextString)scriptObject).StringValue;
-      else
-      {
-        bytes::IBuffer scriptBuffer = ((PdfStream)scriptObject).Body;
-        return scriptBuffer.GetString(0,(int)scriptBuffer.Length);
-      }
+        #region static
+        #region interface
+        #region internal
+        /**
+          <summary>Gets the Javascript script from the specified base data object.</summary>
+        */
+        internal static string GetScript(
+          PdfDictionary baseDataObject,
+          PdfName key
+          )
+        {
+            PdfDataObject scriptObject = baseDataObject.Resolve(key);
+            if (scriptObject == null)
+                return null;
+            else if (scriptObject is PdfTextString)
+                return ((PdfTextString)scriptObject).StringValue;
+            else
+            {
+                bytes::IBuffer scriptBuffer = ((PdfStream)scriptObject).Body;
+                return scriptBuffer.GetString(0, (int)scriptBuffer.Length);
+            }
+        }
+
+        /**
+          <summary>Sets the Javascript script into the specified base data object.</summary>
+        */
+        internal static void SetScript(
+          PdfDictionary baseDataObject,
+          PdfName key,
+          string value
+          )
+        {
+            PdfDataObject scriptObject = baseDataObject.Resolve(key);
+            if (!(scriptObject is PdfStream) && value.Length > 256)
+            { baseDataObject[key] = baseDataObject.File.Register(scriptObject = new PdfStream()); }
+            // Insert the script!
+            if (scriptObject is PdfStream)
+            {
+                bytes::IBuffer scriptBuffer = ((PdfStream)scriptObject).Body;
+                scriptBuffer.Clear();
+                scriptBuffer.Append(value);
+            }
+            else
+            { baseDataObject[key] = new PdfTextString(value); }
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new action within the given document context.</summary>
+        */
+        public JavaScript(
+          Document context,
+          string script
+          ) : base(context, PdfName.JavaScript)
+        { Script = script; }
+
+        internal JavaScript(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the JavaScript script to be executed.</summary>
+        */
+        public string Script
+        {
+            get
+            { return GetScript(BaseDataObject, PdfName.JS); }
+            set
+            { SetScript(BaseDataObject, PdfName.JS, value); }
+        }
+
+        #region IPdfNamedObjectWrapper
+        public PdfString Name
+        {
+            get
+            { return RetrieveName(); }
+        }
+
+        public PdfDirectObject NamedBaseObject
+        {
+            get
+            { return RetrieveNamedBaseObject(); }
+        }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-
-    /**
-      <summary>Sets the Javascript script into the specified base data object.</summary>
-    */
-    internal static void SetScript(
-      PdfDictionary baseDataObject,
-      PdfName key,
-      string value
-      )
-    {
-      PdfDataObject scriptObject = baseDataObject.Resolve(key);
-      if(!(scriptObject is PdfStream) && value.Length > 256)
-      {baseDataObject[key] = baseDataObject.File.Register(scriptObject = new PdfStream());}
-      // Insert the script!
-      if(scriptObject is PdfStream)
-      {
-        bytes::IBuffer scriptBuffer = ((PdfStream)scriptObject).Body;
-        scriptBuffer.Clear();
-        scriptBuffer.Append(value);
-      }
-      else
-      {baseDataObject[key] = new PdfTextString(value);}
-    }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    /**
-      <summary>Creates a new action within the given document context.</summary>
-    */
-    public JavaScript(
-      Document context,
-      string script
-      ) : base(context, PdfName.JavaScript)
-    {Script = script;}
-
-    internal JavaScript(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the JavaScript script to be executed.</summary>
-    */
-    public string Script
-    {
-      get
-      {return GetScript(BaseDataObject, PdfName.JS);}
-      set
-      {SetScript(BaseDataObject, PdfName.JS, value);}
-    }
-
-    #region IPdfNamedObjectWrapper
-    public PdfString Name
-    {
-      get
-      {return RetrieveName();}
-    }
-
-    public PdfDirectObject NamedBaseObject
-    {
-      get
-      {return RetrieveNamedBaseObject();}
-    }
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }

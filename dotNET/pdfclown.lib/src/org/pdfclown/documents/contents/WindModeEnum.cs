@@ -24,44 +24,42 @@
 */
 
 using System;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Winding rule for determining which points lie inside a path [PDF:1.6:4.4.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public enum WindModeEnum
-  {
     /**
-      <summary>Even-odd winding rule.</summary>
+      <summary>Winding rule for determining which points lie inside a path [PDF:1.6:4.4.2].</summary>
     */
-    EvenOdd,
-    /**
-      <summary>Non-zero winding rule.</summary>
-    */
-    NonZero
-  };
-
-  internal static class WindModeEnumExtension
-  {
-    /**
-      <summary>Converts this constant into its equivalent GDI+ code.</summary>
-    */
-    public static FillMode ToGdi(
-      this WindModeEnum windMode
-      )
+    [PDF(VersionEnum.PDF10)]
+    public enum WindModeEnum
     {
-      switch(windMode)
-      {
-        case WindModeEnum.EvenOdd:
-          return FillMode.Alternate;
-        case WindModeEnum.NonZero:
-          return FillMode.Winding;
-        default:
-          throw new NotSupportedException(windMode + " convertion not supported.");
-      }
+        /**
+          <summary>Even-odd winding rule.</summary>
+        */
+        EvenOdd,
+        /**
+          <summary>Non-zero winding rule.</summary>
+        */
+        NonZero
+    };
+
+    internal static class WindModeEnumExtension
+    {
+        /**
+          <summary>Converts this constant into its equivalent GDI+ code.</summary>
+        */
+        public static SKPathFillType ToSkia(this WindModeEnum windMode)
+        {
+            switch (windMode)
+            {
+                case WindModeEnum.EvenOdd:
+                    return SKPathFillType.EvenOdd;
+                case WindModeEnum.NonZero:
+                    return SKPathFillType.Winding;
+                default:
+                    throw new NotSupportedException(windMode + " convertion not supported.");
+            }
+        }
     }
-  }
 }

@@ -29,19 +29,19 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.interaction
 {
-  /**
-    <summary>Link.</summary>
-  */
-  public interface ILink
-  {
     /**
-      <summary>Gets/Sets the link target.</summary>
-      <returns>Either a <see cref="Destination"/> or an <see cref="Action"/>.</returns>
+      <summary>Link.</summary>
     */
-    PdfObjectWrapper Target
+    public interface ILink
     {
-      get;
-      set;
+        /**
+          <summary>Gets/Sets the link target.</summary>
+          <returns>Either a <see cref="Destination"/> or an <see cref="Action"/>.</returns>
+        */
+        PdfObjectWrapper Target
+        {
+            get;
+            set;
+        }
     }
-  }
 }

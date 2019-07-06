@@ -27,27 +27,27 @@ using org.pdfclown.bytes;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Begin inline image object' operation [PDF:1.6:4.8.6].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class BeginInlineImage
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "BI";
+    /**
+      <summary>'Begin inline image object' operation [PDF:1.6:4.8.6].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class BeginInlineImage
+      : Operation
+    {
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "BI";
 
-    public static readonly BeginInlineImage Value = new BeginInlineImage();
-    #endregion
-    #endregion
+        public static readonly BeginInlineImage Value = new BeginInlineImage();
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    private BeginInlineImage(
-      ) : base(OperatorKeyword)
-    {}
-    #endregion
-    #endregion
-  }
+        #region dynamic
+        #region constructors
+        private BeginInlineImage(
+          ) : base(OperatorKeyword)
+        { }
+        #endregion
+        #endregion
+    }
 }

@@ -32,96 +32,96 @@ using System.Text.RegularExpressions;
 
 namespace org.pdfclown
 {
-  /**
-    <summary>Generic PDF version number [PDF:1.6:H.1].</summary>
-    <seealso cref="VersionEnum"/>
-  */
-  public sealed class Version
-    : IVersion
-  {
-    #region static
-    #region fields
-    private static readonly Regex versionPattern = new Regex("^(\\d+)\\.(\\d+)$");
-    private static readonly IDictionary<string,Version> versions = new Dictionary<string,Version>();
-    #endregion
-
-    #region interface
-    #region public
-    public static Version Get(
-      PdfName version
-      )
-    {return Get(version.RawValue);}
-
-    public static Version Get(
-      string version
-      )
+    /**
+      <summary>Generic PDF version number [PDF:1.6:H.1].</summary>
+      <seealso cref="VersionEnum"/>
+    */
+    public sealed class Version
+      : IVersion
     {
-      if(!versions.ContainsKey(version))
-      {
-        Match versionMatch = versionPattern.Match(version);
-        if(!versionMatch.Success)
-          throw new Exception("Invalid PDF version format: '" + versionPattern + "' pattern expected.");
+        #region static
+        #region fields
+        private static readonly Regex versionPattern = new Regex("^(\\d+)\\.(\\d+)$");
+        private static readonly IDictionary<string, Version> versions = new Dictionary<string, Version>();
+        #endregion
 
-        Version versionObject = new Version(Int32.Parse(versionMatch.Groups[1].Value),Int32.Parse(versionMatch.Groups[2].Value));
-        versions[version] = versionObject;
-      }
-      return versions[version];
+        #region interface
+        #region public
+        public static Version Get(
+          PdfName version
+          )
+        { return Get(version.RawValue); }
+
+        public static Version Get(
+          string version
+          )
+        {
+            if (!versions.ContainsKey(version))
+            {
+                Match versionMatch = versionPattern.Match(version);
+                if (!versionMatch.Success)
+                    throw new Exception("Invalid PDF version format: '" + versionPattern + "' pattern expected.");
+
+                Version versionObject = new Version(Int32.Parse(versionMatch.Groups[1].Value), Int32.Parse(versionMatch.Groups[2].Value));
+                versions[version] = versionObject;
+            }
+            return versions[version];
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region fields
+        private readonly int major;
+        private readonly int minor;
+        #endregion
+
+        #region constructors
+        private Version(
+          int major,
+          int minor
+          )
+        {
+            this.major = major;
+            this.minor = minor;
+        }
+        #endregion
+
+        #region interface
+        #region public
+        public int Major
+        {
+            get
+            { return major; }
+        }
+
+        public int Minor
+        {
+            get
+            { return minor; }
+        }
+
+        public override string ToString(
+          )
+        { return VersionUtils.ToString(this); }
+
+        #region IVersion
+        public IList<int> Numbers
+        {
+            get
+            { return new List<int> { major, minor }; }
+        }
+
+        #region IComparable
+        public int CompareTo(
+          IVersion value
+          )
+        { return VersionUtils.CompareTo(this, value); }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region fields
-    private readonly int major;
-    private readonly int minor;
-    #endregion
-
-    #region constructors
-    private Version(
-      int major,
-      int minor
-      )
-    {
-      this.major = major;
-      this.minor = minor;
-    }
-    #endregion
-
-    #region interface
-    #region public
-    public int Major
-    {
-      get
-      {return major;}
-    }
-
-    public int Minor
-    {
-      get
-      {return minor;}
-    }
-
-    public override string ToString(
-      )
-    {return VersionUtils.ToString(this);}
-
-    #region IVersion
-    public IList<int> Numbers
-    {
-      get
-      {return new List<int>{major, minor};}
-    }
-
-    #region IComparable
-    public int CompareTo(
-      IVersion value
-      )
-    {return VersionUtils.CompareTo(this, value);}
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -30,67 +30,67 @@ using System;
 
 namespace org.pdfclown.documents.interaction.navigation.document
 {
-  /**
-    <summary>Remote interaction target [PDF:1.6:8.2.1].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class RemoteDestination
-    : Destination
-  {
-    #region dynamic
-    #region constructors
-    public RemoteDestination(
-      Document context,
-      int pageIndex
-      ) : this(
-        context,
-        pageIndex,
-        ModeEnum.Fit,
-        null,
-        null
-        )
-    {}
-
-    public RemoteDestination(
-      Document context,
-      int pageIndex,
-      ModeEnum mode,
-      object location,
-      double? zoom
-      ) : base(
-        context,
-        pageIndex,
-        mode,
-        location,
-        zoom
-        )
-    {}
-
-    internal RemoteDestination(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets the index of the target page.</summary>
+      <summary>Remote interaction target [PDF:1.6:8.2.1].</summary>
     */
-    public override object Page
+    [PDF(VersionEnum.PDF10)]
+    public sealed class RemoteDestination
+      : Destination
     {
-      get
-      {return ((PdfInteger)BaseDataObject[0]).IntValue;}
-      set
-      {
-        if(!(value is Int32))
-          throw new ArgumentException("It MUST be an integer number.");
+        #region dynamic
+        #region constructors
+        public RemoteDestination(
+          Document context,
+          int pageIndex
+          ) : this(
+            context,
+            pageIndex,
+            ModeEnum.Fit,
+            null,
+            null
+            )
+        { }
 
-        BaseDataObject[0] = PdfInteger.Get((int)value);
-      }
+        public RemoteDestination(
+          Document context,
+          int pageIndex,
+          ModeEnum mode,
+          object location,
+          double? zoom
+          ) : base(
+            context,
+            pageIndex,
+            mode,
+            location,
+            zoom
+            )
+        { }
+
+        internal RemoteDestination(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the index of the target page.</summary>
+        */
+        public override object Page
+        {
+            get
+            { return ((PdfInteger)BaseDataObject[0]).IntValue; }
+            set
+            {
+                if (!(value is Int32))
+                    throw new ArgumentException("It MUST be an integer number.");
+
+                BaseDataObject[0] = PdfInteger.Get((int)value);
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

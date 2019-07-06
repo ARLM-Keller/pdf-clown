@@ -27,27 +27,27 @@ using org.pdfclown.bytes;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'End inline image object' operation [PDF:1.6:4.8.6].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class EndInlineImage
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "EI";
+    /**
+      <summary>'End inline image object' operation [PDF:1.6:4.8.6].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class EndInlineImage
+      : Operation
+    {
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "EI";
 
-    public static readonly EndInlineImage Value = new EndInlineImage();
-    #endregion
-    #endregion
+        public static readonly EndInlineImage Value = new EndInlineImage();
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    private EndInlineImage(
-      ) : base(OperatorKeyword)
-    {}
-    #endregion
-    #endregion
-  }
+        #region dynamic
+        #region constructors
+        private EndInlineImage(
+          ) : base(OperatorKeyword)
+        { }
+        #endregion
+        #endregion
+    }
 }

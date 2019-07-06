@@ -27,27 +27,27 @@ using org.pdfclown.bytes;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'End marked-content sequence' operation [PDF:1.6:10.5].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class EndMarkedContent
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "EMC";
+    /**
+      <summary>'End marked-content sequence' operation [PDF:1.6:10.5].</summary>
+    */
+    [PDF(VersionEnum.PDF12)]
+    public sealed class EndMarkedContent
+      : Operation
+    {
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "EMC";
 
-    public static readonly EndMarkedContent Value = new EndMarkedContent();
-    #endregion
-    #endregion
+        public static readonly EndMarkedContent Value = new EndMarkedContent();
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    private EndMarkedContent(
-      ) : base(OperatorKeyword)
-    {}
-    #endregion
-    #endregion
-  }
+        #region dynamic
+        #region constructors
+        private EndMarkedContent(
+          ) : base(OperatorKeyword)
+        { }
+        #endregion
+        #endregion
+    }
 }

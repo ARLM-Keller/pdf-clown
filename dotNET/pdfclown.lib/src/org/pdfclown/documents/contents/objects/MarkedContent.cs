@@ -31,63 +31,55 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Marked-content sequence [PDF:1.6:10.5].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class MarkedContent
-    : ContainerObject
-  {
-    #region static
-    #region fields
-    public static readonly string EndOperatorKeyword = EndMarkedContent.OperatorKeyword;
-
-    private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region fields
-    private BeginMarkedContent header;
-    #endregion
-
-    #region constructors
-    public MarkedContent(
-      BeginMarkedContent header
-      ) : this(header, new List<ContentObject>())
-    {}
-
-    public MarkedContent(
-      BeginMarkedContent header,
-      IList<ContentObject> objects
-      ) : base(objects)
-    {this.header = header;}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets information about this marked-content sequence.</summary>
+      <summary>Marked-content sequence [PDF:1.6:10.5].</summary>
     */
-    public override Operation Header
+    [PDF(VersionEnum.PDF12)]
+    public sealed class MarkedContent
+      : ContainerObject
     {
-      get
-      {return header;}
-      set
-      {header = (BeginMarkedContent)value;}
-    }
+        #region static
+        #region fields
+        public static readonly string EndOperatorKeyword = EndMarkedContent.OperatorKeyword;
 
-    public override void WriteTo(
-      IOutputStream stream,
-      Document context
-      )
-    {
-      header.WriteTo(stream, context);
-      base.WriteTo(stream, context);
-      stream.Write(EndChunk);
+        private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region fields
+        private BeginMarkedContent header;
+        #endregion
+
+        #region constructors
+        public MarkedContent(BeginMarkedContent header)
+            : this(header, new List<ContentObject>())
+        { }
+
+        public MarkedContent(BeginMarkedContent header, IList<ContentObject> objects)
+            : base(objects)
+        { this.header = header; }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets information about this marked-content sequence.</summary>
+        */
+        public override Operation Header
+        {
+            get { return header; }
+            set { header = (BeginMarkedContent)value; }
+        }
+
+        public override void WriteTo(IOutputStream stream, Document context)
+        {
+            header.WriteTo(stream, context);
+            base.WriteTo(stream, context);
+            stream.Write(EndChunk);
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -28,23 +28,23 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>Composite dictionary.</summary>
-  */
-  public interface ICompositeDictionary<TKey>
-  {
     /**
-      <summary>Gets the value dictionary associated to the specified type.</summary>
+      <summary>Composite dictionary.</summary>
     */
-    PdfObjectWrapper Get(
-      Type type
-      );
+    public interface ICompositeDictionary<TKey>
+    {
+        /**
+          <summary>Gets the value dictionary associated to the specified type.</summary>
+        */
+        PdfObjectWrapper Get(
+          Type type
+          );
 
-    /**
-      <summary>Gets the value associated to the specified key for the specified type.</summary>
-    */
-    T Get<T>(
-      TKey key
-      ) where T : PdfObjectWrapper;
-  }
+        /**
+          <summary>Gets the value associated to the specified key for the specified type.</summary>
+        */
+        T Get<T>(
+          TKey key
+          ) where T : PdfObjectWrapper;
+    }
 }

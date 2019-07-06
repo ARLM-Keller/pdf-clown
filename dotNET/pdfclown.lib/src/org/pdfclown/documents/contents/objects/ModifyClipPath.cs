@@ -25,76 +25,70 @@
 
 using org.pdfclown.bytes;
 
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Clipping path operation [PDF:1.6:4.4.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class ModifyClipPath
-    : Operation
-  {
-    #region static
-    #region fields
-    public const string EvenOddOperatorKeyword = "W*";
-    public const string NonZeroOperatorKeyword = "W";
-
     /**
-      <summary>'Modify the current clipping path by intersecting it with the current path,
-      using the even-odd rule to determine which regions lie inside the clipping path'
-      operation.</summary>
+      <summary>Clipping path operation [PDF:1.6:4.4.2].</summary>
     */
-    public static readonly ModifyClipPath EvenOdd = new ModifyClipPath(EvenOddOperatorKeyword, WindModeEnum.EvenOdd);
-    /**
-      <summary>'Modify the current clipping path by intersecting it with the current path,
-      using the nonzero winding number rule to determine which regions lie inside
-      the clipping path' operation.</summary>
-    */
-    public static readonly ModifyClipPath NonZero = new ModifyClipPath(NonZeroOperatorKeyword, WindModeEnum.NonZero);
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region fields
-    private WindModeEnum clipMode;
-    #endregion
-
-    #region constructors
-    private ModifyClipPath(
-      string @operator,
-      WindModeEnum clipMode
-      ) : base(@operator)
-    {this.clipMode = clipMode;}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets the clipping rule.</summary>
-    */
-    public WindModeEnum ClipMode
+    [PDF(VersionEnum.PDF10)]
+    public sealed class ModifyClipPath : Operation
     {
-      get
-      {return clipMode;}
-    }
+        #region static
+        #region fields
+        public const string EvenOddOperatorKeyword = "W*";
+        public const string NonZeroOperatorKeyword = "W";
 
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {
-      ContentScanner scanner = state.Scanner;
-      GraphicsPath pathObject = scanner.RenderObject;
-      if(pathObject != null)
-      {
-        pathObject.FillMode = clipMode.ToGdi();
-        scanner.RenderContext.SetClip(pathObject, CombineMode.Intersect);
-      }
+        /**
+          <summary>'Modify the current clipping path by intersecting it with the current path,
+          using the even-odd rule to determine which regions lie inside the clipping path'
+          operation.</summary>
+        */
+        public static readonly ModifyClipPath EvenOdd = new ModifyClipPath(EvenOddOperatorKeyword, WindModeEnum.EvenOdd);
+        /**
+          <summary>'Modify the current clipping path by intersecting it with the current path,
+          using the nonzero winding number rule to determine which regions lie inside
+          the clipping path' operation.</summary>
+        */
+        public static readonly ModifyClipPath NonZero = new ModifyClipPath(NonZeroOperatorKeyword, WindModeEnum.NonZero);
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region fields
+        private WindModeEnum clipMode;
+        #endregion
+
+        #region constructors
+        private ModifyClipPath(string @operator, WindModeEnum clipMode) : base(@operator)
+        {
+            this.clipMode = clipMode;
+        }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the clipping rule.</summary>
+        */
+        public WindModeEnum ClipMode
+        {
+            get { return clipMode; }
+        }
+
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            var scanner = state.Scanner;
+            var pathObject = scanner.RenderObject;
+            if (pathObject != null)
+            {
+                pathObject.FillType = clipMode.ToSkia();
+                scanner.RenderContext.ClipPath(pathObject, SKClipOperation.Intersect);
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

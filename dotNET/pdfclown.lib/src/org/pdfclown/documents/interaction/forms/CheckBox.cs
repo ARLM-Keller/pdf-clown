@@ -32,82 +32,82 @@ using System;
 
 namespace org.pdfclown.documents.interaction.forms
 {
-  /**
-    <summary>Check box field [PDF:1.6:8.6.3].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class CheckBox
-    : ButtonField
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new checkbox within the given document context.</summary>
+      <summary>Check box field [PDF:1.6:8.6.3].</summary>
     */
-    public CheckBox(
-      string name,
-      Widget widget,
-      bool checked_
-      ) : base(name, widget)
-    {Checked = checked_;}
-
-    internal CheckBox(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public bool Checked
+    [PDF(VersionEnum.PDF12)]
+    public sealed class CheckBox
+      : ButtonField
     {
-      get
-      {
-        PdfName value = (PdfName)BaseDataObject[PdfName.V];
-        return !(value == null || value.Equals(PdfName.Off));
-      }
-      set
-      {
-        PdfDictionary widgetDictionary = Widgets[0].BaseDataObject;
-        /*
-          NOTE: The appearance for the off state is optional but, if present, MUST be stored in the
-          appearance dictionary under the name Off. The recommended (but NOT required) name for the
-          on state is Yes.
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new checkbox within the given document context.</summary>
         */
-        PdfName baseValue = null;
-        if(value)
-        {
-          PdfDictionary appearanceDictionary = (PdfDictionary)widgetDictionary.Resolve(PdfName.AP);
-          if(appearanceDictionary != null)
-          {
-            foreach(PdfName appearanceKey in ((PdfDictionary)appearanceDictionary.Resolve(PdfName.N)).Keys)
-            {
-              if(!appearanceKey.Equals(PdfName.Off))
-              {
-                baseValue = appearanceKey;
-                break;
-              }
-            }
-          }
-          else
-          {baseValue = PdfName.Yes;}
-        }
-        else
-        {baseValue = PdfName.Off;}
-        BaseDataObject[PdfName.V] = baseValue;
-        widgetDictionary[PdfName.AS] = baseValue;
-      }
-    }
+        public CheckBox(
+          string name,
+          Widget widget,
+          bool checked_
+          ) : base(name, widget)
+        { Checked = checked_; }
 
-    public override object Value
-    {
-      get
-      {return base.Value;}
-      set
-      {Checked = !(value == null || value.Equals(String.Empty) || value.Equals(PdfName.Off.Value));}
+        internal CheckBox(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public bool Checked
+        {
+            get
+            {
+                PdfName value = (PdfName)BaseDataObject[PdfName.V];
+                return !(value == null || value.Equals(PdfName.Off));
+            }
+            set
+            {
+                PdfDictionary widgetDictionary = Widgets[0].BaseDataObject;
+                /*
+                  NOTE: The appearance for the off state is optional but, if present, MUST be stored in the
+                  appearance dictionary under the name Off. The recommended (but NOT required) name for the
+                  on state is Yes.
+                */
+                PdfName baseValue = null;
+                if (value)
+                {
+                    PdfDictionary appearanceDictionary = (PdfDictionary)widgetDictionary.Resolve(PdfName.AP);
+                    if (appearanceDictionary != null)
+                    {
+                        foreach (PdfName appearanceKey in ((PdfDictionary)appearanceDictionary.Resolve(PdfName.N)).Keys)
+                        {
+                            if (!appearanceKey.Equals(PdfName.Off))
+                            {
+                                baseValue = appearanceKey;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    { baseValue = PdfName.Yes; }
+                }
+                else
+                { baseValue = PdfName.Off; }
+                BaseDataObject[PdfName.V] = baseValue;
+                widgetDictionary[PdfName.AS] = baseValue;
+            }
+        }
+
+        public override object Value
+        {
+            get
+            { return base.Value; }
+            set
+            { Checked = !(value == null || value.Equals(String.Empty) || value.Equals(PdfName.Off.Value)); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

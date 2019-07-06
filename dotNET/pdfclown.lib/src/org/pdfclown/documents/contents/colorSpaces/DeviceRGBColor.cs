@@ -27,125 +27,108 @@ using org.pdfclown.objects;
 
 using System;
 using System.Collections.Generic;
-using drawing = System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Device Red-Green-Blue color value [PDF:1.6:4.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class DeviceRGBColor
-    : DeviceColor
-  {
-    #region static
-    #region fields
-    public static readonly DeviceRGBColor Black = Get(drawing::Color.Black);
-    public static readonly DeviceRGBColor White = Get(drawing::Color.White);
-
-    public static readonly DeviceRGBColor Default = Black;
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the color corresponding to the specified components.</summary>
-      <param name="components">Color components to convert.</param>
+      <summary>Device Red-Green-Blue color value [PDF:1.6:4.5.3].</summary>
     */
-    public static new DeviceRGBColor Get(
-      PdfArray components
-      )
+    [PDF(VersionEnum.PDF11)]
+    public sealed class DeviceRGBColor
+      : DeviceColor
     {
-      return (components != null
-        ? new DeviceRGBColor(components)
-        : Default
-        );
-    }
+        #region static
+        #region fields
+        public static readonly DeviceRGBColor Black = Get(SKColors.Black);
+        public static readonly DeviceRGBColor White = Get(SKColors.White);
 
-    /**
-      <summary>Gets the color corresponding to the specified system color.</summary>
-      <param name="color">System color to convert.</param>
-    */
-    public static DeviceRGBColor Get(
-      drawing::Color? color
-      )
-    {
-      return (color.HasValue
-        ? new DeviceRGBColor(color.Value.R / 255d, color.Value.G / 255d, color.Value.B / 255d)
-        : Default);
-    }
-    #endregion
-    #endregion
-    #endregion
+        public static readonly DeviceRGBColor Default = Black;
+        #endregion
 
-    #region dynamic
-    #region constructors
-    public DeviceRGBColor(
-      double r,
-      double g,
-      double b
-      ) : this(
-        new List<PdfDirectObject>(
-          new PdfDirectObject[]
-          {
+        #region interface
+        #region public
+        /**
+          <summary>Gets the color corresponding to the specified components.</summary>
+          <param name="components">Color components to convert.</param>
+        */
+        public static new DeviceRGBColor Get(PdfArray components)
+        {
+            return (components != null
+              ? new DeviceRGBColor(components)
+              : Default
+              );
+        }
+
+        /**
+          <summary>Gets the color corresponding to the specified system color.</summary>
+          <param name="color">System color to convert.</param>
+        */
+        public static DeviceRGBColor Get(SKColor? color)
+        {
+            return (color.HasValue
+              ? new DeviceRGBColor(color.Value.Red / 255d, color.Value.Green / 255d, color.Value.Blue / 255d)
+              : Default);
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public DeviceRGBColor(double r, double g, double b)
+            : this(
+            new List<PdfDirectObject>(
+              new PdfDirectObject[]
+              {
             PdfReal.Get(NormalizeComponent(r)),
             PdfReal.Get(NormalizeComponent(g)),
             PdfReal.Get(NormalizeComponent(b))
-          }
-        )
-      )
-    {}
+              }
+            )
+          )
+        { }
 
-    internal DeviceRGBColor(
-      IList<PdfDirectObject> components
-      ) : base(
-        DeviceRGBColorSpace.Default,
-        new PdfArray(components)
-        )
-    {}
-    #endregion
+        internal DeviceRGBColor(IList<PdfDirectObject> components) : base(
+            DeviceRGBColorSpace.Default,
+            new PdfArray(components)
+            )
+        { }
+        #endregion
 
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the blue component.</summary>
-    */
-    public double B
-    {
-      get
-      {return GetComponentValue(2);}
-      set
-      {SetComponentValue(2, value);}
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the blue component.</summary>
+        */
+        public double B
+        {
+            get { return GetComponentValue(2); }
+            set { SetComponentValue(2, value); }
+        }
+
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+
+        /**
+          <summary>Gets/Sets the green component.</summary>
+        */
+        public double G
+        {
+            get { return GetComponentValue(1); }
+            set { SetComponentValue(1, value); }
+        }
+
+        /**
+          <summary>Gets/Sets the red component.</summary>
+        */
+        public double R
+        {
+            get { return GetComponentValue(0); }
+            set { SetComponentValue(0, value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    /**
-      <summary>Gets/Sets the green component.</summary>
-    */
-    public double G
-    {
-      get
-      {return GetComponentValue(1);}
-      set
-      {SetComponentValue(1, value);}
-    }
-
-    /**
-      <summary>Gets/Sets the red component.</summary>
-    */
-    public double R
-    {
-      get
-      {return GetComponentValue(0);}
-      set
-      {SetComponentValue(0, value);}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

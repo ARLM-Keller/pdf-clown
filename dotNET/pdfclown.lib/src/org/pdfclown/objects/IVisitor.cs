@@ -29,178 +29,178 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>Visitor interface.</summary>
-    <remarks>Implementations are expected to be functional (traversal results are propagated through
-    return values rather than side effects) and external (responsibility for traversing the
-    hierarchical structure is assigned to the 'visit' methods rather than the 'accept' counterparts).
-    </remarks>
-  */
-  public interface IVisitor
-  {
     /**
-      <summary>Visits an object stream.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
+      <summary>Visitor interface.</summary>
+      <remarks>Implementations are expected to be functional (traversal results are propagated through
+      return values rather than side effects) and external (responsibility for traversing the
+      hierarchical structure is assigned to the 'visit' methods rather than the 'accept' counterparts).
+      </remarks>
     */
-    PdfObject Visit(
-      ObjectStream obj,
-      object data
-      );
+    public interface IVisitor
+    {
+        /**
+          <summary>Visits an object stream.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          ObjectStream obj,
+          object data
+          );
 
-    /**
-      <summary>Visits an object array.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfArray obj,
-      object data
-      );
+        /**
+          <summary>Visits an object array.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfArray obj,
+          object data
+          );
 
-    /**
-      <summary>Visits a boolean object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfBoolean obj,
-      object data
-      );
+        /**
+          <summary>Visits a boolean object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfBoolean obj,
+          object data
+          );
 
-    /**
-      <summary>Visits a data object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfDataObject obj,
-      object data
-      );
+        /**
+          <summary>Visits a data object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfDataObject obj,
+          object data
+          );
 
-    /**
-      <summary>Visits a date object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfDate obj,
-      object data
-      );
+        /**
+          <summary>Visits a date object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfDate obj,
+          object data
+          );
 
-    /**
-      <summary>Visits an object dictionary.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfDictionary obj,
-      object data
-      );
+        /**
+          <summary>Visits an object dictionary.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfDictionary obj,
+          object data
+          );
 
-    /**
-      <summary>Visits an indirect object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfIndirectObject obj,
-      object data
-      );
+        /**
+          <summary>Visits an indirect object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfIndirectObject obj,
+          object data
+          );
 
-    /**
-      <summary>Visits an integer-number object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfInteger obj,
-      object data
-      );
+        /**
+          <summary>Visits an integer-number object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfInteger obj,
+          object data
+          );
 
-    /**
-      <summary>Visits a name object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfName obj,
-      object data
-      );
+        /**
+          <summary>Visits a name object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfName obj,
+          object data
+          );
 
-    /**
-      <summary>Visits a real-number object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfReal obj,
-      object data
-      );
+        /**
+          <summary>Visits a real-number object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfReal obj,
+          object data
+          );
 
-    /**
-      <summary>Visits a reference object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfReference obj,
-      object data
-      );
+        /**
+          <summary>Visits a reference object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfReference obj,
+          object data
+          );
 
-    /**
-      <summary>Visits a stream object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfStream obj,
-      object data
-      );
+        /**
+          <summary>Visits a stream object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfStream obj,
+          object data
+          );
 
-    /**
-      <summary>Visits a string object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfString obj,
-      object data
-      );
+        /**
+          <summary>Visits a string object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfString obj,
+          object data
+          );
 
-    /**
-      <summary>Visits a text string object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      PdfTextString obj,
-      object data
-      );
+        /**
+          <summary>Visits a text string object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          PdfTextString obj,
+          object data
+          );
 
-    /**
-      <summary>Visits a cross-reference stream object.</summary>
-      <param name="object">Visited object.</param>
-      <param name="data">Supplemental data.</param>
-      <returns>Result object.</returns>
-    */
-    PdfObject Visit(
-      XRefStream obj,
-      object data
-      );
-  }
+        /**
+          <summary>Visits a cross-reference stream object.</summary>
+          <param name="object">Visited object.</param>
+          <param name="data">Supplemental data.</param>
+          <returns>Result object.</returns>
+        */
+        PdfObject Visit(
+          XRefStream obj,
+          object data
+          );
+    }
 }

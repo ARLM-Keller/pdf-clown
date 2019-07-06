@@ -29,86 +29,72 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Color value defined by numeric-level components.</summary>
-  */
-  public abstract class LeveledColor
-    : Color
-  {
-    #region dynamic
-    #region constructors
-    protected LeveledColor(
-      ColorSpace colorSpace,
-      PdfDirectObject baseObject
-      ) : base(colorSpace, baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public sealed override IList<PdfDirectObject> Components
-    {
-      get
-      {return BaseArray;}
-    }
-
-    public override bool Equals(
-      object obj
-      )
-    {
-      if(obj == null
-        || !obj.GetType().Equals(GetType()))
-        return false;
-
-      IEnumerator<PdfDirectObject> objectIterator = ((LeveledColor)obj).BaseArray.GetEnumerator();
-      IEnumerator<PdfDirectObject> thisIterator = BaseArray.GetEnumerator();
-      while(thisIterator.MoveNext())
-      {
-        objectIterator.MoveNext();
-        if(!thisIterator.Current.Equals(objectIterator.Current))
-          return false;
-      }
-      return true;
-    }
-
-    public sealed override int GetHashCode(
-      )
-    {
-      int hashCode = 0;
-      foreach(PdfDirectObject component in BaseArray)
-      {hashCode ^= component.GetHashCode();}
-      return hashCode;
-    }
-    #endregion
-
-    #region protected
-    /*
-      NOTE: This is a workaround to the horrible lack of covariance support in C# 3 which forced me
-      to flatten type parameters at top hierarchy level (see Java implementation). Anyway, suggestions
-      to overcome this issue are welcome!
-    */
-    protected PdfArray BaseArray
-    {
-      get
-      {return (PdfArray)BaseDataObject;}
-    }
-
     /**
-      <summary>Gets the specified color component.</summary>
-      <param name="index">Component index.</param>
+      <summary>Color value defined by numeric-level components.</summary>
     */
-    protected double GetComponentValue(
-      int index
-      )
-    {return ((IPdfNumber)Components[index]).RawValue;}
+    public abstract class LeveledColor : Color
+    {
+        #region dynamic
+        #region constructors
+        protected LeveledColor(ColorSpace colorSpace, PdfDirectObject baseObject) : base(colorSpace, baseObject)
+        { }
+        #endregion
 
-    protected void SetComponentValue(
-      int index,
-      double value
-      )
-    {Components[index] = PdfReal.Get(NormalizeComponent(value));}
-    #endregion
-    #endregion
-    #endregion
-  }
+        #region interface
+        #region public
+        public sealed override IList<PdfDirectObject> Components
+        {
+            get { return BaseArray; }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null
+              || !obj.GetType().Equals(GetType()))
+                return false;
+
+            IEnumerator<PdfDirectObject> objectIterator = ((LeveledColor)obj).BaseArray.GetEnumerator();
+            IEnumerator<PdfDirectObject> thisIterator = BaseArray.GetEnumerator();
+            while (thisIterator.MoveNext())
+            {
+                objectIterator.MoveNext();
+                if (!thisIterator.Current.Equals(objectIterator.Current))
+                    return false;
+            }
+            return true;
+        }
+
+        public sealed override int GetHashCode()
+        {
+            int hashCode = 0;
+            foreach (PdfDirectObject component in BaseArray)
+            { hashCode ^= component.GetHashCode(); }
+            return hashCode;
+        }
+        #endregion
+
+        #region protected
+        /*
+          NOTE: This is a workaround to the horrible lack of covariance support in C# 3 which forced me
+          to flatten type parameters at top hierarchy level (see Java implementation). Anyway, suggestions
+          to overcome this issue are welcome!
+        */
+        protected PdfArray BaseArray
+        {
+            get { return (PdfArray)BaseDataObject; }
+        }
+
+        /**
+          <summary>Gets the specified color component.</summary>
+          <param name="index">Component index.</param>
+        */
+        protected double GetComponentValue(int index)
+        { return ((IPdfNumber)Components[index]).RawValue; }
+
+        protected void SetComponentValue(int index, double value)
+        { Components[index] = PdfReal.Get(NormalizeComponent(value)); }
+        #endregion
+        #endregion
+        #endregion
+    }
 }

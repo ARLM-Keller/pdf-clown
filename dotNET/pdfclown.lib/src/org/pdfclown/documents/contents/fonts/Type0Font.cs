@@ -29,30 +29,30 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.fonts
 {
-  /**
-    <summary>Composite font associated to a Type 0 CIDFont,
-    containing glyph descriptions based on the Adobe Type 1 font format [PDF:1.6:5.6.3].</summary>
-  */
-  /*
-    NOTE: Type 0 CIDFonts encompass several formats:
-    * CFF;
-    * OpenFont/CFF (in case "CFF" table's Top DICT has CIDFont operators).
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class Type0Font
-    : CompositeFont
-  {
-    #region constructors
-    internal Type0Font(
-      Document context,
-      OpenFontParser parser
-      ) : base(context,parser)
-    {}
+    /**
+      <summary>Composite font associated to a Type 0 CIDFont,
+      containing glyph descriptions based on the Adobe Type 1 font format [PDF:1.6:5.6.3].</summary>
+    */
+    /*
+      NOTE: Type 0 CIDFonts encompass several formats:
+      * CFF;
+      * OpenFont/CFF (in case "CFF" table's Top DICT has CIDFont operators).
+    */
+    [PDF(VersionEnum.PDF12)]
+    public sealed class Type0Font
+      : CompositeFont
+    {
+        #region constructors
+        internal Type0Font(
+          Document context,
+          OpenFontParser parser
+          ) : base(context, parser)
+        { }
 
-    internal Type0Font(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-  }
+        internal Type0Font(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+    }
 }

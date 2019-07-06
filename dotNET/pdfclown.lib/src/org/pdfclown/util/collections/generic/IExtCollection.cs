@@ -28,38 +28,38 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.util.collections.generic
 {
-  /**
-    <summary>Extension collection interface.</summary>
-  */
-  public interface IExtCollection<T>
-  {
     /**
-      <summary>Appends all of the specified-collection's items to the end of the list.</summary>
-      <param name="items">Collection of items to append.</param>
+      <summary>Extension collection interface.</summary>
     */
-    void AddAll<TVar>(
-      ICollection<TVar> items
-      )
-      where TVar : T;
+    public interface IExtCollection<T>
+    {
+        /**
+          <summary>Appends all of the specified-collection's items to the end of the list.</summary>
+          <param name="items">Collection of items to append.</param>
+        */
+        void AddAll<TVar>(
+          ICollection<TVar> items
+          )
+          where TVar : T;
 
-    /**
-      <summary>Removes all of the specified-collection's items from the list.</summary>
-      <param name="items">Collection of items to remove.</param>
-    */
-    void RemoveAll<TVar>(
-      ICollection<TVar> items
-      )
-      where TVar : T;
+        /**
+          <summary>Removes all of the specified-collection's items from the list.</summary>
+          <param name="items">Collection of items to remove.</param>
+        */
+        void RemoveAll<TVar>(
+          ICollection<TVar> items
+          )
+          where TVar : T;
 
-    /**
-      <summary>Removes all the items that match the conditions defined by the specified
-      predicate.</summary>
-      <param name="match">The <see cref="Predicate"/> delegate that defines the conditions of the items
-      to remove.</param>
-      <returns>The number of items removed from the collection.</returns>
-    */
-    int RemoveAll(
-      Predicate<T> match
-      );
-  }
+        /**
+          <summary>Removes all the items that match the conditions defined by the specified
+          predicate.</summary>
+          <param name="match">The <see cref="Predicate"/> delegate that defines the conditions of the items
+          to remove.</param>
+          <returns>The number of items removed from the collection.</returns>
+        */
+        int RemoveAll(
+          Predicate<T> match
+          );
+    }
 }

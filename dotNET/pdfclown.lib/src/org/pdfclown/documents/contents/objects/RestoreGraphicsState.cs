@@ -29,29 +29,29 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Restore the graphics state by removing the most recently saved state from the stack
-    and making it the current state' operation [PDF:1.6:4.3.3]. Practically, it ends the current
-    local graphics state.</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class RestoreGraphicsState
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "Q";
+    /**
+      <summary>'Restore the graphics state by removing the most recently saved state from the stack
+      and making it the current state' operation [PDF:1.6:4.3.3]. Practically, it ends the current
+      local graphics state.</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class RestoreGraphicsState
+      : Operation
+    {
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "Q";
 
-    public static readonly RestoreGraphicsState Value = new RestoreGraphicsState();
-    #endregion
-    #endregion
+        public static readonly RestoreGraphicsState Value = new RestoreGraphicsState();
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    private RestoreGraphicsState(
-      ) : base(OperatorKeyword)
-    {}
-    #endregion
-    #endregion
-  }
+        #region dynamic
+        #region constructors
+        private RestoreGraphicsState(
+          ) : base(OperatorKeyword)
+        { }
+        #endregion
+        #endregion
+    }
 }

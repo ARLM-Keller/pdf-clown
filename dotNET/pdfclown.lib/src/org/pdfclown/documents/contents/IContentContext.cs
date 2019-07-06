@@ -26,58 +26,50 @@
 using org.pdfclown.documents.interchange.metadata;
 using org.pdfclown.objects;
 
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Content stream context.</summary>
-  */
-  public interface IContentContext
-    : IAppDataHolder,
-      IContentEntity
-  {
     /**
-      <summary>Gets the bounding box associated with this content context either explicitly
-      (directly associated to the object) or (if not explicitly available) implicitly (inherited
-      from a higher level object), expressed in default user-space units.</summary>
+      <summary>Content stream context.</summary>
     */
-    RectangleF Box
-    {get;}
+    public interface IContentContext : IAppDataHolder, IContentEntity
+    {
+        /**
+          <summary>Gets the bounding box associated with this content context either explicitly
+          (directly associated to the object) or (if not explicitly available) implicitly (inherited
+          from a higher level object), expressed in default user-space units.</summary>
+        */
+        SKRect Box { get; }
 
-    /**
-      <summary>Gets the contents collection representing the content stream associated
-      with this content context.</summary>
-    */
-    Contents Contents
-    {get;}
+        /**
+          <summary>Gets the contents collection representing the content stream associated
+          with this content context.</summary>
+        */
+        Contents Contents { get; }
 
-    /**
-      Renders this content context into the specified rendering context.
+        /**
+          Renders this content context into the specified rendering context.
 
-      @param context Rendering context.
-      @param size Rendering canvas size.
-      @since 0.1.0
-    */
-    void Render(
-      Graphics context,
-      SizeF size
-      );
+          @param context Rendering context.
+          @param size Rendering canvas SKSize.
+          @since 0.1.0
+        */
+        void Render(SKCanvas context, SKSize size);
 
-    /**
-      <summary>Gets the resources associated with this content context either explicitly (directly
-      associated to the object) or (if not explicitly available) implicitly (inherited from a
-      higher-level object).</summary>
-      <remarks>The implementing class MUST ensure that the returned object isn't
-      <code>null</code>.</remarks>
-    */
-    Resources Resources
-    {get;}
+        /**
+          <summary>Gets the resources associated with this content context either explicitly (directly
+          associated to the object) or (if not explicitly available) implicitly (inherited from a
+          higher-level object).</summary>
+          <remarks>The implementing class MUST ensure that the returned object isn't
+          <code>null</code>.</remarks>
+        */
+        Resources Resources { get; }
 
-    /**
-      <summary>Gets the rendering rotation of this content context.</summary>
-    */
-    RotationEnum Rotation
-    {get;}
-  }
+        /**
+          <summary>Gets the rendering rotation of this content context.</summary>
+        */
+        RotationEnum Rotation
+        { get; }
+    }
 }

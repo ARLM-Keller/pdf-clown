@@ -33,22 +33,22 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Page article beads [PDF:1.7:3.6.2].</summary>
-    <remarks>The beads are listed in natural reading order.</remarks>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class PageArticleElements
-    : PageElements<ArticleElement>
-  {
-    #region dynamic
-    #region constructors
-    internal PageArticleElements(
-      PdfDirectObject baseObject,
-      Page page
-      ) : base(baseObject, page)
-    {}
-    #endregion
-    #endregion
-  }
+    /**
+      <summary>Page article beads [PDF:1.7:3.6.2].</summary>
+      <remarks>The beads are listed in natural reading order.</remarks>
+    */
+    [PDF(VersionEnum.PDF11)]
+    public sealed class PageArticleElements
+      : PageElements<ArticleElement>
+    {
+        #region dynamic
+        #region constructors
+        internal PageArticleElements(
+          PdfDirectObject baseObject,
+          Page page
+          ) : base(baseObject, page)
+        { }
+        #endregion
+        #endregion
+    }
 }

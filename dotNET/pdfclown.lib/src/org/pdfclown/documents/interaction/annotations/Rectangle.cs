@@ -28,35 +28,35 @@ using org.pdfclown.documents;
 using org.pdfclown.objects;
 
 using System;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.interaction.annotations
 {
-  /**
-    <summary>Square annotation [PDF:1.6:8.4.5].</summary>
-    <remarks>It represents a rectangle to display on a page.</remarks>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public sealed class Rectangle
-    : Shape
-  {
-    #region dynamic
-    #region constructors
-    public Rectangle(
-      Page page,
-      RectangleF box,
-      string text
-      ) : base(page, box, text, PdfName.Square)
-    {}
+    /**
+      <summary>Square annotation [PDF:1.6:8.4.5].</summary>
+      <remarks>It represents a rectangle to display on a page.</remarks>
+    */
+    [PDF(VersionEnum.PDF13)]
+    public sealed class Rectangle
+      : Shape
+    {
+        #region dynamic
+        #region constructors
+        public Rectangle(
+          Page page,
+          SKRect box,
+          string text
+          ) : base(page, box, text, PdfName.Square)
+        { }
 
-    internal Rectangle(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal Rectangle(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #endregion
-    #endregion
-  }
+        #region interface
+        #endregion
+        #endregion
+    }
 }

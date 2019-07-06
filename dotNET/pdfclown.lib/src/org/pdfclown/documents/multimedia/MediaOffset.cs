@@ -34,184 +34,184 @@ using System;
 
 namespace org.pdfclown.documents.multimedia
 {
-  /**
-    <summary>Media offset [PDF:1.7:9.1.5].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public abstract class MediaOffset
-    : PdfObjectWrapper<PdfDictionary>
-  {
-    #region types
     /**
-      <summary>Media offset frame [PDF:1.7:9.1.5].</summary>
+      <summary>Media offset [PDF:1.7:9.1.5].</summary>
     */
-    public sealed class Frame
-      : MediaOffset
+    [PDF(VersionEnum.PDF15)]
+    public abstract class MediaOffset
+      : PdfObjectWrapper<PdfDictionary>
     {
-      public Frame(
-        Document context,
-        int value
-        ) : base(context, PdfName.F)
-      {Value = value;}
-
-      internal Frame(
-        PdfDirectObject baseObject
-        ) : base(baseObject)
-      {}
-
-      /**
-        <summary>Gets/Sets the (zero-based) frame within a media object.</summary>
-      */
-      public override object Value
-      {
-        get
-        {return ((PdfInteger)BaseDataObject[PdfName.F]).IntValue;}
-        set
+        #region types
+        /**
+          <summary>Media offset frame [PDF:1.7:9.1.5].</summary>
+        */
+        public sealed class Frame
+          : MediaOffset
         {
-          int intValue = (int)value;
-          if(intValue < 0)
-            throw new ArgumentException("MUST be non-negative.");
+            public Frame(
+              Document context,
+              int value
+              ) : base(context, PdfName.F)
+            { Value = value; }
 
-          BaseDataObject[PdfName.F] = PdfInteger.Get(intValue);
+            internal Frame(
+              PdfDirectObject baseObject
+              ) : base(baseObject)
+            { }
+
+            /**
+              <summary>Gets/Sets the (zero-based) frame within a media object.</summary>
+            */
+            public override object Value
+            {
+                get
+                { return ((PdfInteger)BaseDataObject[PdfName.F]).IntValue; }
+                set
+                {
+                    int intValue = (int)value;
+                    if (intValue < 0)
+                        throw new ArgumentException("MUST be non-negative.");
+
+                    BaseDataObject[PdfName.F] = PdfInteger.Get(intValue);
+                }
+            }
         }
-      }
-    }
 
-    /**
-      <summary>Media offset marker [PDF:1.7:9.1.5].</summary>
-    */
-    public sealed class Marker
-      : MediaOffset
-    {
-      public Marker(
-        Document context,
-        string value
-        ) : base(context, PdfName.M)
-      {Value = value;}
+        /**
+          <summary>Media offset marker [PDF:1.7:9.1.5].</summary>
+        */
+        public sealed class Marker
+          : MediaOffset
+        {
+            public Marker(
+              Document context,
+              string value
+              ) : base(context, PdfName.M)
+            { Value = value; }
 
-      internal Marker(
-        PdfDirectObject baseObject
-        ) : base(baseObject)
-      {}
+            internal Marker(
+              PdfDirectObject baseObject
+              ) : base(baseObject)
+            { }
 
-      /**
-        <summary>Gets a named offset within a media object.</summary>
-      */
-      public override object Value
-      {
-        get
-        {return ((PdfTextString)BaseDataObject[PdfName.M]).StringValue;}
-        set
-        {BaseDataObject[PdfName.M] = PdfTextString.Get(value);}
-      }
-    }
+            /**
+              <summary>Gets a named offset within a media object.</summary>
+            */
+            public override object Value
+            {
+                get
+                { return ((PdfTextString)BaseDataObject[PdfName.M]).StringValue; }
+                set
+                { BaseDataObject[PdfName.M] = PdfTextString.Get(value); }
+            }
+        }
 
-    /**
-      <summary>Media offset time [PDF:1.7:9.1.5].</summary>
-    */
-    public sealed class Time
-      : MediaOffset
-    {
-      public Time(
-        Document context,
-        double value
-        ) : base(context, PdfName.T)
-      {BaseDataObject[PdfName.T] = new Timespan(value).BaseObject;}
+        /**
+          <summary>Media offset time [PDF:1.7:9.1.5].</summary>
+        */
+        public sealed class Time
+          : MediaOffset
+        {
+            public Time(
+              Document context,
+              double value
+              ) : base(context, PdfName.T)
+            { BaseDataObject[PdfName.T] = new Timespan(value).BaseObject; }
 
-      internal Time(
-        PdfDirectObject baseObject
-        ) : base(baseObject)
-      {}
+            internal Time(
+              PdfDirectObject baseObject
+              ) : base(baseObject)
+            { }
 
-      /**
-        <summary>Gets/Sets the temporal offset (in seconds).</summary>
-      */
-      public override object Value
-      {
-        get
-        {return Timespan.Time;}
-        set
-        {Timespan.Time = (double)value;}
-      }
+            /**
+              <summary>Gets/Sets the temporal offset (in seconds).</summary>
+            */
+            public override object Value
+            {
+                get
+                { return Timespan.Time; }
+                set
+                { Timespan.Time = (double)value; }
+            }
 
-      private Timespan Timespan
-      {
-        get
-        {return new Timespan(BaseDataObject[PdfName.T]);}
-      }
-    }
-    #endregion
+            private Timespan Timespan
+            {
+                get
+                { return new Timespan(BaseDataObject[PdfName.T]); }
+            }
+        }
+        #endregion
 
-    #region static
-    #region interface
-    #region public
-    public static MediaOffset Wrap(
-      PdfDirectObject baseObject
-      )
-    {
-      if(baseObject == null)
-        return null;
+        #region static
+        #region interface
+        #region public
+        public static MediaOffset Wrap(
+          PdfDirectObject baseObject
+          )
+        {
+            if (baseObject == null)
+                return null;
 
-      PdfDictionary dataObject = (PdfDictionary)baseObject.Resolve();
-      PdfName offsetType = (PdfName)dataObject[PdfName.S];
-      if(offsetType == null
-        || (dataObject.ContainsKey(PdfName.Type)
-            && !dataObject[PdfName.Type].Equals(PdfName.MediaOffset)))
-        return null;
+            PdfDictionary dataObject = (PdfDictionary)baseObject.Resolve();
+            PdfName offsetType = (PdfName)dataObject[PdfName.S];
+            if (offsetType == null
+              || (dataObject.ContainsKey(PdfName.Type)
+                  && !dataObject[PdfName.Type].Equals(PdfName.MediaOffset)))
+                return null;
 
-      if(offsetType.Equals(PdfName.F))
-        return new Frame(baseObject);
-      else if(offsetType.Equals(PdfName.M))
-        return new Marker(baseObject);
-      else if(offsetType.Equals(PdfName.T))
-        return new Time(baseObject);
-      else
-        throw new NotSupportedException();
-    }
-    #endregion
-    #endregion
-    #endregion
+            if (offsetType.Equals(PdfName.F))
+                return new Frame(baseObject);
+            else if (offsetType.Equals(PdfName.M))
+                return new Marker(baseObject);
+            else if (offsetType.Equals(PdfName.T))
+                return new Time(baseObject);
+            else
+                throw new NotSupportedException();
+        }
+        #endregion
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    protected MediaOffset(
-      Document context,
-      PdfName subtype
-      ) : base(
-        context,
-        new PdfDictionary(
-          new PdfName[]
-          {
+        #region dynamic
+        #region constructors
+        protected MediaOffset(
+          Document context,
+          PdfName subtype
+          ) : base(
+            context,
+            new PdfDictionary(
+              new PdfName[]
+              {
             PdfName.Type,
             PdfName.S
-          },
-          new PdfDirectObject[]
-          {
+              },
+              new PdfDirectObject[]
+              {
             PdfName.MediaOffset,
             subtype
-          }
-          )
-        )
-    {}
+              }
+              )
+            )
+        { }
 
-    protected MediaOffset(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        protected MediaOffset(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the offset value.</summary>
-    */
-    public abstract object Value
-    {
-      get;
-      set;
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the offset value.</summary>
+        */
+        public abstract object Value
+        {
+            get;
+            set;
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

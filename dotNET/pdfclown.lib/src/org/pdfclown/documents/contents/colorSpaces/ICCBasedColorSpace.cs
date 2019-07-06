@@ -29,73 +29,89 @@ using org.pdfclown.objects;
 
 using System;
 using System.Collections.Generic;
-using drawing = System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>ICC-based color space [PDF:1.6:4.5.4].</summary>
-  */
-  // TODO:IMPL improve profile support (see ICC.1:2003-09 spec)!!!
-  [PDF(VersionEnum.PDF13)]
-  public sealed class ICCBasedColorSpace
-    : ColorSpace
-  {
-    #region dynamic
-    #region constructors
-    //TODO:IMPL new element constructor!
-
-    internal ICCBasedColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    public override int ComponentCount
+    /**
+      <summary>ICC-based color space [PDF:1.6:4.5.4].</summary>
+    */
+    // TODO:IMPL improve profile support (see ICC.1:2003-09 spec)!!!
+    [PDF(VersionEnum.PDF13)]
+    public sealed class ICCBasedColorSpace
+      : ColorSpace
     {
-      get
-      {
-        // FIXME: Auto-generated method stub
-        return 0;
-      }
-    }
+        #region dynamic
+        #region constructors
+        //TODO:IMPL new element constructor!
 
-    public override Color DefaultColor
-    {
-      get
-      {return DeviceGrayColor.Default;} // FIXME:temporary hack...
-    }
+        internal ICCBasedColorSpace(PdfDirectObject baseObject) : base(baseObject) { }
+        #endregion
 
-    public override Color GetColor(
-      IList<PdfDirectObject> components,
-      IContentContext context
-      )
-    {
-      return new DeviceRGBColor(components); // FIXME:temporary hack...
-    }
+        #region interface
+        #region public
+        public override object Clone(Document context)
+        {
+            throw new NotImplementedException();
+        }
 
-    public override drawing::Brush GetPaint(
-      Color color
-      )
-    {
-      // FIXME: temporary hack
-      return new drawing::SolidBrush(drawing::Color.Black);
-    }
+        public override int ComponentCount
+        {
+            get
+            {
+                // FIXME: Auto-generated method stub
+                return 0;
+            }
+        }
 
-    public PdfStream Profile
-    {
-      get
-      {return (PdfStream)((PdfArray)BaseDataObject).Resolve(1);}
+        public override Color DefaultColor
+        {
+            get { return DeviceGrayColor.Default; } // FIXME:temporary hack...
+        }
+
+        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
+        {
+            return new DeviceRGBColor(components); // FIXME:temporary hack...
+        }
+
+        public override SKColor GetColor(Color color)
+        {
+            // FIXME: temporary hack
+            if (color is DeviceRGBColor devRGB)
+            {
+                return new SKColor(
+                    (byte)(devRGB.R * 255),
+                    (byte)(devRGB.G * 255),
+                    (byte)(devRGB.B * 255));
+            }
+            else if (color is CalRGBColor calRGB)
+            {
+                return new SKColor(
+                    (byte)(calRGB.R * 255),
+                    (byte)(calRGB.G * 255),
+                    (byte)(calRGB.B * 255));
+            }
+
+            return SKColors.Black;
+        }
+
+        public override SKPaint GetPaint(Color color)
+        {
+            // FIXME: temporary hack
+            return new SKPaint
+            {
+                Color = GetColor(color),
+                Style = SKPaintStyle.Fill
+            };
+        }
+
+        public PdfStream Profile
+        {
+            get
+            { return (PdfStream)((PdfArray)BaseDataObject).Resolve(1); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -24,64 +24,64 @@
 */
 
 using System;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Shape to be used at the ends of stroked open subpaths
-    [PDF:1.6:4.3.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public enum LineCapEnum
-  {
     /**
-      <summary>Truncated line cap.</summary>
+      <summary>Shape to be used at the ends of stroked open subpaths
+      [PDF:1.6:4.3.2].</summary>
     */
-    Butt = 0,
-    /**
-      <summary>Rounded line cap.</summary>
-    */
-    Round = 1,
-    /**
-      <summary>Squared-off line cap.</summary>
-    */
-    Square = 2
-  };
-
-  internal static class LineCapEnumExtension
-  {
-    public static LineCap ToGdi(
-      this LineCapEnum lineCap
-      )
+    [PDF(VersionEnum.PDF10)]
+    public enum LineCapEnum
     {
-      switch(lineCap)
-      {
-        case LineCapEnum.Butt:
-         return LineCap.Flat;
-        case LineCapEnum.Round:
-        return LineCap.Round;
-        case LineCapEnum.Square:
-         return LineCap.Square;
-        default:
-         throw new NotSupportedException(lineCap + " convertion not supported.");
-      }
-    }
+        /**
+          <summary>Truncated line cap.</summary>
+        */
+        Butt = 0,
+        /**
+          <summary>Rounded line cap.</summary>
+        */
+        Round = 1,
+        /**
+          <summary>Squared-off line cap.</summary>
+        */
+        Square = 2
+    };
 
-    public static DashCap ToDashCap(
-      this LineCap lineCap
-      )
+    internal static class LineCapEnumExtension
     {
-      switch(lineCap)
-      {
-        case LineCap.Round:
-        case LineCap.RoundAnchor:
-          return DashCap.Round;
-        case LineCap.Triangle:
-          return DashCap.Triangle;
-        default:
-          return DashCap.Flat;
-      }
+        public static SKStrokeCap ToSkia(
+          this LineCapEnum lineCap
+          )
+        {
+            switch (lineCap)
+            {
+                case LineCapEnum.Butt:
+                    return SKStrokeCap.Butt;
+                case LineCapEnum.Round:
+                    return SKStrokeCap.Round;
+                case LineCapEnum.Square:
+                    return SKStrokeCap.Square;
+                default:
+                    throw new NotSupportedException(lineCap + " convertion not supported.");
+            }
+        }
+
+        //public static DashCap ToDashCap(
+        //  this LineCap lineCap
+        //  )
+        //{
+        //    switch (lineCap)
+        //    {
+        //        case LineCap.Round:
+        //        case LineCap.RoundAnchor:
+        //            return DashCap.Round;
+        //        case LineCap.Triangle:
+        //            return DashCap.Triangle;
+        //        default:
+        //            return DashCap.Flat;
+        //    }
+        //}
     }
-  }
 }

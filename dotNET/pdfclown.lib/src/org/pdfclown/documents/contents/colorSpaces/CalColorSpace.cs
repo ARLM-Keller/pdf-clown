@@ -28,34 +28,34 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>CIE-based calibrated color value [PDF:1.6:4.5.4].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public abstract class CalColorSpace
-    : CIEBasedColorSpace
-  {
-    #region dynamic
-    #region constructors
-    //TODO:IMPL new element constructor!
-
-    protected CalColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the gamma of this color space.</summary>
+      <summary>CIE-based calibrated color value [PDF:1.6:4.5.4].</summary>
     */
-    public abstract double[] Gamma
+    [PDF(VersionEnum.PDF11)]
+    public abstract class CalColorSpace
+      : CIEBasedColorSpace
     {
-      get;
+        #region dynamic
+        #region constructors
+        //TODO:IMPL new element constructor!
+
+        protected CalColorSpace(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the gamma of this color space.</summary>
+        */
+        public abstract double[] Gamma
+        {
+            get;
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

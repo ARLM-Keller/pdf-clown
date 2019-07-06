@@ -30,48 +30,48 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Set the line join style' operation [PDF:1.6:4.3.3].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class SetLineJoin
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "j";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public SetLineJoin(
-      LineJoinEnum value
-      ) : base(OperatorKeyword, PdfInteger.Get((int)value))
-    {}
-
-    public SetLineJoin(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {state.LineJoin = Value;}
-
-    public LineJoinEnum Value
+    /**
+      <summary>'Set the line join style' operation [PDF:1.6:4.3.3].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class SetLineJoin
+      : Operation
     {
-      get
-      {return (LineJoinEnum)((IPdfNumber)operands[0]).Value;}
-      set
-      {operands[0] = PdfInteger.Get((int)value);}
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "j";
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public SetLineJoin(
+          LineJoinEnum value
+          ) : base(OperatorKeyword, PdfInteger.Get((int)value))
+        { }
+
+        public SetLineJoin(
+          IList<PdfDirectObject> operands
+          ) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override void Scan(
+          ContentScanner.GraphicsState state
+          )
+        { state.LineJoin = Value; }
+
+        public LineJoinEnum Value
+        {
+            get
+            { return (LineJoinEnum)((IPdfNumber)operands[0]).Value; }
+            set
+            { operands[0] = PdfInteger.Get((int)value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

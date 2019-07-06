@@ -30,79 +30,66 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Separation color value [PDF:1.6:4.5.5].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class SeparationColor
-    : LeveledColor
-  {
-    #region static
-    #region fields
-    public static readonly SeparationColor Default = new SeparationColor(1);
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the color corresponding to the specified components.</summary>
-      <param name="components">Color components to convert.</param>
+      <summary>Separation color value [PDF:1.6:4.5.5].</summary>
     */
-    public static SeparationColor Get(
-      PdfArray components
-      )
+    [PDF(VersionEnum.PDF12)]
+    public sealed class SeparationColor
+      : LeveledColor
     {
-      return (components != null
-        ? new SeparationColor(components)
-        : Default
-        );
+        #region static
+        #region fields
+        public static readonly SeparationColor Default = new SeparationColor(1);
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the color corresponding to the specified components.</summary>
+          <param name="components">Color components to convert.</param>
+        */
+        public static SeparationColor Get(
+          PdfArray components
+          )
+        {
+            return (components != null
+              ? new SeparationColor(components)
+              : Default
+              );
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public SeparationColor(double intensity)
+            : this(new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(intensity) }))
+        //TODO:normalize value (see devicecolor)!
+        { }
+
+        internal SeparationColor(IList<PdfDirectObject> components)
+            : base(
+            null, //TODO:consider color space reference!
+            new PdfArray(components))
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+
+        /**
+          <summary>Gets/Sets the color intensity.</summary>
+        */
+        public double Intensity
+        {
+            get { return GetComponentValue(0); }
+            set { SetComponentValue(0, value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public SeparationColor(
-      double intensity
-      ) : this(
-        new List<PdfDirectObject>(
-          new PdfDirectObject[]
-          {
-            PdfReal.Get(intensity) //TODO:normalize value (see devicecolor)!
-          }
-        )
-      )
-    {}
-
-    internal SeparationColor(
-      IList<PdfDirectObject> components
-      ) : base(
-        null, //TODO:consider color space reference!
-        new PdfArray(components)
-        )
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    /**
-      <summary>Gets/Sets the color intensity.</summary>
-    */
-    public double Intensity
-    {
-      get
-      {return GetComponentValue(0);}
-      set
-      {SetComponentValue(0, value);}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

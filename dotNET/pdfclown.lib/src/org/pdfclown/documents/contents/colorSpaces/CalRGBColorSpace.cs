@@ -28,84 +28,85 @@ using org.pdfclown.objects;
 
 using System;
 using System.Collections.Generic;
-using drawing = System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>CIE-based ABC single-transformation-stage color space, where A, B, and C represent
-    calibrated red, green and blue color values [PDF:1.6:4.5.4].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class CalRGBColorSpace
-    : CalColorSpace
-  {
-    #region dynamic
-    #region constructors
-    //TODO:IMPL new element constructor!
-
-    internal CalRGBColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    public override int ComponentCount
+    /**
+      <summary>CIE-based ABC single-transformation-stage color space, where A, B, and C represent
+      calibrated red, green and blue color values [PDF:1.6:4.5.4].</summary>
+    */
+    [PDF(VersionEnum.PDF11)]
+    public sealed class CalRGBColorSpace
+      : CalColorSpace
     {
-      get
-      {return 3;}
-    }
+        #region dynamic
+        #region constructors
+        //TODO:IMPL new element constructor!
 
-    public override Color DefaultColor
-    {
-      get
-      {return CalRGBColor.Default;}
-    }
+        internal CalRGBColorSpace(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    public override double[] Gamma
-    {
-      get
-      {
-        PdfArray gammaObject = (PdfArray)Dictionary[PdfName.Gamma];
-        return (gammaObject == null
-          ? new double[]
+        #region interface
+        #region public
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+
+        public override int ComponentCount
+        {
+            get { return 3; }
+        }
+
+        public override Color DefaultColor
+        {
+            get { return CalRGBColor.Default; }
+        }
+
+        public override double[] Gamma
+        {
+            get
             {
+                PdfArray gammaObject = (PdfArray)Dictionary[PdfName.Gamma];
+                return (gammaObject == null
+                  ? new double[]
+                    {
               1,
               1,
               1
-            }
-          : new double[]
-            {
+                    }
+                  : new double[]
+                    {
               ((IPdfNumber)gammaObject[0]).RawValue,
               ((IPdfNumber)gammaObject[1]).RawValue,
               ((IPdfNumber)gammaObject[2]).RawValue
+                    }
+                  );
             }
-          );
-      }
-    }
+        }
 
-    public override Color GetColor(
-      IList<PdfDirectObject> components,
-      IContentContext context
-      )
-    {return new CalRGBColor(components);}
+        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
+        { return new CalRGBColor(components); }
 
-    public override drawing::Brush GetPaint(
-      Color color
-      )
-    {
-      // FIXME: temporary hack
-      return new drawing::SolidBrush(drawing::Color.Black);
+        public override SKColor GetColor(Color color)
+        {
+            // FIXME: temporary hack
+            return SKColors.Black;
+        }
+
+        public override SKPaint GetPaint(Color color)
+        {
+            // FIXME: temporary hack
+            return new SKPaint
+            {
+                Color = GetColor(color),
+                Style = SKPaintStyle.Fill
+            };
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

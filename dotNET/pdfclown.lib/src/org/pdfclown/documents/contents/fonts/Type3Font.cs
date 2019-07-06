@@ -31,41 +31,41 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.fonts
 {
-  /**
-    <summary>Type 3 font [PDF:1.6:5.5.4].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class Type3Font
-    : SimpleFont
-  {
-    #region dynamic
-    #region constructors
-     internal Type3Font(
-       Document context
-       ) : base(context)
-     {}
-
-    internal Type3Font(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override double Ascent
+    /**
+      <summary>Type 3 font [PDF:1.6:5.5.4].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class Type3Font
+      : SimpleFont
     {
-      get
-      {return 0;}
-    }
+        #region dynamic
+        #region constructors
+        internal Type3Font(
+          Document context
+          ) : base(context)
+        { }
 
-    public override double Descent
-    {
-      get
-      {return 0;}
+        internal Type3Font(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override double Ascent
+        {
+            get
+            { return 0; }
+        }
+
+        public override double Descent
+        {
+            get
+            { return 0; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

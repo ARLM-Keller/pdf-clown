@@ -27,53 +27,53 @@ using System;
 
 namespace org.pdfclown
 {
-  /**
-    <summary>Managed PDF version number [PDF:1.6:H.1].</summary>
-  */
-  public enum VersionEnum
-  {
     /**
-      <summary>Version 1.0 (1993, Acrobat 1).</summary>
+      <summary>Managed PDF version number [PDF:1.6:H.1].</summary>
     */
-    PDF10,
-    /**
-      <summary>Version 1.1 (1996, Acrobat 2).</summary>
-    */
-    PDF11,
-    /**
-      <summary>Version 1.2 (1996, Acrobat 3).</summary>
-    */
-    PDF12,
-    /**
-      <summary>Version 1.3 (2000, Acrobat 4).</summary>
-    */
-    PDF13,
-    /**
-      <summary>Version 1.4 (2001, Acrobat 5).</summary>
-    */
-    PDF14,
-    /**
-      <summary>Version 1.5 (2003, Acrobat 6).</summary>
-    */
-    PDF15,
-    /**
-      <summary>Version 1.6 (2004, Acrobat 7).</summary>
-    */
-    PDF16,
-    /**
-      <summary>Version 1.7 (2006, Acrobat 8).</summary>
-    */
-    PDF17
-  }
-
-  internal static class VersionEnumExtension
-  {
-    public static Version GetVersion(
-      this VersionEnum value
-      )
+    public enum VersionEnum
     {
-      string versionSuffix = value.ToString().Substring(value.ToString().Length - 2);
-      return Version.Get(versionSuffix[0] + "." + versionSuffix[1]);
+        /**
+          <summary>Version 1.0 (1993, Acrobat 1).</summary>
+        */
+        PDF10,
+        /**
+          <summary>Version 1.1 (1996, Acrobat 2).</summary>
+        */
+        PDF11,
+        /**
+          <summary>Version 1.2 (1996, Acrobat 3).</summary>
+        */
+        PDF12,
+        /**
+          <summary>Version 1.3 (2000, Acrobat 4).</summary>
+        */
+        PDF13,
+        /**
+          <summary>Version 1.4 (2001, Acrobat 5).</summary>
+        */
+        PDF14,
+        /**
+          <summary>Version 1.5 (2003, Acrobat 6).</summary>
+        */
+        PDF15,
+        /**
+          <summary>Version 1.6 (2004, Acrobat 7).</summary>
+        */
+        PDF16,
+        /**
+          <summary>Version 1.7 (2006, Acrobat 8).</summary>
+        */
+        PDF17
     }
-  }
+
+    internal static class VersionEnumExtension
+    {
+        public static Version GetVersion(
+          this VersionEnum value
+          )
+        {
+            string versionSuffix = value.ToString().Substring(value.ToString().Length - 2);
+            return Version.Get(versionSuffix[0] + "." + versionSuffix[1]);
+        }
+    }
 }

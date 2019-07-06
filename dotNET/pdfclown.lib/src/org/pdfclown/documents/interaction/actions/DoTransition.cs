@@ -32,44 +32,44 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>'Control drawing during a sequence of actions' action [PDF:1.6:8.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public sealed class DoTransition
-    : Action
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new action within the given document context.</summary>
+      <summary>'Control drawing during a sequence of actions' action [PDF:1.6:8.5.3].</summary>
     */
-    public DoTransition(
-      Document context,
-      Transition transition
-      ) : base(context, PdfName.Trans)
-    {Transition = transition;}
-
-    internal DoTransition(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the transition effect to be used for the update of the display.</summary>
-    */
-    public Transition Transition
+    [PDF(VersionEnum.PDF15)]
+    public sealed class DoTransition
+      : Action
     {
-      get
-      {return Transition.Wrap(BaseDataObject[PdfName.Trans]);}
-      set
-      {BaseDataObject[PdfName.Trans] = value.BaseObject;}
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new action within the given document context.</summary>
+        */
+        public DoTransition(
+          Document context,
+          Transition transition
+          ) : base(context, PdfName.Trans)
+        { Transition = transition; }
+
+        internal DoTransition(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the transition effect to be used for the update of the display.</summary>
+        */
+        public Transition Transition
+        {
+            get
+            { return Transition.Wrap(BaseDataObject[PdfName.Trans]); }
+            set
+            { BaseDataObject[PdfName.Trans] = value.BaseObject; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

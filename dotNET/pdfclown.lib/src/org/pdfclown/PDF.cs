@@ -27,27 +27,27 @@ using System;
 
 namespace org.pdfclown
 {
-  /**
-    <summary>Indicates the PDF compatibility level of the annotated element.</summary>
-  */
-  [AttributeUsage(AttributeTargets.All)]
-  public class PDF
-    : Attribute
-  {
-    private VersionEnum value;
-
-    public PDF(
-      VersionEnum value
-      )
-    {this.value = value;}
-
     /**
-      <summary>Gets the compatible version (minimum PDF version supporting the annotated element).</summary>
+      <summary>Indicates the PDF compatibility level of the annotated element.</summary>
     */
-    public VersionEnum Value
+    [AttributeUsage(AttributeTargets.All)]
+    public class PDF
+      : Attribute
     {
-      get
-      {return value;}
+        private VersionEnum value;
+
+        public PDF(
+          VersionEnum value
+          )
+        { this.value = value; }
+
+        /**
+          <summary>Gets the compatible version (minimum PDF version supporting the annotated element).</summary>
+        */
+        public VersionEnum Value
+        {
+            get
+            { return value; }
+        }
     }
-  }
 }

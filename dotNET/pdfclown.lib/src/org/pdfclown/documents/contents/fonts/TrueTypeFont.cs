@@ -35,20 +35,20 @@ using System.Reflection;
 
 namespace org.pdfclown.documents.contents.fonts
 {
-  /**
-    <summary>TrueType font [PDF:1.6:5;OFF:2009].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class TrueTypeFont
-    : SimpleFont
-  {
-    #region dynamic
-    #region constructors
-    internal TrueTypeFont(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-    #endregion
-  }
+    /**
+      <summary>TrueType font [PDF:1.6:5;OFF:2009].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class TrueTypeFont
+      : SimpleFont
+    {
+        #region dynamic
+        #region constructors
+        internal TrueTypeFont(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+        #endregion
+    }
 }

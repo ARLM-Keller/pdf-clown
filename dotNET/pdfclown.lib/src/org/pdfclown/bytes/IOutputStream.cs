@@ -25,52 +25,52 @@
 
 namespace org.pdfclown.bytes
 {
-  /**
-    <summary>Output stream interface.</summary>
-  */
-  public interface IOutputStream
-    : IStream
-  {
     /**
-      <summary>Clears the buffer of any data.</summary>
+      <summary>Output stream interface.</summary>
     */
-    void Clear(
-      );
+    public interface IOutputStream
+      : IStream
+    {
+        /**
+          <summary>Clears the buffer of any data.</summary>
+        */
+        void Clear(
+          );
 
-    /**
-      <summary>Writes a byte array into the stream.</summary>
-      <param name="data">Byte array to write into the stream.</param>
-    */
-    void Write(
-      byte[] data
-      );
+        /**
+          <summary>Writes a byte array into the stream.</summary>
+          <param name="data">Byte array to write into the stream.</param>
+        */
+        void Write(
+          byte[] data
+          );
 
-    /**
-      <summary>Writes a byte range into the stream.</summary>
-      <param name="data">Byte array to write into the stream.</param>
-      <param name="offset">Location in the byte array at which writing begins.</param>
-      <param name="length">Number of bytes to write.</param>
-    */
-    void Write(
-      byte[] data,
-      int offset,
-      int length
-      );
+        /**
+          <summary>Writes a byte range into the stream.</summary>
+          <param name="data">Byte array to write into the stream.</param>
+          <param name="offset">Location in the byte array at which writing begins.</param>
+          <param name="length">Number of bytes to write.</param>
+        */
+        void Write(
+          byte[] data,
+          int offset,
+          int length
+          );
 
-    /**
-      <summary>Writes a string into the stream.</summary>
-      <param name="data">String to write into the stream.</param>
-    */
-    void Write(
-      string data
-      );
+        /**
+          <summary>Writes a string into the stream.</summary>
+          <param name="data">String to write into the stream.</param>
+        */
+        void Write(
+          string data
+          );
 
-    /**
-      <summary>Writes an <see cref="IInputStream"/> into the stream.</summary>
-      <param name="data">IInputStream to write into the stream.</param>
-    */
-    void Write(
-      IInputStream data
-      );
-  }
+        /**
+          <summary>Writes an <see cref="IInputStream"/> into the stream.</summary>
+          <param name="data">IInputStream to write into the stream.</param>
+        */
+        void Write(
+          IInputStream data
+          );
+    }
 }

@@ -28,84 +28,77 @@ using org.pdfclown.objects;
 
 using System;
 using System.Collections.Generic;
-using drawing = System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Device Cyan-Magenta-Yellow-Key color space [PDF:1.6:4.5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class DeviceCMYKColorSpace
-    : DeviceColorSpace
-  {
-    #region static
-    #region fields
-    /*
-      NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
-      of the contextual resource dictionary) [PDF:1.6:4.5.7].
+    /**
+      <summary>Device Cyan-Magenta-Yellow-Key color space [PDF:1.6:4.5.3].</summary>
     */
-    public static readonly DeviceCMYKColorSpace Default = new DeviceCMYKColorSpace(PdfName.DeviceCMYK);
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public DeviceCMYKColorSpace(
-      Document context
-      ) : base(context, PdfName.DeviceCMYK)
-    {}
-
-    internal DeviceCMYKColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    public override int ComponentCount
+    [PDF(VersionEnum.PDF11)]
+    public sealed class DeviceCMYKColorSpace : DeviceColorSpace
     {
-      get
-      {return 4;}
-    }
+        #region static
+        #region fields
+        /*
+          NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
+          of the contextual resource dictionary) [PDF:1.6:4.5.7].
+        */
+        public static readonly DeviceCMYKColorSpace Default = new DeviceCMYKColorSpace(PdfName.DeviceCMYK);
+        #endregion
+        #endregion
 
-    public override Color DefaultColor
-    {
-      get
-      {return DeviceCMYKColor.Default;}
-    }
+        #region dynamic
+        #region constructors
+        public DeviceCMYKColorSpace(Document context) : base(context, PdfName.DeviceCMYK)
+        { }
 
-    public override Color GetColor(
-      IList<PdfDirectObject> components,
-      IContentContext context
-      )
-    {return new DeviceCMYKColor(components);}
+        internal DeviceCMYKColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        { }
+        #endregion
 
-    public override drawing::Brush GetPaint(
-      Color color
-      )
-    {
-      DeviceCMYKColor spaceColor = (DeviceCMYKColor)color;
-      /*
-        NOTE: This convertion algorithm was from Apache FOP.
-      */
-      //FIXME: verify whether this algorithm is effective (limit checking seems quite ugly to me!).
-      float keyCorrection = (float)spaceColor.K / 2.5f;
-      int r = (int)Math.Round((1 - spaceColor.C + keyCorrection) * 255); if(r > 255){r=255;} else if(r < 0){r=0;}
-      int g = (int)Math.Round((1 - spaceColor.M + keyCorrection) * 255); if(g > 255){g=255;} else if(g < 0){g=0;}
-      int b = (int)Math.Round((1 - spaceColor.Y + keyCorrection) * 255); if(b > 255){b=255;} else if(b < 0){b=0;}
-      return new drawing::SolidBrush(
-        drawing::Color.FromArgb(r, g, b)
-        );
+        #region interface
+        #region public
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+
+        public override int ComponentCount
+        {
+            get { return 4; }
+        }
+
+        public override Color DefaultColor
+        {
+            get { return DeviceCMYKColor.Default; }
+        }
+
+        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
+        { return new DeviceCMYKColor(components); }
+
+        public override SKColor GetColor(Color color)
+        {
+            DeviceCMYKColor spaceColor = (DeviceCMYKColor)color;
+            /*
+              NOTE: This convertion algorithm was from Apache FOP.
+            */
+            //FIXME: verify whether this algorithm is effective (limit checking seems quite ugly to me!).
+            float keyCorrection = (float)spaceColor.K / 2.5f;
+            int r = (int)Math.Round((1 - spaceColor.C + keyCorrection) * 255); if (r > 255) { r = 255; } else if (r < 0) { r = 0; }
+            int g = (int)Math.Round((1 - spaceColor.M + keyCorrection) * 255); if (g > 255) { g = 255; } else if (g < 0) { g = 0; }
+            int b = (int)Math.Round((1 - spaceColor.Y + keyCorrection) * 255); if (b > 255) { b = 255; } else if (b < 0) { b = 0; }
+            return new SKColor((byte)r, (byte)g, (byte)b);
+        }
+
+        public override SKPaint GetPaint(Color color)
+        {
+            return new SKPaint
+            {
+                Color = GetColor(color),
+                Style = SKPaintStyle.Fill
+            };
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

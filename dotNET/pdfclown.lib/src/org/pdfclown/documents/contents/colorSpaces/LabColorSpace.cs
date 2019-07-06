@@ -29,121 +29,120 @@ using org.pdfclown.util.math;
 
 using System;
 using System.Collections.Generic;
-using drawing = System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>CIE-based ABC double-transformation-stage color space, where A, B and C represent the
-    L*, a* and b* components of a CIE 1976 L*a*b* space [PDF:1.6:4.5.4].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class LabColorSpace
-    : CIEBasedColorSpace
-  {
-    #region dynamic
-    #region constructors
-    //TODO:IMPL new element constructor!
-
-    internal LabColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    public override int ComponentCount
-    {
-      get
-      {return 3;}
-    }
-
-    public override Color DefaultColor
-    {
-      get
-      {
-        IList<Interval<double>> ranges = Ranges;
-        return new LabColor(
-          ranges[0].Low,
-          ranges[1].Low,
-          ranges[2].Low
-          );
-      }
-    }
-
-    public override Color GetColor(
-      IList<PdfDirectObject> components,
-      IContentContext context
-      )
-    {return new LabColor(components);}
-
-    public override drawing::Brush GetPaint(
-      Color color
-      )
-    {
-      // FIXME: temporary hack
-      return new drawing::SolidBrush(drawing::Color.Black);
-    }
-
     /**
-      <summary>Gets the (inclusive) ranges of the color components.</summary>
-      <remarks>Component values falling outside the specified range are adjusted
-      to the nearest valid value.</remarks>
+      <summary>CIE-based ABC double-transformation-stage color space, where A, B and C represent the
+      L*, a* and b* components of a CIE 1976 L*a*b* space [PDF:1.6:4.5.4].</summary>
     */
-    //TODO:generalize to all the color spaces!
-    public IList<Interval<double>> Ranges
+    [PDF(VersionEnum.PDF11)]
+    public sealed class LabColorSpace : CIEBasedColorSpace
     {
-      get
-      {
-        IList<Interval<double>> ranges = new List<Interval<double>>();
-        {
-          // 1. L* component.
-          ranges.Add(
-            new Interval<double>(0d, 100d)
-            );
+        #region dynamic
+        #region constructors
+        //TODO:IMPL new element constructor!
 
-          PdfArray rangesObject = (PdfArray)Dictionary[PdfName.Range];
-          if(rangesObject == null)
-          {
-            // 2. a* component.
-            ranges.Add(
-              new Interval<double>(-100d, 100d)
-              );
-            // 3. b* component.
-            ranges.Add(
-              new Interval<double>(-100d, 100d)
-              );
-          }
-          else
-          {
-            // 2/3. a*/b* components.
-            for(
-              int index = 0,
-                length = rangesObject.Count;
-              index < length;
-              index += 2
-              )
-            {
-              ranges.Add(
-                new Interval<double>(
-                  ((IPdfNumber)rangesObject[index]).RawValue,
-                  ((IPdfNumber)rangesObject[index+1]).RawValue
-                  )
-                );
-            }
-          }
+        internal LabColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+
+        public override int ComponentCount
+        {
+            get { return 3; }
         }
-        return ranges;
-      }
+
+        public override Color DefaultColor
+        {
+            get
+            {
+                IList<Interval<double>> ranges = Ranges;
+                return new LabColor(
+                  ranges[0].Low,
+                  ranges[1].Low,
+                  ranges[2].Low
+                  );
+            }
+        }
+
+        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
+        { return new LabColor(components); }
+
+        public override SKColor GetColor(Color color)
+        {
+            // FIXME: temporary hack
+            return SKColors.Black;
+        }
+
+        public override SKPaint GetPaint(Color color)
+        {
+            // FIXME: temporary hack
+            return new SKPaint
+            {
+                Color = GetColor(color),
+                Style = SKPaintStyle.Fill
+            };
+        }
+
+        /**
+          <summary>Gets the (inclusive) ranges of the color components.</summary>
+          <remarks>Component values falling outside the specified range are adjusted
+          to the nearest valid value.</remarks>
+        */
+        //TODO:generalize to all the color spaces!
+        public IList<Interval<double>> Ranges
+        {
+            get
+            {
+                IList<Interval<double>> ranges = new List<Interval<double>>();
+                {
+                    // 1. L* component.
+                    ranges.Add(
+                      new Interval<double>(0d, 100d)
+                      );
+
+                    PdfArray rangesObject = (PdfArray)Dictionary[PdfName.Range];
+                    if (rangesObject == null)
+                    {
+                        // 2. a* component.
+                        ranges.Add(
+                          new Interval<double>(-100d, 100d)
+                          );
+                        // 3. b* component.
+                        ranges.Add(
+                          new Interval<double>(-100d, 100d)
+                          );
+                    }
+                    else
+                    {
+                        // 2/3. a*/b* components.
+                        for (
+                          int index = 0,
+                            length = rangesObject.Count;
+                          index < length;
+                          index += 2
+                          )
+                        {
+                            ranges.Add(
+                              new Interval<double>(
+                                ((IPdfNumber)rangesObject[index]).RawValue,
+                                ((IPdfNumber)rangesObject[index + 1]).RawValue
+                                )
+                              );
+                        }
+                    }
+                }
+                return ranges;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

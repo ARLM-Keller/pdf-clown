@@ -27,173 +27,173 @@ using org.pdfclown.documents;
 using org.pdfclown.files;
 
 using System;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>PDF rectangle object [PDF:1.6:3.8.4].</summary>
-    <remarks>
-      <para>Rectangles are described by two diagonally-opposite corners. Corner pairs which don't
-      respect the canonical form (lower-left and upper-right) are automatically normalized to
-      provide a consistent representation.</para>
-      <para>Coordinates are expressed within the PDF coordinate space (lower-left origin and
-      positively-oriented axes).</para>
-    </remarks>
-  */
-  public sealed class Rectangle
-    : PdfObjectWrapper<PdfArray>
-  {
-    #region static
-    #region interface
-    #region public
-    public static Rectangle Wrap(
-      PdfDirectObject baseObject
-      )
-    {return baseObject != null ? new Rectangle(baseObject) : null;}
-    #endregion
-
-    #region private
-    private static PdfArray Normalize(
-      PdfArray rectangle
-      )
+    /**
+      <summary>PDF rectangle object [PDF:1.6:3.8.4].</summary>
+      <remarks>
+        <para>Rectangles are described by two diagonally-opposite corners. Corner pairs which don't
+        respect the canonical form (lower-left and upper-right) are automatically normalized to
+        provide a consistent representation.</para>
+        <para>Coordinates are expressed within the PDF coordinate space (lower-left origin and
+        positively-oriented axes).</para>
+      </remarks>
+    */
+    public sealed class Rectangle
+      : PdfObjectWrapper<PdfArray>
     {
-      if(rectangle[0].CompareTo(rectangle[2]) > 0)
-      {
-        PdfDirectObject leftCoordinate = rectangle[2];
-        rectangle[2] = rectangle[0];
-        rectangle[0] = leftCoordinate;
-      }
-      if(rectangle[1].CompareTo(rectangle[3]) > 0)
-      {
-        PdfDirectObject bottomCoordinate = rectangle[3];
-        rectangle[3] = rectangle[1];
-        rectangle[1] = bottomCoordinate;
-      }
-      return rectangle;
-    }
-    #endregion
-    #endregion
-    #endregion
+        #region static
+        #region interface
+        #region public
+        public static Rectangle Wrap(
+          PdfDirectObject baseObject
+          )
+        { return baseObject != null ? new Rectangle(baseObject) : null; }
+        #endregion
 
-    #region dynamic
-    #region constructors
-    public Rectangle(
-      RectangleF rectangle
-      ) : this(
-        rectangle.Left,
-        rectangle.Bottom,
-        rectangle.Width,
-        rectangle.Height
-        )
-    {}
+        #region private
+        private static PdfArray Normalize(
+          PdfArray rectangle
+          )
+        {
+            if (rectangle[0].CompareTo(rectangle[2]) > 0)
+            {
+                PdfDirectObject leftCoordinate = rectangle[2];
+                rectangle[2] = rectangle[0];
+                rectangle[0] = leftCoordinate;
+            }
+            if (rectangle[1].CompareTo(rectangle[3]) > 0)
+            {
+                PdfDirectObject bottomCoordinate = rectangle[3];
+                rectangle[3] = rectangle[1];
+                rectangle[1] = bottomCoordinate;
+            }
+            return rectangle;
+        }
+        #endregion
+        #endregion
+        #endregion
 
-    public Rectangle(
-      PointF lowerLeft,
-      PointF upperRight
-      ) : this(
-        lowerLeft.X,
-        upperRight.Y,
-        upperRight.X-lowerLeft.X,
-        upperRight.Y-lowerLeft.Y
-        )
-    {}
+        #region dynamic
+        #region constructors
+        public Rectangle(
+          SKRect rectangle
+          ) : this(
+            rectangle.Left,
+            rectangle.Bottom,
+            rectangle.Width,
+            rectangle.Height
+            )
+        { }
 
-    public Rectangle(
-      double left,
-      double top,
-      double width,
-      double height
-      ) : this(
-        new PdfArray(
-          new PdfDirectObject[]
-          {
+        public Rectangle(
+          SKPoint lowerLeft,
+          SKPoint upperRight
+          ) : this(
+            lowerLeft.X,
+            upperRight.Y,
+            upperRight.X - lowerLeft.X,
+            upperRight.Y - lowerLeft.Y
+            )
+        { }
+
+        public Rectangle(
+          double left,
+          double top,
+          double width,
+          double height
+          ) : this(
+            new PdfArray(
+              new PdfDirectObject[]
+              {
             PdfReal.Get(left), // Left (X).
             PdfReal.Get(top - height), // Bottom (Y).
             PdfReal.Get(left + width), // Right.
             PdfReal.Get(top) // Top.
-          }
+              }
+              )
+            )
+        { }
+
+        private Rectangle(
+          PdfDirectObject baseObject
+          ) : base(Normalize((PdfArray)baseObject.Resolve()))
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public double Bottom
+        {
+            get
+            { return ((IPdfNumber)BaseDataObject[1]).RawValue; }
+            set
+            { BaseDataObject[1] = PdfReal.Get(value); }
+        }
+
+        public double Height
+        {
+            get
+            { return (Top - Bottom); }
+            set
+            { Bottom = Top - value; }
+        }
+
+        public double Left
+        {
+            get
+            { return ((IPdfNumber)BaseDataObject[0]).RawValue; }
+            set
+            { BaseDataObject[0] = PdfReal.Get(value); }
+        }
+
+        public double Right
+        {
+            get
+            { return ((IPdfNumber)BaseDataObject[2]).RawValue; }
+            set
+            { BaseDataObject[2] = PdfReal.Get(value); }
+        }
+
+        public double Top
+        {
+            get
+            { return ((IPdfNumber)BaseDataObject[3]).RawValue; }
+            set
+            { BaseDataObject[3] = PdfReal.Get(value); }
+        }
+
+        public SKRect ToRectangleF(
           )
-        )
-    {}
+        { return SKRect.Create((float)X, (float)Y, (float)Width, (float)Height); }
 
-    private Rectangle(
-      PdfDirectObject baseObject
-      ) : base(Normalize((PdfArray)baseObject.Resolve()))
-    {}
-    #endregion
+        public double Width
+        {
+            get
+            { return Right - Left; }
+            set
+            { Right = Left + value; }
+        }
 
-    #region interface
-    #region public
-    public double Bottom
-    {
-      get
-      {return ((IPdfNumber)BaseDataObject[1]).RawValue;}
-      set
-      {BaseDataObject[1] = PdfReal.Get(value);}
+        public double X
+        {
+            get
+            { return Left; }
+            set
+            { Left = value; }
+        }
+
+        public double Y
+        {
+            get
+            { return Bottom; }
+            set
+            { Bottom = value; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    public double Height
-    {
-      get
-      {return (Top - Bottom);}
-      set
-      {Bottom = Top - value;}
-    }
-
-    public double Left
-    {
-      get
-      {return ((IPdfNumber)BaseDataObject[0]).RawValue;}
-      set
-      {BaseDataObject[0] = PdfReal.Get(value);}
-    }
-
-    public double Right
-    {
-      get
-      {return ((IPdfNumber)BaseDataObject[2]).RawValue;}
-      set
-      {BaseDataObject[2] = PdfReal.Get(value);}
-    }
-
-    public double Top
-    {
-      get
-      {return ((IPdfNumber)BaseDataObject[3]).RawValue;}
-      set
-      {BaseDataObject[3] = PdfReal.Get(value);}
-    }
-
-    public RectangleF ToRectangleF(
-      )
-    {return new RectangleF((float)X, (float)Y, (float)Width, (float)Height);}
-
-    public double Width
-    {
-      get
-      {return Right - Left;}
-      set
-      {Right = Left + value;}
-    }
-
-    public double X
-    {
-      get
-      {return Left;}
-      set
-      {Left = value;}
-    }
-
-    public double Y
-    {
-      get
-      {return Bottom;}
-      set
-      {Bottom = value;}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

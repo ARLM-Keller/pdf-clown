@@ -26,30 +26,30 @@
 using org.pdfclown.objects;
 
 using System.Collections.Generic;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Text string interface.</summary>
-    <remarks>Its purpose is to describe a text chunk extracted from content streams.</remarks>
-  */
-  public interface ITextString
-  {
     /**
-      <summary>Gets the text string bounds.</summary>
+      <summary>Text string interface.</summary>
+      <remarks>Its purpose is to describe a text chunk extracted from content streams.</remarks>
     */
-    RectangleF? Box
-    {get;}
-    /**
-      <summary>Gets the decoded text.</summary>
-    */
-    string Text
-    {get;}
-    /**
-      <summary>Gets the information of each text string character.</summary>
-    */
-    List<TextChar> TextChars
-    {get;}
-  }
+    public interface ITextString
+    {
+        /**
+          <summary>Gets the text string bounds.</summary>
+        */
+        SKRect? Box
+        { get; }
+        /**
+          <summary>Gets the decoded text.</summary>
+        */
+        string Text
+        { get; }
+        /**
+          <summary>Gets the information of each text string character.</summary>
+        */
+        List<TextChar> TextChars
+        { get; }
+    }
 }

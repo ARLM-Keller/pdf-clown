@@ -25,43 +25,43 @@
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Glyph-outlines appearance on text showing [PDF:1.6:5.2.5].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public enum TextRenderModeEnum
-  {
     /**
-      <summary>Fill text glyphs.</summary>
+      <summary>Glyph-outlines appearance on text showing [PDF:1.6:5.2.5].</summary>
     */
-    Fill = 0,
-    /**
-      <summary>Stroke text glyphs.</summary>
-    */
-    Stroke = 1,
-    /**
-      <summary>Fill, then stroke text glyphs.</summary>
-    */
-    FillStroke = 2,
-    /**
-      <summary>Do nothing (invisible text glyphs).</summary>
-    */
-    Invisible = 3,
-    /**
-      <summary>Fill text glyphs, then apply to path for clipping.</summary>
-    */
-    FillClip = 4,
-    /**
-      <summary>Stroke text glyphs, then apply to path for clipping.</summary>
-    */
-    StrokeClip = 5,
-    /**
-      <summary>Fill, then stroke text glyphs, then apply to path for clipping.</summary>
-    */
-    FillStrokeClip = 6,
-    /**
-      <summary>Apply text glyphs to path for clipping.</summary>
-    */
-    Clip = 7
-  };
+    [PDF(VersionEnum.PDF10)]
+    public enum TextRenderModeEnum
+    {
+        /**
+          <summary>Fill text glyphs.</summary>
+        */
+        Fill = 0,
+        /**
+          <summary>Stroke text glyphs.</summary>
+        */
+        Stroke = 1,
+        /**
+          <summary>Fill, then stroke text glyphs.</summary>
+        */
+        FillStroke = 2,
+        /**
+          <summary>Do nothing (invisible text glyphs).</summary>
+        */
+        Invisible = 3,
+        /**
+          <summary>Fill text glyphs, then apply to path for clipping.</summary>
+        */
+        FillClip = 4,
+        /**
+          <summary>Stroke text glyphs, then apply to path for clipping.</summary>
+        */
+        StrokeClip = 5,
+        /**
+          <summary>Fill, then stroke text glyphs, then apply to path for clipping.</summary>
+        */
+        FillStrokeClip = 6,
+        /**
+          <summary>Apply text glyphs to path for clipping.</summary>
+        */
+        Clip = 7
+    };
 }

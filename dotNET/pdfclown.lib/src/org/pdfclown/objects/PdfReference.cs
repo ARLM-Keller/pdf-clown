@@ -31,239 +31,239 @@ using System;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>PDF indirect reference object [PDF:1.6:3.2.9].</summary>
-  */
-  public sealed class PdfReference
-    : PdfDirectObject,
-      IPdfIndirectObject
-  {
-    #region static
-    private const int DelegatedReferenceNumber = -1;
-    #endregion
-
-    #region dynamic
-    #region fields
-    private readonly int generationNumber;
-    private readonly int objectNumber;
-
-    private PdfIndirectObject indirectObject;
-
-    private File file;
-    private PdfObject parent;
-    private bool updated;
-    #endregion
-
-    #region constructors
-    internal PdfReference(
-      PdfIndirectObject indirectObject
-      )
-    {
-      this.objectNumber = DelegatedReferenceNumber;
-      this.generationNumber = DelegatedReferenceNumber;
-
-      this.indirectObject = indirectObject;
-    }
-
-    internal PdfReference(
-      int objectNumber,
-      int generationNumber,
-      File file
-      )
-    {
-      this.objectNumber = objectNumber;
-      this.generationNumber = generationNumber;
-
-      this.file = file;
-    }
-    #endregion
-
-    #region interface
-    #region public
-    public override PdfObject Accept(
-      IVisitor visitor,
-      object data
-      )
-    {return visitor.Visit(this, data);}
-
-    public override int CompareTo(
-      PdfDirectObject obj
-      )
-    {throw new NotImplementedException();}
-
-    public override bool Equals(
-      object other
-      )
-    {
-      /*
-       * NOTE: References are evaluated as "equal" if they are either the same instance or they sport
-       * the same identifier within the same file instance.
-       */
-      if(base.Equals(other))
-        return true;
-      else if(other == null
-          || !other.GetType().Equals(GetType()))
-        return false;
-
-      PdfReference otherReference = (PdfReference)other;
-      return otherReference.File == File
-          && otherReference.Id.Equals(Id);
-    }
-
-    public override File File
-    {
-      get
-      {return file != null ? file : base.File;}
-    }
-
     /**
-      <summary>Gets the generation number.</summary>
+      <summary>PDF indirect reference object [PDF:1.6:3.2.9].</summary>
     */
-    public int GenerationNumber
+    public sealed class PdfReference
+      : PdfDirectObject,
+        IPdfIndirectObject
     {
-      get
-      {return generationNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Generation : generationNumber;}
-    }
+        #region static
+        private const int DelegatedReferenceNumber = -1;
+        #endregion
 
-    public override int GetHashCode(
-      )
-    {
-      /*
-        NOTE: Uniqueness should be achieved XORring the (local) reference hash-code with the (global)
-        file hash-code.
-      */
-      return Id.GetHashCode() ^ File.GetHashCode();
-    }
+        #region dynamic
+        #region fields
+        private readonly int generationNumber;
+        private readonly int objectNumber;
 
-    /**
-      <summary>Gets the object identifier.</summary>
-      <remarks>This corresponds to the serialized representation of an object identifier within a PDF file.</remarks>
-    */
-    public string Id
-    {
-      get
-      {return ("" + ObjectNumber + Symbol.Space + GenerationNumber);}
-    }
+        private PdfIndirectObject indirectObject;
 
-    /**
-      <summary>Gets the object reference.</summary>
-      <remarks>This corresponds to the serialized representation of a reference within a PDF file.</remarks>
-    */
-    public string IndirectReference
-    {
-      get
-      {return (Id + Symbol.Space + Symbol.CapitalR);}
-    }
+        private File file;
+        private PdfObject parent;
+        private bool updated;
+        #endregion
 
-    /**
-      <summary>Gets the object number.</summary>
-    */
-    public int ObjectNumber
-    {
-      get
-      {return objectNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Number : objectNumber;}
-    }
+        #region constructors
+        internal PdfReference(
+          PdfIndirectObject indirectObject
+          )
+        {
+            this.objectNumber = DelegatedReferenceNumber;
+            this.generationNumber = DelegatedReferenceNumber;
 
-    public override PdfObject Parent
-    {
-      get
-      {return parent;}
-      internal set
-      {parent = value;}
-    }
+            this.indirectObject = indirectObject;
+        }
 
-    public override PdfObject Swap(
-      PdfObject other
-      )
-    {
-      /*
-        NOTE: Fail fast if the referenced indirect object is undefined.
-      */
-      return IndirectObject.Swap(((PdfReference)other).IndirectObject).Reference;
-    }
+        internal PdfReference(
+          int objectNumber,
+          int generationNumber,
+          File file
+          )
+        {
+            this.objectNumber = objectNumber;
+            this.generationNumber = generationNumber;
 
-    public override string ToString(
-      )
-    {return IndirectReference;}
+            this.file = file;
+        }
+        #endregion
 
-    public override bool Updateable
-    {
-      get
-      {return IndirectObject != null ? indirectObject.Updateable : false;}
-      set
-      {
-        /*
-          NOTE: Fail fast if the referenced indirect object is undefined.
+        #region interface
+        #region public
+        public override PdfObject Accept(
+          IVisitor visitor,
+          object data
+          )
+        { return visitor.Visit(this, data); }
+
+        public override int CompareTo(
+          PdfDirectObject obj
+          )
+        { throw new NotImplementedException(); }
+
+        public override bool Equals(
+          object other
+          )
+        {
+            /*
+             * NOTE: References are evaluated as "equal" if they are either the same instance or they sport
+             * the same identifier within the same file instance.
+             */
+            if (base.Equals(other))
+                return true;
+            else if (other == null
+                || !other.GetType().Equals(GetType()))
+                return false;
+
+            PdfReference otherReference = (PdfReference)other;
+            return otherReference.File == File
+                && otherReference.Id.Equals(Id);
+        }
+
+        public override File File
+        {
+            get
+            { return file != null ? file : base.File; }
+        }
+
+        /**
+          <summary>Gets the generation number.</summary>
         */
-        IndirectObject.Updateable = value;
-      }
-    }
+        public int GenerationNumber
+        {
+            get
+            { return generationNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Generation : generationNumber; }
+        }
 
-    public override bool Updated
-    {
-      get
-      {return updated;}
-      protected internal set
-      {updated = value;}
-    }
+        public override int GetHashCode(
+          )
+        {
+            /*
+              NOTE: Uniqueness should be achieved XORring the (local) reference hash-code with the (global)
+              file hash-code.
+            */
+            return Id.GetHashCode() ^ File.GetHashCode();
+        }
 
-    public override void WriteTo(
-      IOutputStream stream,
-      File context
-      )
-    {stream.Write(IndirectReference);}
-
-    #region IPdfIndirectObject
-    public PdfDataObject DataObject
-    {
-      get
-      {return IndirectObject != null ? indirectObject.DataObject : null;}
-      set
-      {
-        /*
-          NOTE: Fail fast if the referenced indirect object is undefined.
+        /**
+          <summary>Gets the object identifier.</summary>
+          <remarks>This corresponds to the serialized representation of an object identifier within a PDF file.</remarks>
         */
-        IndirectObject.DataObject = value;
-      }
-    }
+        public string Id
+        {
+            get
+            { return ("" + ObjectNumber + Symbol.Space + GenerationNumber); }
+        }
 
-    /**
-      <returns><code>null</code>, if the indirect object is undefined.</returns>
-    */
-    public override PdfIndirectObject IndirectObject
-    {
-      get
-      {
-        if(indirectObject == null)
-        {indirectObject = file.IndirectObjects[objectNumber];}
-
-        return indirectObject;
-      }
-    }
-
-    public override PdfReference Reference
-    {
-      get
-      {return this;}
-    }
-    #endregion
-    #endregion
-
-    #region protected
-    protected internal override bool Virtual
-    {
-      get
-      {return IndirectObject != null ? indirectObject.Virtual : false;}
-      set
-      {
-        /*
-          NOTE: Fail fast if the referenced indirect object is undefined.
+        /**
+          <summary>Gets the object reference.</summary>
+          <remarks>This corresponds to the serialized representation of a reference within a PDF file.</remarks>
         */
-        IndirectObject.Virtual = value;
-      }
+        public string IndirectReference
+        {
+            get
+            { return (Id + Symbol.Space + Symbol.CapitalR); }
+        }
+
+        /**
+          <summary>Gets the object number.</summary>
+        */
+        public int ObjectNumber
+        {
+            get
+            { return objectNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Number : objectNumber; }
+        }
+
+        public override PdfObject Parent
+        {
+            get
+            { return parent; }
+            internal set
+            { parent = value; }
+        }
+
+        public override PdfObject Swap(
+          PdfObject other
+          )
+        {
+            /*
+              NOTE: Fail fast if the referenced indirect object is undefined.
+            */
+            return IndirectObject.Swap(((PdfReference)other).IndirectObject).Reference;
+        }
+
+        public override string ToString(
+          )
+        { return IndirectReference; }
+
+        public override bool Updateable
+        {
+            get
+            { return IndirectObject != null ? indirectObject.Updateable : false; }
+            set
+            {
+                /*
+                  NOTE: Fail fast if the referenced indirect object is undefined.
+                */
+                IndirectObject.Updateable = value;
+            }
+        }
+
+        public override bool Updated
+        {
+            get
+            { return updated; }
+            protected internal set
+            { updated = value; }
+        }
+
+        public override void WriteTo(
+          IOutputStream stream,
+          File context
+          )
+        { stream.Write(IndirectReference); }
+
+        #region IPdfIndirectObject
+        public PdfDataObject DataObject
+        {
+            get
+            { return IndirectObject != null ? indirectObject.DataObject : null; }
+            set
+            {
+                /*
+                  NOTE: Fail fast if the referenced indirect object is undefined.
+                */
+                IndirectObject.DataObject = value;
+            }
+        }
+
+        /**
+          <returns><code>null</code>, if the indirect object is undefined.</returns>
+        */
+        public override PdfIndirectObject IndirectObject
+        {
+            get
+            {
+                if (indirectObject == null)
+                { indirectObject = file.IndirectObjects[objectNumber]; }
+
+                return indirectObject;
+            }
+        }
+
+        public override PdfReference Reference
+        {
+            get
+            { return this; }
+        }
+        #endregion
+        #endregion
+
+        #region protected
+        protected internal override bool Virtual
+        {
+            get
+            { return IndirectObject != null ? indirectObject.Virtual : false; }
+            set
+            {
+                /*
+                  NOTE: Fail fast if the referenced indirect object is undefined.
+                */
+                IndirectObject.Virtual = value;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

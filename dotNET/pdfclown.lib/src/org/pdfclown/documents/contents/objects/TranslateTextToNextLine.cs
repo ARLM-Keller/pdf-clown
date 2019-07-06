@@ -25,46 +25,45 @@
 
 using org.pdfclown.bytes;
 using org.pdfclown.objects;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Drawing2D;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Move to the start of the next line' operation [PDF:1.6:5.3.1].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class TranslateTextToNextLine
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "T*";
-
-    public static readonly TranslateTextToNextLine Value = new TranslateTextToNextLine();
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    private TranslateTextToNextLine(
-      ) : base(OperatorKeyword)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
+    /**
+      <summary>'Move to the start of the next line' operation [PDF:1.6:5.3.1].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class TranslateTextToNextLine
+      : Operation
     {
-      state.Tlm.Multiply(new Matrix(1, 0, 0, 1, 0, (float)-state.Lead));
-      state.Tm = state.Tlm.Clone();
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "T*";
+
+        public static readonly TranslateTextToNextLine Value = new TranslateTextToNextLine();
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        private TranslateTextToNextLine(
+          ) : base(OperatorKeyword)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            var tlm = state.Tlm;
+            SKMatrix.PreConcat(ref tlm, new SKMatrix { Values = new[] { 1, 0, 0, 0, 1, (float)-state.Lead, 0, 0, 1 } });
+            state.Tlm = tlm;
+            state.Tm = state.Tlm;
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

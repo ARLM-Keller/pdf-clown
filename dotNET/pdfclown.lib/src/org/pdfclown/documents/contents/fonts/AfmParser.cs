@@ -33,216 +33,216 @@ using System.Text.RegularExpressions;
 
 namespace org.pdfclown.documents.contents.fonts
 {
-  /**
-    <summary>AFM file format parser [AFM:4.1].</summary>
-  */
-  public sealed class AfmParser
-  {
-    #region types
     /**
-      <summary>Font header (Global font information).</summary>
+      <summary>AFM file format parser [AFM:4.1].</summary>
     */
-    public sealed class FontMetrics
+    public sealed class AfmParser
     {
-      public int Ascender;
-      public int CapHeight;
-      public int Descender;
-      public string FontName;
-      public bool IsCustomEncoding;
-      public bool IsFixedPitch;
-      public float ItalicAngle;
-      public int UnderlinePosition;
-      public int UnderlineThickness;
-      public int StemH;
-      public int StemV;
-      public string Weight;
-      public int XHeight;
-      public int XMax;
-      public int XMin;
-      public int YMax;
-      public int YMin;
-    }
-    #endregion
-
-    #region dynamic
-    #region fields
-    public FontMetrics Metrics;
-
-    public Dictionary<int,int> GlyphIndexes;
-    public Dictionary<int,int> GlyphKernings;
-    public Dictionary<int,int> GlyphWidths;
-
-    public IInputStream FontData;
-    #endregion
-
-    #region constructors
-    internal AfmParser(
-      IInputStream fontData
-      )
-    {
-      FontData = fontData;
-
-      Load();
-    }
-    #endregion
-
-    #region interface
-    #region private
-    private void Load(
-      )
-    {
-      Metrics = new FontMetrics();
-      LoadFontHeader();
-      LoadCharMetrics();
-      LoadKerningData();
-    }
-
-    /**
-      <summary>Loads the font header [AFM:4.1:3,4.1-4.4].</summary>
-    */
-    private void LoadFontHeader(
-      )
-    {
-      string line;
-      Regex linePattern = new Regex("(\\S+)\\s+(.+)");
-      while((line = FontData.ReadLine()) != null)
-      {
-        MatchCollection lineMatches = linePattern.Matches(line);
-        if(lineMatches.Count < 1)
-          continue;
-
-        Match lineMatch = lineMatches[0];
-
-        string key = lineMatch.Groups[1].Value;
-        if(key.Equals("Ascender"))
-        {Metrics.Ascender = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value);}
-        else if(key.Equals("CapHeight"))
-        {Metrics.CapHeight = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value);}
-        else if(key.Equals("Descender"))
-        {Metrics.Descender = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value);}
-        else if(key.Equals("EncodingScheme"))
-        {Metrics.IsCustomEncoding = lineMatch.Groups[2].Value.Equals("FontSpecific");}
-        else if(key.Equals("FontBBox"))
+        #region types
+        /**
+          <summary>Font header (Global font information).</summary>
+        */
+        public sealed class FontMetrics
         {
-          string[] coordinates = Regex.Split(lineMatch.Groups[2].Value,"\\s+");
-          Metrics.XMin = ConvertUtils.ParseAsIntInvariant(coordinates[0]);
-          Metrics.YMin = ConvertUtils.ParseAsIntInvariant(coordinates[1]);
-          Metrics.XMax = ConvertUtils.ParseAsIntInvariant(coordinates[2]);
-          Metrics.YMax = ConvertUtils.ParseAsIntInvariant(coordinates[3]);
+            public int Ascender;
+            public int CapHeight;
+            public int Descender;
+            public string FontName;
+            public bool IsCustomEncoding;
+            public bool IsFixedPitch;
+            public float ItalicAngle;
+            public int UnderlinePosition;
+            public int UnderlineThickness;
+            public int StemH;
+            public int StemV;
+            public string Weight;
+            public int XHeight;
+            public int XMax;
+            public int XMin;
+            public int YMax;
+            public int YMin;
         }
-        else if(key.Equals("FontName"))
-        {Metrics.FontName = lineMatch.Groups[2].Value;}
-        else if(key.Equals("IsFixedPitch"))
-        {Metrics.IsFixedPitch = Boolean.Parse(lineMatch.Groups[2].Value);}
-        else if(key.Equals("ItalicAngle"))
-        {Metrics.ItalicAngle = ConvertUtils.ParseFloatInvariant(lineMatch.Groups[2].Value);}
-        else if(key.Equals("StdHW"))
-        {Metrics.StemH = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value);}
-        else if(key.Equals("StdVW"))
-        {Metrics.StemV = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value);}
-        else if(key.Equals("UnderlinePosition"))
-        {Metrics.UnderlinePosition = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value);}
-        else if(key.Equals("UnderlineThickness"))
-        {Metrics.UnderlineThickness = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value);}
-        else if(key.Equals("Weight"))
-        {Metrics.Weight = lineMatch.Groups[2].Value;}
-        else if(key.Equals("XHeight"))
-        {Metrics.XHeight = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value);}
-        else if(key.Equals("StartCharMetrics"))
-          break;
-      }
-      if(Metrics.Ascender == 0)
-      {Metrics.Ascender = Metrics.YMax;}
-      if(Metrics.Descender == 0)
-      {Metrics.Descender = Metrics.YMin;}
-    }
+        #endregion
 
-    /**
-      <summary>Loads individual character metrics [AFM:4.1:3,4,4.4,8].</summary>
-    */
-    private void LoadCharMetrics(
-      )
-    {
-      GlyphIndexes = new Dictionary<int,int>();
-      GlyphWidths = new Dictionary<int,int>();
+        #region dynamic
+        #region fields
+        public FontMetrics Metrics;
 
-      string line;
-      Regex linePattern = new Regex("C (\\S+) ; WX (\\S+) ; N (\\S+)");
-      int implicitCharCode = short.MaxValue;
-      while((line = FontData.ReadLine()) != null)
-      {
-        MatchCollection lineMatches = linePattern.Matches(line);
-        if(lineMatches.Count < 1)
+        public Dictionary<int, int> GlyphIndexes;
+        public Dictionary<int, int> GlyphKernings;
+        public Dictionary<int, int> GlyphWidths;
+
+        public IInputStream FontData;
+        #endregion
+
+        #region constructors
+        internal AfmParser(
+          IInputStream fontData
+          )
         {
-          if(line.Equals("EndCharMetrics"))
-            break;
+            FontData = fontData;
 
-          continue;
+            Load();
+        }
+        #endregion
+
+        #region interface
+        #region private
+        private void Load(
+          )
+        {
+            Metrics = new FontMetrics();
+            LoadFontHeader();
+            LoadCharMetrics();
+            LoadKerningData();
         }
 
-        Match lineMatch = lineMatches[0];
-
-        int charCode = ConvertUtils.ParseIntInvariant(lineMatch.Groups[1].Value);
-        int width = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value);
-        string charName = lineMatch.Groups[3].Value;
-        if(charCode < 0)
+        /**
+          <summary>Loads the font header [AFM:4.1:3,4.1-4.4].</summary>
+        */
+        private void LoadFontHeader(
+          )
         {
-          if(charName == null)
-            continue;
+            string line;
+            Regex linePattern = new Regex("(\\S+)\\s+(.+)");
+            while ((line = FontData.ReadLine()) != null)
+            {
+                MatchCollection lineMatches = linePattern.Matches(line);
+                if (lineMatches.Count < 1)
+                    continue;
 
-          charCode = ++implicitCharCode;
+                Match lineMatch = lineMatches[0];
+
+                string key = lineMatch.Groups[1].Value;
+                if (key.Equals("Ascender"))
+                { Metrics.Ascender = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
+                else if (key.Equals("CapHeight"))
+                { Metrics.CapHeight = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
+                else if (key.Equals("Descender"))
+                { Metrics.Descender = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
+                else if (key.Equals("EncodingScheme"))
+                { Metrics.IsCustomEncoding = lineMatch.Groups[2].Value.Equals("FontSpecific"); }
+                else if (key.Equals("FontBBox"))
+                {
+                    string[] coordinates = Regex.Split(lineMatch.Groups[2].Value, "\\s+");
+                    Metrics.XMin = ConvertUtils.ParseAsIntInvariant(coordinates[0]);
+                    Metrics.YMin = ConvertUtils.ParseAsIntInvariant(coordinates[1]);
+                    Metrics.XMax = ConvertUtils.ParseAsIntInvariant(coordinates[2]);
+                    Metrics.YMax = ConvertUtils.ParseAsIntInvariant(coordinates[3]);
+                }
+                else if (key.Equals("FontName"))
+                { Metrics.FontName = lineMatch.Groups[2].Value; }
+                else if (key.Equals("IsFixedPitch"))
+                { Metrics.IsFixedPitch = Boolean.Parse(lineMatch.Groups[2].Value); }
+                else if (key.Equals("ItalicAngle"))
+                { Metrics.ItalicAngle = ConvertUtils.ParseFloatInvariant(lineMatch.Groups[2].Value); }
+                else if (key.Equals("StdHW"))
+                { Metrics.StemH = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
+                else if (key.Equals("StdVW"))
+                { Metrics.StemV = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
+                else if (key.Equals("UnderlinePosition"))
+                { Metrics.UnderlinePosition = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
+                else if (key.Equals("UnderlineThickness"))
+                { Metrics.UnderlineThickness = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
+                else if (key.Equals("Weight"))
+                { Metrics.Weight = lineMatch.Groups[2].Value; }
+                else if (key.Equals("XHeight"))
+                { Metrics.XHeight = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
+                else if (key.Equals("StartCharMetrics"))
+                    break;
+            }
+            if (Metrics.Ascender == 0)
+            { Metrics.Ascender = Metrics.YMax; }
+            if (Metrics.Descender == 0)
+            { Metrics.Descender = Metrics.YMin; }
         }
-        int code = (
-          charName == null
-              || Metrics.IsCustomEncoding
-            ? charCode
-            : GlyphMapping.NameToCode(charName).Value
-          );
 
-        GlyphIndexes[code] = charCode;
-        GlyphWidths[charCode] = width;
-      }
-    }
-
-    /**
-      <summary>Loads kerning data [AFM:4.1:3,4,4.5,9].</summary>
-    */
-    private void LoadKerningData(
-      )
-    {
-      GlyphKernings = new Dictionary<int,int>();
-
-      string line;
-      while((line = FontData.ReadLine()) != null)
-      {
-        if(line.StartsWith("StartKernPairs"))
-          break;
-      }
-
-      Regex linePattern = new Regex("KPX (\\S+) (\\S+) (\\S+)");
-      while((line = FontData.ReadLine()) != null)
-      {
-        MatchCollection lineMatches = linePattern.Matches(line);
-        if(lineMatches.Count < 1)
+        /**
+          <summary>Loads individual character metrics [AFM:4.1:3,4,4.4,8].</summary>
+        */
+        private void LoadCharMetrics(
+          )
         {
-          if(line.Equals("EndKernPairs"))
-            break;
+            GlyphIndexes = new Dictionary<int, int>();
+            GlyphWidths = new Dictionary<int, int>();
 
-          continue;
+            string line;
+            Regex linePattern = new Regex("C (\\S+) ; WX (\\S+) ; N (\\S+)");
+            int implicitCharCode = short.MaxValue;
+            while ((line = FontData.ReadLine()) != null)
+            {
+                MatchCollection lineMatches = linePattern.Matches(line);
+                if (lineMatches.Count < 1)
+                {
+                    if (line.Equals("EndCharMetrics"))
+                        break;
+
+                    continue;
+                }
+
+                Match lineMatch = lineMatches[0];
+
+                int charCode = ConvertUtils.ParseIntInvariant(lineMatch.Groups[1].Value);
+                int width = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value);
+                string charName = lineMatch.Groups[3].Value;
+                if (charCode < 0)
+                {
+                    if (charName == null)
+                        continue;
+
+                    charCode = ++implicitCharCode;
+                }
+                int code = (
+                  charName == null
+                      || Metrics.IsCustomEncoding
+                    ? charCode
+                    : GlyphMapping.NameToCode(charName).Value
+                  );
+
+                GlyphIndexes[code] = charCode;
+                GlyphWidths[charCode] = width;
+            }
         }
 
-        Match lineMatch = lineMatches[0];
+        /**
+          <summary>Loads kerning data [AFM:4.1:3,4,4.5,9].</summary>
+        */
+        private void LoadKerningData(
+          )
+        {
+            GlyphKernings = new Dictionary<int, int>();
 
-        int code1 = GlyphMapping.NameToCode(lineMatch.Groups[1].Value).Value;
-        int code2 = GlyphMapping.NameToCode(lineMatch.Groups[2].Value).Value;
-        int pair = code1 << 16 + code2;
-        int value = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[3].Value);
+            string line;
+            while ((line = FontData.ReadLine()) != null)
+            {
+                if (line.StartsWith("StartKernPairs"))
+                    break;
+            }
 
-        GlyphKernings[pair] = value;
-      }
+            Regex linePattern = new Regex("KPX (\\S+) (\\S+) (\\S+)");
+            while ((line = FontData.ReadLine()) != null)
+            {
+                MatchCollection lineMatches = linePattern.Matches(line);
+                if (lineMatches.Count < 1)
+                {
+                    if (line.Equals("EndKernPairs"))
+                        break;
+
+                    continue;
+                }
+
+                Match lineMatch = lineMatches[0];
+
+                int code1 = GlyphMapping.NameToCode(lineMatch.Groups[1].Value).Value;
+                int code2 = GlyphMapping.NameToCode(lineMatch.Groups[2].Value).Value;
+                int pair = code1 << 16 + code2;
+                int value = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[3].Value);
+
+                GlyphKernings[pair] = value;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

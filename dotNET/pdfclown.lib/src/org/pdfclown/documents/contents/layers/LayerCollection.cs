@@ -29,82 +29,82 @@ using System;
 
 namespace org.pdfclown.documents.contents.layers
 {
-  /**
-    <summary>UI collection of related layers [PDF:1.7:4.10.3].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public sealed class LayerCollection
-    : UILayers,
-      IUILayerNode
-  {
-    #region static
-    #region interface
-    #region public
-    public static new LayerCollection Wrap(
-      PdfDirectObject baseObject
-      )
-    {return baseObject != null ? new LayerCollection(baseObject) : null;}
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public LayerCollection(
-      Document context,
-      string title
-      ) : base(context)
-    {Title = title;}
-
-    private LayerCollection(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override string ToString(
-      )
-    {return Title;}
-
-    #region IUILayerNode
-    UILayers IUILayerNode.Children
+    /**
+      <summary>UI collection of related layers [PDF:1.7:4.10.3].</summary>
+    */
+    [PDF(VersionEnum.PDF15)]
+    public sealed class LayerCollection
+      : UILayers,
+        IUILayerNode
     {
-      get
-      {return this;}
-    }
+        #region static
+        #region interface
+        #region public
+        public static new LayerCollection Wrap(
+          PdfDirectObject baseObject
+          )
+        { return baseObject != null ? new LayerCollection(baseObject) : null; }
+        #endregion
+        #endregion
+        #endregion
 
-    public string Title
-    {
-      get
-      {
-        if(BaseDataObject.Count == 0)
-          return null;
+        #region dynamic
+        #region constructors
+        public LayerCollection(
+          Document context,
+          string title
+          ) : base(context)
+        { Title = title; }
 
-        PdfDirectObject firstObject = BaseDataObject[0];
-        return firstObject is PdfString ? ((PdfString)firstObject).StringValue : null;
-      }
-      set
-      {
-        PdfTextString titleObject = PdfTextString.Get(value);
-        PdfArray baseDataObject = BaseDataObject;
-        PdfDirectObject firstObject = (baseDataObject.Count == 0 ? null : baseDataObject[0]);
-        if(firstObject is PdfString)
+        private LayerCollection(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override string ToString(
+          )
+        { return Title; }
+
+        #region IUILayerNode
+        UILayers IUILayerNode.Children
         {
-          if(titleObject != null)
-          {baseDataObject[0] = titleObject;}
-          else
-          {baseDataObject.RemoveAt(0);}
+            get
+            { return this; }
         }
-        else if(titleObject != null)
-        {baseDataObject.Insert(0, titleObject);}
-      }
+
+        public string Title
+        {
+            get
+            {
+                if (BaseDataObject.Count == 0)
+                    return null;
+
+                PdfDirectObject firstObject = BaseDataObject[0];
+                return firstObject is PdfString ? ((PdfString)firstObject).StringValue : null;
+            }
+            set
+            {
+                PdfTextString titleObject = PdfTextString.Get(value);
+                PdfArray baseDataObject = BaseDataObject;
+                PdfDirectObject firstObject = (baseDataObject.Count == 0 ? null : baseDataObject[0]);
+                if (firstObject is PdfString)
+                {
+                    if (titleObject != null)
+                    { baseDataObject[0] = titleObject; }
+                    else
+                    { baseDataObject.RemoveAt(0); }
+                }
+                else if (titleObject != null)
+                { baseDataObject.Insert(0, titleObject); }
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }
 

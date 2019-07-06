@@ -34,48 +34,48 @@ using System;
 
 namespace org.pdfclown.documents.multimedia
 {
-  /**
-    <summary>Media player info [PDF:1.7:9.1.6].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public sealed class MediaPlayer
-    : PdfObjectWrapper<PdfDictionary>
-  {
-    #region dynamic
-    #region constructors
-    public MediaPlayer(
-      Document context
-      ) : base(
-        context,
-        new PdfDictionary(
-          new PdfName[]
-          {PdfName.Type},
-          new PdfDirectObject[]
-          {PdfName.MediaPlayerInfo}
-          )
-        )
-    {}
-
-    internal MediaPlayer(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets the player identifier.</summary>
+      <summary>Media player info [PDF:1.7:9.1.6].</summary>
     */
-    public SoftwareIdentifier Identifier
+    [PDF(VersionEnum.PDF15)]
+    public sealed class MediaPlayer
+      : PdfObjectWrapper<PdfDictionary>
     {
-      get
-      {return SoftwareIdentifier.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PID));}
-      set
-      {BaseDataObject[PdfName.PID] = value.BaseObject;}
+        #region dynamic
+        #region constructors
+        public MediaPlayer(
+          Document context
+          ) : base(
+            context,
+            new PdfDictionary(
+              new PdfName[]
+              {PdfName.Type},
+              new PdfDirectObject[]
+              {PdfName.MediaPlayerInfo}
+              )
+            )
+        { }
+
+        internal MediaPlayer(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the player identifier.</summary>
+        */
+        public SoftwareIdentifier Identifier
+        {
+            get
+            { return SoftwareIdentifier.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PID)); }
+            set
+            { BaseDataObject[PdfName.PID] = value.BaseObject; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

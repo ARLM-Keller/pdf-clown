@@ -31,67 +31,67 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.tools
 {
-  /**
-    <summary>Tool to enhance PDF files.</summary>
-  */
-  public sealed class Optimizer
-  {
-    #region types
-    private class AliveObjectCollector
-      : Visitor
-    {
-      private ISet<int> aliveObjectNumbers;
-
-      public AliveObjectCollector(
-        ISet<int> aliveObjectNumbers
-        )
-      {this.aliveObjectNumbers = aliveObjectNumbers;}
-
-      public override PdfObject Visit(
-        PdfReference obj,
-        object data
-        )
-      {
-        int objectNumber = obj.Reference.ObjectNumber;
-        if(aliveObjectNumbers.Contains(objectNumber))
-          return obj;
-
-        aliveObjectNumbers.Add(objectNumber);
-        return base.Visit(obj, data);
-      }
-    }
-    #endregion
-
-    #region static
-    #region interface
-    #region public
     /**
-      <summary>Removes indirect objects which have no reference in the document structure.</summary>
-      <param name="file">File to optimize.</param>
+      <summary>Tool to enhance PDF files.</summary>
     */
-    public static void RemoveOrphanedObjects(
-      File file
-      )
+    public sealed class Optimizer
     {
-      // 1. Collecting alive indirect objects...
-      ISet<int> aliveObjectNumbers = new HashSet<int>();
-      {
-        // Alive indirect objects collector.
-        IVisitor visitor = new AliveObjectCollector(aliveObjectNumbers);
-        // Walk through the document structure to collect alive indirect objects!
-        file.Trailer.Accept(visitor, null);
-      }
+        #region types
+        private class AliveObjectCollector
+          : Visitor
+        {
+            private ISet<int> aliveObjectNumbers;
 
-      // 2. Removing orphaned indirect objects...
-      IndirectObjects indirectObjects = file.IndirectObjects;
-      for(int objectNumber = 0, objectCount = indirectObjects.Count; objectNumber < objectCount; objectNumber++)
-      {
-        if(!aliveObjectNumbers.Contains(objectNumber))
-        {indirectObjects.RemoveAt(objectNumber);}
-      }
+            public AliveObjectCollector(
+              ISet<int> aliveObjectNumbers
+              )
+            { this.aliveObjectNumbers = aliveObjectNumbers; }
+
+            public override PdfObject Visit(
+              PdfReference obj,
+              object data
+              )
+            {
+                int objectNumber = obj.Reference.ObjectNumber;
+                if (aliveObjectNumbers.Contains(objectNumber))
+                    return obj;
+
+                aliveObjectNumbers.Add(objectNumber);
+                return base.Visit(obj, data);
+            }
+        }
+        #endregion
+
+        #region static
+        #region interface
+        #region public
+        /**
+          <summary>Removes indirect objects which have no reference in the document structure.</summary>
+          <param name="file">File to optimize.</param>
+        */
+        public static void RemoveOrphanedObjects(
+          File file
+          )
+        {
+            // 1. Collecting alive indirect objects...
+            ISet<int> aliveObjectNumbers = new HashSet<int>();
+            {
+                // Alive indirect objects collector.
+                IVisitor visitor = new AliveObjectCollector(aliveObjectNumbers);
+                // Walk through the document structure to collect alive indirect objects!
+                file.Trailer.Accept(visitor, null);
+            }
+
+            // 2. Removing orphaned indirect objects...
+            IndirectObjects indirectObjects = file.IndirectObjects;
+            for (int objectNumber = 0, objectCount = indirectObjects.Count; objectNumber < objectCount; objectNumber++)
+            {
+                if (!aliveObjectNumbers.Contains(objectNumber))
+                { indirectObjects.RemoveAt(objectNumber); }
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

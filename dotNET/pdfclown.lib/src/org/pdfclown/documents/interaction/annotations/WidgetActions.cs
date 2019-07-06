@@ -32,57 +32,57 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.interaction.annotations
 {
-  /**
-    <summary>Widget actions [PDF:1.6:8.5.2].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class WidgetActions
-    : AnnotationActions
-  {
-    #region dynamic
-    #region constructors
-    public WidgetActions(
-      Annotation parent
-      ) : base(parent)
-    {}
-
-    internal WidgetActions(
-      Annotation parent,
-      PdfDirectObject baseObject
-      ) : base(parent, baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new system::NotImplementedException();} // TODO: verify parent reference.
-
     /**
-      <summary>Gets/Sets the action to be performed when the annotation loses the input focus.</summary>
+      <summary>Widget actions [PDF:1.6:8.5.2].</summary>
     */
-    public Action OnBlur
+    [PDF(VersionEnum.PDF12)]
+    public sealed class WidgetActions
+      : AnnotationActions
     {
-      get
-      {return Action.Wrap(BaseDataObject[PdfName.Bl]);}
-      set
-      {BaseDataObject[PdfName.Bl] = value.BaseObject;}
-    }
+        #region dynamic
+        #region constructors
+        public WidgetActions(
+          Annotation parent
+          ) : base(parent)
+        { }
 
-    /**
-      <summary>Gets/Sets the action to be performed when the annotation receives the input focus.</summary>
-    */
-    public Action OnFocus
-    {
-      get
-      {return Action.Wrap(BaseDataObject[PdfName.Fo]);}
-      set
-      {BaseDataObject[PdfName.Fo] = value.BaseObject;}
+        internal WidgetActions(
+          Annotation parent,
+          PdfDirectObject baseObject
+          ) : base(parent, baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override object Clone(
+          Document context
+          )
+        { throw new system::NotImplementedException(); } // TODO: verify parent reference.
+
+        /**
+          <summary>Gets/Sets the action to be performed when the annotation loses the input focus.</summary>
+        */
+        public Action OnBlur
+        {
+            get
+            { return Action.Wrap(BaseDataObject[PdfName.Bl]); }
+            set
+            { BaseDataObject[PdfName.Bl] = value.BaseObject; }
+        }
+
+        /**
+          <summary>Gets/Sets the action to be performed when the annotation receives the input focus.</summary>
+        */
+        public Action OnFocus
+        {
+            get
+            { return Action.Wrap(BaseDataObject[PdfName.Fo]); }
+            set
+            { BaseDataObject[PdfName.Fo] = value.BaseObject; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

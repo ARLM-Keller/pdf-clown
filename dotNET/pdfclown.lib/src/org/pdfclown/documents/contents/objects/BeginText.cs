@@ -27,27 +27,27 @@ using org.pdfclown.bytes;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Begin text object' operation [PDF:1.6:5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class BeginText
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "BT";
+    /**
+      <summary>'Begin text object' operation [PDF:1.6:5.3].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class BeginText
+      : Operation
+    {
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "BT";
 
-    public static readonly BeginText Value = new BeginText();
-    #endregion
-    #endregion
+        public static readonly BeginText Value = new BeginText();
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    private BeginText(
-      ) : base(OperatorKeyword)
-    {}
-    #endregion
-    #endregion
-  }
+        #region dynamic
+        #region constructors
+        private BeginText(
+          ) : base(OperatorKeyword)
+        { }
+        #endregion
+        #endregion
+    }
 }

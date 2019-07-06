@@ -27,18 +27,18 @@ using System;
 
 namespace org.pdfclown.bytes
 {
-  /**
-    <summary>Base stream interface.</summary>
-  */
-  public interface IStream
-    : IDisposable
-  {
     /**
-      <summary>Gets the length of the stream.</summary>
+      <summary>Base stream interface.</summary>
     */
-    long Length
+    public interface IStream
+      : IDisposable
     {
-      get;
+        /**
+          <summary>Gets the length of the stream.</summary>
+        */
+        long Length
+        {
+            get;
+        }
     }
-  }
 }

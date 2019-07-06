@@ -32,89 +32,89 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.interaction.annotations
 {
-  /**
-    <summary>Line ending style [PDF:1.6:8.4.5].</summary>
-  */
-  public enum LineEndStyleEnum
-  {
     /**
-      Square.
+      <summary>Line ending style [PDF:1.6:8.4.5].</summary>
     */
-    Square,
-    /**
-      Circle.
-    */
-    Circle,
-    /**
-      Diamond.
-    */
-    Diamond,
-    /**
-      Open arrow.
-    */
-    OpenArrow,
-    /**
-      Closed arrow.
-    */
-    ClosedArrow,
-    /**
-      None.
-    */
-    None,
-    /**
-      Butt.
-    */
-    Butt,
-    /**
-      Reverse open arrow.
-    */
-    ReverseOpenArrow,
-    /**
-      Reverse closed arrow.
-    */
-    ReverseClosedArrow,
-    /**
-      Slash.
-    */
-    Slash
-  }
-
-  internal static class LineEndStyleEnumExtension
-  {
-    private static readonly BiDictionary<LineEndStyleEnum,PdfName> codes;
-
-    static LineEndStyleEnumExtension()
+    public enum LineEndStyleEnum
     {
-      codes = new BiDictionary<LineEndStyleEnum,PdfName>();
-      codes[LineEndStyleEnum.Square] = PdfName.Square;
-      codes[LineEndStyleEnum.Circle] = PdfName.Circle;
-      codes[LineEndStyleEnum.Diamond] = PdfName.Diamond;
-      codes[LineEndStyleEnum.OpenArrow] = PdfName.OpenArrow;
-      codes[LineEndStyleEnum.ClosedArrow] = PdfName.ClosedArrow;
-      codes[LineEndStyleEnum.None] = PdfName.None;
-      codes[LineEndStyleEnum.Butt] = PdfName.Butt;
-      codes[LineEndStyleEnum.ReverseOpenArrow] = PdfName.ROpenArrow;
-      codes[LineEndStyleEnum.ReverseClosedArrow] = PdfName.RClosedArrow;
-      codes[LineEndStyleEnum.Slash] = PdfName.Slash;
+        /**
+          Square.
+        */
+        Square,
+        /**
+          Circle.
+        */
+        Circle,
+        /**
+          Diamond.
+        */
+        Diamond,
+        /**
+          Open arrow.
+        */
+        OpenArrow,
+        /**
+          Closed arrow.
+        */
+        ClosedArrow,
+        /**
+          None.
+        */
+        None,
+        /**
+          Butt.
+        */
+        Butt,
+        /**
+          Reverse open arrow.
+        */
+        ReverseOpenArrow,
+        /**
+          Reverse closed arrow.
+        */
+        ReverseClosedArrow,
+        /**
+          Slash.
+        */
+        Slash
     }
 
-    public static LineEndStyleEnum Get(
-      PdfName name
-      )
+    internal static class LineEndStyleEnumExtension
     {
-      if(name == null)
-        return LineEndStyleEnum.None;
+        private static readonly BiDictionary<LineEndStyleEnum, PdfName> codes;
 
-      LineEndStyleEnum? lineEndStyle = codes.GetKey(name);
-      if(!lineEndStyle.HasValue)
-        throw new NotSupportedException("Line end style unknown: " + name);
+        static LineEndStyleEnumExtension()
+        {
+            codes = new BiDictionary<LineEndStyleEnum, PdfName>();
+            codes[LineEndStyleEnum.Square] = PdfName.Square;
+            codes[LineEndStyleEnum.Circle] = PdfName.Circle;
+            codes[LineEndStyleEnum.Diamond] = PdfName.Diamond;
+            codes[LineEndStyleEnum.OpenArrow] = PdfName.OpenArrow;
+            codes[LineEndStyleEnum.ClosedArrow] = PdfName.ClosedArrow;
+            codes[LineEndStyleEnum.None] = PdfName.None;
+            codes[LineEndStyleEnum.Butt] = PdfName.Butt;
+            codes[LineEndStyleEnum.ReverseOpenArrow] = PdfName.ROpenArrow;
+            codes[LineEndStyleEnum.ReverseClosedArrow] = PdfName.RClosedArrow;
+            codes[LineEndStyleEnum.Slash] = PdfName.Slash;
+        }
 
-      return lineEndStyle.Value;
+        public static LineEndStyleEnum Get(
+          PdfName name
+          )
+        {
+            if (name == null)
+                return LineEndStyleEnum.None;
+
+            LineEndStyleEnum? lineEndStyle = codes.GetKey(name);
+            if (!lineEndStyle.HasValue)
+                throw new NotSupportedException("Line end style unknown: " + name);
+
+            return lineEndStyle.Value;
+        }
+
+        public static PdfName GetName(
+          this LineEndStyleEnum lineEndStyle
+          )
+        { return codes[lineEndStyle]; }
     }
-
-    public static PdfName GetName(
-      this LineEndStyleEnum lineEndStyle
-      )
-    {return codes[lineEndStyle];}
-  }
 }

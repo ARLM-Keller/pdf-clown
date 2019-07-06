@@ -31,182 +31,182 @@ using System.Reflection;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>Abstract PDF simple object.</summary>
-  */
-  public abstract class PdfSimpleObject<TValue>
-    : PdfDirectObject,
-      IPdfSimpleObject<TValue>
-  {
-    #region static
-    #region interface
-    #region public
     /**
-      <summary>Gets the object equivalent to the given value.</summary>
+      <summary>Abstract PDF simple object.</summary>
     */
-    public static PdfDirectObject Get(
-      object value
-      )
+    public abstract class PdfSimpleObject<TValue>
+      : PdfDirectObject,
+        IPdfSimpleObject<TValue>
     {
-      if(value == null)
-        return null;
+        #region static
+        #region interface
+        #region public
+        /**
+          <summary>Gets the object equivalent to the given value.</summary>
+        */
+        public static PdfDirectObject Get(
+          object value
+          )
+        {
+            if (value == null)
+                return null;
 
-      if(value is Int32)
-        return PdfInteger.Get((int)value);
-      else if(value is Double || value is Single)
-        return PdfReal.Get(value);
-      else if(value is string)
-        return PdfTextString.Get((string)value);
-      else if(value is DateTime)
-        return PdfDate.Get((DateTime)value);
-      else if(value is Boolean)
-        return PdfBoolean.Get((Boolean)value);
-      else
-        throw new NotImplementedException();
+            if (value is Int32)
+                return PdfInteger.Get((int)value);
+            else if (value is Double || value is Single)
+                return PdfReal.Get(value);
+            else if (value is string)
+                return PdfTextString.Get((string)value);
+            else if (value is DateTime)
+                return PdfDate.Get((DateTime)value);
+            else if (value is Boolean)
+                return PdfBoolean.Get((Boolean)value);
+            else
+                throw new NotImplementedException();
+        }
+
+        public static double? GetDoubleValue(
+          PdfObject obj
+          )
+        {
+            object value = GetValue(obj);
+            if (value == null || value is Double)
+                return (Double)value;
+            else
+                return Convert.ToDouble(value);
+        }
+
+        /**
+          <summary>Gets the value corresponding to the given object.</summary>
+          <param name="obj">Object to extract the value from.</param>
+        */
+        public static Object GetValue(
+          PdfObject obj
+          )
+        { return GetValue(obj, null); }
+
+        /**
+          <summary>Gets the value corresponding to the given object.</summary>
+          <param name="obj">Object to extract the value from.</param>
+          <param name="defaultValue">Value returned in case the object's one is undefined.</param>
+        */
+        public static object GetValue(
+          PdfObject obj,
+          object defaultValue
+          )
+        {
+            object value = null;
+            obj = Resolve(obj);
+            if (obj != null)
+            {
+                PropertyInfo valueProperty = obj.GetType().GetProperty("Value");
+                if (valueProperty != null)
+                { value = valueProperty.GetGetMethod().Invoke(obj, null); }
+            }
+            return (value != null ? value : defaultValue);
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region fields
+        private TValue value;
+        #endregion
+
+        #region constructors
+        public PdfSimpleObject(
+          )
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override PdfObject Clone(
+          File context
+          )
+        { return this; } // NOTE: Simple objects are immutable.
+
+        public override bool Equals(
+          object @object
+          )
+        {
+            return base.Equals(@object)
+              || (@object != null
+                && @object.GetType().Equals(GetType())
+                && ((PdfSimpleObject<TValue>)@object).RawValue.Equals(RawValue));
+        }
+
+        public override int GetHashCode(
+          )
+        { return RawValue.GetHashCode(); }
+
+        public sealed override PdfObject Parent
+        {
+            get
+            { return null; } // NOTE: As simple objects are immutable, no parent can be associated.
+            internal set
+            {/* NOOP: As simple objects are immutable, no parent can be associated. */}
+        }
+
+        /**
+          <summary>Gets/Sets the low-level representation of the value.</summary>
+        */
+        public virtual TValue RawValue
+        {
+            get
+            { return value; }
+            protected set
+            { this.value = value; }
+        }
+
+        public override PdfObject Swap(
+          PdfObject other
+          )
+        { throw new NotSupportedException("Immutable object"); }
+
+        public override string ToString(
+          )
+        { return Value.ToString(); }
+
+        public override bool Updateable
+        {
+            get
+            { return false; } // NOTE: Simple objects are immutable.
+            set
+            {/* NOOP: As simple objects are immutable, no update can be done. */}
+        }
+
+        public sealed override bool Updated
+        {
+            get
+            { return false; } // NOTE: Simple objects are immutable.
+            protected internal set
+            {/* NOOP: As simple objects are immutable, no update can be done. */}
+        }
+
+        /**
+          <summary>Gets/Sets the high-level representation of the value.</summary>
+        */
+        public virtual object Value
+        {
+            get
+            { return value; }
+            protected set
+            { this.value = (TValue)value; }
+        }
+        #endregion
+
+        #region protected
+        protected internal override bool Virtual
+        {
+            get
+            { return false; }
+            set
+            {/* NOOP */}
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    public static double? GetDoubleValue(
-      PdfObject obj
-      )
-    {
-      object value = GetValue(obj);
-      if(value == null || value is Double)
-        return (Double)value;
-      else
-        return Convert.ToDouble(value);
-    }
-  
-    /**
-      <summary>Gets the value corresponding to the given object.</summary>
-      <param name="obj">Object to extract the value from.</param>
-    */
-    public static Object GetValue(
-      PdfObject obj
-      )
-    {return GetValue(obj, null);}
-
-    /**
-      <summary>Gets the value corresponding to the given object.</summary>
-      <param name="obj">Object to extract the value from.</param>
-      <param name="defaultValue">Value returned in case the object's one is undefined.</param>
-    */
-    public static object GetValue(
-      PdfObject obj,
-      object defaultValue
-      )
-    {
-      object value = null;
-      obj = Resolve(obj);
-      if(obj != null)
-      {
-        PropertyInfo valueProperty = obj.GetType().GetProperty("Value");
-        if(valueProperty != null)
-        {value = valueProperty.GetGetMethod().Invoke(obj, null);}
-      }
-      return (value != null ? value : defaultValue);
-    }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region fields
-    private TValue value;
-    #endregion
-
-    #region constructors
-    public PdfSimpleObject(
-      )
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override PdfObject Clone(
-      File context
-      )
-    {return this;} // NOTE: Simple objects are immutable.
-
-    public override bool Equals(
-      object @object
-      )
-    {
-      return base.Equals(@object)
-        || (@object != null
-          && @object.GetType().Equals(GetType())
-          && ((PdfSimpleObject<TValue>)@object).RawValue.Equals(RawValue));
-    }
-
-    public override int GetHashCode(
-      )
-    {return RawValue.GetHashCode();}
-
-    public sealed override PdfObject Parent
-    {
-      get
-      {return null;} // NOTE: As simple objects are immutable, no parent can be associated.
-      internal set
-      {/* NOOP: As simple objects are immutable, no parent can be associated. */}
-    }
-
-    /**
-      <summary>Gets/Sets the low-level representation of the value.</summary>
-    */
-    public virtual TValue RawValue
-    {
-      get
-      {return value;}
-      protected set
-      {this.value = value;}
-    }
-
-    public override PdfObject Swap(
-      PdfObject other
-      )
-    {throw new NotSupportedException("Immutable object");}
-
-    public override string ToString(
-      )
-    {return Value.ToString();}
-
-    public override bool Updateable
-    {
-      get
-      {return false;} // NOTE: Simple objects are immutable.
-      set
-      {/* NOOP: As simple objects are immutable, no update can be done. */}
-    }
-
-    public sealed override bool Updated
-    {
-      get
-      {return false;} // NOTE: Simple objects are immutable.
-      protected internal set
-      {/* NOOP: As simple objects are immutable, no update can be done. */}
-    }
-
-    /**
-      <summary>Gets/Sets the high-level representation of the value.</summary>
-    */
-    public virtual object Value
-    {
-      get
-      {return value;}
-      protected set
-      {this.value = (TValue)value;}
-    }
-    #endregion
-
-    #region protected
-    protected internal override bool Virtual
-    {
-      get
-      {return false;}
-      set
-      {/* NOOP */}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

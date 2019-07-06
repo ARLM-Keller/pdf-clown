@@ -31,48 +31,48 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Text object [PDF:1.6:5.3].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class Text
-    : GraphicsObject
-  {
-    #region static
-    #region fields
-    public static readonly string BeginOperatorKeyword = BeginText.OperatorKeyword;
-    public static readonly string EndOperatorKeyword = EndText.OperatorKeyword;
-
-    private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(BeginOperatorKeyword + Symbol.LineFeed);
-    private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public Text(
-      )
-    {}
-
-    public Text(
-      IList<ContentObject> objects
-      ) : base(objects)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override void WriteTo(
-      IOutputStream stream,
-      Document context
-      )
+    /**
+      <summary>Text object [PDF:1.6:5.3].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class Text
+      : GraphicsObject
     {
-      stream.Write(BeginChunk);
-      base.WriteTo(stream, context);
-      stream.Write(EndChunk);
+        #region static
+        #region fields
+        public static readonly string BeginOperatorKeyword = BeginText.OperatorKeyword;
+        public static readonly string EndOperatorKeyword = EndText.OperatorKeyword;
+
+        private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(BeginOperatorKeyword + Symbol.LineFeed);
+        private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public Text(
+          )
+        { }
+
+        public Text(
+          IList<ContentObject> objects
+          ) : base(objects)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override void WriteTo(
+          IOutputStream stream,
+          Document context
+          )
+        {
+            stream.Write(BeginChunk);
+            base.WriteTo(stream, context);
+            stream.Write(EndChunk);
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

@@ -35,131 +35,131 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.interaction.forms
 {
-  /**
-    <summary>Field option [PDF:1.6:8.6.3].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class ChoiceItem
-    : PdfObjectWrapper<PdfDirectObject>
-  {
-    #region fields
-    private ChoiceItems items;
-    #endregion
+    /**
+      <summary>Field option [PDF:1.6:8.6.3].</summary>
+    */
+    [PDF(VersionEnum.PDF12)]
+    public sealed class ChoiceItem
+      : PdfObjectWrapper<PdfDirectObject>
+    {
+        #region fields
+        private ChoiceItems items;
+        #endregion
 
-    #region constructors
-    public ChoiceItem(
-      string value
-      ) : base(new PdfTextString(value))
-    {}
+        #region constructors
+        public ChoiceItem(
+          string value
+          ) : base(new PdfTextString(value))
+        { }
 
-    public ChoiceItem(
-      Document context,
-      string value,
-      string text
-      ) : base(
-        context,
-        new PdfArray(
-          new PdfDirectObject[]
-          {
+        public ChoiceItem(
+          Document context,
+          string value,
+          string text
+          ) : base(
+            context,
+            new PdfArray(
+              new PdfDirectObject[]
+              {
             new PdfTextString(value),
             new PdfTextString(text)
-          }
+              }
+              )
+            )
+        { }
+
+        internal ChoiceItem(
+          PdfDirectObject baseObject,
+          ChoiceItems items
+          ) : base(baseObject)
+        { Items = items; }
+        #endregion
+
+        #region interface
+        #region public
+        public override object Clone(
+          Document context
           )
-        )
-    {}
+        { throw new NotImplementedException(); }
 
-    internal ChoiceItem(
-      PdfDirectObject baseObject,
-      ChoiceItems items
-      ) : base(baseObject)
-    {Items = items;}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    //TODO:make the class immutable (to avoid needing wiring it up to its collection...)!!!
-    /**
-      <summary>Gets/Sets the displayed text.</summary>
-    */
-    public string Text
-    {
-      get
-      {
-        PdfDirectObject baseDataObject = BaseDataObject;
-        if(baseDataObject is PdfArray) // <value,text> pair.
-          return (string)((PdfTextString)((PdfArray)baseDataObject)[1]).Value;
-        else // Single text string.
-          return (string)((PdfTextString)baseDataObject).Value;
-      }
-      set
-      {
-        PdfDirectObject baseDataObject = BaseDataObject;
-        if(baseDataObject is PdfTextString)
+        //TODO:make the class immutable (to avoid needing wiring it up to its collection...)!!!
+        /**
+          <summary>Gets/Sets the displayed text.</summary>
+        */
+        public string Text
         {
-          PdfDirectObject oldBaseDataObject = baseDataObject;
+            get
+            {
+                PdfDirectObject baseDataObject = BaseDataObject;
+                if (baseDataObject is PdfArray) // <value,text> pair.
+                    return (string)((PdfTextString)((PdfArray)baseDataObject)[1]).Value;
+                else // Single text string.
+                    return (string)((PdfTextString)baseDataObject).Value;
+            }
+            set
+            {
+                PdfDirectObject baseDataObject = BaseDataObject;
+                if (baseDataObject is PdfTextString)
+                {
+                    PdfDirectObject oldBaseDataObject = baseDataObject;
 
-          BaseObject = baseDataObject = new PdfArray(
-              new PdfDirectObject[]{oldBaseDataObject}
-              );
-          ((PdfArray)baseDataObject).Add(PdfTextString.Default);
+                    BaseObject = baseDataObject = new PdfArray(
+                        new PdfDirectObject[] { oldBaseDataObject }
+                        );
+                    ((PdfArray)baseDataObject).Add(PdfTextString.Default);
 
-          if(items != null)
-          {
-            // Force list update!
-            /*
-              NOTE: This operation is necessary in order to substitute
-              the previous base object with the new one within the list.
-            */
-            PdfArray itemsObject = items.BaseDataObject;
-            itemsObject[itemsObject.IndexOf(oldBaseDataObject)] = baseDataObject;
-          }
+                    if (items != null)
+                    {
+                        // Force list update!
+                        /*
+                          NOTE: This operation is necessary in order to substitute
+                          the previous base object with the new one within the list.
+                        */
+                        PdfArray itemsObject = items.BaseDataObject;
+                        itemsObject[itemsObject.IndexOf(oldBaseDataObject)] = baseDataObject;
+                    }
+                }
+
+              ((PdfArray)baseDataObject)[1] = new PdfTextString(value);
+            }
         }
 
-        ((PdfArray)baseDataObject)[1] = new PdfTextString(value);
-      }
-    }
+        /**
+          <summary>Gets/Sets the export value.</summary>
+        */
+        public string Value
+        {
+            get
+            {
+                PdfDirectObject baseDataObject = BaseDataObject;
+                if (baseDataObject is PdfArray) // <value,text> pair.
+                    return (string)((PdfTextString)((PdfArray)baseDataObject)[0]).Value;
+                else // Single text string.
+                    return (string)((PdfTextString)baseDataObject).Value;
+            }
+            set
+            {
+                PdfDirectObject baseDataObject = BaseDataObject;
+                if (baseDataObject is PdfArray) // <value,text> pair.
+                { ((PdfArray)baseDataObject)[0] = new PdfTextString(value); }
+                else // Single text string.
+                { BaseObject = new PdfTextString(value); }
+            }
+        }
+        #endregion
 
-    /**
-      <summary>Gets/Sets the export value.</summary>
-    */
-    public string Value
-    {
-      get
-      {
-        PdfDirectObject baseDataObject = BaseDataObject;
-        if(baseDataObject is PdfArray) // <value,text> pair.
-          return (string)((PdfTextString)((PdfArray)baseDataObject)[0]).Value;
-        else // Single text string.
-          return (string)((PdfTextString)baseDataObject).Value;
-      }
-      set
-      {
-        PdfDirectObject baseDataObject = BaseDataObject;
-        if(baseDataObject is PdfArray) // <value,text> pair.
-        {((PdfArray)baseDataObject)[0] = new PdfTextString(value);}
-        else // Single text string.
-        {BaseObject = new PdfTextString(value);}
-      }
-    }
-    #endregion
+        #region internal
+        internal ChoiceItems Items
+        {
+            set
+            {
+                if (items != null)
+                    throw new ArgumentException("Item already associated to another choice field.");
 
-    #region internal
-    internal ChoiceItems Items
-    {
-      set
-      {
-        if(items != null)
-          throw new ArgumentException("Item already associated to another choice field.");
-
-        items = value;
-      }
+                items = value;
+            }
+        }
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-  }
 }

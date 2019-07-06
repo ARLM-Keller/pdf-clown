@@ -35,34 +35,34 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Font resources collection [PDF:1.6:3.7.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class FontResources
-    : ResourceItems<Font>
-  {
-    #region dynamic
-    #region constructors
-    public FontResources(
-      Document context
-      ) : base(context)
-    {}
+    /**
+      <summary>Font resources collection [PDF:1.6:3.7.2].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class FontResources
+      : ResourceItems<Font>
+    {
+        #region dynamic
+        #region constructors
+        public FontResources(
+          Document context
+          ) : base(context)
+        { }
 
-    internal FontResources(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal FontResources(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #region protected
-    protected override Font Wrap(
-      PdfDirectObject baseObject
-      )
-    {return Font.Wrap(baseObject);}
-    #endregion
-    #endregion
-    #endregion
-  }
+        #region interface
+        #region protected
+        protected override Font Wrap(
+          PdfDirectObject baseObject
+          )
+        { return Font.Wrap(baseObject); }
+        #endregion
+        #endregion
+        #endregion
+    }
 }

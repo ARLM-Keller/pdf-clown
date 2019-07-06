@@ -28,78 +28,78 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Abstract CIE-based color space [PDF:1.6:4.5.4].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public abstract class CIEBasedColorSpace
-    : ColorSpace
-  {
-    #region dynamic
-    #region constructors
-    //TODO:IMPL new element constructor!
-
-    protected CIEBasedColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the tristimulus value, in the CIE 1931 XYZ space, of the diffuse black point.</summary>
+      <summary>Abstract CIE-based color space [PDF:1.6:4.5.4].</summary>
     */
-    public double[] BlackPoint
+    [PDF(VersionEnum.PDF11)]
+    public abstract class CIEBasedColorSpace
+      : ColorSpace
     {
-      get
-      {
-        PdfArray blackPointObject = (PdfArray)Dictionary[PdfName.BlackPoint];
-        return (blackPointObject == null
-          ? new double[]
+        #region dynamic
+        #region constructors
+        //TODO:IMPL new element constructor!
+
+        protected CIEBasedColorSpace(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the tristimulus value, in the CIE 1931 XYZ space, of the diffuse black point.</summary>
+        */
+        public double[] BlackPoint
+        {
+            get
             {
+                PdfArray blackPointObject = (PdfArray)Dictionary[PdfName.BlackPoint];
+                return (blackPointObject == null
+                  ? new double[]
+                    {
               0,
               0,
               0
-            }
-          : new double[]
-            {
+                    }
+                  : new double[]
+                    {
               ((IPdfNumber)blackPointObject[0]).RawValue,
               ((IPdfNumber)blackPointObject[1]).RawValue,
               ((IPdfNumber)blackPointObject[2]).RawValue
-            });
-      }
-    }
+                    });
+            }
+        }
 
-    /**
-      <summary>Gets the tristimulus value, in the CIE 1931 XYZ space, of the diffuse white point.</summary>
-    */
-    public double[] WhitePoint
-    {
-      get
-      {
-        PdfArray whitePointObject = (PdfArray)Dictionary[PdfName.WhitePoint];
-        return new double[]
-          {
+        /**
+          <summary>Gets the tristimulus value, in the CIE 1931 XYZ space, of the diffuse white point.</summary>
+        */
+        public double[] WhitePoint
+        {
+            get
+            {
+                PdfArray whitePointObject = (PdfArray)Dictionary[PdfName.WhitePoint];
+                return new double[]
+                  {
             ((IPdfNumber)whitePointObject[0]).RawValue,
             ((IPdfNumber)whitePointObject[1]).RawValue,
             ((IPdfNumber)whitePointObject[2]).RawValue
-          };
-      }
-    }
-    #endregion
+                  };
+            }
+        }
+        #endregion
 
-    #region protected
-    /**
-      <summary>Gets this color space's dictionary.</summary>
-    */
-    protected PdfDictionary Dictionary
-    {
-      get
-      {return (PdfDictionary)((PdfArray)BaseDataObject)[1];}
+        #region protected
+        /**
+          <summary>Gets this color space's dictionary.</summary>
+        */
+        protected PdfDictionary Dictionary
+        {
+            get
+            { return (PdfDictionary)((PdfArray)BaseDataObject)[1]; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

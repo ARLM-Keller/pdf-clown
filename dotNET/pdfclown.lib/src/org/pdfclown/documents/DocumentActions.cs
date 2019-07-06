@@ -33,108 +33,108 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Document actions [PDF:1.6:8.5.2].</summary>
-  */
-  [PDF(VersionEnum.PDF14)]
-  public sealed class DocumentActions
-    : PdfObjectWrapper<PdfDictionary>
-  {
-    #region dynamic
-    #region constructors
-    public DocumentActions(
-      Document context
-      ) : base(context, new PdfDictionary())
-    {}
-
-    internal DocumentActions(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets the action to be performed after printing the document.</summary>
+      <summary>Document actions [PDF:1.6:8.5.2].</summary>
     */
-    public Action AfterPrint
+    [PDF(VersionEnum.PDF14)]
+    public sealed class DocumentActions
+      : PdfObjectWrapper<PdfDictionary>
     {
-      get
-      {return Action.Wrap(BaseDataObject[PdfName.DP]);}
-      set
-      {BaseDataObject[PdfName.DP] = value.BaseObject;}
-    }
+        #region dynamic
+        #region constructors
+        public DocumentActions(
+          Document context
+          ) : base(context, new PdfDictionary())
+        { }
 
-    /**
-      <summary>Gets/Sets the action to be performed after saving the document.</summary>
-    */
-    public Action AfterSave
-    {
-      get
-      {return Action.Wrap(BaseDataObject[PdfName.DS]);}
-      set
-      {BaseDataObject[PdfName.DS] = value.BaseObject;}
-    }
+        internal DocumentActions(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    /**
-      <summary>Gets/Sets the action to be performed before printing the document.</summary>
-    */
-    public Action BeforePrint
-    {
-      get
-      {return Action.Wrap(BaseDataObject[PdfName.WP]);}
-      set
-      {BaseDataObject[PdfName.WP] = value.BaseObject;}
-    }
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the action to be performed after printing the document.</summary>
+        */
+        public Action AfterPrint
+        {
+            get
+            { return Action.Wrap(BaseDataObject[PdfName.DP]); }
+            set
+            { BaseDataObject[PdfName.DP] = value.BaseObject; }
+        }
 
-    /**
-      <summary>Gets/Sets the action to be performed before saving the document.</summary>
-    */
-    public Action BeforeSave
-    {
-      get
-      {return Action.Wrap(BaseDataObject[PdfName.WS]);}
-      set
-      {BaseDataObject[PdfName.WS] = value.BaseObject;}
-    }
+        /**
+          <summary>Gets/Sets the action to be performed after saving the document.</summary>
+        */
+        public Action AfterSave
+        {
+            get
+            { return Action.Wrap(BaseDataObject[PdfName.DS]); }
+            set
+            { BaseDataObject[PdfName.DS] = value.BaseObject; }
+        }
 
-    /**
-      <summary>Gets/Sets the action to be performed before closing the document.</summary>
-    */
-    public Action OnClose
-    {
-      get
-      {return Action.Wrap(BaseDataObject[PdfName.DC]);}
-      set
-      {BaseDataObject[PdfName.DC] = value.BaseObject;}
-    }
+        /**
+          <summary>Gets/Sets the action to be performed before printing the document.</summary>
+        */
+        public Action BeforePrint
+        {
+            get
+            { return Action.Wrap(BaseDataObject[PdfName.WP]); }
+            set
+            { BaseDataObject[PdfName.WP] = value.BaseObject; }
+        }
 
-    /**
-      <summary>Gets/Sets the destination to be displayed or the action to be performed
-      after opening the document.</summary>
-    */
-    public PdfObjectWrapper OnOpen
-    {
-      get
-      {
-        PdfDirectObject onOpenObject = Document.BaseDataObject[PdfName.OpenAction];
-        if(onOpenObject is PdfDictionary) // Action (dictionary).
-          return Action.Wrap(onOpenObject);
-        else // Destination (array).
-          return Destination.Wrap(onOpenObject);
-      }
-      set
-      {
-        if(!(value is Action
-          || value is LocalDestination))
-          throw new system::ArgumentException("Value MUST be either an Action or a LocalDestination.");
+        /**
+          <summary>Gets/Sets the action to be performed before saving the document.</summary>
+        */
+        public Action BeforeSave
+        {
+            get
+            { return Action.Wrap(BaseDataObject[PdfName.WS]); }
+            set
+            { BaseDataObject[PdfName.WS] = value.BaseObject; }
+        }
 
-        Document.BaseDataObject[PdfName.OpenAction] = value.BaseObject;
-      }
+        /**
+          <summary>Gets/Sets the action to be performed before closing the document.</summary>
+        */
+        public Action OnClose
+        {
+            get
+            { return Action.Wrap(BaseDataObject[PdfName.DC]); }
+            set
+            { BaseDataObject[PdfName.DC] = value.BaseObject; }
+        }
+
+        /**
+          <summary>Gets/Sets the destination to be displayed or the action to be performed
+          after opening the document.</summary>
+        */
+        public PdfObjectWrapper OnOpen
+        {
+            get
+            {
+                PdfDirectObject onOpenObject = Document.BaseDataObject[PdfName.OpenAction];
+                if (onOpenObject is PdfDictionary) // Action (dictionary).
+                    return Action.Wrap(onOpenObject);
+                else // Destination (array).
+                    return Destination.Wrap(onOpenObject);
+            }
+            set
+            {
+                if (!(value is Action
+                  || value is LocalDestination))
+                    throw new system::ArgumentException("Value MUST be either an Action or a LocalDestination.");
+
+                Document.BaseDataObject[PdfName.OpenAction] = value.BaseObject;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

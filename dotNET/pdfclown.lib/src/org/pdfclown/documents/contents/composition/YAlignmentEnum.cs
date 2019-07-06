@@ -25,13 +25,13 @@
 
 namespace org.pdfclown.documents.contents.composition
 {
-  /**
-    <summary>Vertical alignment.</summary>
-  */
-  public enum YAlignmentEnum
-  {
-    Top,
-    Bottom,
-    Middle
-  };
+    /**
+      <summary>Vertical alignment.</summary>
+    */
+    public enum YAlignmentEnum
+    {
+        Top,
+        Bottom,
+        Middle
+    };
 }

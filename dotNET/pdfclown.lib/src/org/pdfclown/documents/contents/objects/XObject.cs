@@ -31,64 +31,64 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>External object shown in a content stream context [PDF:1.6:4.7].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class XObject
-    : GraphicsObject,
-      IResourceReference<xObjects::XObject>
-  {
-    #region static
-    #region fields
-    public static readonly string BeginOperatorKeyword = PaintXObject.OperatorKeyword;
-    public static readonly string EndOperatorKeyword = BeginOperatorKeyword;
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public XObject(
-      PaintXObject operation
-      ) : base(operation)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the scanner for this object's contents.</summary>
-      <param name="context">Scanning context.</param>
+      <summary>External object shown in a content stream context [PDF:1.6:4.7].</summary>
     */
-    public ContentScanner GetScanner(
-      ContentScanner context
-      )
-    {return Operation.GetScanner(context);}
-
-    #region IResourceReference
-    public xObjects::XObject GetResource(
-      IContentContext context
-      )
-    {return Operation.GetResource(context);}
-
-    public PdfName Name
+    [PDF(VersionEnum.PDF10)]
+    public sealed class XObject
+      : GraphicsObject,
+        IResourceReference<xObjects::XObject>
     {
-      get
-      {return Operation.Name;}
-      set
-      {Operation.Name = value;}
-    }
-    #endregion
-    #endregion
+        #region static
+        #region fields
+        public static readonly string BeginOperatorKeyword = PaintXObject.OperatorKeyword;
+        public static readonly string EndOperatorKeyword = BeginOperatorKeyword;
+        #endregion
+        #endregion
 
-    #region private
-    private PaintXObject Operation
-    {
-      get
-      {return (PaintXObject)Objects[0];}
+        #region dynamic
+        #region constructors
+        public XObject(
+          PaintXObject operation
+          ) : base(operation)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the scanner for this object's contents.</summary>
+          <param name="context">Scanning context.</param>
+        */
+        public ContentScanner GetScanner(
+          ContentScanner context
+          )
+        { return Operation.GetScanner(context); }
+
+        #region IResourceReference
+        public xObjects::XObject GetResource(
+          IContentContext context
+          )
+        { return Operation.GetResource(context); }
+
+        public PdfName Name
+        {
+            get
+            { return Operation.Name; }
+            set
+            { Operation.Name = value; }
+        }
+        #endregion
+        #endregion
+
+        #region private
+        private PaintXObject Operation
+        {
+            get
+            { return (PaintXObject)Objects[0]; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

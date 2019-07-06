@@ -27,60 +27,60 @@ using System;
 
 namespace org.pdfclown.util.parsers
 {
-  /**
-    <summary>Exception thrown in case of unexpected condition while parsing.</summary>
-  */
-  public class ParseException
-    : Exception
-  {
-    #region dynamic
-    #region fields
-    private readonly long position;
-    #endregion
-
-    #region constructors
-    public ParseException(
-      string message
-      ) : this(message, -1)
-    {}
-
-    public ParseException(
-      string message,
-      long position
-      ) : this(message, null, position)
-    {}
-
-    public ParseException(
-      Exception cause
-      ) : this(null, cause)
-    {}
-
-    public ParseException(
-      string message,
-      Exception cause
-      ) : this(message, cause, -1)
-    {}
-
-    public ParseException(
-      string message,
-      Exception cause,
-      long position
-      ) : base(message, cause)
-    {this.position = position;}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the offset where the exception happened.</summary>
+      <summary>Exception thrown in case of unexpected condition while parsing.</summary>
     */
-    public long Position
+    public class ParseException
+      : Exception
     {
-      get
-      {return position;}
+        #region dynamic
+        #region fields
+        private readonly long position;
+        #endregion
+
+        #region constructors
+        public ParseException(
+          string message
+          ) : this(message, -1)
+        { }
+
+        public ParseException(
+          string message,
+          long position
+          ) : this(message, null, position)
+        { }
+
+        public ParseException(
+          Exception cause
+          ) : this(null, cause)
+        { }
+
+        public ParseException(
+          string message,
+          Exception cause
+          ) : this(message, cause, -1)
+        { }
+
+        public ParseException(
+          string message,
+          Exception cause,
+          long position
+          ) : base(message, cause)
+        { this.position = position; }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the offset where the exception happened.</summary>
+        */
+        public long Position
+        {
+            get
+            { return position; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

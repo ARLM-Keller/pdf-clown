@@ -29,69 +29,69 @@ using org.pdfclown.documents.contents.colorSpaces;
 using org.pdfclown.objects;
 
 using System;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.interaction.annotations
 {
-  /**
-    <summary>Abstract shape annotation.</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public abstract class Shape
-    : Markup
-  {
-    #region dynamic
-    #region constructors
-    protected Shape(
-      Page page,
-      RectangleF box,
-      string text,
-      PdfName subtype
-      ) : base(page, subtype, box, text)
-    {}
-
-    protected Shape(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets the border effect.</summary>
+      <summary>Abstract shape annotation.</summary>
     */
-    [PDF(VersionEnum.PDF15)]
-    public BorderEffect BorderEffect
+    [PDF(VersionEnum.PDF13)]
+    public abstract class Shape
+      : Markup
     {
-      get
-      {return new BorderEffect(BaseDataObject.Get<PdfDictionary>(PdfName.BE));}
-      set
-      {BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);}
-    }
+        #region dynamic
+        #region constructors
+        protected Shape(
+          Page page,
+          SKRect box,
+          string text,
+          PdfName subtype
+          ) : base(page, subtype, box, text)
+        { }
 
-    /**
-      <summary>Gets/Sets the color with which to fill the interior of the annotation's shape.</summary>
-    */
-    public DeviceRGBColor FillColor
-    {
-      get
-      {
-        PdfArray fillColorObject = (PdfArray)BaseDataObject[PdfName.IC];
-//TODO:use baseObject constructor!!!
-        return fillColorObject != null
-          ? new DeviceRGBColor(
-            ((IPdfNumber)fillColorObject[0]).RawValue,
-            ((IPdfNumber)fillColorObject[1]).RawValue,
-            ((IPdfNumber)fillColorObject[2]).RawValue
-            )
-          : null;
-      }
-      set
-      {BaseDataObject[PdfName.IC] = PdfObjectWrapper.GetBaseObject(value);}
+        protected Shape(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the border effect.</summary>
+        */
+        [PDF(VersionEnum.PDF15)]
+        public BorderEffect BorderEffect
+        {
+            get
+            { return new BorderEffect(BaseDataObject.Get<PdfDictionary>(PdfName.BE)); }
+            set
+            { BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value); }
+        }
+
+        /**
+          <summary>Gets/Sets the color with which to fill the interior of the annotation's shape.</summary>
+        */
+        public DeviceRGBColor FillColor
+        {
+            get
+            {
+                PdfArray fillColorObject = (PdfArray)BaseDataObject[PdfName.IC];
+                //TODO:use baseObject constructor!!!
+                return fillColorObject != null
+                  ? new DeviceRGBColor(
+                    ((IPdfNumber)fillColorObject[0]).RawValue,
+                    ((IPdfNumber)fillColorObject[1]).RawValue,
+                    ((IPdfNumber)fillColorObject[2]).RawValue
+                    )
+                  : null;
+            }
+            set
+            { BaseDataObject[PdfName.IC] = PdfObjectWrapper.GetBaseObject(value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

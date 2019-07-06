@@ -25,18 +25,18 @@
 
 namespace org.pdfclown.documents.files
 {
-  /**
-    <summary>File resource.</summary>
-  */
-  public interface IFileResource
-  {
     /**
-      <summary>Gets/Sets the file containing the object data.</summary>
+      <summary>File resource.</summary>
     */
-    FileSpecification DataFile
+    public interface IFileResource
     {
-      get;
-      set;
+        /**
+          <summary>Gets/Sets the file containing the object data.</summary>
+        */
+        FileSpecification DataFile
+        {
+            get;
+            set;
+        }
     }
-  }
 }

@@ -31,222 +31,222 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.layers
 {
-  /**
-    <summary>Optional content membership [PDF:1.7:4.10.1].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public sealed class LayerMembership
-    : LayerEntity
-  {
-    #region types
     /**
-      <summary>Layers whose states determine the visibility of content controlled by a membership.</summary>
+      <summary>Optional content membership [PDF:1.7:4.10.1].</summary>
     */
-    private class VisibilityMembersImpl
-      : PdfObjectWrapper<PdfDirectObject>,
-        IList<Layer>
+    [PDF(VersionEnum.PDF15)]
+    public sealed class LayerMembership
+      : LayerEntity
     {
-      private LayerMembership membership;
-
-      internal VisibilityMembersImpl(
-        LayerMembership membership
-        ) : base(membership.BaseDataObject[PdfName.OCGs])
-      {this.membership = membership;}
-
-      public int IndexOf(
-        Layer item
-        )
-      {
-        PdfDataObject baseDataObject = BaseDataObject;
-        if(baseDataObject == null) // No layer.
-          return -1;
-        else if(baseDataObject is PdfDictionary) // Single layer.
-          return item.BaseObject.Equals(BaseObject) ? 0 : -1;
-        else // Multiple layers.
-          return ((PdfArray)baseDataObject).IndexOf(item.BaseObject);
-      }
-
-      public void Insert(
-        int index,
-        Layer item
-        )
-      {EnsureArray().Insert(index, item.BaseObject);}
-
-      public void RemoveAt(
-        int index
-        )
-      {EnsureArray().RemoveAt(index);}
-
-      public Layer this[
-        int index
-        ]
-      {
-        get
+        #region types
+        /**
+          <summary>Layers whose states determine the visibility of content controlled by a membership.</summary>
+        */
+        private class VisibilityMembersImpl
+          : PdfObjectWrapper<PdfDirectObject>,
+            IList<Layer>
         {
-          PdfDataObject baseDataObject = BaseDataObject;
-          if(baseDataObject == null) // No layer.
-            return null;
-          else if(baseDataObject is PdfDictionary) // Single layer.
-          {
-            if(index != 0)
-              throw new IndexOutOfRangeException();
+            private LayerMembership membership;
 
-            return Layer.Wrap(BaseObject);
-          }
-          else // Multiple layers.
-            return Layer.Wrap(((PdfArray)baseDataObject)[index]);
+            internal VisibilityMembersImpl(
+              LayerMembership membership
+              ) : base(membership.BaseDataObject[PdfName.OCGs])
+            { this.membership = membership; }
+
+            public int IndexOf(
+              Layer item
+              )
+            {
+                PdfDataObject baseDataObject = BaseDataObject;
+                if (baseDataObject == null) // No layer.
+                    return -1;
+                else if (baseDataObject is PdfDictionary) // Single layer.
+                    return item.BaseObject.Equals(BaseObject) ? 0 : -1;
+                else // Multiple layers.
+                    return ((PdfArray)baseDataObject).IndexOf(item.BaseObject);
+            }
+
+            public void Insert(
+              int index,
+              Layer item
+              )
+            { EnsureArray().Insert(index, item.BaseObject); }
+
+            public void RemoveAt(
+              int index
+              )
+            { EnsureArray().RemoveAt(index); }
+
+            public Layer this[
+              int index
+              ]
+            {
+                get
+                {
+                    PdfDataObject baseDataObject = BaseDataObject;
+                    if (baseDataObject == null) // No layer.
+                        return null;
+                    else if (baseDataObject is PdfDictionary) // Single layer.
+                    {
+                        if (index != 0)
+                            throw new IndexOutOfRangeException();
+
+                        return Layer.Wrap(BaseObject);
+                    }
+                    else // Multiple layers.
+                        return Layer.Wrap(((PdfArray)baseDataObject)[index]);
+                }
+                set
+                { EnsureArray()[index] = value.BaseObject; }
+            }
+
+            public void Add(
+              Layer item
+              )
+            { EnsureArray().Add(item.BaseObject); }
+
+            public void Clear(
+              )
+            { EnsureArray().Clear(); }
+
+            public bool Contains(
+              Layer item
+              )
+            {
+                PdfDataObject baseDataObject = BaseDataObject;
+                if (baseDataObject == null) // No layer.
+                    return false;
+                else if (baseDataObject is PdfDictionary) // Single layer.
+                    return item.BaseObject.Equals(BaseObject);
+                else // Multiple layers.
+                    return ((PdfArray)baseDataObject).Contains(item.BaseObject);
+            }
+
+            public void CopyTo(
+              Layer[] items,
+              int index
+              )
+            { throw new NotImplementedException(); }
+
+            public int Count
+            {
+                get
+                {
+                    PdfDataObject baseDataObject = BaseDataObject;
+                    if (baseDataObject == null) // No layer.
+                        return 0;
+                    else if (baseDataObject is PdfDictionary) // Single layer.
+                        return 1;
+                    else // Multiple layers.
+                        return ((PdfArray)baseDataObject).Count;
+                }
+            }
+
+            public bool IsReadOnly
+            {
+                get
+                { return false; }
+            }
+
+            public bool Remove(
+              Layer item
+              )
+            { return EnsureArray().Remove(item.BaseObject); }
+
+            public IEnumerator<Layer> GetEnumerator(
+              )
+            {
+                for (int index = 0, length = Count; index < length; index++)
+                { yield return this[index]; }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator(
+              )
+            { return this.GetEnumerator(); }
+
+            private PdfArray EnsureArray(
+              )
+            {
+                PdfDirectObject baseDataObject = BaseDataObject;
+                if (!(baseDataObject is PdfArray))
+                {
+                    PdfArray array = new PdfArray();
+                    if (baseDataObject != null)
+                    { array.Add(baseDataObject); }
+                    BaseObject = baseDataObject = array;
+                    membership.BaseDataObject[PdfName.OCGs] = BaseObject;
+                }
+                return (PdfArray)baseDataObject;
+            }
         }
-        set
-        {EnsureArray()[index] = value.BaseObject;}
-      }
+        #endregion
 
-      public void Add(
-        Layer item
-        )
-      {EnsureArray().Add(item.BaseObject);}
+        #region static
+        #region fields
+        public static PdfName TypeName = PdfName.OCMD;
+        #endregion
 
-      public void Clear(
-        )
-      {EnsureArray().Clear();}
+        #region interface
+        #region public
+        public static new LayerMembership Wrap(
+          PdfDirectObject baseObject
+          )
+        { return baseObject != null ? new LayerMembership(baseObject) : null; }
+        #endregion
+        #endregion
+        #endregion
 
-      public bool Contains(
-        Layer item
-        )
-      {
-        PdfDataObject baseDataObject = BaseDataObject;
-        if(baseDataObject == null) // No layer.
-          return false;
-        else if(baseDataObject is PdfDictionary) // Single layer.
-          return item.BaseObject.Equals(BaseObject);
-        else // Multiple layers.
-          return ((PdfArray)baseDataObject).Contains(item.BaseObject);
-      }
+        #region dynamic
+        #region constructors
+        public LayerMembership(
+          Document context
+          ) : base(context, TypeName)
+        { }
 
-      public void CopyTo(
-        Layer[] items,
-        int index
-        )
-      {throw new NotImplementedException();}
+        private LayerMembership(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-      public int Count
-      {
-        get
+        #region interface
+        #region public
+        public override LayerEntity Membership
         {
-          PdfDataObject baseDataObject = BaseDataObject;
-          if(baseDataObject == null) // No layer.
-            return 0;
-          else if(baseDataObject is PdfDictionary) // Single layer.
-            return 1;
-          else // Multiple layers.
-            return ((PdfArray)baseDataObject).Count;
+            get
+            { return this; }
         }
-      }
 
-      public bool IsReadOnly
-      {
-        get
-        {return false;}
-      }
-
-      public bool Remove(
-        Layer item
-        )
-      {return EnsureArray().Remove(item.BaseObject);}
-
-      public IEnumerator<Layer> GetEnumerator(
-        )
-      {
-        for(int index = 0, length = Count; index < length; index++)
-        {yield return this[index];}
-      }
-
-      IEnumerator IEnumerable.GetEnumerator(
-        )
-      {return this.GetEnumerator();}
-
-      private PdfArray EnsureArray(
-        )
-      {
-        PdfDirectObject baseDataObject = BaseDataObject;
-        if(!(baseDataObject is PdfArray))
+        public override VisibilityExpression VisibilityExpression
         {
-          PdfArray array = new PdfArray();
-          if(baseDataObject != null)
-          {array.Add(baseDataObject);}
-          BaseObject = baseDataObject = array;
-          membership.BaseDataObject[PdfName.OCGs] = BaseObject;
+            get
+            { return VisibilityExpression.Wrap(BaseDataObject[PdfName.VE]); }
+            set
+            { BaseDataObject[PdfName.VE] = PdfObjectWrapper.GetBaseObject(value); }
         }
-        return (PdfArray)baseDataObject;
-      }
+
+        public override IList<Layer> VisibilityMembers
+        {
+            get
+            { return new VisibilityMembersImpl(this); }
+            set
+            {
+                var visibilityMembers = this.VisibilityMembers;
+                visibilityMembers.Clear();
+                foreach (var layer in value)
+                { visibilityMembers.Add(layer); }
+            }
+        }
+
+        public override VisibilityPolicyEnum VisibilityPolicy
+        {
+            get
+            { return VisibilityPolicyEnumExtension.Get((PdfName)BaseDataObject[PdfName.P]); }
+            set
+            { BaseDataObject[PdfName.P] = value.GetName(); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-
-    #region static
-    #region fields
-    public static PdfName TypeName = PdfName.OCMD;
-    #endregion
-
-    #region interface
-    #region public
-    public static new LayerMembership Wrap(
-      PdfDirectObject baseObject
-      )
-    {return baseObject != null ? new LayerMembership(baseObject) : null;}
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public LayerMembership(
-      Document context
-      ) : base(context, TypeName)
-    {}
-
-    private LayerMembership(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override LayerEntity Membership
-    {
-      get
-      {return this;}
-    }
-
-    public override VisibilityExpression VisibilityExpression
-    {
-      get
-      {return VisibilityExpression.Wrap(BaseDataObject[PdfName.VE]);}
-      set
-      {BaseDataObject[PdfName.VE] = PdfObjectWrapper.GetBaseObject(value);}
-    }
-
-    public override IList<Layer> VisibilityMembers
-    {
-      get
-      {return new VisibilityMembersImpl(this);}
-      set
-      {
-        var visibilityMembers = this.VisibilityMembers;
-        visibilityMembers.Clear();
-        foreach(var layer in value)
-        {visibilityMembers.Add(layer);}
-      }
-    }
-
-    public override VisibilityPolicyEnum VisibilityPolicy
-    {
-      get
-      {return VisibilityPolicyEnumExtension.Get((PdfName)BaseDataObject[PdfName.P]);}
-      set
-      {BaseDataObject[PdfName.P] = value.GetName();}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

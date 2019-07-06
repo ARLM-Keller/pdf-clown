@@ -28,74 +28,73 @@ using org.pdfclown.objects;
 
 using System;
 using System.Collections.Generic;
-using drawing = System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>CIE-based A single-transformation-stage color space, where A represents a calibrated
-    achromatic single-component color value [PDF:1.6:4.5.4].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class CalGrayColorSpace
-    : CalColorSpace
-  {
-    #region dynamic
-    #region constructors
-    // TODO:IMPL new element constructor!
-
-    internal CalGrayColorSpace(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    public override int ComponentCount
+    /**
+      <summary>CIE-based A single-transformation-stage color space, where A represents a calibrated
+      achromatic single-component color value [PDF:1.6:4.5.4].</summary>
+    */
+    [PDF(VersionEnum.PDF11)]
+    public sealed class CalGrayColorSpace
+      : CalColorSpace
     {
-      get
-      {return 1;}
-    }
+        #region dynamic
+        #region constructors
+        // TODO:IMPL new element constructor!
 
-    public override Color DefaultColor
-    {
-      get
-      {return CalGrayColor.Default;}
-    }
+        internal CalGrayColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        { }
+        #endregion
 
-    public override double[] Gamma
-    {
-      get
-      {
-        IPdfNumber gammaObject = (IPdfNumber)Dictionary[PdfName.Gamma];
-        return (gammaObject == null
-          ? new double[]{1}
-          : new double[]{gammaObject.RawValue}
-          );
-      }
-    }
+        #region interface
+        #region public
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
 
-    public override Color GetColor(
-      IList<PdfDirectObject> components,
-      IContentContext context
-      )
-    {return new CalGrayColor(components);}
+        public override int ComponentCount
+        {
+            get { return 1; }
+        }
 
-    public override drawing::Brush GetPaint(
-      Color color
-      )
-    {
-      // FIXME: temporary hack
-      return new drawing::SolidBrush(drawing::Color.Black);
+        public override Color DefaultColor
+        {
+            get { return CalGrayColor.Default; }
+        }
+
+        public override double[] Gamma
+        {
+            get
+            {
+                IPdfNumber gammaObject = (IPdfNumber)Dictionary[PdfName.Gamma];
+                return (gammaObject == null
+                  ? new double[] { 1 }
+                  : new double[] { gammaObject.RawValue }
+                  );
+            }
+        }
+
+        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
+        { return new CalGrayColor(components); }
+
+        public override SKColor GetColor(Color color)
+        {
+            // FIXME: temporary hack
+            return SKColors.Black;
+        }
+
+        public override SKPaint GetPaint(Color color)
+        {
+            // FIXME: temporary hack
+            return new SKPaint
+            {
+                Color = GetColor(color),
+                Style = SKPaintStyle.Fill
+            };
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

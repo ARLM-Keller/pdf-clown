@@ -34,64 +34,64 @@ using System;
 
 namespace org.pdfclown.documents.multimedia
 {
-  /**
-    <summary>Media rendition [PDF:1.7:9.1.2].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public sealed class MediaRendition
-    : Rendition
-  {
-    #region dynamic
-    #region constructors
-    public MediaRendition(
-      MediaClip clip
-      ) : base(clip.Document, PdfName.MR)
-    {Clip = clip;}
-
-    internal MediaRendition(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets the content to be played.</summary>
+      <summary>Media rendition [PDF:1.7:9.1.2].</summary>
     */
-    public MediaClip Clip
+    [PDF(VersionEnum.PDF15)]
+    public sealed class MediaRendition
+      : Rendition
     {
-      get
-      {return MediaClip.Wrap(BaseDataObject[PdfName.C]);}
-      set
-      {BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value);}
-    }
+        #region dynamic
+        #region constructors
+        public MediaRendition(
+          MediaClip clip
+          ) : base(clip.Document, PdfName.MR)
+        { Clip = clip; }
 
-    /**
-      <summary>Gets/Sets the parameters that specify how this media rendition should be played.
-      </summary>
-    */
-    public MediaPlayParameters PlayParameters
-    {
-      get
-      {return new MediaPlayParameters(BaseDataObject.Get<PdfDictionary>(PdfName.P));}
-      set
-      {BaseDataObject[PdfName.P] = PdfObjectWrapper.GetBaseObject(value);}
-    }
+        internal MediaRendition(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    /**
-      <summary>Gets/Sets the parameters that specify where the media rendition object should be
-      played.<summary>
-    */
-    public MediaScreenParameters ScreenParameters
-    {
-      get
-      {return new MediaScreenParameters(BaseDataObject.Get<PdfDictionary>(PdfName.SP));}
-      set
-      {BaseDataObject[PdfName.SP] = PdfObjectWrapper.GetBaseObject(value);}
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the content to be played.</summary>
+        */
+        public MediaClip Clip
+        {
+            get
+            { return MediaClip.Wrap(BaseDataObject[PdfName.C]); }
+            set
+            { BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value); }
+        }
+
+        /**
+          <summary>Gets/Sets the parameters that specify how this media rendition should be played.
+          </summary>
+        */
+        public MediaPlayParameters PlayParameters
+        {
+            get
+            { return new MediaPlayParameters(BaseDataObject.Get<PdfDictionary>(PdfName.P)); }
+            set
+            { BaseDataObject[PdfName.P] = PdfObjectWrapper.GetBaseObject(value); }
+        }
+
+        /**
+          <summary>Gets/Sets the parameters that specify where the media rendition object should be
+          played.<summary>
+        */
+        public MediaScreenParameters ScreenParameters
+        {
+            get
+            { return new MediaScreenParameters(BaseDataObject.Get<PdfDictionary>(PdfName.SP)); }
+            set
+            { BaseDataObject[PdfName.SP] = PdfObjectWrapper.GetBaseObject(value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

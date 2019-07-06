@@ -30,52 +30,52 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Set the text leading' operation [PDF:1.6:5.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class SetTextLead
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "TL";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public SetTextLead(
-      double value
-      ) : base(OperatorKeyword, PdfReal.Get(value))
-    {}
-
-    public SetTextLead(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {state.Lead = Value;}
-
     /**
-      <summary>Gets/Sets the text leading, which is a number expressed in unscaled text space units.
-      </summary>
+      <summary>'Set the text leading' operation [PDF:1.6:5.2].</summary>
     */
-    public double Value
+    [PDF(VersionEnum.PDF10)]
+    public sealed class SetTextLead
+      : Operation
     {
-      get
-      {return ((IPdfNumber)operands[0]).RawValue;}
-      set
-      {operands[0] = PdfReal.Get(value);}
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "TL";
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public SetTextLead(
+          double value
+          ) : base(OperatorKeyword, PdfReal.Get(value))
+        { }
+
+        public SetTextLead(
+          IList<PdfDirectObject> operands
+          ) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override void Scan(
+          ContentScanner.GraphicsState state
+          )
+        { state.Lead = Value; }
+
+        /**
+          <summary>Gets/Sets the text leading, which is a number expressed in unscaled text space units.
+          </summary>
+        */
+        public double Value
+        {
+            get
+            { return ((IPdfNumber)operands[0]).RawValue; }
+            set
+            { operands[0] = PdfReal.Get(value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

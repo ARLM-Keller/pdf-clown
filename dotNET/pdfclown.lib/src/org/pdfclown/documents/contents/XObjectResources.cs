@@ -34,34 +34,34 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>External object resources collection [PDF:1.6:3.7.2].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class XObjectResources
-    : ResourceItems<XObject>
-  {
-    #region dynamic
-    #region constructors
-    public XObjectResources(
-      Document context
-      ) : base(context)
-    {}
+    /**
+      <summary>External object resources collection [PDF:1.6:3.7.2].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class XObjectResources
+      : ResourceItems<XObject>
+    {
+        #region dynamic
+        #region constructors
+        public XObjectResources(
+          Document context
+          ) : base(context)
+        { }
 
-    internal XObjectResources(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal XObjectResources(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #region protected
-    protected override XObject Wrap(
-      PdfDirectObject baseObject
-      )
-    {return XObject.Wrap(baseObject);}
-    #endregion
-    #endregion
-    #endregion
-  }
+        #region interface
+        #region protected
+        protected override XObject Wrap(
+          PdfDirectObject baseObject
+          )
+        { return XObject.Wrap(baseObject); }
+        #endregion
+        #endregion
+        #endregion
+    }
 }

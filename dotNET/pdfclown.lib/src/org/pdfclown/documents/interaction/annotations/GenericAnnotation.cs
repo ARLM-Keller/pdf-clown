@@ -27,16 +27,16 @@ using org.pdfclown.objects;
 
 namespace org.pdfclown.documents.interaction.annotations
 {
-  /**
-    <summary>Weakly-typed annotation.</summary>
-    <remarks>This is used to model annotations which do not have a dedicated type.</remarks>
-  */
-  public sealed class GenericAnnotation
-    : Annotation
-  {
-    internal GenericAnnotation(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-  }
+    /**
+      <summary>Weakly-typed annotation.</summary>
+      <remarks>This is used to model annotations which do not have a dedicated type.</remarks>
+    */
+    public sealed class GenericAnnotation
+      : Annotation
+    {
+        internal GenericAnnotation(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+    }
 }

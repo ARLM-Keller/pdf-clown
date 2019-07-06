@@ -30,34 +30,34 @@ using System;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Named pages [PDF:1.6:3.6.3].</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public sealed class NamedPages
-    : NameTree<Page>
-  {
-    #region dynamic
-    #region constructors
-    public NamedPages(
-      Document context
-      ) : base(context)
-    {}
+    /**
+      <summary>Named pages [PDF:1.6:3.6.3].</summary>
+    */
+    [PDF(VersionEnum.PDF13)]
+    public sealed class NamedPages
+      : NameTree<Page>
+    {
+        #region dynamic
+        #region constructors
+        public NamedPages(
+          Document context
+          ) : base(context)
+        { }
 
-    internal NamedPages(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal NamedPages(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #region protected
-    protected override Page WrapValue(
-      PdfDirectObject baseObject
-      )
-    {return Page.Wrap(baseObject);}
-    #endregion
-    #endregion
-    #endregion
-  }
+        #region interface
+        #region protected
+        protected override Page WrapValue(
+          PdfDirectObject baseObject
+          )
+        { return Page.Wrap(baseObject); }
+        #endregion
+        #endregion
+        #endregion
+    }
 }

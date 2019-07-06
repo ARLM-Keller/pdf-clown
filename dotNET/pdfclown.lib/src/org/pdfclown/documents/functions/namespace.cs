@@ -5,4 +5,4 @@
   for high-quality printing (halftone spot functions and transfer functions), color transform functions
   for certain color spaces, and specification of colors as a function of position for smooth shadings.</remarks>
 */
-namespace org.pdfclown.documents.functions{}
+namespace org.pdfclown.documents.functions { }

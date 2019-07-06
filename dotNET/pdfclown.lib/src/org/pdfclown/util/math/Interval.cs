@@ -27,94 +27,94 @@ using System;
 
 namespace org.pdfclown.util.math
 {
-  /**
-    <summary>An interval of comparable objects.</summary>
-  */
-  public sealed class Interval<T>
-    where T : IComparable<T>
-  {
-    private T high = default(T);
-    private bool highInclusive;
-    private T low = default(T);
-    private bool lowInclusive;
-
-    public Interval(
-      T low,
-      T high
-      ) : this(low, high, true, true)
-    {}
-
-    public Interval(
-      T low,
-      T high,
-      bool lowInclusive,
-      bool highInclusive
-      )
-    {
-      this.low = low;
-      this.high = high;
-      this.lowInclusive = lowInclusive;
-      this.highInclusive = highInclusive;
-    }
-
     /**
-      <summary>Gets whether the specified value is contained within this interval.</summary>
-      <param name="value">Value to check for containment.</param>
+      <summary>An interval of comparable objects.</summary>
     */
-    public bool Contains(
-      T value
-      )
+    public sealed class Interval<T>
+      where T : IComparable<T>
     {
-      int lowCompare = (low != null ? low.CompareTo(value) : -1);
-      int highCompare = (high != null ? high.CompareTo(value) : 1);
-      return (lowCompare < 0
-          || (lowCompare == 0 && lowInclusive))
-        && (highCompare > 0
-          || (highCompare == 0 && highInclusive));
-    }
+        private T high = default(T);
+        private bool highInclusive;
+        private T low = default(T);
+        private bool lowInclusive;
 
-    /**
-      <summary>Gets/Sets the higher interval endpoint.</summary>
-    */
-    public T High
-    {
-      get
-      {return high;}
-      set
-      {high = value;}
-    }
+        public Interval(
+          T low,
+          T high
+          ) : this(low, high, true, true)
+        { }
 
-    /**
-      <summary>Gets/Sets whether the higher endpoint is inclusive.</summary>
-    */
-    public bool HighInclusive
-    {
-      get
-      {return highInclusive;}
-      set
-      {highInclusive = value;}
-    }
+        public Interval(
+          T low,
+          T high,
+          bool lowInclusive,
+          bool highInclusive
+          )
+        {
+            this.low = low;
+            this.high = high;
+            this.lowInclusive = lowInclusive;
+            this.highInclusive = highInclusive;
+        }
 
-    /**
-      <summary>Gets/Sets the lower interval endpoint.</summary>
-    */
-    public T Low
-    {
-      get
-      {return low;}
-      set
-      {low = value;}
-    }
+        /**
+          <summary>Gets whether the specified value is contained within this interval.</summary>
+          <param name="value">Value to check for containment.</param>
+        */
+        public bool Contains(
+          T value
+          )
+        {
+            int lowCompare = (low != null ? low.CompareTo(value) : -1);
+            int highCompare = (high != null ? high.CompareTo(value) : 1);
+            return (lowCompare < 0
+                || (lowCompare == 0 && lowInclusive))
+              && (highCompare > 0
+                || (highCompare == 0 && highInclusive));
+        }
 
-    /**
-      <summary>Gets/Sets whether the lower endpoint is inclusive.</summary>
-    */
-    public bool LowInclusive
-    {
-      get
-      {return lowInclusive;}
-      set
-      {lowInclusive = value;}
+        /**
+          <summary>Gets/Sets the higher interval endpoint.</summary>
+        */
+        public T High
+        {
+            get
+            { return high; }
+            set
+            { high = value; }
+        }
+
+        /**
+          <summary>Gets/Sets whether the higher endpoint is inclusive.</summary>
+        */
+        public bool HighInclusive
+        {
+            get
+            { return highInclusive; }
+            set
+            { highInclusive = value; }
+        }
+
+        /**
+          <summary>Gets/Sets the lower interval endpoint.</summary>
+        */
+        public T Low
+        {
+            get
+            { return low; }
+            set
+            { low = value; }
+        }
+
+        /**
+          <summary>Gets/Sets whether the lower endpoint is inclusive.</summary>
+        */
+        public bool LowInclusive
+        {
+            get
+            { return lowInclusive; }
+            set
+            { lowInclusive = value; }
+        }
     }
-  }
 }

@@ -30,85 +30,85 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>CIE-based L*a*b* color value [PDF:1.6:4.5.4].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class LabColor
-    : LeveledColor
-  {
-    #region dynamic
-    #region constructors
-    /*
-      TODO:colors MUST be instantiated only indirectly by the ColorSpace.getColor method!
-      This method MUST be made internal and its color space MUST be passed as argument!
+    /**
+      <summary>CIE-based L*a*b* color value [PDF:1.6:4.5.4].</summary>
     */
-    public LabColor(
-      double l,
-      double a,
-      double b
-      ) : this(
-        new List<PdfDirectObject>(
-          new PdfDirectObject[]
-          {
+    [PDF(VersionEnum.PDF11)]
+    public sealed class LabColor
+      : LeveledColor
+    {
+        #region dynamic
+        #region constructors
+        /*
+          TODO:colors MUST be instantiated only indirectly by the ColorSpace.getColor method!
+          This method MUST be made internal and its color space MUST be passed as argument!
+        */
+        public LabColor(
+          double l,
+          double a,
+          double b
+          ) : this(
+            new List<PdfDirectObject>(
+              new PdfDirectObject[]
+              {
             PdfReal.Get(NormalizeComponent(l)),//TODO:normalize using the actual color space ranges!!!
             PdfReal.Get(NormalizeComponent(a)),
             PdfReal.Get(NormalizeComponent(b))
-          }
-        )
-      )
-    {}
+              }
+            )
+          )
+        { }
 
-    internal LabColor(
-      IList<PdfDirectObject> components
-      ) : base(
-        null, //TODO:colorspace?
-        new PdfArray(components)
-        )
-    {}
-    #endregion
+        internal LabColor(
+          IList<PdfDirectObject> components
+          ) : base(
+            null, //TODO:colorspace?
+            new PdfArray(components)
+            )
+        { }
+        #endregion
 
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the second component (a*).</summary>
-    */
-    public double A
-    {
-      get
-      {return GetComponentValue(1);}
-      set
-      {SetComponentValue(1, value);}
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the second component (a*).</summary>
+        */
+        public double A
+        {
+            get
+            { return GetComponentValue(1); }
+            set
+            { SetComponentValue(1, value); }
+        }
+
+        /**
+          <summary>Gets/Sets the third component (b*).</summary>
+        */
+        public double B
+        {
+            get
+            { return GetComponentValue(2); }
+            set
+            { SetComponentValue(2, value); }
+        }
+
+        public override object Clone(
+          Document context
+          )
+        { throw new NotImplementedException(); }
+
+        /**
+          <summary>Gets/Sets the first component (L*).</summary>
+        */
+        public double L
+        {
+            get
+            { return GetComponentValue(0); }
+            set
+            { SetComponentValue(0, value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    /**
-      <summary>Gets/Sets the third component (b*).</summary>
-    */
-    public double B
-    {
-      get
-      {return GetComponentValue(2);}
-      set
-      {SetComponentValue(2, value);}
-    }
-
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    /**
-      <summary>Gets/Sets the first component (L*).</summary>
-    */
-    public double L
-    {
-      get
-      {return GetComponentValue(0);}
-      set
-      {SetComponentValue(0, value);}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

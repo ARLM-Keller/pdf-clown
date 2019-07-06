@@ -29,63 +29,63 @@ using System;
 
 namespace org.pdfclown.documents.interchange.metadata
 {
-  /**
-    <summary>Private application data holder [PDF:1.7:10.4].</summary>
-  */
-  public interface IAppDataHolder
-  {
     /**
-      <summary>Gets the page-piece dictionary holding private application data.</summary>
+      <summary>Private application data holder [PDF:1.7:10.4].</summary>
     */
-    AppDataCollection AppData
+    public interface IAppDataHolder
     {
-      get;
+        /**
+          <summary>Gets the page-piece dictionary holding private application data.</summary>
+        */
+        AppDataCollection AppData
+        {
+            get;
+        }
+
+        /**
+          <summary>Gets the private data of the specified application, creating it in case no entry in
+          the <see cref="AppData">private application data collection</see> matches the
+          <code>appName</code>.</summary>
+        */
+        AppData GetAppData(
+          PdfName appName
+          );
+
+        /**
+          <summary>Gets the date and time when the holder's contents were most recently modified.
+          </summary>
+        */
+        DateTime? ModificationDate
+        {
+            get;
+        }
+
+        /**
+          <summary>Updates the <see cref="ModificationDate">modification date</see> with the current
+          system date, synchronizing it with the corresponding private application data.</summary>
+          <remarks>If no entry in the <see cref="AppData">private application data collection</see>
+          matches the <code>appName</code>, a new one is automatically created.</remarks>
+          <param name="appName">Application name corresponding to an entry in the <see cref="AppData">
+          private application data collection</see>.</remarks>
+        */
+        void Touch(
+          PdfName appName
+          );
+
+        /**
+          <summary>Updates the <see cref="ModificationDate">modification date</see> synchronizing it
+          with the corresponding private application data.</summary>
+          <remarks>If no entry in the <see cref="AppData">private application data collection</see>
+          matches the <code>appName</code>, a new one is automatically created.</remarks>
+          <param name="appName">Application name corresponding to an entry in the <see cref="AppData">
+          private application data collection</see>.</remarks>
+          <param name="modificationDate">When the specified application last altered the content of this
+          holder.</param>
+        */
+        void Touch(
+          PdfName appName,
+          DateTime modificationDate
+          );
     }
-
-    /**
-      <summary>Gets the private data of the specified application, creating it in case no entry in
-      the <see cref="AppData">private application data collection</see> matches the
-      <code>appName</code>.</summary>
-    */
-    AppData GetAppData(
-      PdfName appName
-      );
-
-    /**
-      <summary>Gets the date and time when the holder's contents were most recently modified.
-      </summary>
-    */
-    DateTime? ModificationDate
-    {
-      get;
-    }
-
-    /**
-      <summary>Updates the <see cref="ModificationDate">modification date</see> with the current
-      system date, synchronizing it with the corresponding private application data.</summary>
-      <remarks>If no entry in the <see cref="AppData">private application data collection</see>
-      matches the <code>appName</code>, a new one is automatically created.</remarks>
-      <param name="appName">Application name corresponding to an entry in the <see cref="AppData">
-      private application data collection</see>.</remarks>
-    */
-    void Touch(
-      PdfName appName
-      );
-
-    /**
-      <summary>Updates the <see cref="ModificationDate">modification date</see> synchronizing it
-      with the corresponding private application data.</summary>
-      <remarks>If no entry in the <see cref="AppData">private application data collection</see>
-      matches the <code>appName</code>, a new one is automatically created.</remarks>
-      <param name="appName">Application name corresponding to an entry in the <see cref="AppData">
-      private application data collection</see>.</remarks>
-      <param name="modificationDate">When the specified application last altered the content of this
-      holder.</param>
-    */
-    void Touch(
-      PdfName appName,
-      DateTime modificationDate
-      );
-  }
 }
 

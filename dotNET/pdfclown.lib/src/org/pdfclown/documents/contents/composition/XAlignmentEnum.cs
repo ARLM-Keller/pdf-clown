@@ -25,14 +25,14 @@
 
 namespace org.pdfclown.documents.contents.composition
 {
-  /**
-    <summary>Horizontal alignment.</summary>
-  */
-  public enum XAlignmentEnum
-  {
-    Left,
-    Right,
-    Center,
-    Justify
-  };
+    /**
+      <summary>Horizontal alignment.</summary>
+    */
+    public enum XAlignmentEnum
+    {
+        Left,
+        Right,
+        Center,
+        Justify
+    };
 }

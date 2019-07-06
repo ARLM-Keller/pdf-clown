@@ -27,26 +27,25 @@ using org.pdfclown.bytes;
 using org.pdfclown.objects;
 
 using System.Collections.Generic;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Path object [PDF:1.6:4.4].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class Path
-    : GraphicsObject
-  {
-    #region static
-    #region fields
-    public static readonly string[] BeginOperatorKeywords = new string[]
-      {
+    /**
+      <summary>Path object [PDF:1.6:4.4].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class Path : GraphicsObject
+    {
+        #region static
+        #region fields
+        public static readonly string[] BeginOperatorKeywords = new string[]
+          {
         BeginSubpath.OperatorKeyword,
         DrawRectangle.OperatorKeyword
-      };
-    public static readonly string[] EndOperatorKeywords = new string[]
-      {
+          };
+        public static readonly string[] EndOperatorKeywords = new string[]
+          {
         PaintPath.CloseFillStrokeEvenOddOperatorKeyword,
         PaintPath.CloseFillStrokeOperatorKeyword,
         PaintPath.CloseStrokeOperatorKeyword,
@@ -57,29 +56,25 @@ namespace org.pdfclown.documents.contents.objects
         PaintPath.FillStrokeEvenOddOperatorKeyword,
         PaintPath.FillStrokeOperatorKeyword,
         PaintPath.StrokeOperatorKeyword
-      };
-    #endregion
-    #endregion
+          };
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    public Path(
-      )
-    {}
+        #region dynamic
+        #region constructors
+        public Path()
+        { }
 
-    public Path(
-      IList<ContentObject> operations
-      ) : base(operations)
-    {}
-    #endregion
+        public Path(IList<ContentObject> operations) : base(operations)
+        { }
+        #endregion
 
-    #region interface
-    #region protected
-    protected override GraphicsPath CreateRenderObject(
-      )
-    {return new GraphicsPath();}
-    #endregion
-    #endregion
-    #endregion
-  }
+        #region interface
+        #region protected
+        protected override SKPath CreateRenderObject()
+        { return new SKPath(); }
+        #endregion
+        #endregion
+        #endregion
+    }
 }

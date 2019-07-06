@@ -31,61 +31,51 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Paint the shape and color shading' operation [PDF:1.6:4.6.3].</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public sealed class PaintShading
-    : Operation,
-      IResourceReference<colorSpaces::Shading>
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "sh";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public PaintShading(
-      PdfName name
-      ) : base(OperatorKeyword, name)
-    {}
-
-    public PaintShading(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the <see cref="colorSpaces::Shading">shading</see> resource to be painted.
-      </summary>
-      <param name="context">Content context.</param>
+      <summary>'Paint the shape and color shading' operation [PDF:1.6:4.6.3].</summary>
     */
-    public colorSpaces::Shading GetShading(
-      IContentContext context
-      )
-    {return GetResource(context);}
-
-    #region IResourceReference
-    public colorSpaces::Shading GetResource(
-      IContentContext context
-      )
-    {return context.Resources.Shadings[Name];}
-
-    public PdfName Name
+    [PDF(VersionEnum.PDF13)]
+    public sealed class PaintShading
+      : Operation,
+        IResourceReference<colorSpaces::Shading>
     {
-      get
-      {return (PdfName)operands[0];}
-      set
-      {operands[0] = value;}
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "sh";
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public PaintShading(PdfName name) : base(OperatorKeyword, name)
+        { }
+
+        public PaintShading(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the <see cref="colorSpaces::Shading">shading</see> resource to be painted.
+          </summary>
+          <param name="context">Content context.</param>
+        */
+        public colorSpaces::Shading GetShading(IContentContext context)
+        { return GetResource(context); }
+
+        #region IResourceReference
+        public colorSpaces::Shading GetResource(IContentContext context)
+        { return context.Resources.Shadings[Name]; }
+
+        public PdfName Name
+        {
+            get { return (PdfName)operands[0]; }
+            set { operands[0] = value; }
+        }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }

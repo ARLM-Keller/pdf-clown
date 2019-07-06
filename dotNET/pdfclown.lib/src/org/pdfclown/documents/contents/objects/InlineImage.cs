@@ -27,86 +27,86 @@ using org.pdfclown.bytes;
 using org.pdfclown.objects;
 
 using System.Collections.Generic;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>Inline image object [PDF:1.6:4.8.6].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class InlineImage
-    : GraphicsObject
-  {
-    #region static
-    #region fields
-    public static readonly string BeginOperatorKeyword = BeginInlineImage.OperatorKeyword;
-    public static readonly string EndOperatorKeyword = EndInlineImage.OperatorKeyword;
-
-    private static readonly string DataOperatorKeyword = "ID";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public InlineImage(
-      InlineImageHeader header,
-      InlineImageBody body
-      )
-    {
-      objects.Add(header);
-      objects.Add(body);
-    }
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the image body.</summary>
+      <summary>Inline image object [PDF:1.6:4.8.6].</summary>
     */
-    public Operation Body
+    [PDF(VersionEnum.PDF10)]
+    public sealed class InlineImage
+      : GraphicsObject
     {
-      get
-      {return (Operation)Objects[1];}
-    }
+        #region static
+        #region fields
+        public static readonly string BeginOperatorKeyword = BeginInlineImage.OperatorKeyword;
+        public static readonly string EndOperatorKeyword = EndInlineImage.OperatorKeyword;
 
-    /**
-      <summary>Gets the image header.</summary>
-    */
-    public override Operation Header
-    {
-      get
-      {return (Operation)Objects[0];}
-    }
+        private static readonly string DataOperatorKeyword = "ID";
+        #endregion
+        #endregion
 
-    /**
-      <summary>Gets the image size.</summary>
-    */
-    public Size Size
-    {
-      get
-      {
-        InlineImageHeader header = (InlineImageHeader)Header;
-        return new Size(
-          (int)((IPdfNumber)header[header.ContainsKey(PdfName.W) ? PdfName.W : PdfName.Width]).Value,
-          (int)((IPdfNumber)header[header.ContainsKey(PdfName.H) ? PdfName.H : PdfName.Height]).Value
-          );
-      }
-    }
+        #region dynamic
+        #region constructors
+        public InlineImage(
+          InlineImageHeader header,
+          InlineImageBody body
+          )
+        {
+            objects.Add(header);
+            objects.Add(body);
+        }
+        #endregion
 
-    public override void WriteTo(
-      IOutputStream stream,
-      Document context
-      )
-    {
-      stream.Write(BeginOperatorKeyword); stream.Write("\n");
-      Header.WriteTo(stream, context);
-      stream.Write(DataOperatorKeyword); stream.Write("\n");
-      Body.WriteTo(stream, context); stream.Write("\n");
-      stream.Write(EndOperatorKeyword);
+        #region interface
+        #region public
+        /**
+          <summary>Gets the image body.</summary>
+        */
+        public Operation Body
+        {
+            get
+            { return (Operation)Objects[1]; }
+        }
+
+        /**
+          <summary>Gets the image header.</summary>
+        */
+        public override Operation Header
+        {
+            get
+            { return (Operation)Objects[0]; }
+        }
+
+        /**
+          <summary>Gets the image size.</summary>
+        */
+        public SKSize Size
+        {
+            get
+            {
+                InlineImageHeader header = (InlineImageHeader)Header;
+                return new SKSize(
+                  (int)((IPdfNumber)header[header.ContainsKey(PdfName.W) ? PdfName.W : PdfName.Width]).Value,
+                  (int)((IPdfNumber)header[header.ContainsKey(PdfName.H) ? PdfName.H : PdfName.Height]).Value
+                  );
+            }
+        }
+
+        public override void WriteTo(
+          IOutputStream stream,
+          Document context
+          )
+        {
+            stream.Write(BeginOperatorKeyword); stream.Write("\n");
+            Header.WriteTo(stream, context);
+            stream.Write(DataOperatorKeyword); stream.Write("\n");
+            Body.WriteTo(stream, context); stream.Write("\n");
+            stream.Write(EndOperatorKeyword);
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

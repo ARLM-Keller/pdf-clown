@@ -30,128 +30,128 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.layers
 {
-  /**
-    <summary>Optional content properties [PDF:1.7:4.10.3].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public sealed class LayerDefinition
-    : PdfObjectWrapper<PdfDictionary>,
-      ILayerConfiguration
-  {
-    #region static
-    #region interface
-    #region public
-    public static LayerDefinition Wrap(
-      PdfDirectObject baseObject
-      )
-    {return baseObject != null ? new LayerDefinition(baseObject) : null;}
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public LayerDefinition(
-      Document context
-      ) : base(context, new PdfDictionary())
-    {}
-
-    private LayerDefinition(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the layer configurations used under particular circumstances.</summary>
+      <summary>Optional content properties [PDF:1.7:4.10.3].</summary>
     */
-    public Array<LayerConfiguration> AlternateConfigurations
+    [PDF(VersionEnum.PDF15)]
+    public sealed class LayerDefinition
+      : PdfObjectWrapper<PdfDictionary>,
+        ILayerConfiguration
     {
-      get
-      {return Array<LayerConfiguration>.Wrap<LayerConfiguration>(BaseDataObject.Get<PdfArray>(PdfName.Configs));}
-      set
-      {BaseDataObject[PdfName.Configs] = value.BaseObject;}
-    }
+        #region static
+        #region interface
+        #region public
+        public static LayerDefinition Wrap(
+          PdfDirectObject baseObject
+          )
+        { return baseObject != null ? new LayerDefinition(baseObject) : null; }
+        #endregion
+        #endregion
+        #endregion
 
-    /**
-      <summary>Gets the default layer configuration, that is the initial state of the optional
-      content groups when a document is first opened.</summary>
-    */
-    public LayerConfiguration DefaultConfiguration
-    {
-      get
-      {return LayerConfiguration.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.D));}
-      set
-      {BaseDataObject[PdfName.D] = value.BaseObject;}
-    }
+        #region dynamic
+        #region constructors
+        public LayerDefinition(
+          Document context
+          ) : base(context, new PdfDictionary())
+        { }
 
-    /**
-      <summary>Gets the collection of all the layers existing in the document.</summary>
-    */
-    public Layers Layers
-    {
-      get
-      {return Layers.Wrap(BaseDataObject.Get<PdfArray>(PdfName.OCGs));}
-    }
+        private LayerDefinition(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region ILayerConfiguration
-    public string Creator
-    {
-      get
-      {return DefaultConfiguration.Creator;}
-      set
-      {DefaultConfiguration.Creator = value;}
-    }
+        #region interface
+        #region public
+        /**
+          <summary>Gets the layer configurations used under particular circumstances.</summary>
+        */
+        public Array<LayerConfiguration> AlternateConfigurations
+        {
+            get
+            { return Array<LayerConfiguration>.Wrap<LayerConfiguration>(BaseDataObject.Get<PdfArray>(PdfName.Configs)); }
+            set
+            { BaseDataObject[PdfName.Configs] = value.BaseObject; }
+        }
 
-    public ISet<PdfName> Intents
-    {
-      get
-      {return DefaultConfiguration.Intents;}
-      set
-      {DefaultConfiguration.Intents = value;}
-    }
+        /**
+          <summary>Gets the default layer configuration, that is the initial state of the optional
+          content groups when a document is first opened.</summary>
+        */
+        public LayerConfiguration DefaultConfiguration
+        {
+            get
+            { return LayerConfiguration.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.D)); }
+            set
+            { BaseDataObject[PdfName.D] = value.BaseObject; }
+        }
 
-    public Array<OptionGroup> OptionGroups
-    {
-      get
-      {return DefaultConfiguration.OptionGroups;}
-    }
+        /**
+          <summary>Gets the collection of all the layers existing in the document.</summary>
+        */
+        public Layers Layers
+        {
+            get
+            { return Layers.Wrap(BaseDataObject.Get<PdfArray>(PdfName.OCGs)); }
+        }
 
-    public string Title
-    {
-      get
-      {return DefaultConfiguration.Title;}
-      set
-      {DefaultConfiguration.Title = value;}
-    }
+        #region ILayerConfiguration
+        public string Creator
+        {
+            get
+            { return DefaultConfiguration.Creator; }
+            set
+            { DefaultConfiguration.Creator = value; }
+        }
 
-    public UILayers UILayers
-    {
-      get
-      {return DefaultConfiguration.UILayers;}
-    }
+        public ISet<PdfName> Intents
+        {
+            get
+            { return DefaultConfiguration.Intents; }
+            set
+            { DefaultConfiguration.Intents = value; }
+        }
 
-    public UIModeEnum UIMode
-    {
-      get
-      {return DefaultConfiguration.UIMode;}
-      set
-      {DefaultConfiguration.UIMode = value;}
-    }
+        public Array<OptionGroup> OptionGroups
+        {
+            get
+            { return DefaultConfiguration.OptionGroups; }
+        }
 
-    public bool? Visible
-    {
-      get
-      {return DefaultConfiguration.Visible;}
-      set
-      {DefaultConfiguration.Visible = value;}
+        public string Title
+        {
+            get
+            { return DefaultConfiguration.Title; }
+            set
+            { DefaultConfiguration.Title = value; }
+        }
+
+        public UILayers UILayers
+        {
+            get
+            { return DefaultConfiguration.UILayers; }
+        }
+
+        public UIModeEnum UIMode
+        {
+            get
+            { return DefaultConfiguration.UIMode; }
+            set
+            { DefaultConfiguration.UIMode = value; }
+        }
+
+        public bool? Visible
+        {
+            get
+            { return DefaultConfiguration.Visible; }
+            set
+            { DefaultConfiguration.Visible = value; }
+        }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }
 

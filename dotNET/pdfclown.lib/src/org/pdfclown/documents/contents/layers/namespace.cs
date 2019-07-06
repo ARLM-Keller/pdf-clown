@@ -4,4 +4,4 @@
   by document authors or consumers. This capability is useful in items such as CAD drawings, layered
   artwork, maps, and multi-language documents.</remarks>
 */
-namespace org.pdfclown.documents.contents.layers{}
+namespace org.pdfclown.documents.contents.layers { }

@@ -30,61 +30,61 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Single-component CIE-based color value [PDF:1.6:4.5.4].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class CalGrayColor
-    : LeveledColor
-  {
-    #region static
-    #region fields
-    public static readonly CalGrayColor Black = new CalGrayColor(0);
-    public static readonly CalGrayColor White = new CalGrayColor(1);
-
-    public static readonly CalGrayColor Default = Black;
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public CalGrayColor(
-      double g
-      ) : this(
-        new List<PdfDirectObject>(
-          new PdfDirectObject[]{PdfReal.Get(NormalizeComponent(g))}
-          )
-        )
-    {}
-
-    internal CalGrayColor(
-      IList<PdfDirectObject> components
-      ) : base(
-        null, //TODO:colorspace?
-        new PdfArray(components)
-        )
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
     /**
-      <summary>Gets/Sets the gray component.</summary>
+      <summary>Single-component CIE-based color value [PDF:1.6:4.5.4].</summary>
     */
-    public double G
+    [PDF(VersionEnum.PDF11)]
+    public sealed class CalGrayColor
+      : LeveledColor
     {
-      get
-      {return GetComponentValue(0);}
-      set
-      {SetComponentValue(0, value);}
+        #region static
+        #region fields
+        public static readonly CalGrayColor Black = new CalGrayColor(0);
+        public static readonly CalGrayColor White = new CalGrayColor(1);
+
+        public static readonly CalGrayColor Default = Black;
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public CalGrayColor(
+          double g
+          ) : this(
+            new List<PdfDirectObject>(
+              new PdfDirectObject[] { PdfReal.Get(NormalizeComponent(g)) }
+              )
+            )
+        { }
+
+        internal CalGrayColor(
+          IList<PdfDirectObject> components
+          ) : base(
+            null, //TODO:colorspace?
+            new PdfArray(components)
+            )
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override object Clone(
+          Document context
+          )
+        { throw new NotImplementedException(); }
+
+        /**
+          <summary>Gets/Sets the gray component.</summary>
+        */
+        public double G
+        {
+            get
+            { return GetComponentValue(0); }
+            set
+            { SetComponentValue(0, value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

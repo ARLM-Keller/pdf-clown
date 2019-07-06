@@ -32,36 +32,36 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>Number tree [PDF:1.7:3.8.6].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public abstract class NumberTree<TValue>
-    : Tree<PdfInteger, TValue>
-    where TValue : PdfObjectWrapper
-  {
-    #region dynamic
-    #region constructors
-    protected NumberTree(
-      Document context
-      ) : base(context)
-    {}
-
-    protected NumberTree(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region protected
-    protected override PdfName PairsKey
+    /**
+      <summary>Number tree [PDF:1.7:3.8.6].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public abstract class NumberTree<TValue>
+      : Tree<PdfInteger, TValue>
+      where TValue : PdfObjectWrapper
     {
-      get
-      {return PdfName.Nums;}
+        #region dynamic
+        #region constructors
+        protected NumberTree(
+          Document context
+          ) : base(context)
+        { }
+
+        protected NumberTree(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region protected
+        protected override PdfName PairsKey
+        {
+            get
+            { return PdfName.Nums; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

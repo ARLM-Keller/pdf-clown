@@ -26,60 +26,55 @@
 using org.pdfclown.objects;
 
 using System;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Rotation (clockwise) [PDF:1.6:3.6.2].</summary>
-  */
-  public enum RotationEnum
-  {
     /**
-      Downward (0° clockwise).
+      <summary>Rotation (clockwise) [PDF:1.6:3.6.2].</summary>
     */
-    Downward = 0,
-    /**
-      Leftward (90° clockwise).
-    */
-    Leftward = 90,
-    /**
-      Upward (180° clockwise).
-    */
-    Upward = 180,
-    /**
-      Rightward (270° clockwise).
-    */
-    Rightward = 270
-  }
-
-  internal static class RotationEnumExtension
-  {
-    /**
-      <summary>Gets the direction corresponding to the given value.</summary>
-    */
-    public static RotationEnum Get(
-      IPdfNumber value
-      )
+    public enum RotationEnum
     {
-      if(value == null)
-        return RotationEnum.Downward;
-
-      int normalizedValue = (int)(Math.Round(value.DoubleValue / 90) % 4) * 90;
-      if(normalizedValue < 0)
-      {normalizedValue += 360 * (int)Math.Ceiling(-normalizedValue / 360d);}
-      return (RotationEnum)normalizedValue;
+        /**
+          Downward (0° clockwise).
+        */
+        Downward = 0,
+        /**
+          Leftward (90° clockwise).
+        */
+        Leftward = 90,
+        /**
+          Upward (180° clockwise).
+        */
+        Upward = 180,
+        /**
+          Rightward (270° clockwise).
+        */
+        Rightward = 270
     }
 
-    public static SizeF Transform(
-      this RotationEnum rotation,
-      SizeF size
-      )
+    internal static class RotationEnumExtension
     {
-      if((int)rotation % 180 == 0)
-        return new SizeF(size.Width, size.Height);
-      else
-        return new SizeF(size.Height, size.Width);
+        /**
+          <summary>Gets the direction corresponding to the given value.</summary>
+        */
+        public static RotationEnum Get(IPdfNumber value)
+        {
+            if (value == null)
+                return RotationEnum.Downward;
+
+            int normalizedValue = (int)(Math.Round(value.DoubleValue / 90) % 4) * 90;
+            if (normalizedValue < 0)
+            { normalizedValue += 360 * (int)Math.Ceiling(-normalizedValue / 360d); }
+            return (RotationEnum)normalizedValue;
+        }
+
+        public static SKSize Transform(this RotationEnum rotation, SKSize size)
+        {
+            if ((int)rotation % 180 == 0)
+                return new SKSize(size.Width, size.Height);
+            else
+                return new SKSize(size.Height, size.Width);
+        }
     }
-  }
 }

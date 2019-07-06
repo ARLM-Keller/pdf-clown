@@ -32,250 +32,250 @@ using System.Reflection;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>Collection of sequentially-arranged object wrappers.</summary>
-  */
-  public class Array<TItem>
-    : PdfObjectWrapper<PdfArray>,
-      IList<TItem>
-    where TItem : IPdfObjectWrapper
-  {
-    #region types
     /**
-      <summary>Item instancer.</summary>
+      <summary>Collection of sequentially-arranged object wrappers.</summary>
     */
-    public interface IWrapper<T>
-      where T : TItem
+    public class Array<TItem>
+      : PdfObjectWrapper<PdfArray>,
+        IList<TItem>
+      where TItem : IPdfObjectWrapper
     {
-      T Wrap(
-        PdfDirectObject baseObject
-        );
+        #region types
+        /**
+          <summary>Item instancer.</summary>
+        */
+        public interface IWrapper<T>
+          where T : TItem
+        {
+            T Wrap(
+              PdfDirectObject baseObject
+              );
+        }
+
+        private class DefaultWrapper<T>
+          : IWrapper<T>
+          where T : TItem
+        {
+            private MethodInfo itemConstructor;
+
+            internal DefaultWrapper(
+              )
+            { itemConstructor = typeof(TItem).GetMethod("Wrap", new Type[] { typeof(PdfDirectObject) }); }
+
+            public T Wrap(
+              PdfDirectObject baseObject
+              )
+            { return (T)itemConstructor.Invoke(null, new object[] { baseObject }); }
+        }
+        #endregion
+
+        #region static
+        #region interface
+        #region public
+        /**
+          <summary>Wraps an existing base array using the default wrapper for wrapping its items.
+          </summary>
+          <param name="itemClass">Item class.</param>
+          <param name="baseObject">Base array. MUST be a {@link PdfReference reference} every time
+          available.</param>
+        */
+        public static Array<T> Wrap<T>(
+          PdfDirectObject baseObject
+          ) where T : TItem
+        { return baseObject != null ? new Array<T>(baseObject) : null; }
+
+        /**
+          <summary>Wraps an existing base array using the specified wrapper for wrapping its items.
+          </summary>
+          <param name="itemWrapper">Item wrapper.</param>
+          <param name="baseObject">Base array. MUST be a {@link PdfReference reference} every time
+          available.</param>
+        */
+        public static Array<T> Wrap<T>(
+          Array<T>.IWrapper<T> itemWrapper,
+          PdfDirectObject baseObject
+          ) where T : TItem
+        { return baseObject != null ? new Array<T>(itemWrapper, baseObject) : null; }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region fields
+        private IWrapper<TItem> itemWrapper;
+        #endregion
+
+        #region constructors
+        /**
+          <summary>Wraps a new base array using the default wrapper for wrapping its items.</summary>
+          <param name="context">Document context.</param>
+        */
+        public Array(
+          Document context
+          ) : this(
+            context,
+            new PdfArray()
+            )
+        { }
+
+        /**
+          <summary>Wraps a new base array using the specified wrapper for wrapping its items.</summary>
+          <param name="context">Document context.</param>
+          <param name="itemWrapper">Item wrapper.</param>
+        */
+        public Array(
+          Document context,
+          IWrapper<TItem> itemWrapper
+          ) : this(
+            context,
+            itemWrapper,
+            new PdfArray()
+            )
+        { }
+
+        /**
+          <summary>Wraps the specified base array using the default wrapper for wrapping its items.</summary>
+          <param name="context">Document context.</param>
+          <param name="baseDataObject">Base array.</param>
+        */
+        public Array(
+          Document context,
+          PdfArray baseDataObject
+          ) : this(
+            context,
+            new DefaultWrapper<TItem>(),
+            baseDataObject
+            )
+        { }
+
+        /**
+          <summary>Wraps the specified base array using the specified wrapper for wrapping its items.</summary>
+          <param name="context">Document context.</param>
+          <param name="itemWrapper">Item wrapper.</param>
+          <param name="baseDataObject">Base array.</param>
+        */
+        public Array(
+          Document context,
+          IWrapper<TItem> itemWrapper,
+          PdfArray baseDataObject
+          ) : base(context, baseDataObject)
+        { this.itemWrapper = itemWrapper; }
+
+        /**
+          <summary>Wraps an existing base array using the default wrapper for wrapping its items.</summary>
+          <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
+          everytime available.</param>
+        */
+        protected Array(
+          PdfDirectObject baseObject
+          ) : this(
+            new DefaultWrapper<TItem>(),
+            baseObject
+            )
+        { }
+
+        /**
+          <summary>Wraps an existing base array using the specified wrapper for wrapping its items.</summary>
+          <param name="itemWrapper">Item wrapper.</param>
+          <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
+          everytime available.</param>
+        */
+        protected Array(
+          IWrapper<TItem> itemWrapper,
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { this.itemWrapper = itemWrapper; }
+        #endregion
+
+        #region interface
+        #region public
+        #region IList<TItem>
+        public virtual int IndexOf(
+          TItem item
+          )
+        { return BaseDataObject.IndexOf(item.BaseObject); }
+
+        public virtual void Insert(
+          int index,
+          TItem item
+          )
+        { BaseDataObject.Insert(index, item.BaseObject); }
+
+        public virtual void RemoveAt(
+          int index
+          )
+        { BaseDataObject.RemoveAt(index); }
+
+        public virtual TItem this[
+          int index
+          ]
+        {
+            get
+            { return itemWrapper.Wrap(BaseDataObject[index]); }
+            set
+            { BaseDataObject[index] = value.BaseObject; }
+        }
+
+        #region ICollection<TItem>
+        public virtual void Add(
+          TItem item
+          )
+        { BaseDataObject.Add(item.BaseObject); }
+
+        public virtual void Clear(
+          )
+        {
+            int index = Count;
+            while (index-- > 0)
+            { RemoveAt(index); }
+        }
+
+        public virtual bool Contains(
+          TItem item
+          )
+        { return BaseDataObject.Contains(item.BaseObject); }
+
+        public virtual void CopyTo(
+          TItem[] items,
+          int index
+          )
+        { throw new NotImplementedException(); }
+
+        public virtual int Count
+        {
+            get
+            { return BaseDataObject.Count; }
+        }
+
+        public virtual bool IsReadOnly
+        {
+            get
+            { return false; }
+        }
+
+        public virtual bool Remove(
+          TItem item
+          )
+        { return BaseDataObject.Remove(item.BaseObject); }
+
+        #region IEnumerable<TItem>
+        public virtual IEnumerator<TItem> GetEnumerator(
+          )
+        {
+            for (int index = 0, length = Count; index < length; index++)
+            { yield return this[index]; }
+        }
+
+        #region IEnumerable
+        IEnumerator IEnumerable.GetEnumerator(
+          )
+        { return this.GetEnumerator(); }
+        #endregion
+        #endregion
+        #endregion
+        #endregion
+        #endregion
+        #endregion
+        #endregion
     }
-
-    private class DefaultWrapper<T>
-      : IWrapper<T>
-      where T : TItem
-    {
-      private MethodInfo itemConstructor;
-
-      internal DefaultWrapper(
-        )
-      {itemConstructor = typeof(TItem).GetMethod("Wrap", new Type[]{typeof(PdfDirectObject)});}
-
-      public T Wrap(
-        PdfDirectObject baseObject
-        )
-      {return (T)itemConstructor.Invoke(null, new object[]{baseObject});}
-    }
-    #endregion
-
-    #region static
-    #region interface
-    #region public
-    /**
-      <summary>Wraps an existing base array using the default wrapper for wrapping its items.
-      </summary>
-      <param name="itemClass">Item class.</param>
-      <param name="baseObject">Base array. MUST be a {@link PdfReference reference} every time
-      available.</param>
-    */
-    public static Array<T> Wrap<T>(
-      PdfDirectObject baseObject
-      ) where T : TItem
-    {return baseObject != null ? new Array<T>(baseObject) : null;}
-  
-    /**
-      <summary>Wraps an existing base array using the specified wrapper for wrapping its items.
-      </summary>
-      <param name="itemWrapper">Item wrapper.</param>
-      <param name="baseObject">Base array. MUST be a {@link PdfReference reference} every time
-      available.</param>
-    */
-    public static Array<T> Wrap<T>(
-      Array<T>.IWrapper<T> itemWrapper,
-      PdfDirectObject baseObject
-      ) where T : TItem
-    {return baseObject != null ? new Array<T>(itemWrapper, baseObject) : null;}
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region fields
-    private IWrapper<TItem> itemWrapper;
-    #endregion
-
-    #region constructors
-    /**
-      <summary>Wraps a new base array using the default wrapper for wrapping its items.</summary>
-      <param name="context">Document context.</param>
-    */
-    public Array(
-      Document context
-      ) : this(
-        context,
-        new PdfArray()
-        )
-    {}
-
-    /**
-      <summary>Wraps a new base array using the specified wrapper for wrapping its items.</summary>
-      <param name="context">Document context.</param>
-      <param name="itemWrapper">Item wrapper.</param>
-    */
-    public Array(
-      Document context,
-      IWrapper<TItem> itemWrapper
-      ) : this(
-        context,
-        itemWrapper,
-        new PdfArray()
-        )
-    {}
-
-    /**
-      <summary>Wraps the specified base array using the default wrapper for wrapping its items.</summary>
-      <param name="context">Document context.</param>
-      <param name="baseDataObject">Base array.</param>
-    */
-    public Array(
-      Document context,
-      PdfArray baseDataObject
-      ) : this(
-        context,
-        new DefaultWrapper<TItem>(),
-        baseDataObject
-        )
-    {}
-
-    /**
-      <summary>Wraps the specified base array using the specified wrapper for wrapping its items.</summary>
-      <param name="context">Document context.</param>
-      <param name="itemWrapper">Item wrapper.</param>
-      <param name="baseDataObject">Base array.</param>
-    */
-    public Array(
-      Document context,
-      IWrapper<TItem> itemWrapper,
-      PdfArray baseDataObject
-      ) : base(context, baseDataObject)
-    {this.itemWrapper = itemWrapper;}
-
-    /**
-      <summary>Wraps an existing base array using the default wrapper for wrapping its items.</summary>
-      <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
-      everytime available.</param>
-    */
-    protected Array(
-      PdfDirectObject baseObject
-      ) : this(
-        new DefaultWrapper<TItem>(),
-        baseObject
-        )
-    {}
-
-    /**
-      <summary>Wraps an existing base array using the specified wrapper for wrapping its items.</summary>
-      <param name="itemWrapper">Item wrapper.</param>
-      <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
-      everytime available.</param>
-    */
-    protected Array(
-      IWrapper<TItem> itemWrapper,
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {this.itemWrapper = itemWrapper;}
-    #endregion
-
-    #region interface
-    #region public
-    #region IList<TItem>
-    public virtual int IndexOf(
-      TItem item
-      )
-    {return BaseDataObject.IndexOf(item.BaseObject);}
-
-    public virtual void Insert(
-      int index,
-      TItem item
-      )
-    {BaseDataObject.Insert(index, item.BaseObject);}
-
-    public virtual void RemoveAt(
-      int index
-      )
-    {BaseDataObject.RemoveAt(index);}
-
-    public virtual TItem this[
-      int index
-      ]
-    {
-      get
-      {return itemWrapper.Wrap(BaseDataObject[index]);}
-      set
-      {BaseDataObject[index] = value.BaseObject;}
-    }
-
-    #region ICollection<TItem>
-    public virtual void Add(
-      TItem item
-      )
-    {BaseDataObject.Add(item.BaseObject);}
-
-    public virtual void Clear(
-      )
-    {
-      int index = Count;
-      while(index-- > 0)
-      {RemoveAt(index);}
-    }
-
-    public virtual bool Contains(
-      TItem item
-      )
-    {return BaseDataObject.Contains(item.BaseObject);}
-
-    public virtual void CopyTo(
-      TItem[] items,
-      int index
-      )
-    {throw new NotImplementedException();}
-
-    public virtual int Count
-    {
-      get
-      {return BaseDataObject.Count;}
-    }
-
-    public virtual bool IsReadOnly
-    {
-      get
-      {return false;}
-    }
-
-    public virtual bool Remove(
-      TItem item
-      )
-    {return BaseDataObject.Remove(item.BaseObject);}
-
-    #region IEnumerable<TItem>
-    public virtual IEnumerator<TItem> GetEnumerator(
-      )
-    {
-      for(int index = 0, length = Count; index < length; index++)
-      {yield return this[index];}
-    }
-
-    #region IEnumerable
-    IEnumerator IEnumerable.GetEnumerator(
-      )
-    {return this.GetEnumerator();}
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-    #endregion
-  }
 }

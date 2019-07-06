@@ -29,66 +29,66 @@ using System.Text;
 
 namespace org.pdfclown.util
 {
-  /**
-    <summary>Byte array.</summary>
-  */
-  /*
-    NOTE: This class is useful when applied as key for dictionaries using the default IEqualityComparer.
-  */
-  public class ByteArray
-    : IComparable<ByteArray>
-  {
-    public readonly byte[] Data; //TODO: yes, I know it's risky (temporary simplification)...
-
-    public ByteArray(byte[] data)
-    {Array.Copy(data,this.Data = new byte[data.Length],data.Length);}
-
-    public int CompareTo(
-      ByteArray other
-      )
+    /**
+      <summary>Byte array.</summary>
+    */
+    /*
+      NOTE: This class is useful when applied as key for dictionaries using the default IEqualityComparer.
+    */
+    public class ByteArray
+      : IComparable<ByteArray>
     {
-      int comparison = Data.Length - other.Data.Length;
-      if(comparison == 0)
-      {
-        for(int index = 0, length = Data.Length; index < length; index++)
-          if((comparison = Data[index] - other.Data[index]) != 0)
-            break;
-      }
-      return comparison;
-    }
+        public readonly byte[] Data; //TODO: yes, I know it's risky (temporary simplification)...
 
-    public override bool Equals(
-      object obj
-      )
-    {
-      return obj is ByteArray
-        && Data.SequenceEqual(((ByteArray)obj).Data);
-    }
+        public ByteArray(byte[] data)
+        { Array.Copy(data, this.Data = new byte[data.Length], data.Length); }
 
-    public override int GetHashCode(
-      )
-    {
-      int hashCode = 0;
-      for(int index = 0, length = Data.Length; index < length; index++)
-      {hashCode ^= Data[index] << (8 * (index % 4));}
-      return hashCode;
-    }
-
-    public override string ToString(
-      )
-    {
-      StringBuilder builder = new StringBuilder("[");
-      {
-        foreach(byte datum in Data)
+        public int CompareTo(
+          ByteArray other
+          )
         {
-          if(builder.Length > 1)
-          {builder.Append(",");}
-
-          builder.Append(datum & 0xFF);
+            int comparison = Data.Length - other.Data.Length;
+            if (comparison == 0)
+            {
+                for (int index = 0, length = Data.Length; index < length; index++)
+                    if ((comparison = Data[index] - other.Data[index]) != 0)
+                        break;
+            }
+            return comparison;
         }
-        builder.Append("]");
-      }
-      return builder.ToString();
+
+        public override bool Equals(
+          object obj
+          )
+        {
+            return obj is ByteArray
+              && Data.SequenceEqual(((ByteArray)obj).Data);
+        }
+
+        public override int GetHashCode(
+          )
+        {
+            int hashCode = 0;
+            for (int index = 0, length = Data.Length; index < length; index++)
+            { hashCode ^= Data[index] << (8 * (index % 4)); }
+            return hashCode;
+        }
+
+        public override string ToString(
+          )
+        {
+            StringBuilder builder = new StringBuilder("[");
+            {
+                foreach (byte datum in Data)
+                {
+                    if (builder.Length > 1)
+                    { builder.Append(","); }
+
+                    builder.Append(datum & 0xFF);
+                }
+                builder.Append("]");
+            }
+            return builder.ToString();
+        }
     }
-  }
 }

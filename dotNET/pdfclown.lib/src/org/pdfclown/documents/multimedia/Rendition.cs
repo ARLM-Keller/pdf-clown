@@ -35,279 +35,254 @@ using org.pdfclown.util.math;
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.multimedia
 {
-  /**
-    <summary>Rendition [PDF:1.7:9.1.2].</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public abstract class Rendition
-    : PdfObjectWrapper<PdfDictionary>,
-      IPdfNamedObjectWrapper
-  {
-    #region types
     /**
-      <summary>Rendition viability [PDF:1.7:9.1.2].</summary>
+      <summary>Rendition [PDF:1.7:9.1.2].</summary>
     */
-    public class Viability
-      : PdfObjectWrapper<PdfDictionary>
+    [PDF(VersionEnum.PDF15)]
+    public abstract class Rendition : PdfObjectWrapper<PdfDictionary>, IPdfNamedObjectWrapper
     {
-      internal Viability(
-        PdfDirectObject baseObject
-        ) : base(baseObject)
-      {}
-
-      /**
-        <summary>Gets the minimum system's bandwidth (in bits per second).</summary>
-        <remarks>Equivalent to SMIL's systemBitrate attribute.</remarks>
-      */
-      public int? Bandwidth
-      {
-        get
-        {return (int?)PdfInteger.GetValue(MediaCriteria[PdfName.R]);}
-      }
-
-      /**
-        <summary>Gets the minimum screen color depth (in bits per pixel).</summary>
-        <remarks>Equivalent to SMIL's systemScreenDepth attribute.</remarks>
-      */
-      public int? ScreenDepth
-      {
-        get
+        #region types
+        /**
+          <summary>Rendition viability [PDF:1.7:9.1.2].</summary>
+        */
+        public class Viability : PdfObjectWrapper<PdfDictionary>
         {
-          PdfDictionary screenDepthObject = (PdfDictionary)MediaCriteria[PdfName.D];
-          return screenDepthObject != null ? ((PdfInteger)screenDepthObject[PdfName.V]).IntValue : (int?)null;
-        }
-      }
+            internal Viability(PdfDirectObject baseObject) : base(baseObject)
+            { }
 
-      /**
-        <summary>Gets the minimum screen size (in pixels).</summary>
-        <remarks>Equivalent to SMIL's systemScreenSize attribute.</remarks>
-      */
-      public Size? ScreenSize
-      {
-        get
-        {
-          PdfDictionary screenSizeObject = (PdfDictionary)MediaCriteria[PdfName.Z];
-          if(screenSizeObject == null)
-            return null;
-
-          PdfArray screenSizeValueObject = (PdfArray)screenSizeObject[PdfName.V];
-          return screenSizeValueObject != null
-            ? new Size(
-              ((PdfInteger)screenSizeValueObject[0]).IntValue,
-              ((PdfInteger)screenSizeValueObject[1]).IntValue
-              )
-            : (Size?)null;
-        }
-      }
-
-      /**
-        <summary>Gets the list of supported viewer applications.</summary>
-      */
-      public Array<SoftwareIdentifier> Renderers
-      {
-        get
-        {return Array<SoftwareIdentifier>.Wrap<SoftwareIdentifier>(MediaCriteria.Get<PdfArray>(PdfName.V));}
-      }
-
-      /**
-        <summary>Gets the PDF version range supported by the viewer application.</summary>
-      */
-      public Interval<Version> Version
-      {
-        get
-        {
-          PdfArray pdfVersionArray = (PdfArray)MediaCriteria[PdfName.P];
-          return pdfVersionArray != null && pdfVersionArray.Count > 0
-            ? new Interval<Version>(
-              org.pdfclown.Version.Get((PdfName)pdfVersionArray[0]),
-              pdfVersionArray.Count > 1 ? org.pdfclown.Version.Get((PdfName)pdfVersionArray[1]) : null
-              )
-            : null;
-        }
-      }
-
-      /**
-        <summary>Gets the list of supported languages.</summary>
-        <remarks>Equivalent to SMIL's systemLanguage attribute.</remarks>
-      */
-      public IList<LanguageIdentifier> Languages
-      {
-        get
-        {
-          IList<LanguageIdentifier> languages = new List<LanguageIdentifier>();
-          {
-            PdfArray languagesObject = (PdfArray)MediaCriteria[PdfName.L];
-            if(languagesObject != null)
+            /**
+              <summary>Gets the minimum system's bandwidth (in bits per second).</summary>
+              <remarks>Equivalent to SMIL's systemBitrate attribute.</remarks>
+            */
+            public int? Bandwidth
             {
-              foreach(PdfDirectObject languageObject in languagesObject)
-              {languages.Add(LanguageIdentifier.Wrap(languageObject));}
+                get { return (int?)PdfInteger.GetValue(MediaCriteria[PdfName.R]); }
             }
-          }
-          return languages;
+
+            /**
+              <summary>Gets the minimum screen color depth (in bits per pixel).</summary>
+              <remarks>Equivalent to SMIL's systemScreenDepth attribute.</remarks>
+            */
+            public int? ScreenDepth
+            {
+                get
+                {
+                    PdfDictionary screenDepthObject = (PdfDictionary)MediaCriteria[PdfName.D];
+                    return screenDepthObject != null ? ((PdfInteger)screenDepthObject[PdfName.V]).IntValue : (int?)null;
+                }
+            }
+
+            /**
+              <summary>Gets the minimum screen size (in pixels).</summary>
+              <remarks>Equivalent to SMIL's systemScreenSize attribute.</remarks>
+            */
+            public SKSize? ScreenSize
+            {
+                get
+                {
+                    PdfDictionary screenSizeObject = (PdfDictionary)MediaCriteria[PdfName.Z];
+                    if (screenSizeObject == null)
+                        return null;
+
+                    PdfArray screenSizeValueObject = (PdfArray)screenSizeObject[PdfName.V];
+                    return screenSizeValueObject != null
+                      ? new SKSize(
+                        ((PdfInteger)screenSizeValueObject[0]).IntValue,
+                        ((PdfInteger)screenSizeValueObject[1]).IntValue
+                        )
+                      : (SKSize?)null;
+                }
+            }
+
+            /**
+              <summary>Gets the list of supported viewer applications.</summary>
+            */
+            public Array<SoftwareIdentifier> Renderers
+            {
+                get { return Array<SoftwareIdentifier>.Wrap<SoftwareIdentifier>(MediaCriteria.Get<PdfArray>(PdfName.V)); }
+            }
+
+            /**
+              <summary>Gets the PDF version range supported by the viewer application.</summary>
+            */
+            public Interval<Version> Version
+            {
+                get
+                {
+                    PdfArray pdfVersionArray = (PdfArray)MediaCriteria[PdfName.P];
+                    return pdfVersionArray != null && pdfVersionArray.Count > 0
+                      ? new Interval<Version>(
+                        org.pdfclown.Version.Get((PdfName)pdfVersionArray[0]),
+                        pdfVersionArray.Count > 1 ? org.pdfclown.Version.Get((PdfName)pdfVersionArray[1]) : null
+                        )
+                      : null;
+                }
+            }
+
+            /**
+              <summary>Gets the list of supported languages.</summary>
+              <remarks>Equivalent to SMIL's systemLanguage attribute.</remarks>
+            */
+            public IList<LanguageIdentifier> Languages
+            {
+                get
+                {
+                    IList<LanguageIdentifier> languages = new List<LanguageIdentifier>();
+                    {
+                        PdfArray languagesObject = (PdfArray)MediaCriteria[PdfName.L];
+                        if (languagesObject != null)
+                        {
+                            foreach (PdfDirectObject languageObject in languagesObject)
+                            { languages.Add(LanguageIdentifier.Wrap(languageObject)); }
+                        }
+                    }
+                    return languages;
+                }
+            }
+
+            /**
+              <summary>Gets whether to hear audio descriptions.</summary>
+              <remarks>Equivalent to SMIL's systemAudioDesc attribute.</remarks>
+            */
+            public bool AudioDescriptionEnabled
+            {
+                get { return (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.A]); }
+            }
+
+            /**
+              <summary>Gets whether to hear audio overdubs.</summary>
+            */
+            public bool AudioOverdubEnabled
+            {
+                get { return (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.O]); }
+            }
+
+            /**
+              <summary>Gets whether to see subtitles.</summary>
+            */
+            public bool SubtitleEnabled
+            {
+                get { return (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.S]); }
+            }
+
+            /**
+              <summary>Gets whether to see text captions.</summary>
+              <remarks>Equivalent to SMIL's systemCaptions attribute.</remarks>
+            */
+            public bool TextCaptionEnabled
+            {
+                get { return (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.C]); }
+            }
+
+            private PdfDictionary MediaCriteria
+            {
+                get { return BaseDataObject.Resolve<PdfDictionary>(PdfName.C); }
+            }
+
+            //TODO:setters!
         }
-      }
+        #endregion
 
-      /**
-        <summary>Gets whether to hear audio descriptions.</summary>
-        <remarks>Equivalent to SMIL's systemAudioDesc attribute.</remarks>
-      */
-      public bool AudioDescriptionEnabled
-      {
-        get
-        {return (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.A]);}
-      }
+        #region static
+        #region interface
+        #region public
+        /**
+          <summary>Wraps a rendition base object into a rendition object.</summary>
+          <param name="baseObject">Rendition base object.</param>
+          <returns>Rendition object associated to the base object.</returns>
+        */
+        public static Rendition Wrap(PdfDirectObject baseObject)
+        {
+            if (baseObject == null)
+                return null;
 
-      /**
-        <summary>Gets whether to hear audio overdubs.</summary>
-      */
-      public bool AudioOverdubEnabled
-      {
-        get
-        {return (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.O]);}
-      }
+            PdfName subtype = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.S];
+            if (PdfName.MR.Equals(subtype))
+                return new MediaRendition(baseObject);
+            else if (PdfName.SR.Equals(subtype))
+                return new SelectorRendition(baseObject);
+            else
+                throw new ArgumentException("It doesn't represent a valid clip object.", "baseObject");
+        }
+        #endregion
+        #endregion
+        #endregion
 
-      /**
-        <summary>Gets whether to see subtitles.</summary>
-      */
-      public bool SubtitleEnabled
-      {
-        get
-        {return (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.S]);}
-      }
+        #region dynamic
+        #region constructors
+        protected Rendition(Document context, PdfName subtype) : base(
+            context,
+            new PdfDictionary(
+              new PdfName[] { PdfName.Type, PdfName.S },
+              new PdfDirectObject[] { PdfName.Rendition, subtype }
+              )
+            )
+        { }
 
-      /**
-        <summary>Gets whether to see text captions.</summary>
-        <remarks>Equivalent to SMIL's systemCaptions attribute.</remarks>
-      */
-      public bool TextCaptionEnabled
-      {
-        get
-        {return (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.C]);}
-      }
+        protected Rendition(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-      private PdfDictionary MediaCriteria
-      {
-        get
-        {return BaseDataObject.Resolve<PdfDictionary>(PdfName.C);}
-      }
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the preferred options the renderer should attempt to honor without affecting
+          its viability [PDF:1.7:9.1.1].</summary>
+        */
+        public Viability Preferences
+        {
+            get
+            { return new Viability(BaseDataObject.Get<PdfDictionary>(PdfName.BE)); }
+            set
+            { BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value); }
+        }
 
-      //TODO:setters!
-    }
-    #endregion
+        /**
+          <summary>Gets/Sets the minimum requirements the renderer must honor in order to be considered
+          viable [PDF:1.7:9.1.1].</summary>
+        */
+        public Viability Requirements
+        {
+            get
+            { return new Viability(BaseDataObject.Get<PdfDictionary>(PdfName.MH)); }
+            set
+            { BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value); }
+        }
 
-    #region static
-    #region interface
-    #region public
-    /**
-      <summary>Wraps a rendition base object into a rendition object.</summary>
-      <param name="baseObject">Rendition base object.</param>
-      <returns>Rendition object associated to the base object.</returns>
-    */
-    public static Rendition Wrap(
-      PdfDirectObject baseObject
-      )
-    {
-      if(baseObject == null)
-        return null;
+        #region IPdfNamedObjectWrapper
+        public PdfString Name
+        {
+            get
+            { return RetrieveName(); }
+        }
 
-      PdfName subtype = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.S];
-      if(PdfName.MR.Equals(subtype))
-        return new MediaRendition(baseObject);
-      else if(PdfName.SR.Equals(subtype))
-        return new SelectorRendition(baseObject);
-      else
-        throw new ArgumentException("It doesn't represent a valid clip object.", "baseObject");
-    }
-    #endregion
-    #endregion
-    #endregion
+        public PdfDirectObject NamedBaseObject
+        {
+            get
+            { return RetrieveNamedBaseObject(); }
+        }
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    protected Rendition(
-      Document context,
-      PdfName subtype
-      ) : base(
-        context,
-        new PdfDictionary(
-          new PdfName[]
-          {
-            PdfName.Type,
-            PdfName.S
-          },
-          new PdfDirectObject[]
-          {
-            PdfName.Rendition,
-            subtype
-          }
+        #region protected
+        protected override PdfString RetrieveName(
           )
-        )
-    {}
-
-    protected Rendition(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the preferred options the renderer should attempt to honor without affecting
-      its viability [PDF:1.7:9.1.1].</summary>
-    */
-    public Viability Preferences
-    {
-      get
-      {return new Viability(BaseDataObject.Get<PdfDictionary>(PdfName.BE));}
-      set
-      {BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);}
+        {
+            /*
+              NOTE: A rendition dictionary is not required to have a name tree entry. When it does, the
+              viewer application should ensure that the name specified in the tree is kept the same as the
+              value of the N entry (for example, if the user interface allows the name to be changed).
+            */
+            return (PdfString)BaseDataObject[PdfName.N];
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    /**
-      <summary>Gets/Sets the minimum requirements the renderer must honor in order to be considered
-      viable [PDF:1.7:9.1.1].</summary>
-    */
-    public Viability Requirements
-    {
-      get
-      {return new Viability(BaseDataObject.Get<PdfDictionary>(PdfName.MH));}
-      set
-      {BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);}
-    }
-
-    #region IPdfNamedObjectWrapper
-    public PdfString Name
-    {
-      get
-      {return RetrieveName();}
-    }
-
-    public PdfDirectObject NamedBaseObject
-    {
-      get
-      {return RetrieveNamedBaseObject();}
-    }
-    #endregion
-    #endregion
-
-    #region protected
-    protected override PdfString RetrieveName(
-      )
-    {
-      /*
-        NOTE: A rendition dictionary is not required to have a name tree entry. When it does, the
-        viewer application should ensure that the name specified in the tree is kept the same as the
-        value of the N entry (for example, if the user interface allows the name to be changed).
-      */
-      return (PdfString)BaseDataObject[PdfName.N];
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

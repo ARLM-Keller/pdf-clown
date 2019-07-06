@@ -30,64 +30,64 @@ using System;
 
 namespace org.pdfclown.documents.interaction.navigation.document
 {
-  /**
-    <summary>Local interaction target [PDF:1.6:8.2.1].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class LocalDestination
-    : Destination
-  {
-    #region dynamic
-    #region constructors
-    public LocalDestination(
-      Page page
-      ) : this(
-        page,
-        ModeEnum.Fit,
-        null,
-        null
-        )
-    {}
-
-    public LocalDestination(
-      Page page,
-      ModeEnum mode,
-      object location,
-      double? zoom
-      ) : base(
-        page.Document,
-        page,
-        mode,
-        location,
-        zoom
-        )
-    {}
-
-    internal LocalDestination(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets/Sets the target page.</summary>
+      <summary>Local interaction target [PDF:1.6:8.2.1].</summary>
     */
-    public override object Page
+    [PDF(VersionEnum.PDF10)]
+    public sealed class LocalDestination
+      : Destination
     {
-      get
-      {return documents.Page.Wrap(BaseDataObject[0]);}
-      set
-      {
-        if(!(value is Page))
-          throw new ArgumentException("It MUST be a Page object.");
+        #region dynamic
+        #region constructors
+        public LocalDestination(
+          Page page
+          ) : this(
+            page,
+            ModeEnum.Fit,
+            null,
+            null
+            )
+        { }
 
-        BaseDataObject[0] = ((Page)value).BaseObject;
-      }
+        public LocalDestination(
+          Page page,
+          ModeEnum mode,
+          object location,
+          double? zoom
+          ) : base(
+            page.Document,
+            page,
+            mode,
+            location,
+            zoom
+            )
+        { }
+
+        internal LocalDestination(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the target page.</summary>
+        */
+        public override object Page
+        {
+            get
+            { return documents.Page.Wrap(BaseDataObject[0]); }
+            set
+            {
+                if (!(value is Page))
+                    throw new ArgumentException("It MUST be a Page object.");
+
+                BaseDataObject[0] = ((Page)value).BaseObject;
+            }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

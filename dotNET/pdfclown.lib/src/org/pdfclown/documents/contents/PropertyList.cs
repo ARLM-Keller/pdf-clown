@@ -33,57 +33,57 @@ using System;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Private information meaningful to the program (application or plugin extension)
-    creating the marked content [PDF:1.6:10.5.1].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public class PropertyList
-    : PdfObjectWrapper<PdfDictionary>
-  {
-    #region static
-    #region interface
-    #region public
     /**
-      <summary>Wraps the specified base object into a property list object.</summary>
-      <param name="baseObject">Base object of a property list object.</param>
-      <returns>Property list object corresponding to the base object.</returns>
+      <summary>Private information meaningful to the program (application or plugin extension)
+      creating the marked content [PDF:1.6:10.5.1].</summary>
     */
-    public static PropertyList Wrap(
-      PdfDirectObject baseObject
-      )
+    [PDF(VersionEnum.PDF12)]
+    public class PropertyList
+      : PdfObjectWrapper<PdfDictionary>
     {
-      if(baseObject == null)
-        return null;
+        #region static
+        #region interface
+        #region public
+        /**
+          <summary>Wraps the specified base object into a property list object.</summary>
+          <param name="baseObject">Base object of a property list object.</param>
+          <returns>Property list object corresponding to the base object.</returns>
+        */
+        public static PropertyList Wrap(
+          PdfDirectObject baseObject
+          )
+        {
+            if (baseObject == null)
+                return null;
 
-      PdfName type = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.Type];
-      if(Layer.TypeName.Equals(type))
-        return Layer.Wrap(baseObject);
-      else if(LayerMembership.TypeName.Equals(type))
-        return LayerMembership.Wrap(baseObject);
-      else
-        return new PropertyList(baseObject);
+            PdfName type = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.Type];
+            if (Layer.TypeName.Equals(type))
+                return Layer.Wrap(baseObject);
+            else if (LayerMembership.TypeName.Equals(type))
+                return LayerMembership.Wrap(baseObject);
+            else
+                return new PropertyList(baseObject);
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public PropertyList(
+          Document context,
+          PdfDictionary baseDataObject
+          ) : base(context, baseDataObject)
+        { }
+
+        protected PropertyList(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public PropertyList(
-      Document context,
-      PdfDictionary baseDataObject
-      ) : base(context, baseDataObject)
-    {}
-
-    protected PropertyList(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #endregion
-    #endregion
-  }
 }

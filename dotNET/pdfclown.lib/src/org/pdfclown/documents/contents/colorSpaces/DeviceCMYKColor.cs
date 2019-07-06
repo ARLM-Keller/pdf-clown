@@ -30,123 +30,123 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-  /**
-    <summary>Device Cyan-Magenta-Yellow-Key color value [PDF:1.6:4.5.3].</summary>
-    <remarks>The 'Key' component is renamed 'Black' to avoid semantic
-    ambiguities.</remarks>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class DeviceCMYKColor
-    : DeviceColor
-  {
-    #region static
-    #region fields
-    public static readonly DeviceCMYKColor Black = new DeviceCMYKColor(0,0,0,1);
-    public static readonly DeviceCMYKColor White = new DeviceCMYKColor(0,0,0,0);
-
-    public static readonly DeviceCMYKColor Default = Black;
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the color corresponding to the specified components.</summary>
-      <param name="components">Color components to convert.</param>
+      <summary>Device Cyan-Magenta-Yellow-Key color value [PDF:1.6:4.5.3].</summary>
+      <remarks>The 'Key' component is renamed 'Black' to avoid semantic
+      ambiguities.</remarks>
     */
-    public static new DeviceCMYKColor Get(
-      PdfArray components
-      )
+    [PDF(VersionEnum.PDF11)]
+    public sealed class DeviceCMYKColor
+      : DeviceColor
     {
-      return (components != null
-        ? new DeviceCMYKColor(components)
-        : Default
-        );
-    }
-    #endregion
-    #endregion
-    #endregion
+        #region static
+        #region fields
+        public static readonly DeviceCMYKColor Black = new DeviceCMYKColor(0, 0, 0, 1);
+        public static readonly DeviceCMYKColor White = new DeviceCMYKColor(0, 0, 0, 0);
 
-    #region dynamic
-    #region constructors
-    public DeviceCMYKColor(
-      double c,
-      double m,
-      double y,
-      double k
-      ) : this(
-        new List<PdfDirectObject>(
-          new PdfDirectObject[]
-          {
+        public static readonly DeviceCMYKColor Default = Black;
+        #endregion
+
+        #region interface
+        #region public
+        /**
+          <summary>Gets the color corresponding to the specified components.</summary>
+          <param name="components">Color components to convert.</param>
+        */
+        public static new DeviceCMYKColor Get(
+          PdfArray components
+          )
+        {
+            return (components != null
+              ? new DeviceCMYKColor(components)
+              : Default
+              );
+        }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public DeviceCMYKColor(
+          double c,
+          double m,
+          double y,
+          double k
+          ) : this(
+            new List<PdfDirectObject>(
+              new PdfDirectObject[]
+              {
             PdfReal.Get(NormalizeComponent(c)),
             PdfReal.Get(NormalizeComponent(m)),
             PdfReal.Get(NormalizeComponent(y)),
             PdfReal.Get(NormalizeComponent(k))
-          }
-        )
-      )
-    {}
+              }
+            )
+          )
+        { }
 
-    internal DeviceCMYKColor(
-      IList<PdfDirectObject> components
-      ) : base(
-        DeviceCMYKColorSpace.Default,
-        new PdfArray(components)
-        )
-    {}
-    #endregion
+        internal DeviceCMYKColor(
+          IList<PdfDirectObject> components
+          ) : base(
+            DeviceCMYKColorSpace.Default,
+            new PdfArray(components)
+            )
+        { }
+        #endregion
 
-    #region interface
-    #region public
-    /**
-      <summary>Gets/Sets the cyan component.</summary>
-    */
-    public double C
-    {
-      get
-      {return GetComponentValue(0);}
-      set
-      {SetComponentValue(0, value);}
+        #region interface
+        #region public
+        /**
+          <summary>Gets/Sets the cyan component.</summary>
+        */
+        public double C
+        {
+            get
+            { return GetComponentValue(0); }
+            set
+            { SetComponentValue(0, value); }
+        }
+
+        public override object Clone(
+          Document context
+          )
+        { throw new NotImplementedException(); }
+
+        /**
+          <summary>Gets/Sets the black (key) component.</summary>
+        */
+        public double K
+        {
+            get
+            { return GetComponentValue(3); }
+            set
+            { SetComponentValue(3, value); }
+        }
+
+        /**
+          <summary>Gets/Sets the magenta component.</summary>
+        */
+        public double M
+        {
+            get
+            { return GetComponentValue(1); }
+            set
+            { SetComponentValue(1, value); }
+        }
+
+        /**
+          <summary>Gets/Sets the yellow component.</summary>
+        */
+        public double Y
+        {
+            get
+            { return GetComponentValue(2); }
+            set
+            { SetComponentValue(2, value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-
-    public override object Clone(
-      Document context
-      )
-    {throw new NotImplementedException();}
-
-    /**
-      <summary>Gets/Sets the black (key) component.</summary>
-    */
-    public double K
-    {
-      get
-      {return GetComponentValue(3);}
-      set
-      {SetComponentValue(3, value);}
-    }
-
-    /**
-      <summary>Gets/Sets the magenta component.</summary>
-    */
-    public double M
-    {
-      get
-      {return GetComponentValue(1);}
-      set
-      {SetComponentValue(1, value);}
-    }
-
-    /**
-      <summary>Gets/Sets the yellow component.</summary>
-    */
-    public double Y
-    {
-      get
-      {return GetComponentValue(2);}
-      set
-      {SetComponentValue(2, value);}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

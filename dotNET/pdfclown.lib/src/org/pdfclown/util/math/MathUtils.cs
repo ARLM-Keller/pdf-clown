@@ -27,19 +27,19 @@ using System;
 
 namespace org.pdfclown.util.math
 {
-  /**
-    <summary>Mathematic utilities.</summary>
-  */
-  public static class MathUtils
-  {
-    public static double ToDegrees(
-      double radians
-      )
-    {return 180 / Math.PI * radians;}
+    /**
+      <summary>Mathematic utilities.</summary>
+    */
+    public static class MathUtils
+    {
+        public static double ToDegrees(
+          double radians
+          )
+        { return 180 / Math.PI * radians; }
 
-    public static double ToRadians(
-      double degrees
-      )
-    {return degrees * Math.PI / 180;}
-  }
+        public static double ToRadians(
+          double degrees
+          )
+        { return degrees * Math.PI / 180; }
+    }
 }

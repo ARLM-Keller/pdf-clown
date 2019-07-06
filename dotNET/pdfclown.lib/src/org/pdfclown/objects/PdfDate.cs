@@ -32,119 +32,120 @@ using System.Text;
 
 namespace org.pdfclown.objects
 {
-  /**
-    <summary>PDF date object [PDF:1.6:3.8.3].</summary>
-  */
-  public sealed class PdfDate
-    : PdfString
-  {
-    #region static
-    #region fields
-    private const string FormatString = "yyyyMMddHHmmsszzz";
-    #endregion
-
-    #region interface
-    #region public
     /**
-      <summary>Gets the object equivalent to the given value.</summary>
+      <summary>PDF date object [PDF:1.6:3.8.3].</summary>
     */
-    public static PdfDate Get(
-      DateTime? value
-      )
-    {return value.HasValue ? new PdfDate(value.Value) : null;}
-
-    /**
-      <summary>Converts a PDF date literal into its corresponding date.</summary>
-      <exception cref="org.pdfclown.util.parsers.ParseException">Thrown when date literal parsing fails.</exception>
-    */
-    public static DateTime ToDate(
-      string value
-      )
+    public sealed class PdfDate
+      : PdfString
     {
-      // 1. Normalization.
-      StringBuilder dateBuilder = new StringBuilder();
-      try
-      {
-        int length = value.Length;
-        // Year (YYYY).
-        dateBuilder.Append(value.Substring(2, 4)); // NOTE: Skips the "D:" prefix; Year is mandatory.
-        // Month (MM).
-        dateBuilder.Append(length < 8 ? "01" : value.Substring(6, 2));
-        // Day (DD).
-        dateBuilder.Append(length < 10 ? "01" : value.Substring(8, 2));
-        // Hour (HH).
-        dateBuilder.Append(length < 12 ? "00" : value.Substring(10, 2));
-        // Minute (mm).
-        dateBuilder.Append(length < 14 ? "00" : value.Substring(12, 2));
-        // Second (SS).
-        dateBuilder.Append(length < 16 ? "00" : value.Substring(14, 2));
-        // Local time / Universal Time relationship (O).
-        dateBuilder.Append(length < 17 || value.Substring(16, 1).Equals("Z") ? "+" : value.Substring(16, 1));
-        // UT Hour offset (HH').
-        dateBuilder.Append(length < 19 ? "00" : value.Substring(17, 2));
-        // UT Minute offset (mm').
-        dateBuilder.Append(":").Append(length < 22 ? "00" : value.Substring(20, 2));
-      }
-      catch(Exception exception)
-      {throw new ParseException("Failed to normalize the date string.", exception);}
+        #region static
+        #region fields
+        private const string FormatString = "yyyyMMddHHmmsszzz";
+        #endregion
 
-      // 2. Parsing.
-      try
-      {
-        return DateTime.ParseExact(
-          dateBuilder.ToString(),
-          FormatString,
-          new CultureInfo("en-US")
-          );
-      }
-      catch(Exception exception)
-      {throw new ParseException("Failed to parse the date string.", exception);}
+        #region interface
+        #region public
+        /**
+          <summary>Gets the object equivalent to the given value.</summary>
+        */
+        public static PdfDate Get(
+          DateTime? value
+          )
+        { return value.HasValue ? new PdfDate(value.Value) : null; }
+
+        /**
+          <summary>Converts a PDF date literal into its corresponding date.</summary>
+          <exception cref="org.pdfclown.util.parsers.ParseException">Thrown when date literal parsing fails.</exception>
+        */
+        public static DateTime ToDate(
+          string value
+          )
+        {
+            // 1. Normalization.
+            StringBuilder dateBuilder = new StringBuilder();
+            try
+            {
+                int length = value.Length;
+                // Year (YYYY).
+                dateBuilder.Append(value.Substring(2, 4)); // NOTE: Skips the "D:" prefix; Year is mandatory.
+                                                           // Month (MM).
+                dateBuilder.Append(length < 8 ? "01" : value.Substring(6, 2));
+                // Day (DD).
+                dateBuilder.Append(length < 10 ? "01" : value.Substring(8, 2));
+                // Hour (HH).
+                dateBuilder.Append(length < 12 ? "00" : value.Substring(10, 2));
+                // Minute (mm).
+                dateBuilder.Append(length < 14 ? "00" : value.Substring(12, 2));
+                // Second (SS).
+                dateBuilder.Append(length < 16 ? "00" : value.Substring(14, 2));
+                // Local time / Universal Time relationship (O).
+                dateBuilder.Append(length < 17 || value.Substring(16, 1).Equals("Z") ? "+" : value.Substring(16, 1));
+                // UT Hour offset (HH').
+                dateBuilder.Append(length < 19 ? "00" : value.Substring(17, 2));
+                // UT Minute offset (mm').
+                dateBuilder.Append(":").Append(length < 22 ? "00" : value.Substring(20, 2));
+            }
+            catch (Exception exception)
+            { throw new ParseException("Failed to normalize the date string.", exception); }
+
+            // 2. Parsing.
+            try
+            {
+                return DateTime.ParseExact(
+                  dateBuilder.ToString(),
+                  FormatString,
+                  new CultureInfo("en-US")
+                  );
+            }
+            catch (Exception exception)
+            { throw new ParseException("Failed to parse the date string.", exception); }
+        }
+        #endregion
+
+        #region private
+        private static string Format(
+          DateTime value
+          )
+        { return ("D:" + value.ToString(FormatString).Replace(':', '\'') + "'"); }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public PdfDate(
+          DateTime value
+          )
+        { Value = value; }
+        #endregion
+
+        #region interface
+        #region public
+        public override PdfObject Accept(
+          IVisitor visitor,
+          object data
+          )
+        { return visitor.Visit(this, data); }
+
+        public override SerializationModeEnum SerializationMode
+        {
+            get
+            { return base.SerializationMode; }
+            set
+            {/* NOOP: Serialization MUST be kept literal. */}
+        }
+
+        public override object Value
+        {
+            get
+            // FIXME: proper call to base.StringValue could NOT be done due to an unexpected Mono runtime SIGSEGV (TOO BAD).
+            //            {return ToDate(base.StringValue);}
+            { return ToDate((string)base.Value); }
+            protected set
+            { RawValue = tokens::Encoding.Pdf.Encode(Format((DateTime)value)); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-
-    #region private
-    private static string Format(
-      DateTime value
-      )
-    {return ("D:" + value.ToString(FormatString).Replace(':','\'') + "'");}
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public PdfDate(
-      DateTime value
-      )
-    {Value = value;}
-    #endregion
-
-    #region interface
-    #region public
-    public override PdfObject Accept(
-      IVisitor visitor,
-      object data
-      )
-    {return visitor.Visit(this, data);}
-
-    public override SerializationModeEnum SerializationMode {
-      get
-      {return base.SerializationMode;}
-      set
-      {/* NOOP: Serialization MUST be kept literal. */}
-    }
-
-    public override object Value
-    {
-      get
-      // FIXME: proper call to base.StringValue could NOT be done due to an unexpected Mono runtime SIGSEGV (TOO BAD).
-//            {return ToDate(base.StringValue);}
-      {return ToDate((string)base.Value);}
-      protected set
-      {RawValue = tokens::Encoding.Pdf.Encode(Format((DateTime)value));}
-    }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

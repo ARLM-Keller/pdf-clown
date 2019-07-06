@@ -36,198 +36,198 @@ using System.Reflection;
 
 namespace org.pdfclown.documents.contents.fonts
 {
-  /**
-    <summary>Standard Type 1 font [PDF:1.6:5.5.1].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class StandardType1Font
-    : Type1Font
-  {
-    #region types
     /**
-      <summary>Standard Type 1 font families [PDF:1.6:5.5.1].</summary>
+      <summary>Standard Type 1 font [PDF:1.6:5.5.1].</summary>
     */
-    public enum FamilyEnum
+    [PDF(VersionEnum.PDF10)]
+    public sealed class StandardType1Font
+      : Type1Font
     {
-      Courier,
-      Helvetica,
-      Times,
-      Symbol,
-      ZapfDingbats
-    };
-    #endregion
-
-    #region static
-    #region interface
-    #region private
-    private static bool IsSymbolic(
-      FamilyEnum value
-      )
-    {
-      switch(value)
-      {
-        case FamilyEnum.Courier:
-        case FamilyEnum.Helvetica:
-        case FamilyEnum.Times:
-          return false;
-        case FamilyEnum.Symbol:
-        case FamilyEnum.ZapfDingbats:
-          return true;
-        default:
-          throw new NotImplementedException();
-      }
-    }
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public StandardType1Font(
-      Document context,
-      FamilyEnum family,
-      bool bold,
-      bool italic
-      ) : base(context)
-    {
-      string fontName = family.ToString();
-      switch(family)
-      {
-        case(FamilyEnum.Symbol):
-        case(FamilyEnum.ZapfDingbats):
-          break;
-        case(FamilyEnum.Times):
-          if(bold)
-          {
-            fontName += "-Bold";
-            if(italic)
-            {fontName += "Italic";}
-          }
-          else if(italic)
-          {fontName += "-Italic";}
-          else
-          {fontName += "-Roman";}
-          break;
-        default:
-          if(bold)
-          {
-            fontName += "-Bold";
-            if(italic)
-            {fontName += "Oblique";}
-          }
-          else if(italic)
-          {fontName += "-Oblique";}
-          break;
-      }
-      PdfName encodingName = (IsSymbolic(family) ? null : PdfName.WinAnsiEncoding);
-
-      Create(fontName,encodingName);
-    }
-
-    internal StandardType1Font(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override double Ascent
-    {
-      get
-      {return metrics.Ascender;}
-    }
-
-    public override double Descent
-    {
-      get
-      {return metrics.Descender;}
-    }
-
-    public override FlagsEnum Flags
-    {
-      //TODO:IMPL!!!
-      get
-      {return 0;}
-    }
-    #endregion
-
-    #region protected
-    protected override IDictionary<ByteArray,int> GetBaseEncoding(
-      PdfName encodingName
-      )
-    {
-      if(encodingName == null && Symbolic)
-      {
-        /*
-          NOTE: Symbolic standard fonts use custom encodings.
+        #region types
+        /**
+          <summary>Standard Type 1 font families [PDF:1.6:5.5.1].</summary>
         */
-        encodingName = (PdfName)BaseDataObject[PdfName.BaseFont];
-      }
-      return base.GetBaseEncoding(encodingName);
-    }
-
-    protected override void OnLoad(
-      )
-    {
-      /*
-        NOTE: Standard Type 1 fonts ordinarily omit their descriptor;
-        otherwise, when overridden they degrade to a common Type 1 font.
-        Metrics of non-overridden Standard Type 1 fonts MUST be loaded from resources.
-      */
-      Load(((PdfName)BaseDataObject[PdfName.BaseFont]).StringValue);
-
-      base.OnLoad();
-    }
-    #endregion
-
-    #region private
-    /**
-      <summary>Creates the font structures.</summary>
-    */
-    private void Create(
-      string fontName,
-      PdfName encodingName
-      )
-    {
-      /*
-        NOTE: Standard Type 1 fonts SHOULD omit extended font descriptions [PDF:1.6:5.5.1].
-      */
-      // Subtype.
-      BaseDataObject[PdfName.Subtype] = PdfName.Type1;
-      // BaseFont.
-      BaseDataObject[PdfName.BaseFont] = new PdfName(fontName);
-      // Encoding.
-      if(encodingName != null)
-      {BaseDataObject[PdfName.Encoding] = encodingName;}
-
-      Load();
-    }
-
-    /**
-      <summary>Loads the font metrics.</summary>
-    */
-    private void Load(
-      string fontName
-      )
-    {
-      try
-      {
-        using(var fontMetricsStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("fonts.afm." + fontName))
+        public enum FamilyEnum
         {
-          AfmParser parser = new AfmParser(new bytes::Stream(fontMetricsStream));
-          metrics = parser.Metrics;
-          symbolic = metrics.IsCustomEncoding;
-          glyphIndexes = parser.GlyphIndexes;
-          glyphKernings = parser.GlyphKernings;
-          glyphWidths = parser.GlyphWidths;
+            Courier,
+            Helvetica,
+            Times,
+            Symbol,
+            ZapfDingbats
+        };
+        #endregion
+
+        #region static
+        #region interface
+        #region private
+        private static bool IsSymbolic(
+          FamilyEnum value
+          )
+        {
+            switch (value)
+            {
+                case FamilyEnum.Courier:
+                case FamilyEnum.Helvetica:
+                case FamilyEnum.Times:
+                    return false;
+                case FamilyEnum.Symbol:
+                case FamilyEnum.ZapfDingbats:
+                    return true;
+                default:
+                    throw new NotImplementedException();
+            }
         }
-      }
-      catch(Exception e)
-      {throw new Exception(String.Format("Failed to load '{0}'", fontName), e);}
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public StandardType1Font(
+          Document context,
+          FamilyEnum family,
+          bool bold,
+          bool italic
+          ) : base(context)
+        {
+            string fontName = family.ToString();
+            switch (family)
+            {
+                case (FamilyEnum.Symbol):
+                case (FamilyEnum.ZapfDingbats):
+                    break;
+                case (FamilyEnum.Times):
+                    if (bold)
+                    {
+                        fontName += "-Bold";
+                        if (italic)
+                        { fontName += "Italic"; }
+                    }
+                    else if (italic)
+                    { fontName += "-Italic"; }
+                    else
+                    { fontName += "-Roman"; }
+                    break;
+                default:
+                    if (bold)
+                    {
+                        fontName += "-Bold";
+                        if (italic)
+                        { fontName += "Oblique"; }
+                    }
+                    else if (italic)
+                    { fontName += "-Oblique"; }
+                    break;
+            }
+            PdfName encodingName = (IsSymbolic(family) ? null : PdfName.WinAnsiEncoding);
+
+            Create(fontName, encodingName);
+        }
+
+        internal StandardType1Font(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override double Ascent
+        {
+            get
+            { return metrics.Ascender; }
+        }
+
+        public override double Descent
+        {
+            get
+            { return metrics.Descender; }
+        }
+
+        public override FlagsEnum Flags
+        {
+            //TODO:IMPL!!!
+            get
+            { return 0; }
+        }
+        #endregion
+
+        #region protected
+        protected override IDictionary<ByteArray, int> GetBaseEncoding(
+          PdfName encodingName
+          )
+        {
+            if (encodingName == null && Symbolic)
+            {
+                /*
+                  NOTE: Symbolic standard fonts use custom encodings.
+                */
+                encodingName = (PdfName)BaseDataObject[PdfName.BaseFont];
+            }
+            return base.GetBaseEncoding(encodingName);
+        }
+
+        protected override void OnLoad(
+          )
+        {
+            /*
+              NOTE: Standard Type 1 fonts ordinarily omit their descriptor;
+              otherwise, when overridden they degrade to a common Type 1 font.
+              Metrics of non-overridden Standard Type 1 fonts MUST be loaded from resources.
+            */
+            Load(((PdfName)BaseDataObject[PdfName.BaseFont]).StringValue);
+
+            base.OnLoad();
+        }
+        #endregion
+
+        #region private
+        /**
+          <summary>Creates the font structures.</summary>
+        */
+        private void Create(
+          string fontName,
+          PdfName encodingName
+          )
+        {
+            /*
+              NOTE: Standard Type 1 fonts SHOULD omit extended font descriptions [PDF:1.6:5.5.1].
+            */
+            // Subtype.
+            BaseDataObject[PdfName.Subtype] = PdfName.Type1;
+            // BaseFont.
+            BaseDataObject[PdfName.BaseFont] = new PdfName(fontName);
+            // Encoding.
+            if (encodingName != null)
+            { BaseDataObject[PdfName.Encoding] = encodingName; }
+
+            Load();
+        }
+
+        /**
+          <summary>Loads the font metrics.</summary>
+        */
+        private void Load(
+          string fontName
+          )
+        {
+            try
+            {
+                using (var fontMetricsStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("fonts.afm." + fontName))
+                {
+                    AfmParser parser = new AfmParser(new bytes::Stream(fontMetricsStream));
+                    metrics = parser.Metrics;
+                    symbolic = metrics.IsCustomEncoding;
+                    glyphIndexes = parser.GlyphIndexes;
+                    glyphKernings = parser.GlyphKernings;
+                    glyphWidths = parser.GlyphWidths;
+                }
+            }
+            catch (Exception e)
+            { throw new Exception(String.Format("Failed to load '{0}'", fontName), e); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

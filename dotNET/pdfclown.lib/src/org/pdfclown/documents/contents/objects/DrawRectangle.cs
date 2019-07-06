@@ -27,105 +27,72 @@ using org.pdfclown.bytes;
 using org.pdfclown.objects;
 
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Append a rectangle to the current path as a complete subpath' operation
-    [PDF:1.6:4.4.1].</summary>
-  */
-  [PDF(VersionEnum.PDF10)]
-  public sealed class DrawRectangle
-    : Operation
-  {
-    #region static
-    #region fields
-    public static readonly string OperatorKeyword = "re";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public DrawRectangle(
-      double x,
-      double y,
-      double width,
-      double height
-      ) : base(
-        OperatorKeyword,
-        new List<PdfDirectObject>(
-          new PdfDirectObject[]
-          {
-            PdfReal.Get(x),
-            PdfReal.Get(y),
-            PdfReal.Get(width),
-            PdfReal.Get(height)
-          }
-          )
-        )
-    {}
-
-    public DrawRectangle(
-      IList<PdfDirectObject> operands
-      ) : base(OperatorKeyword,operands)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public double Height
+    /**
+      <summary>'Append a rectangle to the current path as a complete subpath' operation
+      [PDF:1.6:4.4.1].</summary>
+    */
+    [PDF(VersionEnum.PDF10)]
+    public sealed class DrawRectangle
+      : Operation
     {
-      get
-      {return ((IPdfNumber)operands[3]).RawValue;}
-      set
-      {operands[3] = PdfReal.Get(value);}
-    }
+        #region static
+        #region fields
+        public static readonly string OperatorKeyword = "re";
+        #endregion
+        #endregion
 
-    public override void Scan(
-      ContentScanner.GraphicsState state
-      )
-    {
-      GraphicsPath pathObject = state.Scanner.RenderObject;
-      if(pathObject != null)
-      {
-        double x = X,
-          y = Y,
-          width = Width,
-          height = Height;
-        pathObject.AddRectangle(
-          new RectangleF((float)x, (float)y, (float)width, (float)height)
-          );
-        pathObject.CloseFigure();
-      }
-    }
+        #region dynamic
+        #region constructors
+        public DrawRectangle(double x, double y, double width, double height)
+            : base(OperatorKeyword,
+                  new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(x), PdfReal.Get(y), PdfReal.Get(width), PdfReal.Get(height) }))
+        { }
 
-    public double Width
-    {
-      get
-      {return ((IPdfNumber)operands[2]).RawValue;}
-      set
-      {operands[2] = PdfReal.Get(value);}
-    }
+        public DrawRectangle(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        { }
+        #endregion
 
-    public double X
-    {
-      get
-      {return ((IPdfNumber)operands[0]).RawValue;}
-      set
-      {operands[0] = PdfReal.Get(value);}
-    }
+        #region interface
+        #region public
+        public double Height
+        {
+            get { return ((IPdfNumber)operands[3]).RawValue; }
+            set { operands[3] = PdfReal.Get(value); }
+        }
 
-    public double Y
-    {
-      get
-      {return ((IPdfNumber)operands[1]).RawValue;}
-      set
-      {operands[1] = PdfReal.Get(value);}
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            var pathObject = state.Scanner.RenderObject;
+            if (pathObject != null)
+            {
+                pathObject.AddRect(SKRect.Create((float)X, (float)Y, (float)Width, (float)Height));
+                pathObject.Close();
+            }
+        }
+
+        public double Width
+        {
+            get { return ((IPdfNumber)operands[2]).RawValue; }
+            set { operands[2] = PdfReal.Get(value); }
+        }
+
+        public double X
+        {
+            get { return ((IPdfNumber)operands[0]).RawValue; }
+            set { operands[0] = PdfReal.Get(value); }
+        }
+
+        public double Y
+        {
+            get { return ((IPdfNumber)operands[1]).RawValue; }
+            set { operands[1] = PdfReal.Get(value); }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

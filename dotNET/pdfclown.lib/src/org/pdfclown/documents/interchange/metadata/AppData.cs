@@ -31,63 +31,63 @@ using System;
 
 namespace org.pdfclown.documents.interchange.metadata
 {
-  /**
-    <summary>Private application data dictionary [PDF:1.7:10.4].</summary>
-  */
-  [PDF(VersionEnum.PDF13)]
-  public class AppData
-    : PdfObjectWrapper<PdfDictionary>
-  {
-    #region static
-    #region interface
-    internal static AppData Wrap(
-      PdfDirectObject baseObject
-      )
-    {return baseObject != null ? new AppData(baseObject) : null;}
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    internal AppData(
-      Document context
-      ) : base(context, new PdfDictionary())
-    {}
-
-    private AppData(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-
-    #region interface
     /**
-      <summary>Gets/Sets the private data associated to the application.</summary>
-      <remarks>It can be any type, although dictionary is its typical form.</remarks>
+      <summary>Private application data dictionary [PDF:1.7:10.4].</summary>
     */
-    public PdfDataObject Data
+    [PDF(VersionEnum.PDF13)]
+    public class AppData
+      : PdfObjectWrapper<PdfDictionary>
     {
-      get
-      {return BaseDataObject[PdfName.Private];}
-      set
-      {BaseDataObject[PdfName.Private] = PdfObject.Unresolve(value);}
-    }
+        #region static
+        #region interface
+        internal static AppData Wrap(
+          PdfDirectObject baseObject
+          )
+        { return baseObject != null ? new AppData(baseObject) : null; }
+        #endregion
+        #endregion
 
-    /**
-      <summary>Gets the date when the contents of the holder (<see cref="Document">document</see>,
-      <see cref="Page">page</see>, or <see cref="FormXObject">form</see>) were most recently
-      modified by this application.</summary>
-      <remarks>To update it, use the <see cref="IAppDataHolder.Touch(PdfName)"/> method of the
-      holder.</remarks>
-    */
-    public DateTime ModificationDate
-    {
-      get
-      {return (DateTime)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.LastModified]);}
-      internal set
-      {BaseDataObject[PdfName.LastModified] = new PdfDate(value);}
+        #region dynamic
+        #region constructors
+        internal AppData(
+          Document context
+          ) : base(context, new PdfDictionary())
+        { }
+
+        private AppData(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+
+        #region interface
+        /**
+          <summary>Gets/Sets the private data associated to the application.</summary>
+          <remarks>It can be any type, although dictionary is its typical form.</remarks>
+        */
+        public PdfDataObject Data
+        {
+            get
+            { return BaseDataObject[PdfName.Private]; }
+            set
+            { BaseDataObject[PdfName.Private] = PdfObject.Unresolve(value); }
+        }
+
+        /**
+          <summary>Gets the date when the contents of the holder (<see cref="Document">document</see>,
+          <see cref="Page">page</see>, or <see cref="FormXObject">form</see>) were most recently
+          modified by this application.</summary>
+          <remarks>To update it, use the <see cref="IAppDataHolder.Touch(PdfName)"/> method of the
+          holder.</remarks>
+        */
+        public DateTime ModificationDate
+        {
+            get
+            { return (DateTime)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.LastModified]); }
+            internal set
+            { BaseDataObject[PdfName.LastModified] = new PdfDate(value); }
+        }
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-  }
 }

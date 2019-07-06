@@ -27,25 +27,25 @@ using System;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Version compatibility mode.</summary>
-  */
-  public enum CompatibilityModeEnum
-  {
     /**
-      <summary>Document's conformance version is ignored; any feature is accepted without checking
-      its compatibility.</summary>
+      <summary>Version compatibility mode.</summary>
     */
-    Passthrough,
-    /**
-      <summary>Document's conformance version is automatically updated to support used features.
-      </summary>
-    */
-    Loose,
-    /**
-      <summary>Document's conformance version is mandatory; any unsupported feature is forbidden
-      and causes an exception to be thrown in case of attempted use.</summary>
-    */
-    Strict
-  }
+    public enum CompatibilityModeEnum
+    {
+        /**
+          <summary>Document's conformance version is ignored; any feature is accepted without checking
+          its compatibility.</summary>
+        */
+        Passthrough,
+        /**
+          <summary>Document's conformance version is automatically updated to support used features.
+          </summary>
+        */
+        Loose,
+        /**
+          <summary>Document's conformance version is mandatory; any unsupported feature is forbidden
+          and causes an exception to be thrown in case of attempted use.</summary>
+        */
+        Strict
+    }
 }

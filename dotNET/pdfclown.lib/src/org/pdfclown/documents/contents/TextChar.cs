@@ -25,63 +25,55 @@
 
 using org.pdfclown.objects;
 
-using System.Drawing;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents
 {
-  /**
-    <summary>Text character.</summary>
-    <remarks>It describes a text element extracted from content streams.</remarks>
-  */
-  public sealed class TextChar
-  {
-    #region dynamic
-    #region fields
-    private readonly RectangleF box;
-    private readonly TextStyle style;
-    private readonly char value;
-    private readonly bool virtual_;
-    #endregion
-
-    #region constructors
-    public TextChar(
-      char value,
-      RectangleF box,
-      TextStyle style,
-      bool virtual_
-      )
+    /**
+      <summary>Text character.</summary>
+      <remarks>It describes a text element extracted from content streams.</remarks>
+    */
+    public sealed class TextChar
     {
-      this.value = value;
-      this.box = box;
-      this.style = style;
-      this.virtual_ = virtual_;
+        #region dynamic
+        #region fields
+        private readonly SKRect box;
+        private readonly TextStyle style;
+        private readonly char value;
+        private readonly bool virtual_;
+        #endregion
+
+        #region constructors
+        public TextChar(char value, SKRect box, TextStyle style, bool virtual_)
+        {
+            this.value = value;
+            this.box = box;
+            this.style = style;
+            this.virtual_ = virtual_;
+        }
+        #endregion
+
+        #region interface
+        #region public
+        public SKRect Box
+        { get { return box; } }
+
+        public bool Contains(char value)
+        { return this.value == value; }
+
+        public TextStyle Style
+        { get { return style; } }
+
+        public override string ToString()
+        { return Value.ToString(); }
+
+        public char Value
+        { get { return value; } }
+
+        public bool Virtual
+        { get { return virtual_; } }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-
-    #region interface
-    #region public
-    public RectangleF Box
-    {get{return box;}}
-
-    public bool Contains(
-      char value
-      )
-    {return this.value == value;}
-
-    public TextStyle Style
-    {get{return style;}}
-
-    public override string ToString(
-      )
-    {return Value.ToString();}
-
-    public char Value
-    {get{return value;}}
-
-    public bool Virtual
-    {get{return virtual_;}}
-    #endregion
-    #endregion
-    #endregion
-  }
 }

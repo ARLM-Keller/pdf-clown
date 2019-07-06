@@ -28,55 +28,55 @@ using System;
 
 namespace org.pdfclown.tokens
 {
-  /**
-    <summary>Adobe standard Latin character set [PDF:1.7:D].</summary>
-  */
-  public class LatinEncoding
-    : Encoding
-  {
-    #region dynamic
-    #region fields
     /**
-      <summary>Code-to-Unicode map.</summary>
+      <summary>Adobe standard Latin character set [PDF:1.7:D].</summary>
     */
-    protected BiDictionary<int,char> chars;
-    #endregion
-
-    #region interface
-    public override string Decode(
-      byte[] value
-      )
-    {return Decode(value, 0, value.Length);}
-
-    public override string Decode(
-      byte[] value,
-      int index,
-      int length
-      )
+    public class LatinEncoding
+      : Encoding
     {
-      char[] stringChars = new char[length];
-      for(int decodeIndex = index, decodeLength = length + index; decodeIndex < decodeLength; decodeIndex++)
-      {stringChars[decodeIndex - index] = chars[value[decodeIndex] & 0xff];}
-      return new String(stringChars);
-    }
+        #region dynamic
+        #region fields
+        /**
+          <summary>Code-to-Unicode map.</summary>
+        */
+        protected BiDictionary<int, char> chars;
+        #endregion
 
-    public override byte[] Encode(
-      string value
-      )
-    {
-      char[] stringChars = value.ToCharArray();
-      byte[] stringBytes = new byte[stringChars.Length];
-      for(int index = 0, length = stringChars.Length; index < length; index++)
-      {
-        int code = chars.GetKey(stringChars[index]);
-        if(code == 0) //TODO: verify whether 0 collides with valid code values.
-          return null;
+        #region interface
+        public override string Decode(
+          byte[] value
+          )
+        { return Decode(value, 0, value.Length); }
 
-        stringBytes[index] = (byte)code;
-      }
-      return stringBytes;
+        public override string Decode(
+          byte[] value,
+          int index,
+          int length
+          )
+        {
+            char[] stringChars = new char[length];
+            for (int decodeIndex = index, decodeLength = length + index; decodeIndex < decodeLength; decodeIndex++)
+            { stringChars[decodeIndex - index] = chars[value[decodeIndex] & 0xff]; }
+            return new String(stringChars);
+        }
+
+        public override byte[] Encode(
+          string value
+          )
+        {
+            char[] stringChars = value.ToCharArray();
+            byte[] stringBytes = new byte[stringChars.Length];
+            for (int index = 0, length = stringChars.Length; index < length; index++)
+            {
+                int code = chars.GetKey(stringChars[index]);
+                if (code == 0) //TODO: verify whether 0 collides with valid code values.
+                    return null;
+
+                stringBytes[index] = (byte)code;
+            }
+            return stringBytes;
+        }
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-  }
 }

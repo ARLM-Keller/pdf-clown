@@ -25,107 +25,107 @@
 
 namespace org.pdfclown.tokens
 {
-  /**
-    <summary>PDF keywords.</summary>
-  */
-  public static class Keyword
-  {
     /**
-      <summary>PDF array opening delimiter.</summary>
+      <summary>PDF keywords.</summary>
     */
-    public static readonly string BeginArray = Symbol.OpenSquareBracket.ToString();
-    /**
-      <summary>PDF comment opening delimiter.</summary>
-    */
-    public static readonly string BeginComment = Symbol.Percent.ToString();
-    /**
-      <summary>PDF dictionary opening delimiter.</summary>
-    */
-    public static readonly string BeginDictionary = Symbol.OpenAngleBracket.ToString() + Symbol.OpenAngleBracket.ToString();
-    /**
-      <summary>PDF indirect object begin.</summary>
-    */
-    public const string BeginIndirectObject = "obj";
-    /**
-      <summary>PDF literal string opening delimiter.</summary>
-    */
-    public static readonly string BeginLiteralString = Symbol.OpenRoundBracket.ToString();
-    /**
-      <summary>PDF stream data begin.</summary>
-    */
-    public const string BeginStream = "stream";
-    /**
-      <summary>PDF file begin.</summary>
-    */
-    public const string BOF = "%PDF-";
-    /**
-      <summary>PDF date marker.</summary>
-    */
-    public const string DatePrefix = "D:";
-    /**
-      <summary>PDF array closing delimiter.</summary>
-    */
-    public static readonly string EndArray = Symbol.CloseSquareBracket.ToString();
-    /**
-      <summary>PDF dictionary closing delimiter.</summary>
-    */
-    public static readonly string EndDictionary = Symbol.CloseAngleBracket.ToString() + Symbol.CloseAngleBracket.ToString();
-    /**
-      <summary>PDF indirect object end.</summary>
-    */
-    public const string EndIndirectObject = "endobj";
-    /**
-      <summary>PDF literal string closing delimiter.</summary>
-    */
-    public static readonly string EndLiteralString = Symbol.CloseRoundBracket.ToString();
-    /**
-      <summary>PDF stream data end.</summary>
-    */
-    public const string EndStream = "endstream";
-    /**
-      <summary>PDF file end.</summary>
-    */
-    public const string EOF = "%%EOF";
-    /**
-      <summary>PDF boolean false.</summary>
-    */
-    public const string False = "false";
-    /**
-      <summary>PDF free xref entry marker.</summary>
-    */
-    public const string FreeXrefEntry = "f";
-    /**
-      <summary>PDF in-use xref entry marker.</summary>
-    */
-    public const string InUseXrefEntry = "n";
-    /**
-      <summary>PDF name marker.</summary>
-    */
-    public static readonly string NamePrefix = Symbol.Slash.ToString();
-    /**
-      <summary>PDF null object.</summary>
-    */
-    public const string Null = "null";
-    /**
-      <summary>PDF indirect reference marker.</summary>
-    */
-    public static readonly string Reference = Symbol.CapitalR.ToString();
-    /**
-      <summary>PDF xref start offset.</summary>
-    */
-    public const string StartXRef = "startxref";
-    /**
-      <summary>PDF trailer begin.</summary>
-    */
-    public const string Trailer = "trailer";
-    /**
-      <summary>PDF boolean true.</summary>
-    */
-    public const string True = "true";
-    /**
-      <summary>PDF xref begin.</summary>
-    */
-    public const string XRef = "xref";
-  }
+    public static class Keyword
+    {
+        /**
+          <summary>PDF array opening delimiter.</summary>
+        */
+        public static readonly string BeginArray = Symbol.OpenSquareBracket.ToString();
+        /**
+          <summary>PDF comment opening delimiter.</summary>
+        */
+        public static readonly string BeginComment = Symbol.Percent.ToString();
+        /**
+          <summary>PDF dictionary opening delimiter.</summary>
+        */
+        public static readonly string BeginDictionary = Symbol.OpenAngleBracket.ToString() + Symbol.OpenAngleBracket.ToString();
+        /**
+          <summary>PDF indirect object begin.</summary>
+        */
+        public const string BeginIndirectObject = "obj";
+        /**
+          <summary>PDF literal string opening delimiter.</summary>
+        */
+        public static readonly string BeginLiteralString = Symbol.OpenRoundBracket.ToString();
+        /**
+          <summary>PDF stream data begin.</summary>
+        */
+        public const string BeginStream = "stream";
+        /**
+          <summary>PDF file begin.</summary>
+        */
+        public const string BOF = "%PDF-";
+        /**
+          <summary>PDF date marker.</summary>
+        */
+        public const string DatePrefix = "D:";
+        /**
+          <summary>PDF array closing delimiter.</summary>
+        */
+        public static readonly string EndArray = Symbol.CloseSquareBracket.ToString();
+        /**
+          <summary>PDF dictionary closing delimiter.</summary>
+        */
+        public static readonly string EndDictionary = Symbol.CloseAngleBracket.ToString() + Symbol.CloseAngleBracket.ToString();
+        /**
+          <summary>PDF indirect object end.</summary>
+        */
+        public const string EndIndirectObject = "endobj";
+        /**
+          <summary>PDF literal string closing delimiter.</summary>
+        */
+        public static readonly string EndLiteralString = Symbol.CloseRoundBracket.ToString();
+        /**
+          <summary>PDF stream data end.</summary>
+        */
+        public const string EndStream = "endstream";
+        /**
+          <summary>PDF file end.</summary>
+        */
+        public const string EOF = "%%EOF";
+        /**
+          <summary>PDF boolean false.</summary>
+        */
+        public const string False = "false";
+        /**
+          <summary>PDF free xref entry marker.</summary>
+        */
+        public const string FreeXrefEntry = "f";
+        /**
+          <summary>PDF in-use xref entry marker.</summary>
+        */
+        public const string InUseXrefEntry = "n";
+        /**
+          <summary>PDF name marker.</summary>
+        */
+        public static readonly string NamePrefix = Symbol.Slash.ToString();
+        /**
+          <summary>PDF null object.</summary>
+        */
+        public const string Null = "null";
+        /**
+          <summary>PDF indirect reference marker.</summary>
+        */
+        public static readonly string Reference = Symbol.CapitalR.ToString();
+        /**
+          <summary>PDF xref start offset.</summary>
+        */
+        public const string StartXRef = "startxref";
+        /**
+          <summary>PDF trailer begin.</summary>
+        */
+        public const string Trailer = "trailer";
+        /**
+          <summary>PDF boolean true.</summary>
+        */
+        public const string True = "true";
+        /**
+          <summary>PDF xref begin.</summary>
+        */
+        public const string XRef = "xref";
+    }
 }
 

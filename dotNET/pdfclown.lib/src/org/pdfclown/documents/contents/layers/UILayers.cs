@@ -29,186 +29,186 @@ using System;
 
 namespace org.pdfclown.documents.contents.layers
 {
-  /**
-    <summary>Optional content group collection.</summary>
-  */
-  [PDF(VersionEnum.PDF15)]
-  public class UILayers
-    : Array<IUILayerNode>
-  {
-    #region types
-    private delegate int EvaluateNode(
-      int currentNodeIndex,
-      int currentBaseIndex
-      );
-
-    private class ItemWrapper
-      : IWrapper<IUILayerNode>
+    /**
+      <summary>Optional content group collection.</summary>
+    */
+    [PDF(VersionEnum.PDF15)]
+    public class UILayers
+      : Array<IUILayerNode>
     {
-      public IUILayerNode Wrap(
-        PdfDirectObject baseObject
-        )
-      {return UILayerNode.Wrap(baseObject);}
-    }
-    #endregion
-
-    #region static
-    #region fields
-    private static readonly ItemWrapper Wrapper = new ItemWrapper();
-    #endregion
-
-    #region interface
-    #region public
-    public static UILayers Wrap(
-      PdfDirectObject baseObject
-      )
-    {return baseObject != null ? new UILayers(baseObject) : null;}
-    #endregion
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public UILayers(
-      Document context
-      ) : base(context, Wrapper)
-    {}
-
-    protected UILayers(
-      PdfDirectObject baseObject
-      ) : base(Wrapper, baseObject)
-    {}
-    #endregion
-
-    #region interface
-    #region public
-    public override int Count
-    {
-      get
-      {
-        return Evaluate(delegate(
+        #region types
+        private delegate int EvaluateNode(
           int currentNodeIndex,
           int currentBaseIndex
+          );
+
+        private class ItemWrapper
+          : IWrapper<IUILayerNode>
+        {
+            public IUILayerNode Wrap(
+              PdfDirectObject baseObject
+              )
+            { return UILayerNode.Wrap(baseObject); }
+        }
+        #endregion
+
+        #region static
+        #region fields
+        private static readonly ItemWrapper Wrapper = new ItemWrapper();
+        #endregion
+
+        #region interface
+        #region public
+        public static UILayers Wrap(
+          PdfDirectObject baseObject
+          )
+        { return baseObject != null ? new UILayers(baseObject) : null; }
+        #endregion
+        #endregion
+        #endregion
+
+        #region dynamic
+        #region constructors
+        public UILayers(
+          Document context
+          ) : base(context, Wrapper)
+        { }
+
+        protected UILayers(
+          PdfDirectObject baseObject
+          ) : base(Wrapper, baseObject)
+        { }
+        #endregion
+
+        #region interface
+        #region public
+        public override int Count
+        {
+            get
+            {
+                return Evaluate(delegate (
+                  int currentNodeIndex,
+                  int currentBaseIndex
+                  )
+                {
+                    if (currentBaseIndex == -1)
+                        return currentNodeIndex;
+                    else
+                        return -1;
+                }) + 1;
+            }
+        }
+
+        public override int IndexOf(
+          IUILayerNode item
+          )
+        { return GetNodeIndex(base.IndexOf(item)); }
+
+        public override void Insert(
+          int index,
+          IUILayerNode item
+          )
+        { base.Insert(GetBaseIndex(index), item); }
+
+        public override void RemoveAt(
+          int index
           )
         {
-          if(currentBaseIndex == -1)
-            return currentNodeIndex;
-          else
-            return -1;
-        }) + 1;
-      }
-    }
-
-    public override int IndexOf(
-      IUILayerNode item
-      )
-    {return GetNodeIndex(base.IndexOf(item));}
-
-    public override void Insert(
-      int index,
-      IUILayerNode item
-      )
-    {base.Insert(GetBaseIndex(index), item);}
-
-    public override void RemoveAt(
-      int index
-      )
-    {
-      int baseIndex = GetBaseIndex(index);
-      IUILayerNode removedItem = base[baseIndex];
-      base.RemoveAt(baseIndex);
-      if(removedItem is Layer
-        && baseIndex < base.Count)
-      {
-        /*
-          NOTE: Sublayers MUST be removed as well.
-        */
-        if(BaseDataObject.Resolve(baseIndex) is PdfArray)
-        {BaseDataObject.RemoveAt(baseIndex);}
-      }
-    }
-
-    public override IUILayerNode this[
-      int index
-      ]
-    {
-      get
-      {return base[GetBaseIndex(index)];}
-      set
-      {base[GetBaseIndex(index)] = value;}
-    }
-    #endregion
-
-    #region private
-    /**
-      <summary>Gets the positional information resulting from the collection evaluation.</summary>
-      <param name="evaluator">Expression used to evaluate the positional matching.</param>
-    */
-    private int Evaluate(
-      EvaluateNode evaluateNode
-      )
-    {
-      /*
-        NOTE: Layer hierarchies are represented through a somewhat flatten structure which needs
-        to be evaluated in order to match nodes in their actual place.
-      */
-      PdfArray baseDataObject = BaseDataObject;
-      int nodeIndex = -1;
-      bool groupAllowed = true;
-      for(
-        int baseIndex = 0,
-          baseLength = base.Count;
-        baseIndex < baseLength;
-        baseIndex++
-        )
-      {
-        PdfDataObject itemDataObject = baseDataObject.Resolve(baseIndex);
-        if(itemDataObject is PdfDictionary
-          || (itemDataObject is PdfArray && groupAllowed))
-        {
-          nodeIndex++;
-          int evaluation = evaluateNode(nodeIndex, baseIndex);
-          if(evaluation > -1)
-            return evaluation;
+            int baseIndex = GetBaseIndex(index);
+            IUILayerNode removedItem = base[baseIndex];
+            base.RemoveAt(baseIndex);
+            if (removedItem is Layer
+              && baseIndex < base.Count)
+            {
+                /*
+                  NOTE: Sublayers MUST be removed as well.
+                */
+                if (BaseDataObject.Resolve(baseIndex) is PdfArray)
+                { BaseDataObject.RemoveAt(baseIndex); }
+            }
         }
-        groupAllowed = !(itemDataObject is PdfDictionary);
-      }
-      return evaluateNode(nodeIndex, -1);
-    }
 
-    private int GetBaseIndex(
-      int nodeIndex
-      )
-    {
-      return Evaluate(delegate(
-        int currentNodeIndex,
-        int currentBaseIndex
-        )
-      {
-        if(currentNodeIndex == nodeIndex)
-          return currentBaseIndex;
-        else
-          return -1;
-      });
-    }
+        public override IUILayerNode this[
+          int index
+          ]
+        {
+            get
+            { return base[GetBaseIndex(index)]; }
+            set
+            { base[GetBaseIndex(index)] = value; }
+        }
+        #endregion
 
-    private int GetNodeIndex(
-      int baseIndex
-      )
-    {
-      return Evaluate(delegate(
-        int currentNodeIndex,
-        int currentBaseIndex
-        )
-      {
-        if(currentBaseIndex == baseIndex)
-          return currentNodeIndex;
-        else
-          return -1;
-      });
+        #region private
+        /**
+          <summary>Gets the positional information resulting from the collection evaluation.</summary>
+          <param name="evaluator">Expression used to evaluate the positional matching.</param>
+        */
+        private int Evaluate(
+          EvaluateNode evaluateNode
+          )
+        {
+            /*
+              NOTE: Layer hierarchies are represented through a somewhat flatten structure which needs
+              to be evaluated in order to match nodes in their actual place.
+            */
+            PdfArray baseDataObject = BaseDataObject;
+            int nodeIndex = -1;
+            bool groupAllowed = true;
+            for (
+              int baseIndex = 0,
+                baseLength = base.Count;
+              baseIndex < baseLength;
+              baseIndex++
+              )
+            {
+                PdfDataObject itemDataObject = baseDataObject.Resolve(baseIndex);
+                if (itemDataObject is PdfDictionary
+                  || (itemDataObject is PdfArray && groupAllowed))
+                {
+                    nodeIndex++;
+                    int evaluation = evaluateNode(nodeIndex, baseIndex);
+                    if (evaluation > -1)
+                        return evaluation;
+                }
+                groupAllowed = !(itemDataObject is PdfDictionary);
+            }
+            return evaluateNode(nodeIndex, -1);
+        }
+
+        private int GetBaseIndex(
+          int nodeIndex
+          )
+        {
+            return Evaluate(delegate (
+              int currentNodeIndex,
+              int currentBaseIndex
+              )
+            {
+                if (currentNodeIndex == nodeIndex)
+                    return currentBaseIndex;
+                else
+                    return -1;
+            });
+        }
+
+        private int GetNodeIndex(
+          int baseIndex
+          )
+        {
+            return Evaluate(delegate (
+              int currentNodeIndex,
+              int currentBaseIndex
+              )
+            {
+                if (currentBaseIndex == baseIndex)
+                    return currentNodeIndex;
+                else
+                    return -1;
+            });
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

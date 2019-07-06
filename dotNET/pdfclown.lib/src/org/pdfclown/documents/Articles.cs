@@ -34,31 +34,31 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents
 {
-  /**
-    <summary>Article threads [PDF:1.7:3.6.1].</summary>
-  */
-  [PDF(VersionEnum.PDF11)]
-  public sealed class Articles
-    : Array<Article>
-  {
-    #region static
-    #region interface
-    #region public
-    public static Articles Wrap(
-      PdfDirectObject baseObject
-      )
-    {return baseObject != null ? new Articles(baseObject) : null;}
-    #endregion
-    #endregion
-    #endregion
+    /**
+      <summary>Article threads [PDF:1.7:3.6.1].</summary>
+    */
+    [PDF(VersionEnum.PDF11)]
+    public sealed class Articles
+      : Array<Article>
+    {
+        #region static
+        #region interface
+        #region public
+        public static Articles Wrap(
+          PdfDirectObject baseObject
+          )
+        { return baseObject != null ? new Articles(baseObject) : null; }
+        #endregion
+        #endregion
+        #endregion
 
-    #region dynamic
-    #region constructors
-    internal Articles(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
-    #endregion
-  }
+        #region dynamic
+        #region constructors
+        internal Articles(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
+        #endregion
+    }
 }

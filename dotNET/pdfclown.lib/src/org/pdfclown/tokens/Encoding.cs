@@ -28,30 +28,30 @@ using text = System.Text;
 
 namespace org.pdfclown.tokens
 {
-  /**
-    <summary>Abstract encoding.</summary>
-  */
-  public abstract class Encoding
-  {
-    public static readonly Encoding Pdf = new PdfEncoding();
+    /**
+      <summary>Abstract encoding.</summary>
+    */
+    public abstract class Encoding
+    {
+        public static readonly Encoding Pdf = new PdfEncoding();
 
-    public abstract string Decode(
-      byte[] value
-      );
+        public abstract string Decode(
+          byte[] value
+          );
 
-    public abstract string Decode(
-      byte[] value,
-      int index,
-      int length
-      );
+        public abstract string Decode(
+          byte[] value,
+          int index,
+          int length
+          );
 
-    public abstract byte[] Encode(
-      string value
-      );
+        public abstract byte[] Encode(
+          string value
+          );
 
-    public byte[] Encode(
-      char value
-      )
-    {return Encode(value);}
-  }
+        public byte[] Encode(
+          char value
+          )
+        { return Encode(value); }
+    }
 }

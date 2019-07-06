@@ -31,32 +31,32 @@ using System;
 
 namespace org.pdfclown.documents.interaction.actions
 {
-  /**
-    <summary>'Transmit the names and values of selected interactive form fields
-    to a specified URL (Uniform Resource Locator)' action [PDF:1.6:8.6.4].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class SubmitForm
-    : Action
-  {
-    #region dynamic
-    #region constructors
     /**
-      <summary>Creates a new action within the given document context.</summary>
+      <summary>'Transmit the names and values of selected interactive form fields
+      to a specified URL (Uniform Resource Locator)' action [PDF:1.6:8.6.4].</summary>
     */
-    public SubmitForm(
-      Document context
-      ) : base(context, PdfName.SubmitForm)
-    {}
+    [PDF(VersionEnum.PDF12)]
+    public sealed class SubmitForm
+      : Action
+    {
+        #region dynamic
+        #region constructors
+        /**
+          <summary>Creates a new action within the given document context.</summary>
+        */
+        public SubmitForm(
+          Document context
+          ) : base(context, PdfName.SubmitForm)
+        { }
 
-    internal SubmitForm(
-      PdfDirectObject baseObject
-      ) : base(baseObject)
-    {}
-    #endregion
+        internal SubmitForm(
+          PdfDirectObject baseObject
+          ) : base(baseObject)
+        { }
+        #endregion
 
-    #region interface
-    #endregion
-    #endregion
-  }
+        #region interface
+        #endregion
+        #endregion
+    }
 }

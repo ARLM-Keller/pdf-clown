@@ -30,55 +30,55 @@ using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
 {
-  /**
-    <summary>'Begin marked-content sequence' operation [PDF:1.6:10.5].</summary>
-  */
-  [PDF(VersionEnum.PDF12)]
-  public sealed class BeginMarkedContent
-    : ContentMarker
-  {
-    #region static
-    #region fields
-    public static readonly string PropertyListOperatorKeyword = "BDC";
-    public static readonly string SimpleOperatorKeyword = "BMC";
-    #endregion
-    #endregion
-
-    #region dynamic
-    #region constructors
-    public BeginMarkedContent(
-      PdfName tag
-      ) : base(tag)
-    {}
-
-    public BeginMarkedContent(
-      PdfName tag,
-      PdfDirectObject properties
-      ) : base(tag, properties)
-    {}
-
-    internal BeginMarkedContent(
-      string @operator,
-      IList<PdfDirectObject> operands
-      ) : base(@operator, operands)
-    {}
-    #endregion
-
-    #region interface
-    #region protected
-    protected override string PropertyListOperator
+    /**
+      <summary>'Begin marked-content sequence' operation [PDF:1.6:10.5].</summary>
+    */
+    [PDF(VersionEnum.PDF12)]
+    public sealed class BeginMarkedContent
+      : ContentMarker
     {
-      get
-      {return PropertyListOperatorKeyword;}
-    }
+        #region static
+        #region fields
+        public static readonly string PropertyListOperatorKeyword = "BDC";
+        public static readonly string SimpleOperatorKeyword = "BMC";
+        #endregion
+        #endregion
 
-    protected override string SimpleOperator
-    {
-      get
-      {return SimpleOperatorKeyword;}
+        #region dynamic
+        #region constructors
+        public BeginMarkedContent(
+          PdfName tag
+          ) : base(tag)
+        { }
+
+        public BeginMarkedContent(
+          PdfName tag,
+          PdfDirectObject properties
+          ) : base(tag, properties)
+        { }
+
+        internal BeginMarkedContent(
+          string @operator,
+          IList<PdfDirectObject> operands
+          ) : base(@operator, operands)
+        { }
+        #endregion
+
+        #region interface
+        #region protected
+        protected override string PropertyListOperator
+        {
+            get
+            { return PropertyListOperatorKeyword; }
+        }
+
+        protected override string SimpleOperator
+        {
+            get
+            { return SimpleOperatorKeyword; }
+        }
+        #endregion
+        #endregion
+        #endregion
     }
-    #endregion
-    #endregion
-    #endregion
-  }
 }

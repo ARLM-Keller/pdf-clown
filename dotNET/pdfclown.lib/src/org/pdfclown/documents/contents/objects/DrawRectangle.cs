@@ -69,8 +69,8 @@ namespace org.pdfclown.documents.contents.objects
             var pathObject = state.Scanner.RenderObject;
             if (pathObject != null)
             {
+                pathObject.MoveTo((float)X, (float)Y);
                 pathObject.AddRect(SKRect.Create((float)X, (float)Y, (float)Width, (float)Height));
-                pathObject.Close();
             }
         }
 

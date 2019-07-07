@@ -90,7 +90,7 @@ namespace org.pdfclown.documents.contents.objects
             if (pathObject != null)
             {
                 SKPoint point = Point;
-                pathObject.RLineTo(Point);
+                pathObject.LineTo(Point);
             }
         }
         #endregion

@@ -45,14 +45,10 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public SetLineDash(
-          LineDash lineDash
-          ) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
+        public SetLineDash(LineDash lineDash) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
         { Value = lineDash; }
 
-        public SetLineDash(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetLineDash(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
         #endregion
 

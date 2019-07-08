@@ -109,7 +109,11 @@ namespace org.pdfclown.documents.contents.objects
             };
             LineDash lineDash = state.LineDash;
             double[] dashArray = lineDash.DashArray;
-            if (dashArray.Length > 0)
+            if (dashArray.Length == 1)
+            {
+                stroke.PathEffect = SKPathEffect.CreateDash(new[] { (float)dashArray[0], (float)dashArray[0] }, (float)lineDash.DashPhase);
+            }
+            else if (dashArray.Length > 1)
             {
                 stroke.PathEffect = SKPathEffect.CreateDash(ConvertUtils.ToFloatArray(dashArray), (float)lineDash.DashPhase);
             }

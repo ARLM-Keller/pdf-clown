@@ -122,8 +122,8 @@ namespace org.pdfclown.documents.contents.xObjects
                     return new SKMatrix
                     {
                         ScaleX = ((IPdfNumber)matrix[0]).FloatValue,
-                        SkewX = ((IPdfNumber)matrix[1]).FloatValue,
-                        SkewY = ((IPdfNumber)matrix[2]).FloatValue,
+                        SkewY = ((IPdfNumber)matrix[1]).FloatValue,
+                        SkewX = ((IPdfNumber)matrix[2]).FloatValue,
                         ScaleY = ((IPdfNumber)matrix[3]).FloatValue,
                         TransX = ((IPdfNumber)matrix[4]).FloatValue,
                         TransY = ((IPdfNumber)matrix[5]).FloatValue,
@@ -135,8 +135,8 @@ namespace org.pdfclown.documents.contents.xObjects
                 BaseDataObject.Header[PdfName.Matrix] =
                  new PdfArray(
                     PdfReal.Get(value.ScaleX),
-                    PdfReal.Get(value.SkewX),
                     PdfReal.Get(value.SkewY),
+                    PdfReal.Get(value.SkewX),
                     PdfReal.Get(value.ScaleY),
                     PdfReal.Get(value.TransX),
                     PdfReal.Get(value.TransY)

@@ -47,10 +47,7 @@ namespace org.pdfclown.documents.contents.objects
               <param name="textChar">Scanned character.</param>
               <param name="textCharBox">Bounding box of the scanned character.</param>
             */
-            void ScanChar(
-              char textChar,
-              SKRect textCharBox
-              );
+            void ScanChar(char textChar, SKRect textCharBox);
         }
         #endregion
 
@@ -94,6 +91,27 @@ namespace org.pdfclown.documents.contents.objects
             double charSpace = state.CharSpace * state.Scale;
             SKMatrix ctm = state.Ctm;
             SKMatrix tm = state.Tm;
+
+            var context = state.Scanner.RenderContext;
+            var fill = context != null ? state.FillColorSpace?.GetPaint(state.FillColor) : null;
+            if (fill != null)
+            {
+                fill.Typeface = SKTypeface.FromFamilyName(font.Name);
+                fill.TextSize = (float)state.FontSize;
+                fill.TextScaleX = (float)state.Scale;
+            }
+            var stroke = context != null ? state.StrokeColorSpace?.GetPaint(state.StrokeColor) : null;
+            if (stroke != null)
+            {
+                stroke.Typeface = SKTypeface.FromFamilyName(font.Name);
+                stroke.TextSize = (float)state.FontSize;
+                stroke.TextScaleX = (float)state.Scale;
+                stroke.Style = SKPaintStyle.Stroke;
+                stroke.StrokeWidth = (float)state.LineWidth;
+                stroke.StrokeCap = state.LineCap.ToSkia();
+                stroke.StrokeJoin = state.LineJoin.ToSkia();
+                stroke.StrokeMiter = (float)state.MiterLimit;
+            }
             if (this is ShowTextToNextLine showTextToNextLine)
             {
                 double? newWordSpace = showTextToNextLine.WordSpace;
@@ -122,8 +140,34 @@ namespace org.pdfclown.documents.contents.objects
                 if (textElement is byte[] byteElement) // Text string.
                 {
                     string textString = font.Decode(byteElement);
+
                     foreach (char textChar in textString)
                     {
+                        if (context != null && !(textString.Length == 1 && textString[0] == ' '))
+                        {
+                            SKMatrix trm = ctm;
+                            SKMatrix.PreConcat(ref trm, tm);
+                            SKMatrix.PreConcat(ref trm, SKMatrix.MakeScale(1, -1));
+
+                            context.Save();
+                            context.SetMatrix(trm);
+                            if (state.RenderMode == TextRenderModeEnum.Fill
+                                || state.RenderMode == TextRenderModeEnum.FillStroke
+                                || state.RenderMode == TextRenderModeEnum.FillClip
+                                || state.RenderMode == TextRenderModeEnum.FillStrokeClip)
+                            {
+                                context.DrawText(textChar.ToString(), 0, 0, fill);
+                            }
+                            if (state.RenderMode == TextRenderModeEnum.Stroke
+                                || state.RenderMode == TextRenderModeEnum.FillStroke
+                                || state.RenderMode == TextRenderModeEnum.StrokeClip
+                                || state.RenderMode == TextRenderModeEnum.FillStrokeClip)
+                            {
+                                context.DrawText(textChar.ToString(), 0, 0, stroke);
+                            }
+                            context.Restore();
+                        }
+
                         double charWidth = font.GetWidth(textChar) * scaledFactor;
 
                         if (textScanner != null)
@@ -144,10 +188,6 @@ namespace org.pdfclown.documents.contents.objects
                             textScanner.ScanChar(textChar, charBox);
                         }
 
-                        if (state.Scanner.RenderContext != null)
-                        {
-
-                        }
 
                         /*
                           NOTE: After the glyph is painted, the text matrix is updated

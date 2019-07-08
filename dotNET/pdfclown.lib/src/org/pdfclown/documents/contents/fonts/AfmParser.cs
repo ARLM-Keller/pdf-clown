@@ -114,15 +114,15 @@ namespace org.pdfclown.documents.contents.fonts
                 Match lineMatch = lineMatches[0];
 
                 string key = lineMatch.Groups[1].Value;
-                if (key.Equals("Ascender"))
+                if (key.Equals("Ascender", StringComparison.Ordinal))
                 { Metrics.Ascender = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
-                else if (key.Equals("CapHeight"))
+                else if (key.Equals("CapHeight", StringComparison.Ordinal))
                 { Metrics.CapHeight = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
-                else if (key.Equals("Descender"))
+                else if (key.Equals("Descender", StringComparison.Ordinal))
                 { Metrics.Descender = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
-                else if (key.Equals("EncodingScheme"))
-                { Metrics.IsCustomEncoding = lineMatch.Groups[2].Value.Equals("FontSpecific"); }
-                else if (key.Equals("FontBBox"))
+                else if (key.Equals("EncodingScheme", StringComparison.Ordinal))
+                { Metrics.IsCustomEncoding = lineMatch.Groups[2].Value.Equals("FontSpecific", StringComparison.Ordinal); }
+                else if (key.Equals("FontBBox", StringComparison.Ordinal))
                 {
                     string[] coordinates = Regex.Split(lineMatch.Groups[2].Value, "\\s+");
                     Metrics.XMin = ConvertUtils.ParseAsIntInvariant(coordinates[0]);
@@ -130,25 +130,25 @@ namespace org.pdfclown.documents.contents.fonts
                     Metrics.XMax = ConvertUtils.ParseAsIntInvariant(coordinates[2]);
                     Metrics.YMax = ConvertUtils.ParseAsIntInvariant(coordinates[3]);
                 }
-                else if (key.Equals("FontName"))
+                else if (key.Equals("FontName", StringComparison.Ordinal))
                 { Metrics.FontName = lineMatch.Groups[2].Value; }
-                else if (key.Equals("IsFixedPitch"))
+                else if (key.Equals("IsFixedPitch", StringComparison.Ordinal))
                 { Metrics.IsFixedPitch = Boolean.Parse(lineMatch.Groups[2].Value); }
-                else if (key.Equals("ItalicAngle"))
+                else if (key.Equals("ItalicAngle", StringComparison.Ordinal))
                 { Metrics.ItalicAngle = ConvertUtils.ParseFloatInvariant(lineMatch.Groups[2].Value); }
-                else if (key.Equals("StdHW"))
+                else if (key.Equals("StdHW", StringComparison.Ordinal))
                 { Metrics.StemH = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
-                else if (key.Equals("StdVW"))
+                else if (key.Equals("StdVW", StringComparison.Ordinal))
                 { Metrics.StemV = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
-                else if (key.Equals("UnderlinePosition"))
+                else if (key.Equals("UnderlinePosition", StringComparison.Ordinal))
                 { Metrics.UnderlinePosition = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
-                else if (key.Equals("UnderlineThickness"))
+                else if (key.Equals("UnderlineThickness", StringComparison.Ordinal))
                 { Metrics.UnderlineThickness = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
-                else if (key.Equals("Weight"))
+                else if (key.Equals("Weight", StringComparison.Ordinal))
                 { Metrics.Weight = lineMatch.Groups[2].Value; }
-                else if (key.Equals("XHeight"))
+                else if (key.Equals("XHeight", StringComparison.Ordinal))
                 { Metrics.XHeight = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[2].Value); }
-                else if (key.Equals("StartCharMetrics"))
+                else if (key.Equals("StartCharMetrics", StringComparison.Ordinal))
                     break;
             }
             if (Metrics.Ascender == 0)

@@ -53,14 +53,10 @@ namespace org.pdfclown.documents.contents.objects
             If the element is a byte array (encoded text), this operator shows the text glyphs.
             If it is a number (glyph adjustment), the operator adjusts the next glyph position by that amount.</param>
         */
-        public ShowAdjustedText(
-          IList<object> value
-          ) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
+        public ShowAdjustedText(IList<object> value) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
         { Value = value; }
 
-        internal ShowAdjustedText(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        internal ShowAdjustedText(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
         #endregion
 
@@ -95,15 +91,11 @@ namespace org.pdfclown.documents.contents.objects
                     //TODO:horrible workaround to the lack of generic covariance...
                     if (element is IPdfNumber)
                     {
-                        value.Add(
-                          ((IPdfNumber)element).RawValue
-                          );
+                        value.Add(((IPdfNumber)element).RawValue);
                     }
                     else if (element is PdfString)
                     {
-                        value.Add(
-                          ((PdfString)element).RawValue
-                          );
+                        value.Add(((PdfString)element).RawValue);
                     }
                     else
                         throw new NotSupportedException("Element type " + element.GetType().Name + " not supported.");

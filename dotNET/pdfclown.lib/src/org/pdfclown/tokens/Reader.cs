@@ -179,9 +179,9 @@ namespace org.pdfclown.tokens
                                 XRefEntry.UsageEnum usage;
                                 {
                                     string usageToken = (string)parser.GetToken(1);
-                                    if (usageToken.Equals(Keyword.InUseXrefEntry))
+                                    if (usageToken.Equals(Keyword.InUseXrefEntry, StringComparison.Ordinal))
                                         usage = XRefEntry.UsageEnum.InUse;
-                                    else if (usageToken.Equals(Keyword.FreeXrefEntry))
+                                    else if (usageToken.Equals(Keyword.FreeXrefEntry, StringComparison.Ordinal))
                                         usage = XRefEntry.UsageEnum.Free;
                                     else
                                         throw new PostScriptParseException("Invalid xref entry.", parser);

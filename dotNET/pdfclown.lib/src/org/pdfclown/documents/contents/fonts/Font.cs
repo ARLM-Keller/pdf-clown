@@ -103,10 +103,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Creates the representation of a font.</summary>
         */
-        public static Font Get(
-          Document context,
-          string path
-          )
+        public static Font Get(Document context, string path)
         {
             return Get(
               context,
@@ -123,10 +120,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Creates the representation of a font.</summary>
         */
-        public static Font Get(
-          Document context,
-          IInputStream fontData
-          )
+        public static Font Get(Document context, IInputStream fontData)
         {
             if (OpenFontParser.IsOpenFont(fontData))
                 return CompositeFont.Get(context, fontData);
@@ -138,9 +132,7 @@ namespace org.pdfclown.documents.contents.fonts
           <summary>Gets the scaling factor to be applied to unscaled metrics to get actual
           measures.</summary>
         */
-        public static double GetScalingFactor(
-          double size
-          )
+        public static double GetScalingFactor(double size)
         { return 0.001 * size; }
 
         /**
@@ -148,9 +140,7 @@ namespace org.pdfclown.documents.contents.fonts
           <param name="baseObject">Font base object.</param>
           <returns>Font object associated to the reference.</returns>
         */
-        public static Font Wrap(
-          PdfDirectObject baseObject
-          )
+        public static Font Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
@@ -271,9 +261,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Creates a new font structure within the given document context.</summary>
         */
-        protected Font(
-          Document context
-          ) : base(
+        protected Font(Document context) : base(
             context,
             new PdfDictionary(
               new PdfName[1] { PdfName.Type },
@@ -285,9 +273,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads an existing font structure.</summary>
         */
-        protected Font(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected Font(PdfDirectObject baseObject) : base(baseObject)
         {
             Initialize();
             Load();
@@ -314,8 +300,7 @@ namespace org.pdfclown.documents.contents.fonts
         */
         public ICollection<int> CodePoints
         {
-            get
-            { return glyphIndexes.Keys; }
+            get { return glyphIndexes.Keys; }
         }
 
         /**
@@ -323,18 +308,12 @@ namespace org.pdfclown.documents.contents.fonts
           <param name="code">Internal representation to decode.</param>
           <exception cref="DecodeException"/>
         */
-        public string Decode(
-          byte[] code
-          )
+        public string Decode(byte[] code)
         {
             StringBuilder textBuilder = new StringBuilder();
             {
                 byte[][] codeBuffers = new byte[charCodeMaxLength + 1][];
-                for (
-                  int codeBufferIndex = 0;
-                  codeBufferIndex <= charCodeMaxLength;
-                  codeBufferIndex++
-                  )
+                for (int codeBufferIndex = 0; codeBufferIndex <= charCodeMaxLength; codeBufferIndex++)
                 { codeBuffers[codeBufferIndex] = new byte[codeBufferIndex]; }
                 int index = 0;
                 int codeLength = code.Length;
@@ -384,8 +363,7 @@ namespace org.pdfclown.documents.contents.fonts
         */
         public int DefaultCode
         {
-            get
-            { return defaultCode; }
+            get { return defaultCode; }
             set
             {
                 if (!glyphIndexes.ContainsKey(value))
@@ -417,9 +395,7 @@ namespace org.pdfclown.documents.contents.fonts
           <param name="text">Text to encode.</param>
           <exception cref="EncodeException"/>
         */
-        public byte[] Encode(
-          string text
-          )
+        public byte[] Encode(string text)
         {
             io::MemoryStream encodedStream = new io::MemoryStream();
             for (int index = 0, length = text.Length; index < length; index++)
@@ -453,13 +429,11 @@ namespace org.pdfclown.documents.contents.fonts
             return encodedStream.ToArray();
         }
 
-        public override bool Equals(
-          object obj
-          )
+        public override bool Equals(object obj)
         {
             return obj != null
               && obj.GetType().Equals(GetType())
-              && ((Font)obj).Name.Equals(Name);
+              && ((Font)obj).Name.Equals(Name, StringComparison.Ordinal);
         }
 
         /**
@@ -479,9 +453,7 @@ namespace org.pdfclown.documents.contents.fonts
           scaled to the given font size. The value is a positive number.</summary>
           <param name="size">Font size.</param>
         */
-        public double GetAscent(
-          double size
-          )
+        public double GetAscent(double size)
         { return Ascent * GetScalingFactor(size); }
 
         /**
@@ -489,23 +461,19 @@ namespace org.pdfclown.documents.contents.fonts
           scaled to the given font size. The value is a negative number.</summary>
           <param name="size">Font size.</param>
         */
-        public double GetDescent(
-          double size
-          )
+        public double GetDescent(double size)
         { return Descent * GetScalingFactor(size); }
 
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         { return Name.GetHashCode(); }
 
         private double textHeight = -1; // TODO: temporary until glyph bounding boxes are implemented.
-                                        /**
-                                          <summary>Gets the unscaled height of the given character.</summary>
-                                          <param name="textChar">Character whose height has to be calculated.</param>
-                                        */
-        public double GetHeight(
-          char textChar
-          )
+
+        /**
+          <summary>Gets the unscaled height of the given character.</summary>
+          <param name="textChar">Character whose height has to be calculated.</param>
+        */
+        public double GetHeight(char textChar)
         {
             /*
               TODO: Calculate actual text height through glyph bounding box.
@@ -520,19 +488,14 @@ namespace org.pdfclown.documents.contents.fonts
           <param name="textChar">Character whose height has to be calculated.</param>
           <param name="size">Font size.</param>
         */
-        public double GetHeight(
-          char textChar,
-          double size
-          )
+        public double GetHeight(char textChar, double size)
         { return GetHeight(textChar) * GetScalingFactor(size); }
 
         /**
           <summary>Gets the unscaled height of the given text.</summary>
           <param name="text">Text whose height has to be calculated.</param>
         */
-        public double GetHeight(
-          string text
-          )
+        public double GetHeight(string text)
         {
             double height = 0;
             for (int index = 0, length = text.Length; index < length; index++)
@@ -549,10 +512,7 @@ namespace org.pdfclown.documents.contents.fonts
           <param name="text">Text whose height has to be calculated.</param>
           <param name="size">Font size.</param>
         */
-        public double GetHeight(
-          string text,
-          double size
-          )
+        public double GetHeight(string text, double size)
         { return GetHeight(text) * GetScalingFactor(size); }
 
         /**
@@ -561,10 +521,7 @@ namespace org.pdfclown.documents.contents.fonts
           <param name="size">Font size.</param>
           <exception cref="EncodeException"/>
         */
-        public double GetKernedWidth(
-          string text,
-          double size
-          )
+        public double GetKernedWidth(string text, double size)
         { return (GetWidth(text) + GetKerning(text)) * GetScalingFactor(size); }
 
         /**
@@ -572,10 +529,7 @@ namespace org.pdfclown.documents.contents.fonts
           <param name="textChar1">Left character.</param>
           <param name="textChar2">Right character,</param>
         */
-        public int GetKerning(
-          char textChar1,
-          char textChar2
-          )
+        public int GetKerning(char textChar1, char textChar2)
         {
             if (glyphKernings == null)
                 return 0;
@@ -599,9 +553,7 @@ namespace org.pdfclown.documents.contents.fonts
           <summary>Gets the unscaled kerning width inside the given text.</summary>
           <param name="text">Text whose kerning has to be calculated.</param>
         */
-        public int GetKerning(
-          string text
-          )
+        public int GetKerning(string text)
         {
             int kerning = 0;
             for (int index = 0, length = text.Length - 1; index < length; index++)
@@ -619,19 +571,14 @@ namespace org.pdfclown.documents.contents.fonts
           <param name="text">Text whose kerning has to be calculated.</param>
           <param name="size">Font size.</param>
         */
-        public double GetKerning(
-          string text,
-          double size
-          )
+        public double GetKerning(string text, double size)
         { return GetKerning(text) * GetScalingFactor(size); }
 
         /**
           <summary>Gets the line height, scaled to the given font size.</summary>
           <param name="size">Font size.</param>
         */
-        public double GetLineHeight(
-          double size
-          )
+        public double GetLineHeight(double size)
         { return LineHeight * GetScalingFactor(size); }
 
         /**
@@ -639,9 +586,7 @@ namespace org.pdfclown.documents.contents.fonts
           <param name="textChar">Character whose width has to be calculated.</param>
           <exception cref="EncodeException"/>
         */
-        public int GetWidth(
-          char textChar
-          )
+        public int GetWidth(char textChar)
         {
             int glyphIndex;
             if (!glyphIndexes.TryGetValue((int)textChar, out glyphIndex))
@@ -669,10 +614,7 @@ namespace org.pdfclown.documents.contents.fonts
           <param name="size">Font size.</param>
           <exception cref="EncodeException"/>
         */
-        public double GetWidth(
-          char textChar,
-          double size
-          )
+        public double GetWidth(char textChar, double size)
         { return GetWidth(textChar) * GetScalingFactor(size); }
 
         /**
@@ -680,9 +622,7 @@ namespace org.pdfclown.documents.contents.fonts
           <param name="text">Text whose width has to be calculated.</param>
           <exception cref="EncodeException"/>
         */
-        public int GetWidth(
-          string text
-          )
+        public int GetWidth(string text)
         {
             int width = 0;
             for (int index = 0, length = text.Length; index < length; index++)
@@ -692,15 +632,12 @@ namespace org.pdfclown.documents.contents.fonts
 
         /**
           <summary>Gets the width (kerning exclusive) of the given text, scaled to the given font
-          SKSize.</summary>
+          size.</summary>
           <param name="text">Text whose width has to be calculated.</param>
           <param name="size">Font size.</param>
           <exception cref="EncodeException"/>
         */
-        public double GetWidth(
-          string text,
-          double size
-          )
+        public double GetWidth(string text, double size)
         { return GetWidth(text) * GetScalingFactor(size); }
 
         /**
@@ -708,8 +645,7 @@ namespace org.pdfclown.documents.contents.fonts
         */
         public double LineHeight
         {
-            get
-            { return Ascent - Descent; }
+            get { return Ascent - Descent; }
         }
 
         /**
@@ -717,8 +653,7 @@ namespace org.pdfclown.documents.contents.fonts
         */
         public string Name
         {
-            get
-            { return ((PdfName)BaseDataObject[PdfName.BaseFont]).ToString(); }
+            get { return ((PdfName)BaseDataObject[PdfName.BaseFont]).ToString(); }
         }
 
         /**
@@ -726,12 +661,12 @@ namespace org.pdfclown.documents.contents.fonts
         */
         public bool Symbolic
         {
-            get
-            { return symbolic; }
+            get { return symbolic; }
         }
         #endregion
 
         #region protected
+
         /**
           <summary>Gets/Sets the average glyph width.</summary>
         */
@@ -775,9 +710,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Gets the specified font descriptor entry value.</summary>
         */
-        protected abstract PdfDataObject GetDescriptorValue(
-          PdfName key
-          );
+        protected abstract PdfDataObject GetDescriptorValue(PdfName key);
 
         /**
           <summary>Loads font information from existing PDF font structure.</summary>

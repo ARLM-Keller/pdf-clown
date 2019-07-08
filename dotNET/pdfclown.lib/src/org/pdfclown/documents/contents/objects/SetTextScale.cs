@@ -34,8 +34,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>'Set the horizontal scaling' operation [PDF:1.6:5.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetTextScale
-      : Operation
+    public sealed class SetTextScale : Operation
     {
         #region static
         #region fields
@@ -45,22 +44,16 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public SetTextScale(
-          double value
-          ) : base(OperatorKeyword, PdfReal.Get(value))
+        public SetTextScale(double value) : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
-        public SetTextScale(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetTextScale(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
         #endregion
 
         #region interface
         #region public
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(ContentScanner.GraphicsState state)
         { state.Scale = Value / 100; }
 
         /**
@@ -69,13 +62,11 @@ namespace org.pdfclown.documents.contents.objects
         */
         public double Value
         {
-            get
-            { return ((IPdfNumber)operands[0]).RawValue; }
-            set
-            { operands[0] = PdfReal.Get(value); }
+            get { return ((IPdfNumber)operands[0]).RawValue; }
+            set { operands[0] = PdfReal.Get(value); }
         }
         #endregion
         #endregion
         #endregion
-    }
+    }   
 }

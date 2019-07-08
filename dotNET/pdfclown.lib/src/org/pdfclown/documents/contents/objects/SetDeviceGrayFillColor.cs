@@ -36,8 +36,7 @@ namespace org.pdfclown.documents.contents.objects
       operation [PDF:1.6:4.5.7].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetDeviceGrayFillColor
-      : SetFillColor
+    public sealed class SetDeviceGrayFillColor : SetFillColor
     {
         #region static
         #region fields
@@ -47,22 +46,16 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public SetDeviceGrayFillColor(
-          DeviceGrayColor value
-          ) : base(OperatorKeyword, value)
+        public SetDeviceGrayFillColor(DeviceGrayColor value) : base(OperatorKeyword, value)
         { }
 
-        public SetDeviceGrayFillColor(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetDeviceGrayFillColor(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
         #endregion
 
         #region interface
         #region public
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(ContentScanner.GraphicsState state)
         {
             state.FillColorSpace = DeviceGrayColorSpace.Default;
             base.Scan(state);

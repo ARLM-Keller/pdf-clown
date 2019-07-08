@@ -45,30 +45,22 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public SetLineWidth(
-          double value
-          ) : base(OperatorKeyword, PdfReal.Get(value))
+        public SetLineWidth(double value) : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
-        public SetLineWidth(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetLineWidth(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
         #endregion
 
         #region interface
         #region public
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(ContentScanner.GraphicsState state)
         { state.LineWidth = Value; }
 
         public double Value
         {
-            get
-            { return ((IPdfNumber)operands[0]).RawValue; }
-            set
-            { operands[0] = PdfReal.Get(value); }
+            get { return ((IPdfNumber)operands[0]).RawValue; }
+            set { operands[0] = PdfReal.Get(value); }
         }
         #endregion
         #endregion

@@ -111,6 +111,8 @@ namespace org.pdfclown.documents.contents
                 { state.MiterLimit = MiterLimit.Value; }
                 else if (parameterName.Equals(PdfName.BM))
                 { state.BlendMode = BlendMode; }
+                else if (parameterName.Equals(PdfName.Type))
+                {  }
                 //TODO:extend supported parameters!!!
             }
         }

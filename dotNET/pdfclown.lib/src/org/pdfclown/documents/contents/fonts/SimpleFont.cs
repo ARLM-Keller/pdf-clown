@@ -110,7 +110,7 @@ namespace org.pdfclown.documents.contents.fonts
                             {
                                 ByteArray charCode = new ByteArray(charCodeData);
                                 string charName = (string)((PdfName)differenceObject).Value;
-                                if (charName.Equals(".notdef"))
+                                if (charName.Equals(".notdef", StringComparison.Ordinal))
                                 { codes.Remove(charCode); }
                                 else
                                 {

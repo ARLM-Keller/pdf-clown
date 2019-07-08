@@ -70,7 +70,7 @@ namespace org.pdfclown.documents.contents.fonts
                 Match lineMatch = lineMatches[0];
 
                 string key = lineMatch.Groups[1].Value;
-                if (key.Equals("/Encoding"))
+                if (key.Equals("/Encoding", StringComparison.Ordinal))
                 {
                     // Skip to the encoding array entries!
                     stream.ReadLine();

@@ -48,14 +48,10 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public SetFillColorSpace(
-          PdfName name
-          ) : base(OperatorKeyword, name)
+        public SetFillColorSpace(PdfName name) : base(OperatorKeyword, name)
         { }
 
-        public SetFillColorSpace(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetFillColorSpace(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
         #endregion
 
@@ -65,14 +61,10 @@ namespace org.pdfclown.documents.contents.objects
           <summary>Gets the <see cref="ColorSpace">color space</see> resource to be set.</summary>
           <param name="context">Content context.</param>
         */
-        public ColorSpace GetColorSpace(
-          IContentContext context
-          )
+        public ColorSpace GetColorSpace(IContentContext context)
         { return GetResource(context); }
 
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(ContentScanner.GraphicsState state)
         {
             // 1. Color space.
             state.FillColorSpace = GetColorSpace(state.Scanner.ContentContext);
@@ -86,9 +78,7 @@ namespace org.pdfclown.documents.contents.objects
         }
 
         #region IResourceReference
-        public ColorSpace GetResource(
-          IContentContext context
-          )
+        public ColorSpace GetResource(IContentContext context)
         {
             /*
               NOTE: The names DeviceGray, DeviceRGB, DeviceCMYK, and Pattern always identify
@@ -110,10 +100,8 @@ namespace org.pdfclown.documents.contents.objects
 
         public PdfName Name
         {
-            get
-            { return (PdfName)operands[0]; }
-            set
-            { operands[0] = value; }
+            get { return (PdfName)operands[0]; }
+            set { operands[0] = value; }
         }
         #endregion
         #endregion

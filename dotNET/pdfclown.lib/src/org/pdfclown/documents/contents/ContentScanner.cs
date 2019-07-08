@@ -449,6 +449,8 @@ namespace org.pdfclown.documents.contents
                 get { return wordSpace; }
                 set { wordSpace = value; }
             }
+
+            public double HorizontalScale { get; set; }
             #endregion
 
             #region internal

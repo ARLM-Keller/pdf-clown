@@ -34,9 +34,7 @@ namespace org.pdfclown.objects
     /**
       <summary>PDF indirect reference object [PDF:1.6:3.2.9].</summary>
     */
-    public sealed class PdfReference
-      : PdfDirectObject,
-        IPdfIndirectObject
+    public sealed class PdfReference : PdfDirectObject, IPdfIndirectObject
     {
         #region static
         private const int DelegatedReferenceNumber = -1;
@@ -55,9 +53,7 @@ namespace org.pdfclown.objects
         #endregion
 
         #region constructors
-        internal PdfReference(
-          PdfIndirectObject indirectObject
-          )
+        internal PdfReference(PdfIndirectObject indirectObject)
         {
             this.objectNumber = DelegatedReferenceNumber;
             this.generationNumber = DelegatedReferenceNumber;
@@ -65,11 +61,7 @@ namespace org.pdfclown.objects
             this.indirectObject = indirectObject;
         }
 
-        internal PdfReference(
-          int objectNumber,
-          int generationNumber,
-          File file
-          )
+        internal PdfReference(int objectNumber, int generationNumber, File file)
         {
             this.objectNumber = objectNumber;
             this.generationNumber = generationNumber;
@@ -80,20 +72,13 @@ namespace org.pdfclown.objects
 
         #region interface
         #region public
-        public override PdfObject Accept(
-          IVisitor visitor,
-          object data
-          )
+        public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
-        public override int CompareTo(
-          PdfDirectObject obj
-          )
+        public override int CompareTo(PdfDirectObject obj)
         { throw new NotImplementedException(); }
 
-        public override bool Equals(
-          object other
-          )
+        public override bool Equals(object other)
         {
             /*
              * NOTE: References are evaluated as "equal" if they are either the same instance or they sport
@@ -107,13 +92,12 @@ namespace org.pdfclown.objects
 
             PdfReference otherReference = (PdfReference)other;
             return otherReference.File == File
-                && otherReference.Id.Equals(Id);
+                && otherReference.Id.Equals(Id, StringComparison.Ordinal);
         }
 
         public override File File
         {
-            get
-            { return file != null ? file : base.File; }
+            get { return file != null ? file : base.File; }
         }
 
         /**
@@ -121,12 +105,10 @@ namespace org.pdfclown.objects
         */
         public int GenerationNumber
         {
-            get
-            { return generationNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Generation : generationNumber; }
+            get { return generationNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Generation : generationNumber; }
         }
 
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         {
             /*
               NOTE: Uniqueness should be achieved XORring the (local) reference hash-code with the (global)
@@ -141,8 +123,7 @@ namespace org.pdfclown.objects
         */
         public string Id
         {
-            get
-            { return ("" + ObjectNumber + Symbol.Space + GenerationNumber); }
+            get { return ("" + ObjectNumber + Symbol.Space + GenerationNumber); }
         }
 
         /**
@@ -151,8 +132,7 @@ namespace org.pdfclown.objects
         */
         public string IndirectReference
         {
-            get
-            { return (Id + Symbol.Space + Symbol.CapitalR); }
+            get { return (Id + Symbol.Space + Symbol.CapitalR); }
         }
 
         /**
@@ -160,21 +140,16 @@ namespace org.pdfclown.objects
         */
         public int ObjectNumber
         {
-            get
-            { return objectNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Number : objectNumber; }
+            get { return objectNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Number : objectNumber; }
         }
 
         public override PdfObject Parent
         {
-            get
-            { return parent; }
-            internal set
-            { parent = value; }
+            get { return parent; }
+            internal set { parent = value; }
         }
 
-        public override PdfObject Swap(
-          PdfObject other
-          )
+        public override PdfObject Swap(PdfObject other)
         {
             /*
               NOTE: Fail fast if the referenced indirect object is undefined.
@@ -182,14 +157,12 @@ namespace org.pdfclown.objects
             return IndirectObject.Swap(((PdfReference)other).IndirectObject).Reference;
         }
 
-        public override string ToString(
-          )
+        public override string ToString()
         { return IndirectReference; }
 
         public override bool Updateable
         {
-            get
-            { return IndirectObject != null ? indirectObject.Updateable : false; }
+            get { return IndirectObject != null ? indirectObject.Updateable : false; }
             set
             {
                 /*
@@ -201,23 +174,17 @@ namespace org.pdfclown.objects
 
         public override bool Updated
         {
-            get
-            { return updated; }
-            protected internal set
-            { updated = value; }
+            get { return updated; }
+            protected internal set { updated = value; }
         }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          File context
-          )
+        public override void WriteTo(IOutputStream stream, File context)
         { stream.Write(IndirectReference); }
 
         #region IPdfIndirectObject
         public PdfDataObject DataObject
         {
-            get
-            { return IndirectObject != null ? indirectObject.DataObject : null; }
+            get { return IndirectObject != null ? indirectObject.DataObject : null; }
             set
             {
                 /*
@@ -243,8 +210,7 @@ namespace org.pdfclown.objects
 
         public override PdfReference Reference
         {
-            get
-            { return this; }
+            get { return this; }
         }
         #endregion
         #endregion
@@ -252,8 +218,7 @@ namespace org.pdfclown.objects
         #region protected
         protected internal override bool Virtual
         {
-            get
-            { return IndirectObject != null ? indirectObject.Virtual : false; }
+            get { return IndirectObject != null ? indirectObject.Virtual : false; }
             set
             {
                 /*

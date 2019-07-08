@@ -36,8 +36,7 @@ namespace org.pdfclown.documents.contents.objects
       [PDF:1.6:5.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class TranslateTextRelative
-      : Operation
+    public sealed class TranslateTextRelative : Operation
     {
         #region static
         #region fields
@@ -54,27 +53,16 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public TranslateTextRelative(
-          double offsetX,
-          double offsetY
-          ) : this(offsetX, offsetY, false)
+        public TranslateTextRelative(double offsetX, double offsetY)
+            : this(offsetX, offsetY, false)
         { }
 
-        public TranslateTextRelative(
-          double offsetX,
-          double offsetY,
-          bool leadSet
-          ) : base(
-            leadSet ? LeadOperatorKeyword : SimpleOperatorKeyword,
-            PdfReal.Get(offsetX),
-            PdfReal.Get(offsetY)
-            )
+        public TranslateTextRelative(double offsetX, double offsetY, bool leadSet)
+            : base(leadSet ? LeadOperatorKeyword : SimpleOperatorKeyword, PdfReal.Get(offsetX), PdfReal.Get(offsetY))
         { }
 
-        public TranslateTextRelative(
-          string @operator,
-          IList<PdfDirectObject> operands
-          ) : base(@operator, operands)
+        public TranslateTextRelative(string @operator, IList<PdfDirectObject> operands)
+            : base(@operator, operands)
         { }
         #endregion
 
@@ -85,7 +73,7 @@ namespace org.pdfclown.documents.contents.objects
         */
         public bool LeadSet
         {
-            get { return @operator.Equals(LeadOperatorKeyword); }
+            get { return @operator.Equals(LeadOperatorKeyword, StringComparison.Ordinal); }
             set { @operator = (value ? LeadOperatorKeyword : SimpleOperatorKeyword); }
         }
 

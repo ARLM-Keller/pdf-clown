@@ -51,8 +51,8 @@ namespace org.pdfclown.documents.contents.objects
         #region constructors
         public SetTextMatrix(SKMatrix value)
             : this(value.ScaleX,
-                  value.SkewX,
                   value.SkewY,
+                  value.SkewX,
                   value.ScaleY,
                   value.TransX,
                   value.TransY
@@ -89,8 +89,8 @@ namespace org.pdfclown.documents.contents.objects
                 return new SKMatrix
                 {
                     ScaleX = ((IPdfNumber)operands[0]).FloatValue,
-                    SkewX = ((IPdfNumber)operands[1]).FloatValue,
-                    SkewY = ((IPdfNumber)operands[2]).FloatValue,
+                    SkewY = ((IPdfNumber)operands[1]).FloatValue,
+                    SkewX = ((IPdfNumber)operands[2]).FloatValue,
                     ScaleY = ((IPdfNumber)operands[3]).FloatValue,
                     TransX = ((IPdfNumber)operands[4]).FloatValue,
                     TransY = ((IPdfNumber)operands[5]).FloatValue,

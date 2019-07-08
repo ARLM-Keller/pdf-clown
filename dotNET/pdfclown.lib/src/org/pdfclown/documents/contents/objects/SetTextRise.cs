@@ -45,22 +45,18 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public SetTextRise(
-          double value
-          ) : base(OperatorKeyword, PdfReal.Get(value))
+        public SetTextRise(double value)
+            : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
-        public SetTextRise(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetTextRise(IList<PdfDirectObject> operands)
+            : base(OperatorKeyword, operands)
         { }
         #endregion
 
         #region interface
         #region public
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(ContentScanner.GraphicsState state)
         { state.Rise = Value; }
 
         /**
@@ -69,10 +65,8 @@ namespace org.pdfclown.documents.contents.objects
         */
         public double Value
         {
-            get
-            { return ((IPdfNumber)operands[0]).RawValue; }
-            set
-            { operands[0] = PdfReal.Get(value); }
+            get { return ((IPdfNumber)operands[0]).RawValue; }
+            set { operands[0] = PdfReal.Get(value); }
         }
         #endregion
         #endregion

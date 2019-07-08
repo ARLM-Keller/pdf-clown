@@ -35,9 +35,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>'Set the text font' operation [PDF:1.6:5.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetFont
-      : Operation,
-        IResourceReference<Font>
+    public sealed class SetFont : Operation, IResourceReference<Font>
     {
         #region static
         #region fields
@@ -47,15 +45,10 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public SetFont(
-          PdfName name,
-          double size
-          ) : base(OperatorKeyword, name, PdfReal.Get(size))
+        public SetFont(PdfName name, double size) : base(OperatorKeyword, name, PdfReal.Get(size))
         { }
 
-        public SetFont(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetFont(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
         #endregion
 
@@ -65,14 +58,10 @@ namespace org.pdfclown.documents.contents.objects
           <summary>Gets the <see cref="Font">font</see> resource to be set.</summary>
           <param name="context">Content context.</param>
         */
-        public Font GetFont(
-          IContentContext context
-          )
+        public Font GetFont(IContentContext context)
         { return GetResource(context); }
 
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(ContentScanner.GraphicsState state)
         {
             state.Font = GetFont(state.Scanner.ContentContext);
             state.FontSize = Size;
@@ -83,24 +72,18 @@ namespace org.pdfclown.documents.contents.objects
         */
         public double Size
         {
-            get
-            { return ((IPdfNumber)operands[1]).RawValue; }
-            set
-            { operands[1] = PdfReal.Get(value); }
+            get { return ((IPdfNumber)operands[1]).RawValue; }
+            set { operands[1] = PdfReal.Get(value); }
         }
 
         #region IResourceReference
-        public Font GetResource(
-          IContentContext context
-          )
+        public Font GetResource(IContentContext context)
         { return context.Resources.Fonts[Name]; }
 
         public PdfName Name
         {
-            get
-            { return (PdfName)operands[0]; }
-            set
-            { operands[0] = value; }
+            get { return (PdfName)operands[0]; }
+            set { operands[0] = value; }
         }
         #endregion
         #endregion

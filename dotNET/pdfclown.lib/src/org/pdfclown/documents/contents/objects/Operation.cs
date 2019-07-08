@@ -57,130 +57,130 @@ namespace org.pdfclown.documents.contents.objects
             if (@operator == null)
                 return null;
 
-            if (@operator.Equals(SaveGraphicsState.OperatorKeyword))
+            if (@operator.Equals(SaveGraphicsState.OperatorKeyword, StringComparison.Ordinal))
                 return SaveGraphicsState.Value;
-            else if (@operator.Equals(SetFont.OperatorKeyword))
+            else if (@operator.Equals(SetFont.OperatorKeyword, StringComparison.Ordinal))
                 return new SetFont(operands);
-            else if (@operator.Equals(SetStrokeColor.OperatorKeyword)
-              || @operator.Equals(SetStrokeColor.ExtendedOperatorKeyword))
+            else if (@operator.Equals(SetStrokeColor.OperatorKeyword, StringComparison.Ordinal)
+              || @operator.Equals(SetStrokeColor.ExtendedOperatorKeyword, StringComparison.Ordinal))
                 return new SetStrokeColor(@operator, operands);
-            else if (@operator.Equals(SetStrokeColorSpace.OperatorKeyword))
+            else if (@operator.Equals(SetStrokeColorSpace.OperatorKeyword, StringComparison.Ordinal))
                 return new SetStrokeColorSpace(operands);
-            else if (@operator.Equals(SetFillColor.OperatorKeyword)
-              || @operator.Equals(SetFillColor.ExtendedOperatorKeyword))
+            else if (@operator.Equals(SetFillColor.OperatorKeyword, StringComparison.Ordinal)
+              || @operator.Equals(SetFillColor.ExtendedOperatorKeyword, StringComparison.Ordinal))
                 return new SetFillColor(@operator, operands);
-            else if (@operator.Equals(SetFillColorSpace.OperatorKeyword))
+            else if (@operator.Equals(SetFillColorSpace.OperatorKeyword, StringComparison.Ordinal))
                 return new SetFillColorSpace(operands);
-            else if (@operator.Equals(SetDeviceGrayStrokeColor.OperatorKeyword))
+            else if (@operator.Equals(SetDeviceGrayStrokeColor.OperatorKeyword, StringComparison.Ordinal))
                 return new SetDeviceGrayStrokeColor(operands);
-            else if (@operator.Equals(SetDeviceGrayFillColor.OperatorKeyword))
+            else if (@operator.Equals(SetDeviceGrayFillColor.OperatorKeyword, StringComparison.Ordinal))
                 return new SetDeviceGrayFillColor(operands);
-            else if (@operator.Equals(SetDeviceRGBStrokeColor.OperatorKeyword))
+            else if (@operator.Equals(SetDeviceRGBStrokeColor.OperatorKeyword, StringComparison.Ordinal))
                 return new SetDeviceRGBStrokeColor(operands);
-            else if (@operator.Equals(SetDeviceRGBFillColor.OperatorKeyword))
+            else if (@operator.Equals(SetDeviceRGBFillColor.OperatorKeyword, StringComparison.Ordinal))
                 return new SetDeviceRGBFillColor(operands);
-            else if (@operator.Equals(SetDeviceCMYKStrokeColor.OperatorKeyword))
+            else if (@operator.Equals(SetDeviceCMYKStrokeColor.OperatorKeyword, StringComparison.Ordinal))
                 return new SetDeviceCMYKStrokeColor(operands);
-            else if (@operator.Equals(SetDeviceCMYKFillColor.OperatorKeyword))
+            else if (@operator.Equals(SetDeviceCMYKFillColor.OperatorKeyword, StringComparison.Ordinal))
                 return new SetDeviceCMYKFillColor(operands);
-            else if (@operator.Equals(RestoreGraphicsState.OperatorKeyword))
+            else if (@operator.Equals(RestoreGraphicsState.OperatorKeyword, StringComparison.Ordinal))
                 return RestoreGraphicsState.Value;
-            else if (@operator.Equals(BeginSubpath.OperatorKeyword))
+            else if (@operator.Equals(BeginSubpath.OperatorKeyword, StringComparison.Ordinal))
                 return new BeginSubpath(operands);
-            else if (@operator.Equals(CloseSubpath.OperatorKeyword))
+            else if (@operator.Equals(CloseSubpath.OperatorKeyword, StringComparison.Ordinal))
                 return CloseSubpath.Value;
-            else if (@operator.Equals(PaintPath.CloseStrokeOperatorKeyword))
+            else if (@operator.Equals(PaintPath.CloseStrokeOperatorKeyword, StringComparison.Ordinal))
                 return PaintPath.CloseStroke;
-            else if (@operator.Equals(PaintPath.FillOperatorKeyword)
-              || @operator.Equals(PaintPath.FillObsoleteOperatorKeyword))
+            else if (@operator.Equals(PaintPath.FillOperatorKeyword, StringComparison.Ordinal)
+              || @operator.Equals(PaintPath.FillObsoleteOperatorKeyword, StringComparison.Ordinal))
                 return PaintPath.Fill;
-            else if (@operator.Equals(PaintPath.FillEvenOddOperatorKeyword))
+            else if (@operator.Equals(PaintPath.FillEvenOddOperatorKeyword, StringComparison.Ordinal))
                 return PaintPath.FillEvenOdd;
-            else if (@operator.Equals(PaintPath.StrokeOperatorKeyword))
+            else if (@operator.Equals(PaintPath.StrokeOperatorKeyword, StringComparison.Ordinal))
                 return PaintPath.Stroke;
-            else if (@operator.Equals(PaintPath.FillStrokeOperatorKeyword))
+            else if (@operator.Equals(PaintPath.FillStrokeOperatorKeyword, StringComparison.Ordinal))
                 return PaintPath.FillStroke;
-            else if (@operator.Equals(PaintPath.FillStrokeEvenOddOperatorKeyword))
+            else if (@operator.Equals(PaintPath.FillStrokeEvenOddOperatorKeyword, StringComparison.Ordinal))
                 return PaintPath.FillStrokeEvenOdd;
-            else if (@operator.Equals(PaintPath.CloseFillStrokeOperatorKeyword))
+            else if (@operator.Equals(PaintPath.CloseFillStrokeOperatorKeyword, StringComparison.Ordinal))
                 return PaintPath.CloseFillStroke;
-            else if (@operator.Equals(PaintPath.CloseFillStrokeEvenOddOperatorKeyword))
+            else if (@operator.Equals(PaintPath.CloseFillStrokeEvenOddOperatorKeyword, StringComparison.Ordinal))
                 return PaintPath.CloseFillStrokeEvenOdd;
-            else if (@operator.Equals(PaintPath.EndPathNoOpOperatorKeyword))
+            else if (@operator.Equals(PaintPath.EndPathNoOpOperatorKeyword, StringComparison.Ordinal))
                 return PaintPath.EndPathNoOp;
-            else if (@operator.Equals(ModifyClipPath.NonZeroOperatorKeyword))
+            else if (@operator.Equals(ModifyClipPath.NonZeroOperatorKeyword, StringComparison.Ordinal))
                 return ModifyClipPath.NonZero;
-            else if (@operator.Equals(ModifyClipPath.EvenOddOperatorKeyword))
+            else if (@operator.Equals(ModifyClipPath.EvenOddOperatorKeyword, StringComparison.Ordinal))
                 return ModifyClipPath.EvenOdd;
-            else if (@operator.Equals(TranslateTextToNextLine.OperatorKeyword))
+            else if (@operator.Equals(TranslateTextToNextLine.OperatorKeyword, StringComparison.Ordinal))
                 return TranslateTextToNextLine.Value;
-            else if (@operator.Equals(ShowSimpleText.OperatorKeyword))
+            else if (@operator.Equals(ShowSimpleText.OperatorKeyword, StringComparison.Ordinal))
                 return new ShowSimpleText(operands);
-            else if (@operator.Equals(ShowTextToNextLine.SimpleOperatorKeyword)
-              || @operator.Equals(ShowTextToNextLine.SpaceOperatorKeyword))
+            else if (@operator.Equals(ShowTextToNextLine.SimpleOperatorKeyword, StringComparison.Ordinal)
+              || @operator.Equals(ShowTextToNextLine.SpaceOperatorKeyword, StringComparison.Ordinal))
                 return new ShowTextToNextLine(@operator, operands);
-            else if (@operator.Equals(ShowAdjustedText.OperatorKeyword))
+            else if (@operator.Equals(ShowAdjustedText.OperatorKeyword, StringComparison.Ordinal))
                 return new ShowAdjustedText(operands);
-            else if (@operator.Equals(TranslateTextRelative.SimpleOperatorKeyword)
-              || @operator.Equals(TranslateTextRelative.LeadOperatorKeyword))
+            else if (@operator.Equals(TranslateTextRelative.SimpleOperatorKeyword, StringComparison.Ordinal)
+              || @operator.Equals(TranslateTextRelative.LeadOperatorKeyword, StringComparison.Ordinal))
                 return new TranslateTextRelative(@operator, operands);
-            else if (@operator.Equals(SetTextMatrix.OperatorKeyword))
+            else if (@operator.Equals(SetTextMatrix.OperatorKeyword, StringComparison.Ordinal))
                 return new SetTextMatrix(operands);
-            else if (@operator.Equals(ModifyCTM.OperatorKeyword))
+            else if (@operator.Equals(ModifyCTM.OperatorKeyword, StringComparison.Ordinal))
                 return new ModifyCTM(operands);
-            else if (@operator.Equals(PaintXObject.OperatorKeyword))
+            else if (@operator.Equals(PaintXObject.OperatorKeyword, StringComparison.Ordinal))
                 return new PaintXObject(operands);
-            else if (@operator.Equals(PaintShading.OperatorKeyword))
+            else if (@operator.Equals(PaintShading.OperatorKeyword, StringComparison.Ordinal))
                 return new PaintShading(operands);
-            else if (@operator.Equals(SetCharSpace.OperatorKeyword))
+            else if (@operator.Equals(SetCharSpace.OperatorKeyword, StringComparison.Ordinal))
                 return new SetCharSpace(operands);
-            else if (@operator.Equals(SetLineCap.OperatorKeyword))
+            else if (@operator.Equals(SetLineCap.OperatorKeyword, StringComparison.Ordinal))
                 return new SetLineCap(operands);
-            else if (@operator.Equals(SetLineDash.OperatorKeyword))
+            else if (@operator.Equals(SetLineDash.OperatorKeyword, StringComparison.Ordinal))
                 return new SetLineDash(operands);
-            else if (@operator.Equals(SetLineJoin.OperatorKeyword))
+            else if (@operator.Equals(SetLineJoin.OperatorKeyword, StringComparison.Ordinal))
                 return new SetLineJoin(operands);
-            else if (@operator.Equals(SetLineWidth.OperatorKeyword))
+            else if (@operator.Equals(SetLineWidth.OperatorKeyword, StringComparison.Ordinal))
                 return new SetLineWidth(operands);
-            else if (@operator.Equals(SetMiterLimit.OperatorKeyword))
+            else if (@operator.Equals(SetMiterLimit.OperatorKeyword, StringComparison.Ordinal))
                 return new SetMiterLimit(operands);
-            else if (@operator.Equals(SetTextLead.OperatorKeyword))
+            else if (@operator.Equals(SetTextLead.OperatorKeyword, StringComparison.Ordinal))
                 return new SetTextLead(operands);
-            else if (@operator.Equals(SetTextRise.OperatorKeyword))
+            else if (@operator.Equals(SetTextRise.OperatorKeyword, StringComparison.Ordinal))
                 return new SetTextRise(operands);
-            else if (@operator.Equals(SetTextScale.OperatorKeyword))
+            else if (@operator.Equals(SetTextScale.OperatorKeyword, StringComparison.Ordinal))
                 return new SetTextScale(operands);
-            else if (@operator.Equals(SetTextRenderMode.OperatorKeyword))
+            else if (@operator.Equals(SetTextRenderMode.OperatorKeyword, StringComparison.Ordinal))
                 return new SetTextRenderMode(operands);
-            else if (@operator.Equals(SetWordSpace.OperatorKeyword))
+            else if (@operator.Equals(SetWordSpace.OperatorKeyword, StringComparison.Ordinal))
                 return new SetWordSpace(operands);
-            else if (@operator.Equals(DrawLine.OperatorKeyword))
+            else if (@operator.Equals(DrawLine.OperatorKeyword, StringComparison.Ordinal))
                 return new DrawLine(operands);
-            else if (@operator.Equals(DrawRectangle.OperatorKeyword))
+            else if (@operator.Equals(DrawRectangle.OperatorKeyword, StringComparison.Ordinal))
                 return new DrawRectangle(operands);
-            else if (@operator.Equals(DrawCurve.FinalOperatorKeyword)
-              || @operator.Equals(DrawCurve.FullOperatorKeyword)
-              || @operator.Equals(DrawCurve.InitialOperatorKeyword))
+            else if (@operator.Equals(DrawCurve.FinalOperatorKeyword, StringComparison.Ordinal)
+              || @operator.Equals(DrawCurve.FullOperatorKeyword, StringComparison.Ordinal)
+              || @operator.Equals(DrawCurve.InitialOperatorKeyword, StringComparison.Ordinal))
                 return new DrawCurve(@operator, operands);
-            else if (@operator.Equals(EndInlineImage.OperatorKeyword))
+            else if (@operator.Equals(EndInlineImage.OperatorKeyword, StringComparison.Ordinal))
                 return EndInlineImage.Value;
-            else if (@operator.Equals(BeginText.OperatorKeyword))
+            else if (@operator.Equals(BeginText.OperatorKeyword, StringComparison.Ordinal))
                 return BeginText.Value;
-            else if (@operator.Equals(EndText.OperatorKeyword))
+            else if (@operator.Equals(EndText.OperatorKeyword, StringComparison.Ordinal))
                 return EndText.Value;
-            else if (@operator.Equals(BeginMarkedContent.SimpleOperatorKeyword)
-              || @operator.Equals(BeginMarkedContent.PropertyListOperatorKeyword))
+            else if (@operator.Equals(BeginMarkedContent.SimpleOperatorKeyword, StringComparison.Ordinal)
+              || @operator.Equals(BeginMarkedContent.PropertyListOperatorKeyword, StringComparison.Ordinal))
                 return new BeginMarkedContent(@operator, operands);
-            else if (@operator.Equals(EndMarkedContent.OperatorKeyword))
+            else if (@operator.Equals(EndMarkedContent.OperatorKeyword, StringComparison.Ordinal))
                 return EndMarkedContent.Value;
-            else if (@operator.Equals(MarkedContentPoint.SimpleOperatorKeyword)
-              || @operator.Equals(MarkedContentPoint.PropertyListOperatorKeyword))
+            else if (@operator.Equals(MarkedContentPoint.SimpleOperatorKeyword, StringComparison.Ordinal)
+              || @operator.Equals(MarkedContentPoint.PropertyListOperatorKeyword, StringComparison.Ordinal))
                 return new MarkedContentPoint(@operator, operands);
-            else if (@operator.Equals(BeginInlineImage.OperatorKeyword))
+            else if (@operator.Equals(BeginInlineImage.OperatorKeyword, StringComparison.Ordinal))
                 return BeginInlineImage.Value;
-            else if (@operator.Equals(EndInlineImage.OperatorKeyword))
+            else if (@operator.Equals(EndInlineImage.OperatorKeyword, StringComparison.Ordinal))
                 return EndInlineImage.Value;
-            else if (@operator.Equals(ApplyExtGState.OperatorKeyword))
+            else if (@operator.Equals(ApplyExtGState.OperatorKeyword, StringComparison.Ordinal))
                 return new ApplyExtGState(operands);
             else // No explicit operation implementation available.
                 return new GenericOperation(@operator, operands);

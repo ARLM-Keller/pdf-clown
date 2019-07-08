@@ -28,6 +28,7 @@ using org.pdfclown.objects;
 
 using System.Collections.Generic;
 using SkiaSharp;
+using System;
 
 namespace org.pdfclown.documents.contents.objects
 {
@@ -97,7 +98,9 @@ namespace org.pdfclown.documents.contents.objects
           It defines how to interpret the <code>control</code> parameter.</param>
         */
         public DrawCurve(SKPoint point, SKPoint control, string @operator)
-            : base(@operator.Equals(InitialOperatorKeyword) ? InitialOperatorKeyword : FinalOperatorKeyword, new List<PdfDirectObject>(new PdfDirectObject[]
+            : base(@operator.Equals(InitialOperatorKeyword, StringComparison.Ordinal)
+                  ? InitialOperatorKeyword
+                  : FinalOperatorKeyword, new List<PdfDirectObject>(new PdfDirectObject[]
               {
                   PdfReal.Get(control.X),
                   PdfReal.Get(control.Y),
@@ -121,7 +124,7 @@ namespace org.pdfclown.documents.contents.objects
         {
             get
             {
-                if (@operator.Equals(FinalOperatorKeyword))
+                if (@operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal))
                     return null;
                 else
                     return new SKPoint(
@@ -131,7 +134,7 @@ namespace org.pdfclown.documents.contents.objects
             }
             set
             {
-                if (@operator.Equals(FinalOperatorKeyword))
+                if (@operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal))
                 {
                     @operator = FullOperatorKeyword;
                     operands.Insert(0, PdfReal.Get(value.Value.X));
@@ -152,7 +155,7 @@ namespace org.pdfclown.documents.contents.objects
         {
             get
             {
-                if (@operator.Equals(FinalOperatorKeyword))
+                if (@operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal))
                     return new SKPoint(
                       ((IPdfNumber)operands[0]).FloatValue,
                       ((IPdfNumber)operands[1]).FloatValue
@@ -165,7 +168,7 @@ namespace org.pdfclown.documents.contents.objects
             }
             set
             {
-                if (@operator.Equals(FinalOperatorKeyword))
+                if (@operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal))
                 {
                     operands[0] = PdfReal.Get(value.Value.X);
                     operands[1] = PdfReal.Get(value.Value.Y);
@@ -185,7 +188,7 @@ namespace org.pdfclown.documents.contents.objects
         {
             get
             {
-                if (@operator.Equals(FullOperatorKeyword))
+                if (@operator.Equals(FullOperatorKeyword, StringComparison.Ordinal))
                     return new SKPoint(
                       ((IPdfNumber)operands[4]).FloatValue,
                       ((IPdfNumber)operands[5]).FloatValue
@@ -198,7 +201,7 @@ namespace org.pdfclown.documents.contents.objects
             }
             set
             {
-                if (@operator.Equals(FullOperatorKeyword))
+                if (@operator.Equals(FullOperatorKeyword, StringComparison.Ordinal))
                 {
                     operands[4] = PdfReal.Get(value.X);
                     operands[5] = PdfReal.Get(value.Y);

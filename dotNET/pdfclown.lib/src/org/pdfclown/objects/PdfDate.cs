@@ -79,7 +79,7 @@ namespace org.pdfclown.objects
                 // Second (SS).
                 dateBuilder.Append(length < 16 ? "00" : value.Substring(14, 2));
                 // Local time / Universal Time relationship (O).
-                dateBuilder.Append(length < 17 || value.Substring(16, 1).Equals("Z") ? "+" : value.Substring(16, 1));
+                dateBuilder.Append(length < 17 || value.Substring(16, 1).Equals("Z", StringComparison.Ordinal) ? "+" : value.Substring(16, 1));
                 // UT Hour offset (HH').
                 dateBuilder.Append(length < 19 ? "00" : value.Substring(17, 2));
                 // UT Minute offset (mm').

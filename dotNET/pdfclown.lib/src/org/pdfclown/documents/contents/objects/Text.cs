@@ -35,8 +35,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>Text object [PDF:1.6:5.3].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class Text
-      : GraphicsObject
+    public sealed class Text : GraphicsObject
     {
         #region static
         #region fields
@@ -50,22 +49,16 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public Text(
-          )
+        public Text()
         { }
 
-        public Text(
-          IList<ContentObject> objects
-          ) : base(objects)
+        public Text(IList<ContentObject> objects) : base(objects)
         { }
         #endregion
 
         #region interface
         #region public
-        public override void WriteTo(
-          IOutputStream stream,
-          Document context
-          )
+        public override void WriteTo(IOutputStream stream, Document context)
         {
             stream.Write(BeginChunk);
             base.WriteTo(stream, context);

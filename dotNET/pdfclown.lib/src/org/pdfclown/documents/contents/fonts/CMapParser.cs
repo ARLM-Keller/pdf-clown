@@ -92,8 +92,8 @@ namespace org.pdfclown.documents.contents.fonts
                         case TokenTypeEnum.Keyword:
                             {
                                 string @operator = (string)Token;
-                                if (@operator.Equals(BeginBaseFontCharOperator)
-                                  || @operator.Equals(BeginCIDCharOperator))
+                                if (@operator.Equals(BeginBaseFontCharOperator, StringComparison.Ordinal)
+                                  || @operator.Equals(BeginCIDCharOperator, StringComparison.Ordinal))
                                 {
                                     /*
                                       NOTE: The first element on each line is the input code of the template font;
@@ -113,8 +113,8 @@ namespace org.pdfclown.documents.contents.fonts
                                         { Debug.WriteLine(String.Format("WARN: Unable to process Unicode sequence from {0} CMap: {1}", cmapName, Token)); }
                                     }
                                 }
-                                else if (@operator.Equals(BeginBaseFontRangeOperator)
-                                  || @operator.Equals(BeginCIDRangeOperator))
+                                else if (@operator.Equals(BeginBaseFontRangeOperator, StringComparison.Ordinal)
+                                  || @operator.Equals(BeginCIDRangeOperator, StringComparison.Ordinal))
                                 {
                                     /*
                                       NOTE: The first and second elements in each line are the beginning and
@@ -169,9 +169,9 @@ namespace org.pdfclown.documents.contents.fonts
                                         }
                                     }
                                 }
-                                else if (@operator.Equals(UseCMapOperator))
+                                else if (@operator.Equals(UseCMapOperator, StringComparison.Ordinal))
                                 { codes = CMap.Get((string)operands[0]); }
-                                else if (@operator.Equals(DefOperator) && operands.Count != 0)
+                                else if (@operator.Equals(DefOperator, StringComparison.Ordinal) && operands.Count != 0)
                                 {
                                     if (CMapName.Equals(operands[0]))
                                     { cmapName = (string)operands[1]; }

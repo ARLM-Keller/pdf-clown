@@ -94,7 +94,8 @@ namespace org.pdfclown.documents.contents.colorSpaces
             return new SKPaint
             {
                 Color = GetColor(color),
-                Style = SKPaintStyle.Fill
+                Style = SKPaintStyle.Fill,
+                IsAntialias = true,
             };
         }
         #endregion

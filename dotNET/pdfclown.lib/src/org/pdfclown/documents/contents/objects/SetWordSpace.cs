@@ -34,8 +34,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>'Set the word spacing' operation [PDF:1.6:5.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetWordSpace
-      : Operation
+    public sealed class SetWordSpace : Operation
     {
         #region static
         #region fields
@@ -45,30 +44,22 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public SetWordSpace(
-          double value
-          ) : base(OperatorKeyword, PdfReal.Get(value))
+        public SetWordSpace(double value) : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
-        public SetWordSpace(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetWordSpace(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
         #endregion
 
         #region interface
         #region public
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(ContentScanner.GraphicsState state)
         { state.WordSpace = Value; }
 
         public double Value
         {
-            get
-            { return ((IPdfNumber)operands[0]).RawValue; }
-            set
-            { operands[0] = PdfReal.Get(value); }
+            get { return ((IPdfNumber)operands[0]).RawValue; }
+            set { operands[0] = PdfReal.Get(value); }
         }
         #endregion
         #endregion

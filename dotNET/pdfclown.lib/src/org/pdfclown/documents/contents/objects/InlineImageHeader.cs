@@ -45,18 +45,13 @@ namespace org.pdfclown.documents.contents.objects
         #region dynamic
         #region constructors
         // [FIX:0.0.4:2] Null operator.
-        public InlineImageHeader(
-          IList<PdfDirectObject> operands
-          ) : base(String.Empty, operands)
+        public InlineImageHeader(IList<PdfDirectObject> operands) : base(String.Empty, operands)
         { }
         #endregion
 
         #region public
         #region IDictionary
-        public void Add(
-          PdfName key,
-          PdfDirectObject value
-          )
+        public void Add(PdfName key, PdfDirectObject value)
         {
             if (ContainsKey(key))
                 throw new ArgumentException("Key '" + key + "' already in use.", "key");
@@ -64,9 +59,7 @@ namespace org.pdfclown.documents.contents.objects
             this[key] = value;
         }
 
-        public bool ContainsKey(
-          PdfName key
-          )
+        public bool ContainsKey(PdfName key)
         { return GetKeyIndex(key) != null; }
 
         public ICollection<PdfName> Keys
@@ -85,9 +78,7 @@ namespace org.pdfclown.documents.contents.objects
             }
         }
 
-        public bool Remove(
-          PdfName key
-          )
+        public bool Remove(PdfName key)
         {
             int? index = GetKeyIndex(key);
             if (!index.HasValue)
@@ -98,9 +89,7 @@ namespace org.pdfclown.documents.contents.objects
             return true;
         }
 
-        public PdfDirectObject this[
-          PdfName key
-          ]
+        public PdfDirectObject this[PdfName key]
         {
             get
             {
@@ -130,10 +119,7 @@ namespace org.pdfclown.documents.contents.objects
             }
         }
 
-        public bool TryGetValue(
-          PdfName key,
-          out PdfDirectObject value
-          )
+        public bool TryGetValue(PdfName key, out PdfDirectObject value)
         { throw new NotImplementedException(); }
 
         public ICollection<PdfDirectObject> Values
@@ -153,46 +139,33 @@ namespace org.pdfclown.documents.contents.objects
         }
 
         #region ICollection
-        void ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Add(
-          KeyValuePair<PdfName, PdfDirectObject> keyValuePair
-          )
+        void ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Add(KeyValuePair<PdfName, PdfDirectObject> keyValuePair)
         { Add(keyValuePair.Key, keyValuePair.Value); }
 
-        public void Clear(
-          )
+        public void Clear()
         { operands.Clear(); }
 
-        bool ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Contains(
-          KeyValuePair<PdfName, PdfDirectObject> keyValuePair
-          )
+        bool ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Contains(KeyValuePair<PdfName, PdfDirectObject> keyValuePair)
         { return (this[keyValuePair.Key] == keyValuePair.Value); }
 
-        public void CopyTo(
-          KeyValuePair<PdfName, PdfDirectObject>[] keyValuePairs,
-          int index
-          )
+        public void CopyTo(KeyValuePair<PdfName, PdfDirectObject>[] keyValuePairs, int index)
         { throw new NotImplementedException(); }
 
         public int Count
         {
-            get
-            { return operands.Count / 2; }
+            get { return operands.Count / 2; }
         }
 
         public bool IsReadOnly
         {
-            get
-            { return false; }
+            get { return false; }
         }
 
-        public bool Remove(
-          KeyValuePair<PdfName, PdfDirectObject> keyValuePair
-          )
+        public bool Remove(KeyValuePair<PdfName, PdfDirectObject> keyValuePair)
         { throw new NotImplementedException(); }
 
         #region IEnumerable<KeyValuePair<PdfName,PdfDirectObject>>
-        IEnumerator<KeyValuePair<PdfName, PdfDirectObject>> IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>.GetEnumerator(
-          )
+        IEnumerator<KeyValuePair<PdfName, PdfDirectObject>> IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>.GetEnumerator()
         {
             for (
               int index = 0,
@@ -209,8 +182,7 @@ namespace org.pdfclown.documents.contents.objects
         }
 
         #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator(
-          )
+        IEnumerator IEnumerable.GetEnumerator()
         { return ((IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>)this).GetEnumerator(); }
         #endregion
         #endregion
@@ -219,9 +191,7 @@ namespace org.pdfclown.documents.contents.objects
         #endregion
 
         #region private
-        private int? GetKeyIndex(
-          object key
-          )
+        private int? GetKeyIndex(object key)
         {
             for (
               int index = 0,

@@ -65,8 +65,8 @@ namespace org.pdfclown.documents.contents.objects
         #region constructors
         public ModifyCTM(SKMatrix value) : this(
             value.ScaleX,
-            value.SkewX,
             value.SkewY,
+            value.SkewX,
             value.ScaleY,
             value.TransX,
             value.TransY
@@ -112,8 +112,8 @@ namespace org.pdfclown.documents.contents.objects
                 return new SKMatrix
                 {
                     ScaleX = ((IPdfNumber)operands[0]).FloatValue, // a.
-                    SkewX = ((IPdfNumber)operands[1]).FloatValue, // b.
-                    SkewY = ((IPdfNumber)operands[2]).FloatValue, // e.                        
+                    SkewY = ((IPdfNumber)operands[1]).FloatValue, // b.
+                    SkewX = ((IPdfNumber)operands[2]).FloatValue, // e.                        
                     ScaleY = ((IPdfNumber)operands[3]).FloatValue, // d.                       
                     TransX = ((IPdfNumber)operands[4]).FloatValue, // e.
                     TransY = ((IPdfNumber)operands[5]).FloatValue, // f.

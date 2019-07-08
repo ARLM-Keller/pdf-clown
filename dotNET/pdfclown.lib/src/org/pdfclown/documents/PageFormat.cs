@@ -132,11 +132,11 @@ namespace org.pdfclown.documents
                 {
                     int baseWidth, baseHeight = 0;
                     string isoSeriesSize = match.Groups[1].Value;
-                    if (isoSeriesSize.Equals(IsoSeriesSize_A))
+                    if (isoSeriesSize.Equals(IsoSeriesSize_A, StringComparison.Ordinal))
                     { baseWidth = 2384; baseHeight = 3370; }
-                    else if (isoSeriesSize.Equals(IsoSeriesSize_B))
+                    else if (isoSeriesSize.Equals(IsoSeriesSize_B, StringComparison.Ordinal))
                     { baseWidth = 2834; baseHeight = 4008; }
-                    else if (isoSeriesSize.Equals(IsoSeriesSize_C))
+                    else if (isoSeriesSize.Equals(IsoSeriesSize_C, StringComparison.Ordinal))
                     { baseWidth = 2599; baseHeight = 3676; }
                     else
                     { throw new NotImplementedException("Paper format " + size + " not supported yet."); }

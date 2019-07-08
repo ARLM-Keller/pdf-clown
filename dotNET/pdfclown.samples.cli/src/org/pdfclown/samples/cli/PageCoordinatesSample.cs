@@ -81,7 +81,7 @@ namespace org.pdfclown.samples.cli
             // Get the CTM!
             var ctm = composer.Scanner.State.Ctm;
 
-            return "CTM (" + comment + "): " + ctm.ScaleX + ", " + ctm.SkewX + ", " + ctm.SkewY + ", " + ctm.ScaleY + ", " + ctm.TransX + ", " + ctm.TransY;
+            return "CTM (" + comment + "): " + ctm.ScaleX + ", " + ctm.SkewY + ", " + ctm.SkewX + ", " + ctm.ScaleY + ", " + ctm.TransX + ", " + ctm.TransY;
         }
 
         private void BuildLegend(PrimitiveComposer composer, string[] steps, colorSpaces::Color[] colors, SKSize pageSize)

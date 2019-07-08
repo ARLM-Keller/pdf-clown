@@ -46,17 +46,13 @@ namespace org.pdfclown.documents.contents.entities
     {
         #region dynamic
         #region constructors
-        public JpegImage(
-          System.IO.Stream stream
-          ) : base(stream)
+        public JpegImage(System.IO.Stream stream) : base(stream)
         { Load(); }
         #endregion
 
         #region interface
         #region public
-        public override ContentObject ToInlineObject(
-          PrimitiveComposer composer
-          )
+        public override ContentObject ToInlineObject(PrimitiveComposer composer)
         {
             return composer.Add(
               new InlineImage(
@@ -79,9 +75,7 @@ namespace org.pdfclown.documents.contents.entities
               );
         }
 
-        public override xObjects::XObject ToXObject(
-          Document context
-          )
+        public override xObjects::XObject ToXObject(Document context)
         {
             return new xObjects::ImageXObject(
               context,
@@ -111,8 +105,7 @@ namespace org.pdfclown.documents.contents.entities
         #endregion
 
         #region private
-        private void Load(
-          )
+        private void Load()
         {
             /*
               NOTE: Big-endian data expected.

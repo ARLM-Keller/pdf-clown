@@ -63,59 +63,43 @@ namespace org.pdfclown.bytes
         #region IInputStream
         public ByteOrderEnum ByteOrder
         {
-            get
-            { return byteOrder; }
-            set
-            { byteOrder = value; }
+            get { return byteOrder; }
+            set { byteOrder = value; }
         }
 
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         { return stream.GetHashCode(); }
 
         public long Position
         {
-            get
-            { return stream.Position; }
-            set
-            { stream.Position = value; }
+            get { return stream.Position; }
+            set { stream.Position = value; }
         }
 
-        public void Read(
-          byte[] data
-          )
+        public void Read(byte[] data)
         { stream.Read(data, 0, data.Length); }
 
-        public void Read(
-          byte[] data,
-          int offset,
-          int count
-          )
+        public void Read(byte[] data, int offset, int count)
         { stream.Read(data, offset, count); }
 
-        public int ReadByte(
-          )
+        public int ReadByte()
         { return stream.ReadByte(); }
 
-        public int ReadInt(
-          )
+        public int ReadInt()
         {
             byte[] data = new byte[sizeof(int)];
             Read(data);
             return ConvertUtils.ByteArrayToInt(data, 0, byteOrder);
         }
 
-        public int ReadInt(
-          int length
-          )
+        public int ReadInt(int length)
         {
             byte[] data = new byte[length];
             Read(data);
             return ConvertUtils.ByteArrayToNumber(data, 0, length, byteOrder);
         }
 
-        public string ReadLine(
-          )
+        public string ReadLine()
         {
             text::StringBuilder buffer = new text::StringBuilder();
             while (true)
@@ -135,17 +119,14 @@ namespace org.pdfclown.bytes
             return buffer.ToString();
         }
 
-        public short ReadShort(
-          )
+        public short ReadShort()
         {
             byte[] data = new byte[sizeof(short)];
             Read(data);
             return (short)ConvertUtils.ByteArrayToNumber(data, 0, data.Length, byteOrder);
         }
 
-        public string ReadString(
-          int length
-          )
+        public string ReadString(int length)
         {
             text::StringBuilder buffer = new text::StringBuilder();
             int c;
@@ -162,31 +143,24 @@ namespace org.pdfclown.bytes
             return buffer.ToString();
         }
 
-        public sbyte ReadSignedByte(
-          )
+        public sbyte ReadSignedByte()
         { throw new NotImplementedException(); }
 
-        public ushort ReadUnsignedShort(
-          )
+        public ushort ReadUnsignedShort()
         {
             byte[] data = new byte[sizeof(ushort)];
             Read(data);
             return (ushort)ConvertUtils.ByteArrayToNumber(data, 0, data.Length, byteOrder);
         }
 
-        public void Seek(
-          long offset
-          )
+        public void Seek(long offset)
         { stream.Seek(offset, SeekOrigin.Begin); }
 
-        public void Skip(
-          long offset
-          )
+        public void Skip(long offset)
         { stream.Seek(offset, SeekOrigin.Current); }
 
         #region IDataWrapper
-        public byte[] ToByteArray(
-          )
+        public byte[] ToByteArray()
         {
             byte[] data = new byte[stream.Length];
             {
@@ -202,8 +176,7 @@ namespace org.pdfclown.bytes
         { get { return stream.Length; } }
 
         #region IDisposable
-        public void Dispose(
-          )
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -213,30 +186,19 @@ namespace org.pdfclown.bytes
         #endregion
 
         #region IOutputStream
-        public void Clear(
-          )
+        public void Clear()
         { stream.SetLength(0); }
 
-        public void Write(
-          byte[] data
-          )
+        public void Write(byte[] data)
         { stream.Write(data, 0, data.Length); }
 
-        public void Write(
-          byte[] data,
-          int offset,
-          int length
-          )
+        public void Write(byte[] data, int offset, int length)
         { stream.Write(data, offset, length); }
 
-        public void Write(
-          string data
-          )
+        public void Write(string data)
         { Write(Encoding.Pdf.Encode(data)); }
 
-        public void Write(
-          IInputStream data
-          )
+        public void Write(IInputStream data)
         {
             // TODO:IMPL bufferize!!!
             byte[] baseData = new byte[data.Length];
@@ -251,9 +213,7 @@ namespace org.pdfclown.bytes
         #endregion
 
         #region private
-        private void Dispose(
-          bool disposing
-          )
+        private void Dispose(bool disposing)
         {
             if (disposing)
             {

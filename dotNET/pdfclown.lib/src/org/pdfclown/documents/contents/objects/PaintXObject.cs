@@ -28,6 +28,8 @@ using xObjects = org.pdfclown.documents.contents.xObjects;
 using org.pdfclown.objects;
 
 using System.Collections.Generic;
+using SkiaSharp;
+using System;
 
 namespace org.pdfclown.documents.contents.objects
 {
@@ -35,8 +37,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>'Paint the specified XObject' operation [PDF:1.6:4.7].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class PaintXObject
-      : Operation,
+    public sealed class PaintXObject : Operation,
         IResourceReference<xObjects::XObject>
     {
         #region static
@@ -47,14 +48,10 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public PaintXObject(
-          PdfName name
-          ) : base(OperatorKeyword, name)
+        public PaintXObject(PdfName name) : base(OperatorKeyword, name)
         { }
 
-        public PaintXObject(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public PaintXObject(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
         #endregion
         #endregion
@@ -89,6 +86,39 @@ namespace org.pdfclown.documents.contents.objects
         {
             get { return (PdfName)operands[0]; }
             set { operands[0] = value; }
+        }
+
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            var scanner = state.Scanner;
+            var canvas = scanner.RenderContext;
+            if (canvas == null)
+                return;
+            var xObject = GetXObject(scanner.ContentContext);
+            if (xObject is xObjects.ImageXObject imageObject
+                && imageObject.BaseDataObject is PdfStream stream)
+            {
+                var bitmap = LoadImage(stream.GetBody(false));
+                if (bitmap != null)
+                {
+                    canvas.Save();
+                    var matrix = state.Ctm;
+                    SKMatrix.PreConcat(ref matrix, imageObject.Matrix);
+                    canvas.SetMatrix(matrix);
+                    canvas.DrawBitmap(bitmap, 0, 0);
+                    canvas.Restore();
+                }
+            }
+        }
+
+        private SKBitmap LoadImage(IBuffer data)
+        {
+            try
+            {
+                return SKBitmap.Decode(data.ToByteArray());
+            }
+            catch (Exception e)
+            { return null; }
         }
         #endregion
         #endregion

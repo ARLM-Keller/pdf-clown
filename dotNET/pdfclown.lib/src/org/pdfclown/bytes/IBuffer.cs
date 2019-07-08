@@ -33,27 +33,21 @@ namespace org.pdfclown.bytes
     /**
       <summary>Buffer interface.</summary>
     */
-    public interface IBuffer
-      : IInputStream,
-        IOutputStream
+    public interface IBuffer : IInputStream, IOutputStream
     {
         /**
           <summary>Appends a byte to the buffer.</summary>
           <param name="data">Byte to copy.</param>
           <returns>This buffer.</returns>
         */
-        IBuffer Append(
-          byte data
-          );
+        IBuffer Append(byte data);
 
         /**
           <summary>Appends a byte array to the buffer.</summary>
           <param name="data">Byte array to copy.</param>
           <returns>This buffer.</returns>
         */
-        IBuffer Append(
-          byte[] data
-          );
+        IBuffer Append(byte[] data);
 
         /**
           <summary>Appends a byte range to the buffer.</summary>
@@ -62,38 +56,28 @@ namespace org.pdfclown.bytes
           <param name="length">Number of bytes to copy.</param>
           <returns>This buffer.</returns>
         */
-        IBuffer Append(
-          byte[] data,
-          int offset,
-          int length
-          );
+        IBuffer Append(byte[] data, int offset, int length);
 
         /**
           <summary>Appends a string to the buffer.</summary>
           <param name="data">String to copy.</param>
           <returns>This buffer.</returns>
         */
-        IBuffer Append(
-          string data
-          );
+        IBuffer Append(string data);
 
         /**
           <summary>Appends an IInputStream to the buffer.</summary>
           <param name="data">Source data to copy.</param>
           <returns>This buffer.</returns>
         */
-        IBuffer Append(
-          IInputStream data
-          );
+        IBuffer Append(IInputStream data);
 
         /**
           <summary>Appends a stream to the buffer.</summary>
           <param name="data">Source data to copy.</param>
           <returns>This buffer.</returns>
         */
-        IBuffer Append(
-          System.IO.Stream data
-          );
+        IBuffer Append(System.IO.Stream data);
 
         /**
           <summary>Gets the allocated buffer size.</summary>
@@ -108,37 +92,26 @@ namespace org.pdfclown.bytes
           <summary>Gets a clone of the buffer.</summary>
           <returns>Deep copy of the buffer.</returns>
         */
-        IBuffer Clone(
-          );
+        IBuffer Clone();
 
         /**
           <summary>Applies the specified filter to decode the buffer.</summary>
           <param name="filter">Filter to use for decoding the buffer.</param>
           <param name="parameters">Decoding parameters.</param>
         */
-        void Decode(
-          Filter filter,
-          PdfDictionary parameters
-          );
+        void Decode(Filter filter, PdfDictionary parameters);
 
         /**
           <summary>Deletes a byte chunk from the buffer.</summary>
           <param name="index">Location at which deletion has to begin.</param>
           <param name="length">Number of bytes to delete.</param>
         */
-        void Delete(
-          int index,
-          int length
-          );
+        void Delete(int index, int length);
 
         /**
           <summary>Gets/Sets whether this buffer has changed.</summary>
         */
-        bool Dirty
-        {
-            get;
-            set;
-        }
+        bool Dirty { get; set; }
 
         /**
           <summary>Applies the specified filter to encode the buffer.</summary>
@@ -146,19 +119,14 @@ namespace org.pdfclown.bytes
           <param name="parameters">Encoding parameters.</param>
           <returns>Encoded buffer.</returns>
         */
-        byte[] Encode(
-          Filter filter,
-          PdfDictionary parameters
-          );
+        byte[] Encode(Filter filter, PdfDictionary parameters);
 
         /**
           <summary>Gets the byte at a specified location.</summary>
           <param name="index">A location in the buffer.</param>
           <returns>Byte at the specified location.</returns>
         */
-        int GetByte(
-          int index
-          );
+        int GetByte(int index);
 
         /**
           <summary>Gets the byte range beginning at a specified location.</summary>
@@ -166,10 +134,7 @@ namespace org.pdfclown.bytes
           <param name="length">Number of bytes to copy.</param>
           <returns>Byte range beginning at the specified location.</returns>
         */
-        byte[] GetByteArray(
-          int index,
-          int length
-          );
+        byte[] GetByteArray(int index, int length);
 
         /**
           <summary>Gets the string beginning at a specified location.</summary>
@@ -177,20 +142,14 @@ namespace org.pdfclown.bytes
           <param name="length">Number of bytes to convert.</param>
           <returns>String beginning at the specified location.</returns>
         */
-        string GetString(
-          int index,
-          int length
-          );
+        string GetString(int index, int length);
 
         /**
           <summary>Inserts a byte array into the buffer.</summary>
           <param name="index">Location at which the byte array has to be inserted.</param>
           <param name="data">Byte array to insert.</param>
         */
-        void Insert(
-          int index,
-          byte[] data
-          );
+        void Insert(int index, byte[] data);
 
         /**
           <summary>Inserts a byte range into the buffer.</summary>
@@ -199,32 +158,21 @@ namespace org.pdfclown.bytes
           <param name="offset">Location in the byte array at which copying begins.</param>
           <param name="length">Number of bytes to copy.</param>
         */
-        void Insert(
-          int index,
-          byte[] data,
-          int offset,
-          int length
-          );
+        void Insert(int index, byte[] data, int offset, int length);
 
         /**
           <summary>Inserts a string into the buffer.</summary>
           <param name="index">Location at which the string has to be inserted.</param>
           <param name="data">String to insert.</param>
         */
-        void Insert(
-          int index,
-          string data
-          );
+        void Insert(int index, string data);
 
         /**
           <summary>Inserts an IInputStream into the buffer.</summary>
           <param name="index">Location at which the IInputStream has to be inserted.</param>
           <param name="data">Source data to copy.</param>
         */
-        void Insert(
-          int index,
-          IInputStream data
-          );
+        void Insert(int index, IInputStream data);
 
         /**
           <summary>Notifies the dirtiness of the observed buffer.</summary>
@@ -236,10 +184,7 @@ namespace org.pdfclown.bytes
           <param name="index">Location at which the byte array has to be copied.</param>
           <param name="data">Byte array to copy.</param>
         */
-        void Replace(
-          int index,
-          byte[] data
-          );
+        void Replace(int index, byte[] data);
 
         /**
           <summary>Replaces the buffer contents with a byte range.</summary>
@@ -248,47 +193,32 @@ namespace org.pdfclown.bytes
           <param name="offset">Location in the byte array at which copying begins.</param>
           <param name="length">Number of bytes to copy.</param>
         */
-        void Replace(
-          int index,
-          byte[] data,
-          int offset,
-          int length
-          );
+        void Replace(int index, byte[] data, int offset, int length);
 
         /**
           <summary>Replaces the buffer contents with a string.</summary>
           <param name="index">Location at which the string has to be copied.</param>
           <param name="data">String to copy.</param>
         */
-        void Replace(
-          int index,
-          string data
-          );
+        void Replace(int index, string data);
 
         /**
           <summary>Replaces the buffer contents with an IInputStream.</summary>
           <param name="index">Location at which the IInputStream has to be copied.</param>
           <param name="data">Source data to copy.</param>
         */
-        void Replace(
-          int index,
-          IInputStream data
-          );
+        void Replace(int index, IInputStream data);
 
         /**
           <summary>Sets the used buffer size.</summary>
           <param name="value">New length.</param>
         */
-        void SetLength(
-          int value
-          );
+        void SetLength(int value);
 
         /**
           <summary>Writes the buffer data to a stream.</summary>
           <param name="stream">Target stream.</param>
         */
-        void WriteTo(
-          IOutputStream stream
-          );
+        void WriteTo(IOutputStream stream);
     }
 }

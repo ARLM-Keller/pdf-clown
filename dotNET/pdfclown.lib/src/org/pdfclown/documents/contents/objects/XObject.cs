@@ -48,9 +48,7 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public XObject(
-          PaintXObject operation
-          ) : base(operation)
+        public XObject(PaintXObject operation) : base(operation)
         { }
         #endregion
 
@@ -60,23 +58,17 @@ namespace org.pdfclown.documents.contents.objects
           <summary>Gets the scanner for this object's contents.</summary>
           <param name="context">Scanning context.</param>
         */
-        public ContentScanner GetScanner(
-          ContentScanner context
-          )
+        public ContentScanner GetScanner(ContentScanner context)
         { return Operation.GetScanner(context); }
 
         #region IResourceReference
-        public xObjects::XObject GetResource(
-          IContentContext context
-          )
+        public xObjects::XObject GetResource(IContentContext context)
         { return Operation.GetResource(context); }
 
         public PdfName Name
         {
-            get
-            { return Operation.Name; }
-            set
-            { Operation.Name = value; }
+            get { return Operation.Name; }
+            set { Operation.Name = value; }
         }
         #endregion
         #endregion
@@ -84,8 +76,7 @@ namespace org.pdfclown.documents.contents.objects
         #region private
         private PaintXObject Operation
         {
-            get
-            { return (PaintXObject)Objects[0]; }
+            get { return (PaintXObject)Objects[0]; }
         }
         #endregion
         #endregion

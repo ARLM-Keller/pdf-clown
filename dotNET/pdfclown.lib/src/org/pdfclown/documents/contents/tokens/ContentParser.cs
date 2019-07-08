@@ -72,18 +72,11 @@ namespace org.pdfclown.documents.contents.tokens
               || operation is DrawRectangle) // Path.
                 return ParsePath(operation);
             else if (operation is BeginText) // Text.
-                return new Text(
-                  ParseContentObjects()
-                  );
+                return new Text(ParseContentObjects());
             else if (operation is SaveGraphicsState) // Local graphics state.
-                return new LocalGraphicsState(
-                  ParseContentObjects()
-                  );
+                return new LocalGraphicsState(ParseContentObjects());
             else if (operation is BeginMarkedContent) // Marked-content sequence.
-                return new MarkedContent(
-                  (BeginMarkedContent)operation,
-                  ParseContentObjects()
-                  );
+                return new MarkedContent((BeginMarkedContent)operation, ParseContentObjects());
             else if (operation is BeginInlineImage) // Inline image.
                 return ParseInlineImage();
             else // Single operation.

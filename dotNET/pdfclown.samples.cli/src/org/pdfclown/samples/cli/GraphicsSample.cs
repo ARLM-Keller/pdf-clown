@@ -199,11 +199,7 @@ namespace org.pdfclown.samples.cli
                 float y = 500;
                 float spiralWidth = 100;
                 composer.SetLineWidth(.5f);
-                for (
-                  int rowIndex = 0;
-                  rowIndex < 3;
-                  rowIndex++
-                  )
+                for (int rowIndex = 0; rowIndex < 3; rowIndex++)
                 {
                     float x = 150;
                     float branchWidth = .5f;
@@ -272,9 +268,7 @@ namespace org.pdfclown.samples.cli
             composer.Flush();
         }
 
-        private void BuildMiscellaneousPage(
-          Document document
-          )
+        private void BuildMiscellaneousPage(Document document)
         {
             // 1. Add the page to the document!
             Page page = new Page(document); // Instantiates the page inside the document context.
@@ -287,14 +281,8 @@ namespace org.pdfclown.samples.cli
 
             // 3. Drawing the page contents...
             composer.SetFont(
-              new fonts::StandardType1Font(
-                document,
-                fonts::StandardType1Font.FamilyEnum.Courier,
-                true,
-                false
-                ),
-              32
-              );
+              new fonts::StandardType1Font(document, fonts::StandardType1Font.FamilyEnum.Courier, true, false),
+              32);
 
             {
                 BlockComposer blockComposer = new BlockComposer(composer);
@@ -470,9 +458,7 @@ namespace org.pdfclown.samples.cli
             composer.Flush();
         }
 
-        private void BuildSimpleTextPage(
-          Document document
-          )
+        private void BuildSimpleTextPage(Document document)
         {
             // 1. Add the page to the document!
             Page page = new Page(document); // Instantiates the page inside the document context.
@@ -572,11 +558,7 @@ namespace org.pdfclown.samples.cli
 
             float rotationStep = 0;
             float rotation = 0;
-            for (
-              int columnIndex = 0;
-              columnIndex < 2;
-              columnIndex++
-              )
+            for (int columnIndex = 0; columnIndex < 2; columnIndex++)
             {
                 switch (columnIndex)
                 {
@@ -646,9 +628,7 @@ namespace org.pdfclown.samples.cli
             composer.Flush();
         }
 
-        private void BuildTextBlockPage(
-          Document document
-          )
+        private void BuildTextBlockPage(Document document)
         {
             // 1. Add the page to the document!
             Page page = new Page(document); // Instantiates the page inside the document context.
@@ -747,9 +727,7 @@ namespace org.pdfclown.samples.cli
             composer.Flush();
         }
 
-        private void BuildTextBlockPage2(
-          Document document
-          )
+        private void BuildTextBlockPage2(Document document)
         {
             // 1. Add the page to the document!
             Page page = new Page(document); // Instantiates the page inside the document context.
@@ -767,12 +745,7 @@ namespace org.pdfclown.samples.cli
             BlockComposer blockComposer = new BlockComposer(composer);
             {
                 blockComposer.Begin(
-                  SKRect.Create(
-                    30,
-                    0,
-                    pageSize.Width - 60,
-                    step * .8f
-                    ),
+                  SKRect.Create(30, 0, pageSize.Width - 60, step * .8f),
                   XAlignmentEnum.Center,
                   YAlignmentEnum.Middle
                   );
@@ -859,9 +832,7 @@ namespace org.pdfclown.samples.cli
             composer.Flush();
         }
 
-        private void BuildTextBlockPage3(
-          Document document
-          )
+        private void BuildTextBlockPage3(Document document)
         {
             // 1. Add the page to the document!
             Page page = new Page(document); // Instantiates the page inside the document context.
@@ -936,9 +907,7 @@ namespace org.pdfclown.samples.cli
             composer.Flush();
         }
 
-        private void BuildTextBlockPage4(
-          Document document
-          )
+        private void BuildTextBlockPage4(Document document)
         {
             // 1. Add the page to the document!
             Page page = new Page(document); // Instantiates the page inside the document context.

@@ -34,16 +34,13 @@ namespace org.pdfclown.documents.contents.colorSpaces
       <summary>Shading object [PDF:1.6:4.6.3].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public class Shading
-      : PdfObjectWrapper<PdfDataObject>
+    public class Shading : PdfObjectWrapper<PdfDataObject>
     {
         //TODO:shading types!
         #region static
         #region interface
         #region public
-        public static Shading Wrap(
-          PdfDirectObject baseObject
-          )
+        public static Shading Wrap(PdfDirectObject baseObject)
         { return null; }  //TODO:shading types!
         #endregion
         #endregion
@@ -53,9 +50,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
         #region constructors
         //TODO:IMPL new element constructor!
 
-        internal Shading(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Shading(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 

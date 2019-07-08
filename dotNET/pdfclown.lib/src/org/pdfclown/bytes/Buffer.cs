@@ -76,13 +76,10 @@ namespace org.pdfclown.bytes
         #endregion
 
         #region constructors
-        public Buffer(
-          ) : this(0)
+        public Buffer() : this(0)
         { }
 
-        public Buffer(
-          int capacity
-          )
+        public Buffer(int capacity)
         {
             if (capacity < 1)
             { capacity = DefaultCapacity; }
@@ -91,31 +88,23 @@ namespace org.pdfclown.bytes
             this.length = 0;
         }
 
-        public Buffer(
-          byte[] data
-          )
+        public Buffer(byte[] data)
         {
             this.data = data;
             this.length = data.Length;
         }
 
-        public Buffer(
-          System.IO.Stream data
-          ) : this((int)data.Length)
+        public Buffer(System.IO.Stream data) : this((int)data.Length)
         { Append(data); }
 
-        public Buffer(
-          string data
-          ) : this()
+        public Buffer(string data) : this()
         { Append(data); }
         #endregion
 
         #region interface
         #region public
         #region IBuffer
-        public IBuffer Append(
-          byte data
-          )
+        public IBuffer Append(byte data)
         {
             EnsureCapacity(1);
             this.data[this.length++] = data;
@@ -123,16 +112,10 @@ namespace org.pdfclown.bytes
             return this;
         }
 
-        public IBuffer Append(
-          byte[] data
-          )
+        public IBuffer Append(byte[] data)
         { return Append(data, 0, data.Length); }
 
-        public IBuffer Append(
-          byte[] data,
-          int offset,
-          int length
-          )
+        public IBuffer Append(byte[] data, int offset, int length)
         {
             EnsureCapacity(length);
             Array.Copy(data, offset, this.data, this.length, length);
@@ -141,19 +124,13 @@ namespace org.pdfclown.bytes
             return this;
         }
 
-        public IBuffer Append(
-          string data
-          )
+        public IBuffer Append(string data)
         { return Append(Encoding.Pdf.Encode(data)); }
 
-        public IBuffer Append(
-          IInputStream data
-          )
+        public IBuffer Append(IInputStream data)
         { return Append(data.ToByteArray(), 0, (int)data.Length); }
 
-        public IBuffer Append(
-          System.IO.Stream data
-          )
+        public IBuffer Append(System.IO.Stream data)
         {
             byte[] array = new byte[data.Length];
             {
@@ -165,31 +142,23 @@ namespace org.pdfclown.bytes
 
         public int Capacity
         {
-            get
-            { return data.Length; }
+            get { return data.Length; }
         }
 
-        public IBuffer Clone(
-          )
+        public IBuffer Clone()
         {
             IBuffer clone = new Buffer(Capacity);
             clone.Append(data, 0, this.length);
             return clone;
         }
 
-        public void Decode(
-          Filter filter,
-          PdfDictionary parameters
-          )
+        public void Decode(Filter filter, PdfDictionary parameters)
         {
             data = filter.Decode(data, 0, length, parameters);
             length = data.Length;
         }
 
-        public void Delete(
-          int index,
-          int length
-          )
+        public void Delete(int index, int length)
         {
             // Shift left the trailing data block to override the deleted data!
             Array.Copy(this.data, index + length, this.data, index, this.length - (index + length));
@@ -199,51 +168,30 @@ namespace org.pdfclown.bytes
 
         public bool Dirty
         {
-            get
-            { return dirty; }
-            set
-            { dirty = value; }
+            get { return dirty; }
+            set { dirty = value; }
         }
 
-        public byte[] Encode(
-          Filter filter,
-          PdfDictionary parameters
-          )
+        public byte[] Encode(Filter filter, PdfDictionary parameters)
         { return filter.Encode(data, 0, length, parameters); }
 
-        public int GetByte(
-          int index
-          )
+        public int GetByte(int index)
         { return data[index]; }
 
-        public byte[] GetByteArray(
-          int index,
-          int length
-          )
+        public byte[] GetByteArray(int index, int length)
         {
             byte[] data = new byte[length];
             Array.Copy(this.data, index, data, 0, length);
             return data;
         }
 
-        public string GetString(
-          int index,
-          int length
-          )
+        public string GetString(int index, int length)
         { return Encoding.Pdf.Decode(data, index, length); }
 
-        public void Insert(
-          int index,
-          byte[] data
-          )
+        public void Insert(int index, byte[] data)
         { Insert(index, data, 0, data.Length); }
 
-        public void Insert(
-          int index,
-          byte[] data,
-          int offset,
-          int length
-          )
+        public void Insert(int index, byte[] data, int offset, int length)
         {
             EnsureCapacity(length);
             // Shift right the existing data block to make room for new data!
@@ -254,97 +202,63 @@ namespace org.pdfclown.bytes
             NotifyChange();
         }
 
-        public void Insert(
-          int index,
-          string data
-          )
+        public void Insert(int index, string data)
         { Insert(index, Encoding.Pdf.Encode(data)); }
 
-        public void Insert(
-          int index,
-          IInputStream data
-          )
+        public void Insert(int index, IInputStream data)
         { Insert(index, data.ToByteArray()); }
 
-        public void Replace(
-          int index,
-          byte[] data
-          )
+        public void Replace(int index, byte[] data)
         {
             Array.Copy(data, 0, this.data, index, data.Length);
             NotifyChange();
         }
 
-        public void Replace(
-          int index,
-          byte[] data,
-          int offset,
-          int length
-          )
+        public void Replace(int index, byte[] data, int offset, int length)
         {
             Array.Copy(data, offset, this.data, index, data.Length);
             NotifyChange();
         }
 
-        public void Replace(
-          int index,
-          string data
-          )
+        public void Replace(int index, string data)
         { Replace(index, Encoding.Pdf.Encode(data)); }
 
-        public void Replace(
-          int index,
-          IInputStream data
-          )
+        public void Replace(int index, IInputStream data)
         { Replace(index, data.ToByteArray()); }
 
-        public void SetLength(
-          int value
-          )
+        public void SetLength(int value)
         {
             length = value;
             NotifyChange();
         }
 
-        public void WriteTo(
-          IOutputStream stream
-          )
+        public void WriteTo(IOutputStream stream)
         { stream.Write(data, 0, length); }
 
         #region IInputStream
         public ByteOrderEnum ByteOrder
         {
-            get
-            { return byteOrder; }
-            set
-            { byteOrder = value; }
+            get { return byteOrder; }
+            set { byteOrder = value; }
         }
 
         /* int GetHashCode() uses inherited implementation. */
 
         public long Position
         {
-            get
-            { return position; }
+            get { return position; }
         }
 
-        public void Read(
-          byte[] data
-          )
+        public void Read(byte[] data)
         { Read(data, 0, data.Length); }
 
-        public void Read(
-          byte[] data,
-          int offset,
-          int length
-          )
+        public void Read(byte[] data, int offset, int length)
         {
             Array.Copy(this.data, position, data, offset, length);
             position += length;
         }
 
-        public int ReadByte(
-          )
+        public int ReadByte()
         {
             if (position >= data.Length)
                 return -1; //TODO:harmonize with other Read*() method EOF exceptions!!!
@@ -352,25 +266,21 @@ namespace org.pdfclown.bytes
             return data[position++];
         }
 
-        public int ReadInt(
-          )
+        public int ReadInt()
         {
             int value = ConvertUtils.ByteArrayToInt(data, position, byteOrder);
             position += sizeof(int);
             return value;
         }
 
-        public int ReadInt(
-          int length
-          )
+        public int ReadInt(int length)
         {
             int value = ConvertUtils.ByteArrayToNumber(data, position, length, byteOrder);
             position += length;
             return value;
         }
 
-        public string ReadLine(
-          )
+        public string ReadLine()
         {
             if (position >= data.Length)
                 throw new EndOfStreamException();
@@ -388,25 +298,21 @@ namespace org.pdfclown.bytes
             return buffer.ToString();
         }
 
-        public short ReadShort(
-          )
+        public short ReadShort()
         {
             short value = (short)ConvertUtils.ByteArrayToNumber(data, position, sizeof(short), byteOrder);
             position += sizeof(short);
             return value;
         }
 
-        public string ReadString(
-          int length
-          )
+        public string ReadString(int length)
         {
             string data = Encoding.Pdf.Decode(this.data, position, length);
             position += length;
             return data;
         }
 
-        public sbyte ReadSignedByte(
-          )
+        public sbyte ReadSignedByte()
         {
             if (position >= data.Length)
                 throw new EndOfStreamException();
@@ -414,17 +320,14 @@ namespace org.pdfclown.bytes
             return (sbyte)data[position++];
         }
 
-        public ushort ReadUnsignedShort(
-          )
+        public ushort ReadUnsignedShort()
         {
             ushort value = (ushort)ConvertUtils.ByteArrayToNumber(data, position, sizeof(ushort), byteOrder);
             position += sizeof(ushort);
             return value;
         }
 
-        public void Seek(
-          long position
-          )
+        public void Seek(long position)
         {
             if (position < 0)
             { position = 0; }
@@ -434,14 +337,11 @@ namespace org.pdfclown.bytes
             this.position = (int)position;
         }
 
-        public void Skip(
-          long offset
-          )
+        public void Skip(long offset)
         { Seek(position + offset); }
 
         #region IDataWrapper
-        public byte[] ToByteArray(
-          )
+        public byte[] ToByteArray()
         {
             byte[] data = new byte[this.length];
             Array.Copy(this.data, 0, data, 0, this.length);
@@ -452,13 +352,11 @@ namespace org.pdfclown.bytes
         #region IStream
         public long Length
         {
-            get
-            { return length; }
+            get { return length; }
         }
 
         #region IDisposable
-        public void Dispose(
-          )
+        public void Dispose()
         { }
         #endregion
         #endregion
@@ -466,30 +364,19 @@ namespace org.pdfclown.bytes
         #endregion
 
         #region IOutputStream
-        public void Clear(
-          )
+        public void Clear()
         { SetLength(0); }
 
-        public void Write(
-          byte[] data
-          )
+        public void Write(byte[] data)
         { Append(data); }
 
-        public void Write(
-          byte[] data,
-          int offset,
-          int length
-          )
+        public void Write(byte[] data, int offset, int length)
         { Append(data, offset, length); }
 
-        public void Write(
-          string data
-          )
+        public void Write(string data)
         { Append(data); }
 
-        public void Write(
-          IInputStream data
-          )
+        public void Write(IInputStream data)
         { Append(data); }
         #endregion
         #endregion
@@ -499,9 +386,7 @@ namespace org.pdfclown.bytes
           <summary>Check whether the buffer has sufficient room for
           adding data.</summary>
         */
-        private void EnsureCapacity(
-          int additionalLength
-          )
+        private void EnsureCapacity(int additionalLength)
         {
             int minCapacity = this.length + additionalLength;
             // Is additional data within the buffer capacity?
@@ -520,8 +405,7 @@ namespace org.pdfclown.bytes
             this.data = data;
         }
 
-        private void NotifyChange(
-          )
+        private void NotifyChange()
         {
             if (dirty || OnChange == null)
                 return;

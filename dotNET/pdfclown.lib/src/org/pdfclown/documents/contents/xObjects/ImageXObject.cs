@@ -91,7 +91,6 @@ namespace org.pdfclown.documents.contents.xObjects
             get
             {
                 SKSize size = Size;
-
                 /*
                   NOTE: Image-space-to-user-space matrix is [1/w 0 0 1/h 0 0],
                   where w and h are the width and height of the image in samples [PDF:1.6:4.8.3].

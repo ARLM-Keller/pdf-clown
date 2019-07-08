@@ -44,13 +44,9 @@ namespace org.pdfclown.documents.contents.entities
         #region interface
         #region public
         #region IContentEntity
-        public abstract ContentObject ToInlineObject(
-          PrimitiveComposer composer
-          );
+        public abstract ContentObject ToInlineObject(PrimitiveComposer composer);
 
-        public abstract xObjects::XObject ToXObject(
-          Document context
-          );
+        public abstract xObjects::XObject ToXObject(Document context);
         #endregion
         #endregion
         #endregion

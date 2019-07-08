@@ -49,10 +49,7 @@ namespace org.pdfclown.samples.cli
           NOTE: Page contents are represented by a sequence of content objects,
           possibly nested into multiple levels.
         */
-        private void Scan(
-          ContentScanner level,
-          Page page
-          )
+        private void Scan(ContentScanner level, Page page)
         {
             if (level == null)
                 return;

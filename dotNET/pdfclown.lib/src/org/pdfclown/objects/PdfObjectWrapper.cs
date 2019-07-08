@@ -337,8 +337,7 @@ namespace org.pdfclown.objects
         /**
           <summary>Instantiates an empty wrapper.</summary>
         */
-        protected PdfObjectWrapper(
-          )
+        protected PdfObjectWrapper()
         { }
 
         /**
@@ -346,9 +345,7 @@ namespace org.pdfclown.objects
           <param name="baseObject">PDF object backing this wrapper. It MUST be a <see cref="PdfReference"/>
           every time available.</param>
         */
-        protected PdfObjectWrapper(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected PdfObjectWrapper(PdfDirectObject baseObject) : base(baseObject)
         { }
 
         /**
@@ -359,10 +356,8 @@ namespace org.pdfclown.objects
           <param name="baseDataObject">PDF data object backing this wrapper.</param>
           <seealso cref="PdfObjectWrapper(File, PdfDataObject)"/>
         */
-        protected PdfObjectWrapper(
-          Document context,
-          TDataObject baseDataObject
-          ) : this(context != null ? context.File : null, baseDataObject)
+        protected PdfObjectWrapper(Document context, TDataObject baseDataObject)
+            : this(context != null ? context.File : null, baseDataObject)
         { }
 
         /**
@@ -373,9 +368,7 @@ namespace org.pdfclown.objects
           <param name="baseDataObject">PDF data object backing this wrapper.</param>
           <seealso cref="PdfObjectWrapper(Document, PdfDataObject)"/>
         */
-        protected PdfObjectWrapper(
-          File context,
-          TDataObject baseDataObject
+        protected PdfObjectWrapper(File context, TDataObject baseDataObject
           ) : this(context != null ? context.Register(baseDataObject) : (PdfDirectObject)(PdfDataObject)baseDataObject)
         { }
         #endregion
@@ -387,15 +380,13 @@ namespace org.pdfclown.objects
         */
         public TDataObject BaseDataObject
         {
-            get
-            { return (TDataObject)PdfObject.Resolve(BaseObject); }
+            get { return (TDataObject)PdfObject.Resolve(BaseObject); }
         }
 
         /**
           <summary>Gets whether the underlying data object is concrete.</summary>
         */
-        public bool Exists(
-          )
+        public bool Exists()
         { return !BaseDataObject.Virtual; }
 
         /**

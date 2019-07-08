@@ -38,9 +38,7 @@ namespace org.pdfclown.documents.contents.xObjects
       separate from the content stream in which it is used [PDF:1.6:4.7].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public abstract class XObject
-      : PdfObjectWrapper<PdfStream>,
-        ILayerable
+    public abstract class XObject : PdfObjectWrapper<PdfStream>, ILayerable
     {
         #region static
         #region interface
@@ -50,9 +48,7 @@ namespace org.pdfclown.documents.contents.xObjects
           <param name="baseObject">External object base object.</param>
           <returns>External object associated to the reference.</returns>
         */
-        public static XObject Wrap(
-          PdfDirectObject baseObject
-          )
+        public static XObject Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
@@ -116,10 +112,8 @@ namespace org.pdfclown.documents.contents.xObjects
         #region ILayerable
         public LayerEntity Layer
         {
-            get
-            { return (LayerEntity)PropertyList.Wrap(BaseDataObject.Header[PdfName.OC]); }
-            set
-            { BaseDataObject.Header[PdfName.OC] = value != null ? value.Membership.BaseObject : null; }
+            get { return (LayerEntity)PropertyList.Wrap(BaseDataObject.Header[PdfName.OC]); }
+            set { BaseDataObject.Header[PdfName.OC] = value != null ? value.Membership.BaseObject : null; }
         }
         #endregion
         #endregion

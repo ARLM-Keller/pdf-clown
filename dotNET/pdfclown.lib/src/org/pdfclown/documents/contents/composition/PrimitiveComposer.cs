@@ -481,13 +481,7 @@ namespace org.pdfclown.documents.contents.composition
           <param name="branchRatio">Linear coefficient applied to the branch width.</param>
           <seealso cref="Stroke()"/>
         */
-        public void DrawSpiral(
-          SKPoint center,
-          double startAngle,
-          double endAngle,
-          double branchWidth,
-          double branchRatio
-          )
+        public void DrawSpiral(SKPoint center, double startAngle, double endAngle, double branchWidth, double branchRatio)
         {
             DrawArc(
               SKRect.Create(center.X, center.Y, 0.0001f, 0.0001f),
@@ -502,8 +496,7 @@ namespace org.pdfclown.documents.contents.composition
           <summary>Ends the current (innermostly-nested) composite object.</summary>
           <seealso cref="Begin(CompositeObject)"/>
         */
-        public void End(
-          )
+        public void End()
         {
             scanner = scanner.ParentLevel;
             scanner.MoveNext();
@@ -513,8 +506,7 @@ namespace org.pdfclown.documents.contents.composition
           <summary>Fills the path using the current color [PDF:1.6:4.4.2].</summary>
           <seealso cref="SetFillColor(Color)"/>
         */
-        public void Fill(
-          )
+        public void Fill()
         { Add(objects::PaintPath.Fill); }
 
         /**
@@ -522,15 +514,13 @@ namespace org.pdfclown.documents.contents.composition
           <seealso cref="SetFillColor(Color)"/>
           <seealso cref="SetStrokeColor(Color)"/>
         */
-        public void FillStroke(
-          )
+        public void FillStroke()
         { Add(objects::PaintPath.FillStroke); }
 
         /**
           <summary>Serializes the contents into the content stream.</summary>
         */
-        public void Flush(
-          )
+        public void Flush()
         { scanner.Contents.Flush(); }
 
         /**
@@ -538,10 +528,8 @@ namespace org.pdfclown.documents.contents.composition
         */
         public ContentScanner Scanner
         {
-            get
-            { return scanner; }
-            set
-            { scanner = value; }
+            get { return scanner; }
+            set { scanner = value; }
         }
 
         /**
@@ -549,8 +537,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public ContentScanner.GraphicsState State
         {
-            get
-            { return scanner.State; }
+            get { return scanner.State; }
         }
 
         /**
@@ -559,9 +546,7 @@ namespace org.pdfclown.documents.contents.composition
           <param name="angle">Rotational counterclockwise angle.</param>
           <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         */
-        public void Rotate(
-          double angle
-          )
+        public void Rotate(double angle)
         {
             double rad = MathUtils.ToRadians(angle);
             double cos = Math.Cos(rad);
@@ -576,10 +561,7 @@ namespace org.pdfclown.documents.contents.composition
           <param name="origin">Rotational pivot point; it becomes the new coordinates origin.</param>
           <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         */
-        public void Rotate(
-          double angle,
-          SKPoint origin
-          )
+        public void Rotate(double angle, SKPoint origin)
         {
             // Center to the new origin!
             Translate(
@@ -602,27 +584,20 @@ namespace org.pdfclown.documents.contents.composition
           <param name="ratioY">Vertical scaling ratio.</param>
           <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         */
-        public void Scale(
-          double ratioX,
-          double ratioY
-          )
+        public void Scale(double ratioX, double ratioY)
         { ApplyMatrix(ratioX, 0, 0, ratioY, 0, 0); }
 
         /**
           <summary>Sets the character spacing parameter [PDF:1.6:5.2.1].</summary>
         */
-        public void SetCharSpace(
-          double value
-          )
+        public void SetCharSpace(double value)
         { Add(new objects::SetCharSpace(value)); }
 
         /**
           <summary>Sets the nonstroking color value [PDF:1.6:4.5.7].</summary>
           <seealso cref="SetStrokeColor(Color)"/>
         */
-        public void SetFillColor(
-          colors::Color value
-          )
+        public void SetFillColor(colors::Color value)
         {
             if (!scanner.State.FillColorSpace.Equals(value.ColorSpace))
             {
@@ -638,10 +613,7 @@ namespace org.pdfclown.documents.contents.composition
           <param name="name">Resource identifier of the font.</param>
           <param name="size">Scaling factor (points).</param>
         */
-        public void SetFont(
-          PdfName name,
-          double size
-          )
+        public void SetFont(PdfName name, double size)
         {
             // Doesn't the font exist in the context resources?
             if (!scanner.ContentContext.Resources.Fonts.ContainsKey(name))
@@ -658,42 +630,31 @@ namespace org.pdfclown.documents.contents.composition
           <param name="value">Font.</param>
           <param name="size">Scaling factor (points).</param>
         */
-        public void SetFont(
-          fonts::Font value,
-          double size
-          )
+        public void SetFont(fonts::Font value, double size)
         { SetFont_(GetResourceName(value), size); }
 
         /**
           <summary>Sets the line cap style [PDF:1.6:4.3.2].</summary>
         */
-        public void SetLineCap(
-          LineCapEnum value
-          )
+        public void SetLineCap(LineCapEnum value)
         { Add(new objects::SetLineCap(value)); }
 
         /**
           <summary>Sets the line dash pattern [PDF:1.6:4.3.2].</summary>
         */
-        public void SetLineDash(
-          LineDash value
-          )
+        public void SetLineDash(LineDash value)
         { Add(new objects::SetLineDash(value)); }
 
         /**
           <summary>Sets the line join style [PDF:1.6:4.3.2].</summary>
         */
-        public void SetLineJoin(
-          LineJoinEnum value
-          )
+        public void SetLineJoin(LineJoinEnum value)
         { Add(new objects::SetLineJoin(value)); }
 
         /**
           <summary>Sets the line width [PDF:1.6:4.3.2].</summary>
         */
-        public void SetLineWidth(
-          double value
-          )
+        public void SetLineWidth(double value)
         { Add(new objects::SetLineWidth(value)); }
 
         /**
@@ -707,14 +668,7 @@ namespace org.pdfclown.documents.contents.composition
           <param name="f">Item 2,1 of the matrix.</param>
           <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         */
-        public void SetMatrix(
-          double a,
-          double b,
-          double c,
-          double d,
-          double e,
-          double f
-          )
+        public void SetMatrix(double a, double b, double c, double d, double e, double f)
         {
             // Reset the CTM!
             Add(objects::ModifyCTM.GetResetCTM(scanner.State));
@@ -725,18 +679,14 @@ namespace org.pdfclown.documents.contents.composition
         /**
           <summary>Sets the miter limit [PDF:1.6:4.3.2].</summary>
         */
-        public void SetMiterLimit(
-          double value
-          )
+        public void SetMiterLimit(double value)
         { Add(new objects::SetMiterLimit(value)); }
 
         /**
           <summary>Sets the stroking color value [PDF:1.6:4.5.7].</summary>
           <seealso cref="SetFillColor(Color)"/>
         */
-        public void SetStrokeColor(
-          colors::Color value
-          )
+        public void SetStrokeColor(colors::Color value)
         {
             if (!scanner.State.StrokeColorSpace.Equals(value.ColorSpace))
             {
@@ -751,17 +701,13 @@ namespace org.pdfclown.documents.contents.composition
           <summary>Sets the text leading [PDF:1.6:5.2.4], relative to the current text line height.
           </summary>
         */
-        public void SetTextLead(
-          double value
-          )
+        public void SetTextLead(double value)
         { Add(new objects::SetTextLead(value * State.Font.GetLineHeight(State.FontSize))); }
 
         /**
           <summary>Sets the text rendering mode [PDF:1.6:5.2.5].</summary>
         */
-        public void SetTextRenderMode(
-          TextRenderModeEnum value
-          )
+        public void SetTextRenderMode(TextRenderModeEnum value)
         { Add(new objects::SetTextRenderMode(value)); }
 
         /**
@@ -775,17 +721,13 @@ namespace org.pdfclown.documents.contents.composition
         /**
           <summary>Sets the text horizontal scaling [PDF:1.6:5.2.3], normalized to 1.</summary>
         */
-        public void SetTextScale(
-          double value
-          )
+        public void SetTextScale(double value)
         { Add(new objects::SetTextScale(value * 100)); }
 
         /**
           <summary>Sets the word spacing [PDF:1.6:5.2.2].</summary>
         */
-        public void SetWordSpace(
-          double value
-          )
+        public void SetWordSpace(double value)
         { Add(new objects::SetWordSpace(value)); }
 
         /**
@@ -794,14 +736,9 @@ namespace org.pdfclown.documents.contents.composition
           <returns>Bounding box vertices in default user space units.</returns>
           <exception cref="EncodeException"/>
         */
-        public Quad ShowText(
-          string value
-          )
+        public Quad ShowText(string value)
         {
-            return ShowText(
-              value,
-              new SKPoint(0, 0)
-              );
+            return ShowText(value, new SKPoint(0, 0));
         }
 
         /**
@@ -812,16 +749,9 @@ namespace org.pdfclown.documents.contents.composition
           <returns>Link.</returns>
           <exception cref="EncodeException"/>
         */
-        public Link ShowText(
-          string value,
-          actions::Action action
-          )
+        public Link ShowText(string value, actions::Action action)
         {
-            return ShowText(
-              value,
-              new SKPoint(0, 0),
-              action
-              );
+            return ShowText(value, new SKPoint(0, 0), action);
         }
 
         /**
@@ -832,18 +762,9 @@ namespace org.pdfclown.documents.contents.composition
           <returns>Bounding box vertices in default user space units.</returns>
           <exception cref="EncodeException"/>
         */
-        public Quad ShowText(
-          string value,
-          SKPoint location
-          )
+        public Quad ShowText(string value, SKPoint location)
         {
-            return ShowText(
-              value,
-              location,
-              XAlignmentEnum.Left,
-              YAlignmentEnum.Top,
-              0
-              );
+            return ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0);
         }
 
         /**
@@ -855,20 +776,9 @@ namespace org.pdfclown.documents.contents.composition
           <returns>Link.</returns>
           <exception cref="EncodeException"/>
         */
-        public Link ShowText(
-          string value,
-          SKPoint location,
-          actions::Action action
-          )
+        public Link ShowText(string value, SKPoint location, actions::Action action)
         {
-            return ShowText(
-              value,
-              location,
-              XAlignmentEnum.Left,
-              YAlignmentEnum.Top,
-              0,
-              action
-              );
+            return ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0, action);
         }
 
         /**
@@ -882,13 +792,7 @@ namespace org.pdfclown.documents.contents.composition
           <returns>Bounding box vertices in default user space units.</returns>
           <exception cref="EncodeException"/>
         */
-        public Quad ShowText(
-          string value,
-          SKPoint location,
-          XAlignmentEnum xAlignment,
-          YAlignmentEnum yAlignment,
-          double rotation
-          )
+        public Quad ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
         {
             Quad frame;
 
@@ -899,14 +803,8 @@ namespace org.pdfclown.documents.contents.composition
                 double rad = MathUtils.ToRadians(rotation);
                 double cos = Math.Cos(rad);
                 double sin = Math.Sin(rad);
-                ApplyMatrix(
-                  cos,
-                  sin,
-                  -sin,
-                  cos,
-                  location.X,
-                  scanner.ContextSize.Height - location.Y
-                  );
+                ApplyMatrix(cos, sin, -sin, cos,
+                    location.X, scanner.ContextSize.Height - location.Y);
 
                 string[] textLines = value.Split('\n');
 
@@ -1082,10 +980,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public void ShowXObject(XObject value, SKPoint location)
         {
-            ShowXObject(
-              GetResourceName(value),
-              location
-              );
+            ShowXObject(GetResourceName(value), location);
         }
 
         /**
@@ -1110,11 +1005,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public void ShowXObject(XObject value, SKPoint location, SKSize? size)
         {
-            ShowXObject(
-              GetResourceName(value),
-              location,
-              size
-              );
+            ShowXObject(GetResourceName(value), location, size);
         }
 
         /**
@@ -1173,10 +1064,7 @@ namespace org.pdfclown.documents.contents.composition
             BeginLocalState();
             try
             {
-                Translate(
-                  location.X,
-                  scanner.ContextSize.Height - location.Y
-                  );
+                Translate(location.X, scanner.ContextSize.Height - location.Y);
                 if (rotation != 0)
                 { Rotate(rotation); }
                 ApplyMatrix(
@@ -1204,47 +1092,27 @@ namespace org.pdfclown.documents.contents.composition
           <param name="yAlignment">Vertical alignment.</param>
           <param name="rotation">Rotational counterclockwise angle.</param>
         */
-        public void ShowXObject(
-          XObject value,
-          SKPoint location,
-          SKSize? size,
-          XAlignmentEnum xAlignment,
-          YAlignmentEnum yAlignment,
-          double rotation
-          )
+        public void ShowXObject(XObject value, SKPoint location, SKSize? size,
+            XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
         {
-            ShowXObject(
-              GetResourceName(value),
-              location,
-              size,
-              xAlignment,
-              yAlignment,
-              rotation
-              );
+            ShowXObject(GetResourceName(value), location, size,
+              xAlignment, yAlignment, rotation);
         }
 
         /**
           <summary>Begins a subpath [PDF:1.6:4.4.1].</summary>
           <param name="startPoint">Starting point.</param>
         */
-        public void StartPath(
-          SKPoint startPoint
-          )
+        public void StartPath(SKPoint startPoint)
         {
-            Add(
-              new objects::BeginSubpath(
-                startPoint.X,
-                scanner.ContextSize.Height - startPoint.Y
-                )
-              );
+            Add(new objects::BeginSubpath(startPoint.X, scanner.ContextSize.Height - startPoint.Y));
         }
 
         /**
           <summary>Strokes the path using the current color [PDF:1.6:4.4.2].</summary>
           <seealso cref="SetStrokeColor(Color)"/>
         */
-        public void Stroke(
-          )
+        public void Stroke()
         { Add(objects::PaintPath.Stroke); }
 
         /**
@@ -1254,10 +1122,7 @@ namespace org.pdfclown.documents.contents.composition
           <param name="distanceY">Vertical distance.</param>
           <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         */
-        public void Translate(
-          double distanceX,
-          double distanceY
-          )
+        public void Translate(double distanceX, double distanceY)
         { ApplyMatrix(1, 0, 0, 1, distanceX, distanceY); }
         #endregion
 
@@ -1366,11 +1231,7 @@ namespace org.pdfclown.documents.contents.composition
                   );
 
                 // Draw the current quadrant curve!
-                DrawCurve(
-                  point2,
-                  control1,
-                  control2
-                  );
+                DrawCurve(point2, control1, control2);
 
                 // Last arc quadrant?
                 if (radians2 == endRadians)
@@ -1392,8 +1253,7 @@ namespace org.pdfclown.documents.contents.composition
         }
 
         //TODO: temporary (consolidate stack tracing of marked content blocks!)
-        private LayerEntity GetLayer(
-          )
+        private LayerEntity GetLayer()
         {
             var parentLevel = scanner.ParentLevel;
             while (parentLevel != null)
@@ -1409,9 +1269,7 @@ namespace org.pdfclown.documents.contents.composition
             return null;
         }
 
-        private PdfName GetResourceName<T>(
-          T value
-          ) where T : PdfObjectWrapper
+        private PdfName GetResourceName<T>(T value) where T : PdfObjectWrapper
         {
             if (value is colors::DeviceGrayColorSpace)
                 return PdfName.DeviceGray;
@@ -1444,9 +1302,7 @@ namespace org.pdfclown.documents.contents.composition
           [PDF:1.6:4.2.2].</summary>
           <param name="angle">Rotational counterclockwise angle.</param>
         */
-        private void RotateText(
-          double angle
-          )
+        private void RotateText(double angle)
         {
             double rad = MathUtils.ToRadians(angle);
             double cos = Math.Cos(rad);
@@ -1461,16 +1317,10 @@ namespace org.pdfclown.documents.contents.composition
           <param name="ratioX">Horizontal scaling ratio.</param>
           <param name="ratioY">Vertical scaling ratio.</param>
         */
-        private void ScaleText(
-          double ratioX,
-          double ratioY
-          )
+        private void ScaleText(double ratioX, double ratioY)
         { SetTextMatrix(ratioX, 0, 0, ratioY, 0, 0); }
 
-        private void SetFont_(
-          PdfName name,
-          double size
-          )
+        private void SetFont_(PdfName name, double size)
         { Add(new objects::SetFont(name, size)); }
 
         /**
@@ -1500,10 +1350,7 @@ namespace org.pdfclown.documents.contents.composition
           <param name="distanceX">Horizontal distance.</param>
           <param name="distanceY">Vertical distance.</param>
         */
-        private void TranslateText(
-          double distanceX,
-          double distanceY
-          )
+        private void TranslateText(double distanceX, double distanceY)
         { SetTextMatrix(1, 0, 0, 1, distanceX, distanceY); }
 
         /**
@@ -1512,25 +1359,16 @@ namespace org.pdfclown.documents.contents.composition
           <param name="offsetX">Horizontal offset.</param>
           <param name="offsetY">Vertical offset.</param>
         */
-        private void TranslateTextRelative(
-          double offsetX,
-          double offsetY
-          )
+        private void TranslateTextRelative(double offsetX, double offsetY)
         {
-            Add(
-              new objects::TranslateTextRelative(
-                offsetX,
-                -offsetY
-                )
-              );
+            Add(new objects::TranslateTextRelative(offsetX, -offsetY));
         }
 
         /**
           <summary>Applies a translation to the coordinate system from text space to user space,
           moving to the start of the next line [PDF:1.6:5.3.1].</summary>
         */
-        private void TranslateTextToNextLine(
-          )
+        private void TranslateTextToNextLine()
         { Add(objects::TranslateTextToNextLine.Value); }
         #endregion
         #endregion

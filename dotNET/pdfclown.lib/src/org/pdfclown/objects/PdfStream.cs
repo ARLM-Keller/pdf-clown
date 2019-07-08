@@ -67,33 +67,16 @@ namespace org.pdfclown.objects
         #endregion
 
         #region constructors
-        public PdfStream(
-          ) : this(
-            new PdfDictionary(),
-            new bytes.Buffer()
-            )
+        public PdfStream() : this(new PdfDictionary(), new bytes.Buffer())
         { }
 
-        public PdfStream(
-          PdfDictionary header
-          ) : this(
-            header,
-            new bytes.Buffer()
-            )
+        public PdfStream(PdfDictionary header) : this(header, new bytes.Buffer())
         { }
 
-        public PdfStream(
-          IBuffer body
-          ) : this(
-            new PdfDictionary(),
-            body
-            )
+        public PdfStream(IBuffer body) : this(new PdfDictionary(), body)
         { }
 
-        public PdfStream(
-          PdfDictionary header,
-          IBuffer body
-          )
+        public PdfStream(PdfDictionary header, IBuffer body)
         {
             this.header = (PdfDictionary)Include(header);
 
@@ -109,10 +92,7 @@ namespace org.pdfclown.objects
 
         #region interface
         #region public
-        public override PdfObject Accept(
-          IVisitor visitor,
-          object data
-          )
+        public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
         /**
@@ -153,9 +133,7 @@ namespace org.pdfclown.objects
           <summary>Gets the stream body.</summary>
           <param name="decode">Defines whether the body has to be decoded.</param>
         */
-        public IBuffer GetBody(
-          bool decode
-          )
+        public IBuffer GetBody(bool decode)
         {
             if (!bodyResolved)
             {
@@ -218,8 +196,7 @@ namespace org.pdfclown.objects
         */
         public PdfDictionary Header
         {
-            get
-            { return header; }
+            get { return header; }
         }
 
         public PdfDirectObject Parameters
@@ -242,10 +219,8 @@ namespace org.pdfclown.objects
 
         public override PdfObject Parent
         {
-            get
-            { return parent; }
-            internal set
-            { parent = value; }
+            get { return parent; }
+            internal set { parent = value; }
         }
 
         /**
@@ -254,10 +229,7 @@ namespace org.pdfclown.objects
           file location changed.</param>
           <seealso cref="DataFile"/>
         */
-        public void SetDataFile(
-          FileSpecification value,
-          bool preserve
-          )
+        public void SetDataFile(FileSpecification value, bool preserve)
         {
             /*
               NOTE: If preserve argument is set to true, body's dirtiness MUST be forced in order to ensure
@@ -340,9 +312,7 @@ namespace org.pdfclown.objects
             header[PdfName.F] = dataFileObject;
         }
 
-        public override PdfObject Swap(
-          PdfObject other
-          )
+        public override PdfObject Swap(PdfObject other)
         {
             PdfStream otherStream = (PdfStream)other;
             PdfDictionary otherHeader = otherStream.header;
@@ -360,24 +330,17 @@ namespace org.pdfclown.objects
 
         public override bool Updateable
         {
-            get
-            { return updateable; }
-            set
-            { updateable = value; }
+            get { return updateable; }
+            set { updateable = value; }
         }
 
         public override bool Updated
         {
-            get
-            { return updated; }
-            protected internal set
-            { updated = value; }
+            get { return updated; }
+            protected internal set { updated = value; }
         }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          File context
-          )
+        public override void WriteTo(IOutputStream stream, File context)
         {
             /*
               NOTE: The header is temporarily tweaked to accommodate serialization settings.
@@ -451,10 +414,8 @@ namespace org.pdfclown.objects
         [PDF(VersionEnum.PDF12)]
         public FileSpecification DataFile
         {
-            get
-            { return FileSpecification.Wrap(header[PdfName.F]); }
-            set
-            { SetDataFile(value, false); }
+            get { return FileSpecification.Wrap(header[PdfName.F]); }
+            set { SetDataFile(value, false); }
         }
         #endregion
         #endregion
@@ -462,10 +423,8 @@ namespace org.pdfclown.objects
         #region protected
         protected internal override bool Virtual
         {
-            get
-            { return virtual_; }
-            set
-            { virtual_ = value; }
+            get { return virtual_; }
+            set { virtual_ = value; }
         }
         #endregion
         #endregion

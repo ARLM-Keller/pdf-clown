@@ -53,9 +53,7 @@ namespace org.pdfclown.documents.contents.entities
               );
         }
 
-        public static Image Get(
-          System.IO.Stream stream
-          )
+        public static Image Get(System.IO.Stream stream)
         {
             // Get the format identifier!
             byte[] formatMarkerBytes = new byte[2];
@@ -85,9 +83,7 @@ namespace org.pdfclown.documents.contents.entities
         #endregion
 
         #region constructors
-        protected Image(
-          System.IO.Stream stream
-          )
+        protected Image(System.IO.Stream stream)
         { this.stream = stream; }
         #endregion
 
@@ -99,10 +95,8 @@ namespace org.pdfclown.documents.contents.entities
         */
         public int BitsPerComponent
         {
-            get
-            { return bitsPerComponent; }
-            protected set
-            { bitsPerComponent = value; }
+            get { return bitsPerComponent; }
+            protected set { bitsPerComponent = value; }
         }
 
         /**
@@ -110,10 +104,8 @@ namespace org.pdfclown.documents.contents.entities
         */
         public int Height
         {
-            get
-            { return height; }
-            protected set
-            { height = value; }
+            get { return height; }
+            protected set { height = value; }
         }
 
         /**
@@ -121,10 +113,8 @@ namespace org.pdfclown.documents.contents.entities
         */
         public int Width
         {
-            get
-            { return width; }
-            protected set
-            { width = value; }
+            get { return width; }
+            protected set { width = value; }
         }
         #endregion
 
@@ -134,8 +124,7 @@ namespace org.pdfclown.documents.contents.entities
         */
         protected System.IO.Stream Stream
         {
-            get
-            { return stream; }
+            get { return stream; }
         }
         #endregion
         #endregion

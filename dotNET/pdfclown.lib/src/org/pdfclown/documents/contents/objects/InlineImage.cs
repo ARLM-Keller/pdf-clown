@@ -49,10 +49,7 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public InlineImage(
-          InlineImageHeader header,
-          InlineImageBody body
-          )
+        public InlineImage(InlineImageHeader header, InlineImageBody body)
         {
             objects.Add(header);
             objects.Add(body);
@@ -66,8 +63,7 @@ namespace org.pdfclown.documents.contents.objects
         */
         public Operation Body
         {
-            get
-            { return (Operation)Objects[1]; }
+            get { return (Operation)Objects[1]; }
         }
 
         /**
@@ -75,8 +71,7 @@ namespace org.pdfclown.documents.contents.objects
         */
         public override Operation Header
         {
-            get
-            { return (Operation)Objects[0]; }
+            get { return (Operation)Objects[0]; }
         }
 
         /**
@@ -94,10 +89,7 @@ namespace org.pdfclown.documents.contents.objects
             }
         }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          Document context
-          )
+        public override void WriteTo(IOutputStream stream, Document context)
         {
             stream.Write(BeginOperatorKeyword); stream.Write("\n");
             Header.WriteTo(stream, context);

@@ -45,13 +45,10 @@ namespace org.pdfclown.files
       : IDisposable
     {
         #region types
-        private sealed class ImplicitContainer
-          : PdfIndirectObject
+        private sealed class ImplicitContainer : PdfIndirectObject
         {
-            public ImplicitContainer(
-              File file,
-              PdfDataObject dataObject
-              ) : base(file, dataObject, new XRefEntry(int.MinValue, int.MinValue))
+            public ImplicitContainer(File file, PdfDataObject dataObject)
+                : base(file, dataObject, new XRefEntry(int.MinValue, int.MinValue))
             { }
         }
         #endregion
@@ -77,8 +74,7 @@ namespace org.pdfclown.files
         #endregion
 
         #region constructors
-        public File(
-          )
+        public File()
         {
             Initialize();
 
@@ -88,32 +84,17 @@ namespace org.pdfclown.files
             document = new Document(this);
         }
 
-        public File(
-          string path
-          ) : this(
-            new bytes.Stream(
-              new FileStream(
-                path,
-                FileMode.Open,
-                FileAccess.Read
-                )
-              )
-            )
+        public File(string path)
+            : this(new bytes.Stream(new FileStream(path, FileMode.Open, FileAccess.Read)))
         { this.path = path; }
 
-        public File(
-          byte[] data
-          ) : this(new bytes.Buffer(data))
+        public File(byte[] data) : this(new bytes.Buffer(data))
         { }
 
-        public File(
-          System.IO.Stream stream
-          ) : this(new bytes.Stream(stream))
+        public File(System.IO.Stream stream) : this(new bytes.Stream(stream))
         { }
 
-        public File(
-          IInputStream stream
-          )
+        public File(IInputStream stream)
         {
             Initialize();
 
@@ -139,8 +120,7 @@ namespace org.pdfclown.files
             }
         }
 
-        ~File(
-          )
+        ~File()
         { Dispose(false); }
         #endregion
 
@@ -167,8 +147,7 @@ namespace org.pdfclown.files
         */
         public FileConfiguration Configuration
         {
-            get
-            { return configuration; }
+            get { return configuration; }
         }
 
         /**
@@ -176,12 +155,10 @@ namespace org.pdfclown.files
         */
         public Document Document
         {
-            get
-            { return document; }
+            get { return document; }
         }
 
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         { return hashCode; }
 
         /**
@@ -189,8 +166,7 @@ namespace org.pdfclown.files
         */
         public FileIdentifier ID
         {
-            get
-            { return FileIdentifier.Wrap(Trailer[PdfName.ID]); }
+            get { return FileIdentifier.Wrap(Trailer[PdfName.ID]); }
         }
 
         /**
@@ -198,8 +174,7 @@ namespace org.pdfclown.files
         */
         public IndirectObjects IndirectObjects
         {
-            get
-            { return indirectObjects; }
+            get { return indirectObjects; }
         }
 
         /**
@@ -207,10 +182,8 @@ namespace org.pdfclown.files
         */
         public string Path
         {
-            get
-            { return path; }
-            set
-            { path = value; }
+            get { return path; }
+            set { path = value; }
         }
 
         /**
@@ -219,33 +192,27 @@ namespace org.pdfclown.files
         */
         public Reader Reader
         {
-            get
-            { return reader; }
+            get { return reader; }
         }
 
         /**
           <summary>Registers an <b>internal data object</b>.</summary>
         */
-        public PdfReference Register(
-          PdfDataObject obj
-          )
+        public PdfReference Register(PdfDataObject obj)
         { return indirectObjects.Add(obj).Reference; }
 
         /**
           <summary>Serializes the file to the current file-system path using the <see
           cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
         */
-        public void Save(
-          )
+        public void Save()
         { Save(SerializationModeEnum.Standard); }
 
         /**
           <summary>Serializes the file to the current file-system path.</summary>
           <param name="mode">Serialization mode.</param>
         */
-        public void Save(
-          SerializationModeEnum mode
-          )
+        public void Save(SerializationModeEnum mode)
         {
             if (!System.IO.File.Exists(path))
                 throw new FileNotFoundException("No valid source path available.");
@@ -263,10 +230,7 @@ namespace org.pdfclown.files
           <param name="path">Target path.</param>
           <param name="mode">Serialization mode.</param>
         */
-        public void Save(
-          string path,
-          SerializationModeEnum mode
-          )
+        public void Save(string path, SerializationModeEnum mode)
         {
             using (var outputStream = new System.IO.FileStream(path, FileMode.Create, FileAccess.Write))
             { Save(new bytes.Stream(outputStream), mode); }
@@ -278,10 +242,7 @@ namespace org.pdfclown.files
           <param name="stream">Target stream.</param>
           <param name="mode">Serialization mode.</param>
         */
-        public void Save(
-          System.IO.Stream stream,
-          SerializationModeEnum mode
-          )
+        public void Save(System.IO.Stream stream, SerializationModeEnum mode)
         { Save(new bytes.Stream(stream), mode); }
 
         /**
@@ -290,10 +251,7 @@ namespace org.pdfclown.files
           <param name="stream">Target stream.</param>
           <param name="mode">Serialization mode.</param>
         */
-        public void Save(
-          IOutputStream stream,
-          SerializationModeEnum mode
-          )
+        public void Save(IOutputStream stream, SerializationModeEnum mode)
         {
             var information = Document.Information;
             if (Reader == null)
@@ -320,16 +278,13 @@ namespace org.pdfclown.files
         */
         public PdfDictionary Trailer
         {
-            get
-            { return trailer; }
+            get { return trailer; }
         }
 
         /**
           <summary>Unregisters an internal object.</summary>
         */
-        public void Unregister(
-          PdfReference reference
-          )
+        public void Unregister(PdfReference reference)
         { indirectObjects.RemoveAt(reference.ObjectNumber); }
 
         /**
@@ -337,8 +292,7 @@ namespace org.pdfclown.files
         */
         public bool Updated
         {
-            get
-            { return indirectObjects.ModifiedObjects.Count > 0; }
+            get { return indirectObjects.ModifiedObjects.Count > 0; }
         }
 
         /**
@@ -349,13 +303,11 @@ namespace org.pdfclown.files
         */
         public Version Version
         {
-            get
-            { return version; }
+            get { return version; }
         }
 
         #region IDisposable
-        public void Dispose(
-          )
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -364,9 +316,7 @@ namespace org.pdfclown.files
         #endregion
 
         #region private
-        private void Dispose(
-          bool disposing
-          )
+        private void Dispose(bool disposing)
         {
             if (disposing)
             {
@@ -387,19 +337,15 @@ namespace org.pdfclown.files
             }
         }
 
-        private void Initialize(
-          )
+        private void Initialize()
         { configuration = new FileConfiguration(this); }
 
-        private PdfDictionary PrepareTrailer(
-          PdfDictionary trailer
-          )
+        private PdfDictionary PrepareTrailer(PdfDictionary trailer)
         { return (PdfDictionary)new ImplicitContainer(this, trailer).DataObject; }
 
         private string TempPath
         {
-            get
-            { return (path == null ? null : path + ".tmp"); }
+            get { return (path == null ? null : path + ".tmp"); }
         }
         #endregion
         #endregion

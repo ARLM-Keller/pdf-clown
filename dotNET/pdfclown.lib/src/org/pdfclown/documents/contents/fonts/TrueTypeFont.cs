@@ -44,9 +44,7 @@ namespace org.pdfclown.documents.contents.fonts
     {
         #region dynamic
         #region constructors
-        internal TrueTypeFont(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal TrueTypeFont(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
         #endregion

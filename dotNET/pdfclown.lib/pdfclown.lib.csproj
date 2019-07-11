@@ -108,5 +108,6 @@
   </ItemGroup>    
   <ItemGroup>
     <PackageReference Include="SkiaSharp" Version="1.68.0" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" Version="1.68.0" />
   </ItemGroup>
 </Project>

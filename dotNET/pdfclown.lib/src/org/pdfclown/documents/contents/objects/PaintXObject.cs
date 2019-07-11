@@ -104,6 +104,7 @@ namespace org.pdfclown.documents.contents.objects
                     canvas.Save();
                     var matrix = state.Ctm;
                     SKMatrix.PreConcat(ref matrix, imageObject.Matrix);
+                    //SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1, -1));
                     canvas.SetMatrix(matrix);
                     canvas.DrawBitmap(bitmap, 0, 0);
                     canvas.Restore();

@@ -52,17 +52,13 @@ namespace org.pdfclown.documents.contents.fonts
 
         #region interface
         #region protected
-        protected override PdfDataObject GetDescriptorValue(
-          PdfName key
-          )
+        protected override PdfDataObject GetDescriptorValue(PdfName key)
         {
             PdfDictionary fontDescriptor = (PdfDictionary)BaseDataObject.Resolve(PdfName.FontDescriptor);
             return fontDescriptor != null ? fontDescriptor.Resolve(key) : null;
         }
 
-        protected virtual IDictionary<ByteArray, int> GetBaseEncoding(
-          PdfName encodingName
-          )
+        protected virtual IDictionary<ByteArray, int> GetBaseEncoding(PdfName encodingName)
         {
             if (encodingName == null) // Default encoding.
             {
@@ -75,8 +71,7 @@ namespace org.pdfclown.documents.contents.fonts
                 return Encoding.Get(encodingName).GetCodes();
         }
 
-        protected void LoadEncoding(
-          )
+        protected void LoadEncoding()
         {
             // Mapping character codes...
             PdfDataObject encodingObject = BaseDataObject.Resolve(PdfName.Encoding);
@@ -85,10 +80,8 @@ namespace org.pdfclown.documents.contents.fonts
             if (this.codes == null)
             {
                 IDictionary<ByteArray, int> codes;
-                if (encodingObject is PdfDictionary) // Derived encoding.
+                if (encodingObject is PdfDictionary encodingDictionary) // Derived encoding.
                 {
-                    PdfDictionary encodingDictionary = (PdfDictionary)encodingObject;
-
                     // Base encoding.
                     codes = GetBaseEncoding((PdfName)encodingDictionary[PdfName.BaseEncoding]);
 
@@ -126,6 +119,34 @@ namespace org.pdfclown.documents.contents.fonts
                 { codes = GetBaseEncoding((PdfName)encodingObject); }
                 this.codes = new BiDictionary<ByteArray, int>(codes);
             }
+            else
+            {
+                //if (encodingObject is PdfDictionary encodingDictionary 
+                //    && encodingDictionary.Values.Count>0
+                //    && encodingDictionary.Resolve(PdfName.Differences) is PdfArray differencesObject)
+                //{
+                    
+                //    byte[] charCodeData = new byte[1];
+                //    foreach (PdfDirectObject differenceObject in differencesObject)
+                //    {
+                //        if (differenceObject is PdfInteger) // Subsequence initial code.
+                //        { charCodeData[0] = (byte)(((int)((PdfInteger)differenceObject).Value) & 0xFF); }
+                //        else // Character name.
+                //        {
+                //            ByteArray charCode = new ByteArray(charCodeData);
+                //            string charName = (string)((PdfName)differenceObject).Value;
+                //            if (charName.Equals(".notdef", StringComparison.Ordinal))
+                //            { codes.Remove(charCode); }
+                //            else
+                //            {
+                //                int? code = GlyphMapping.NameToCode(charName);
+                //                codes[charCode] = (code ?? charCodeData[0]);
+                //            }
+                //            charCodeData[0]++;
+                //        }
+                //    }
+                //}
+            }
             // Purging unused character codes...
             {
                 PdfArray glyphWidthObjects = (PdfArray)BaseDataObject.Resolve(PdfName.Widths);
@@ -147,8 +168,7 @@ namespace org.pdfclown.documents.contents.fonts
             { glyphIndexes[code.Value] = (int)code.Key.Data[0] & 0xFF; }
         }
 
-        protected override void OnLoad(
-          )
+        protected override void OnLoad()
         {
             LoadEncoding();
 

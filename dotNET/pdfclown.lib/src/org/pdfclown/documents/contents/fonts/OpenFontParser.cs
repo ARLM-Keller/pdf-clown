@@ -124,9 +124,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Gets whether the given data represents a valid Open Font.</summary>
         */
-        public static bool IsOpenFont(
-          bytes::IInputStream fontData
-          )
+        public static bool IsOpenFont(bytes::IInputStream fontData)
         {
             long position = fontData.Position;
             fontData.Seek(0);
@@ -170,9 +168,7 @@ namespace org.pdfclown.documents.contents.fonts
         #endregion
 
         #region constructors
-        internal OpenFontParser(
-          bytes::IInputStream fontData
-          )
+        internal OpenFontParser(bytes::IInputStream fontData)
         {
             FontData = fontData;
             FontData.ByteOrder = ByteOrderEnum.BigEndian; // Ensures that proper endianness is applied.
@@ -186,8 +182,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads the font data.</summary>
         */
-        private void Load(
-          )
+        private void Load()
         {
             LoadTableInfo();
 
@@ -203,8 +198,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads the character to glyph index mapping table.</summary>
         */
-        private void LoadCMap(
-          )
+        private void LoadCMap()
         {
             /*
               NOTE: A 'cmap' table may contain one or more subtables that represent multiple encodings
@@ -231,11 +225,7 @@ namespace org.pdfclown.documents.contents.fonts
             int tableCount = FontData.ReadUnsignedShort();
 
             // Encoding records.
-            for (
-              int tableIndex = 0;
-              tableIndex < tableCount;
-              tableIndex++
-              )
+            for (int tableIndex = 0; tableIndex < tableCount; tableIndex++)
             {
                 // Platform ID.
                 int platformID = FontData.ReadUnsignedShort();
@@ -308,8 +298,7 @@ namespace org.pdfclown.documents.contents.fonts
           <summary>Loads format-0 cmap subtable (Byte encoding table, i.e. Apple standard
           character-to-glyph index mapping table).</summary>
         */
-        private void LoadCMapFormat0(
-          )
+        private void LoadCMapFormat0()
         {
             /*
               NOTE: This is a simple 1-to-1 mapping of character codes to glyph indices.
@@ -322,14 +311,10 @@ namespace org.pdfclown.documents.contents.fonts
             FontData.Skip(4);
             // Glyph index array.
             // Iterating through the glyph indexes...
-            for (
-              int code = 0;
-              code < 256;
-              code++
-              )
+            for (int code = 0; code < 256; code++)
             {
                 GlyphIndexes[
-                  code // Character code.
+                    code // Character code.
                   ] = FontData.ReadByte() // Glyph index.
                   ;
             }
@@ -340,8 +325,7 @@ namespace org.pdfclown.documents.contents.fonts
           character to glyph index mapping table for fonts that support Unicode ranges other than the
           range [U+D800 - U+DFFF] (defined as Surrogates Area, in Unicode v 3.0)).</summary>
         */
-        private void LoadCMapFormat4(
-          )
+        private void LoadCMapFormat4()
         {
             /*
               NOTE: This format is used when the character codes for the characters represented by a font
@@ -370,22 +354,14 @@ namespace org.pdfclown.documents.contents.fonts
             FontData.Skip(6);
             // End character code for each segment.
             int[] endCodes = new int[segmentCount]; // USHORT.
-            for (
-              int index = 0;
-              index < segmentCount;
-              index++
-              )
+            for (int index = 0; index < segmentCount; index++)
             { endCodes[index] = FontData.ReadUnsignedShort(); }
 
             // Skip to the array of start character code for each segment!
             FontData.Skip(2);
             // Start character code for each segment.
             int[] startCodes = new int[segmentCount]; // USHORT.
-            for (
-              int index = 0;
-              index < segmentCount;
-              index++
-              )
+            for (int index = 0; index < segmentCount; index++)
             { startCodes[index] = FontData.ReadUnsignedShort(); }
 
             // Delta for all character codes in segment.
@@ -399,11 +375,7 @@ namespace org.pdfclown.documents.contents.fonts
 
             // Offsets into glyph index array.
             int[] rangeOffsets = new int[segmentCount]; // USHORT.
-            for (
-              int index = 0;
-              index < segmentCount;
-              index++
-              )
+            for (int index = 0; index < segmentCount; index++)
             { rangeOffsets[index] = FontData.ReadUnsignedShort(); }
 
             // 3. Glyph ID array.
@@ -424,11 +396,7 @@ namespace org.pdfclown.documents.contents.fonts
 
             GlyphIndexes = new Dictionary<int, int>(glyphIndexCount);
             // Iterating through the segments...
-            for (
-              int segmentIndex = 0;
-              segmentIndex < segmentCount;
-              segmentIndex++
-              )
+            for (int segmentIndex = 0; segmentIndex < segmentCount; segmentIndex++)
             {
                 int endCode = endCodes[segmentIndex];
                 // Is it NOT the last end character code?
@@ -440,11 +408,7 @@ namespace org.pdfclown.documents.contents.fonts
                 if (endCode < 0xFFFF)
                 { endCode++; }
                 // Iterating inside the current segment...
-                for (
-                  int code = startCodes[segmentIndex];
-                  code < endCode;
-                  code++
-                  )
+                for (int code = startCodes[segmentIndex]; code < endCode; code++)
                 {
                     int glyphIndex;
                     // Doesn't the mapping of character codes rely on glyph ID?
@@ -494,20 +458,14 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads format-6 cmap subtable (Trimmed table mapping).</summary>
         */
-        private void LoadCMapFormat6(
-          )
+        private void LoadCMapFormat6()
         {
             // Skip to the first character code!
             FontData.Skip(4);
             int firstCode = FontData.ReadUnsignedShort();
             int codeCount = FontData.ReadUnsignedShort();
             GlyphIndexes = new Dictionary<int, int>(codeCount);
-            for (
-              int code = firstCode,
-                lastCode = firstCode + codeCount;
-              code < lastCode;
-              code++
-              )
+            for (int code = firstCode, lastCode = firstCode + codeCount; code < lastCode; code++)
             {
                 GlyphIndexes[
                   code // Character code.
@@ -519,9 +477,7 @@ namespace org.pdfclown.documents.contents.fonts
           <summary>Gets a name.</summary>
           <param name="id">Name identifier.</param>
         */
-        private string GetName(
-          int id
-          )
+        private string GetName(int id)
         {
             // Naming Table ('name' table).
             // Retrieve the location info!
@@ -535,11 +491,7 @@ namespace org.pdfclown.documents.contents.fonts
             int recordCount = FontData.ReadUnsignedShort(); // USHORT.
             int storageOffset = FontData.ReadUnsignedShort(); // USHORT.
                                                               // Iterating through the name records...
-            for (
-              int recordIndex = 0;
-              recordIndex < recordCount;
-              recordIndex++
-              )
+            for (int recordIndex = 0; recordIndex < recordCount; recordIndex++)
             {
                 int platformID = FontData.ReadUnsignedShort(); // USHORT.
                                                                // Is it the default platform?
@@ -577,8 +529,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads the glyph kerning.</summary>
         */
-        private void LoadGlyphKerning(
-          )
+        private void LoadGlyphKerning()
         {
             // Kerning ('kern' table).
             // Retrieve the location info!
@@ -593,11 +544,7 @@ namespace org.pdfclown.documents.contents.fonts
             GlyphKernings = new Dictionary<int, int>();
             int subtableOffset = (int)FontData.Position;
             // Iterating through the subtables...
-            for (
-              int subtableIndex = 0;
-              subtableIndex < subtableCount;
-              subtableIndex++
-              )
+            for (int subtableIndex = 0; subtableIndex < subtableCount; subtableIndex++)
             {
                 // Go to the subtable length!
                 FontData.Seek(subtableOffset + 2);
@@ -619,11 +566,7 @@ namespace org.pdfclown.documents.contents.fonts
                     // Skip to the beginning of the list!
                     FontData.Skip(6);
                     // List of kerning pairs and values.
-                    for (
-                      int pairIndex = 0;
-                      pairIndex < pairCount;
-                      pairIndex++
-                      )
+                    for (int pairIndex = 0; pairIndex < pairCount; pairIndex++)
                     {
                         // Get the glyph index pair (left-hand and right-hand)!
                         int pair = FontData.ReadInt(); // USHORT USHORT.
@@ -641,8 +584,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads the glyph widths.</summary>
         */
-        private void LoadGlyphWidths(
-          )
+        private void LoadGlyphWidths()
         {
             // Horizontal Metrics ('hmtx' table).
             // Retrieve the location info!
@@ -666,8 +608,7 @@ namespace org.pdfclown.documents.contents.fonts
             }
         }
 
-        private void LoadTableInfo(
-          )
+        private void LoadTableInfo()
         {
             // 1. Offset Table.
             FontData.Seek(4);
@@ -678,11 +619,7 @@ namespace org.pdfclown.documents.contents.fonts
             FontData.Skip(6);
             // Collecting the table offsets...
             tableOffsets = new Dictionary<string, int>(tableCount);
-            for (
-              int index = 0;
-              index < tableCount;
-              index++
-              )
+            for (int index = 0; index < tableCount; index++)
             {
                 // Get the table tag!
                 String tag = ReadAsciiString(4);
@@ -702,8 +639,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads general tables.</summary>
         */
-        private void LoadTables(
-          )
+        private void LoadTables()
         {
             // Font Header ('head' table).
             int tableOffset;
@@ -786,18 +722,13 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Reads a string from the font file using the extended ASCII encoding.</summary>
         */
-        private string ReadAsciiString(
-          int length
-          )
+        private string ReadAsciiString(int length)
         { return ReadString(length, Charset.ISO88591); }
 
         /**
           <summary>Reads a string.</summary>
         */
-        private string ReadString(
-          int length,
-          int platformID
-          )
+        private string ReadString(int length, int platformID)
         {
             // Which platform?
             switch (platformID)
@@ -813,10 +744,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Reads a string from the font file using the specified encoding.</summary>
         */
-        private string ReadString(
-          int length,
-          text::Encoding encoding
-          )
+        private string ReadString(int length, text::Encoding encoding)
         {
             byte[] data = new byte[length];
             FontData.Read(data, 0, length);
@@ -826,9 +754,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Reads a string from the font file using the Unicode encoding.</summary>
         */
-        private string ReadUnicodeString(
-          int length
-          )
+        private string ReadUnicodeString(int length)
         { return ReadString(length, Charset.UTF16BE); }
         #endregion
         #endregion

@@ -40,14 +40,10 @@ namespace org.pdfclown.documents.contents.fonts
     {
         #region dynamic
         #region constructors
-        internal Type3Font(
-          Document context
-          ) : base(context)
+        internal Type3Font(Document context) : base(context)
         { }
 
-        internal Type3Font(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Type3Font(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -55,14 +51,12 @@ namespace org.pdfclown.documents.contents.fonts
         #region public
         public override double Ascent
         {
-            get
-            { return 0; }
+            get { return 0; }
         }
 
         public override double Descent
         {
-            get
-            { return 0; }
+            get { return 0; }
         }
         #endregion
         #endregion

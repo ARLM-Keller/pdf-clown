@@ -43,15 +43,10 @@ namespace org.pdfclown.documents.contents.fonts
       : CompositeFont
     {
         #region constructors
-        internal Type2Font(
-          Document context,
-          OpenFontParser parser
-          ) : base(context, parser)
+        internal Type2Font(Document context, OpenFontParser parser) : base(context, parser)
         { }
 
-        internal Type2Font(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Type2Font(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
     }

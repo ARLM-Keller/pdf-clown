@@ -37,14 +37,10 @@ namespace org.pdfclown.documents
       <summary>Document pages collection [PDF:1.6:3.6.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class Pages
-      : PdfObjectWrapper<PdfDictionary>,
-        IExtList<Page>,
-        IList<Page>
+    public sealed class Pages : PdfObjectWrapper<PdfDictionary>, IExtList<Page>, IList<Page>
     {
         #region types
-        private class Enumerator
-          : IEnumerator<Page>
+        private class Enumerator : IEnumerator<Page>
         {
             /**
               <summary>Collection size.</summary>
@@ -78,9 +74,7 @@ namespace org.pdfclown.documents
             */
             private PdfDictionary parent;
 
-            internal Enumerator(
-              Pages pages
-              )
+            internal Enumerator(Pages pages)
             {
                 count = pages.Count;
                 parent = pages.BaseDataObject;
@@ -89,18 +83,15 @@ namespace org.pdfclown.documents
 
             Page IEnumerator<Page>.Current
             {
-                get
-                { return current; }
+                get { return current; }
             }
 
             public object Current
             {
-                get
-                { return ((IEnumerator<Page>)this).Current; }
+                get { return ((IEnumerator<Page>)this).Current; }
             }
 
-            public bool MoveNext(
-              )
+            public bool MoveNext()
             {
                 if (index == count)
                     return false;
@@ -161,12 +152,10 @@ namespace org.pdfclown.documents
                 }
             }
 
-            public void Reset(
-              )
+            public void Reset()
             { throw new NotSupportedException(); }
 
-            public void Dispose(
-              )
+            public void Dispose()
             { }
         }
         #endregion
@@ -178,51 +167,26 @@ namespace org.pdfclown.documents
         */
         #region dynamic
         #region constructors
-        internal Pages(
-          Document context
-          ) : base(
-            context,
+        internal Pages(Document context)
+            : base(context,
             new PdfDictionary(
-              new PdfName[3]
-              {
-            PdfName.Type,
-            PdfName.Kids,
-            PdfName.Count
-              },
-              new PdfDirectObject[3]
-              {
-            PdfName.Pages,
-            new PdfArray(),
-            PdfInteger.Default
-              }
-              )
-            )
+              new PdfName[3] { PdfName.Type, PdfName.Kids, PdfName.Count },
+              new PdfDirectObject[3] { PdfName.Pages, new PdfArray(), PdfInteger.Default }))
         { }
 
-        internal Pages(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Pages(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
         #region interface
         #region public
         #region IExtList<Page>
-        public IList<Page> GetRange(
-          int index,
-          int count
-          )
+        public IList<Page> GetRange(int index, int count)
         {
-            return GetSlice(
-              index,
-              index + count
-              );
+            return GetSlice(index, index + count);
         }
 
-        public IList<Page> GetSlice(
-          int fromIndex,
-          int toIndex
-          )
+        public IList<Page> GetSlice(int fromIndex, int toIndex)
         {
             List<Page> pages = new List<Page>(toIndex - fromIndex);
             int i = fromIndex;
@@ -232,23 +196,16 @@ namespace org.pdfclown.documents
             return pages;
         }
 
-        public void InsertAll<TVar>(
-          int index,
-          ICollection<TVar> pages
-          )
+        public void InsertAll<TVar>(int index, ICollection<TVar> pages)
           where TVar : Page
         { CommonAddAll(index, pages); }
 
         #region IExtCollection<Page>
-        public void AddAll<TVar>(
-          ICollection<TVar> pages
-          )
+        public void AddAll<TVar>(ICollection<TVar> pages)
           where TVar : Page
         { CommonAddAll(-1, pages); }
 
-        public void RemoveAll<TVar>(
-          ICollection<TVar> pages
-          )
+        public void RemoveAll<TVar>(ICollection<TVar> pages)
           where TVar : Page
         {
             /*
@@ -260,9 +217,7 @@ namespace org.pdfclown.documents
             { Remove(page); }
         }
 
-        public int RemoveAll(
-          Predicate<Page> match
-          )
+        public int RemoveAll(Predicate<Page> match)
         {
             /*
               NOTE: Removal is indirectly fulfilled through an intermediate collection
@@ -283,25 +238,16 @@ namespace org.pdfclown.documents
         #endregion
 
         #region IList<Page>
-        public int IndexOf(
-          Page page
-          )
+        public int IndexOf(Page page)
         { return page.Index; }
 
-        public void Insert(
-          int index,
-          Page page
-          )
+        public void Insert(int index, Page page)
         { CommonAddAll(index, (ICollection<Page>)new Page[] { page }); }
 
-        public void RemoveAt(
-          int index
-          )
+        public void RemoveAt(int index)
         { Remove(this[index]); }
 
-        public Page this[
-          int index
-          ]
+        public Page this[int index]
         {
             get
             {
@@ -314,11 +260,7 @@ namespace org.pdfclown.documents
                 int pageOffset = 0;
                 PdfDictionary parent = BaseDataObject;
                 PdfArray kids = (PdfArray)parent.Resolve(PdfName.Kids);
-                for (
-                  int i = 0;
-                  i < kids.Count;
-                  i++
-                  )
+                for (int i = 0; i < kids.Count; i++)
                 {
                     PdfReference kidReference = (PdfReference)kids[i];
                     PdfDictionary kid = (PdfDictionary)kidReference.DataObject;
@@ -361,24 +303,16 @@ namespace org.pdfclown.documents
         }
 
         #region ICollection<Page>
-        public void Add(
-          Page page
-          )
+        public void Add(Page page)
         { CommonAddAll(-1, (ICollection<Page>)new Page[] { page }); }
 
-        public void Clear(
-          )
+        public void Clear()
         { throw new NotImplementedException(); }
 
-        public bool Contains(
-          Page page
-          )
+        public bool Contains(Page page)
         { throw new NotImplementedException(); }
 
-        public void CopyTo(
-          Page[] pages,
-          int index
-          )
+        public void CopyTo(Page[] pages, int index)
         { throw new NotImplementedException(); }
 
         public int Count
@@ -387,9 +321,7 @@ namespace org.pdfclown.documents
         public bool IsReadOnly
         { get { return false; } }
 
-        public bool Remove(
-          Page page
-          )
+        public bool Remove(Page page)
         {
             PdfDictionary pageData = page.BaseDataObject;
             // Get the parent tree node!
@@ -421,13 +353,11 @@ namespace org.pdfclown.documents
         }
 
         #region IEnumerable<Page>
-        public IEnumerator<Page> GetEnumerator(
-          )
+        public IEnumerator<Page> GetEnumerator()
         { return new Enumerator(this); }
 
         #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator(
-          )
+        IEnumerator IEnumerable.GetEnumerator()
         { return this.GetEnumerator(); }
         #endregion
         #endregion
@@ -441,10 +371,7 @@ namespace org.pdfclown.documents
           <param name="index">Addition position. To append, use value -1.</param>
           <param name="pages">Collection of pages to add.</param>
         */
-        private void CommonAddAll<TPage>(
-          int index,
-          ICollection<TPage> pages
-          ) where TPage : Page
+        private void CommonAddAll<TPage>(int index, ICollection<TPage> pages) where TPage : Page
         {
             PdfDirectObject parent;
             PdfDictionary parentData;
@@ -488,10 +415,7 @@ namespace org.pdfclown.documents
                 else // Insert.
                 {
                     // Insert the page into the collection!
-                    kidsData.Insert(
-                      offset++,
-                      page.BaseObject
-                      );
+                    kidsData.Insert(offset++, page.BaseObject);
                 }
                 // Bind the page to the collection!
                 page.BaseDataObject[PdfName.Parent] = parent;

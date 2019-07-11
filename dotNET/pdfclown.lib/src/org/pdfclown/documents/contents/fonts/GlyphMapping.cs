@@ -45,21 +45,17 @@ namespace org.pdfclown.documents.contents.fonts
     {
         private static Dictionary<string, int> codes = new Dictionary<string, int>();
 
-        static GlyphMapping(
-          )
+        static GlyphMapping()
         { Load(); }
 
-        public static int? NameToCode(
-          string name
-          )
+        public static int? NameToCode(string name)
         { int code; return codes.TryGetValue(name, out code) ? code : (int?)null; }
 
         /**
           <summary>Loads the glyph list mapping character names to character codes (unicode
           encoding).</summary>
         */
-        private static void Load(
-          )
+        private static void Load()
         {
             StreamReader glyphListStream = null;
             try
@@ -69,9 +65,7 @@ namespace org.pdfclown.documents.contents.fonts
                   NOTE: The Adobe Glyph List [AGL:2.0] represents the reference name-to-unicode map
                   for consumer applications.
                 */
-                glyphListStream = new StreamReader(
-                  Assembly.GetExecutingAssembly().GetManifestResourceStream("fonts.AGL20")
-                  );
+                glyphListStream = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("fonts.AGL20"));
 
                 // Parsing the glyph list...
                 string line;

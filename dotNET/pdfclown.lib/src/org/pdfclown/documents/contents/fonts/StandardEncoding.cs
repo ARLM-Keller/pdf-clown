@@ -32,11 +32,9 @@ namespace org.pdfclown.documents.contents.fonts
     /**
       <summary>Adobe standard Latin-text encoding [PDF:1.6:D].</summary>
     */
-    internal sealed class StandardEncoding
-      : Encoding
+    internal sealed class StandardEncoding : Encoding
     {
-        public StandardEncoding(
-          )
+        public StandardEncoding()
         {
             Put(65, "A");
             Put(225, "AE");

@@ -35,8 +35,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>Inline image object [PDF:1.6:4.8.6].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class InlineImage
-      : GraphicsObject
+    public sealed class InlineImage : GraphicsObject
     {
         #region static
         #region fields

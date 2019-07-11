@@ -69,7 +69,8 @@ namespace org.pdfclown.documents.contents.objects
             var pathObject = state.Scanner.RenderObject;
             if (pathObject != null)
             {
-                pathObject.MoveTo((float)X, (float)Y);
+                var rect = SKRect.Create((float)X, (float)Y, (float)Width, (float)Height);
+                System.Diagnostics.Debug.WriteLine($"Draw Rectangle:{rect}");
                 pathObject.AddRect(SKRect.Create((float)X, (float)Y, (float)Width, (float)Height));
             }
         }

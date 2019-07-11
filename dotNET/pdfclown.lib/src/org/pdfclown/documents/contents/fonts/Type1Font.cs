@@ -48,8 +48,7 @@ namespace org.pdfclown.documents.contents.fonts
       * OpenFont/CFF (in case "CFF" table's Top DICT has no CIDFont operators).
     */
     [PDF(VersionEnum.PDF10)]
-    public class Type1Font
-      : SimpleFont
+    public class Type1Font : SimpleFont
     {
         #region dynamic
         #region fields
@@ -57,14 +56,10 @@ namespace org.pdfclown.documents.contents.fonts
         #endregion
 
         #region constructors
-        internal Type1Font(
-          Document context
-          ) : base(context)
+        internal Type1Font(Document context) : base(context)
         { }
 
-        internal Type1Font(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Type1Font(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
         #endregion

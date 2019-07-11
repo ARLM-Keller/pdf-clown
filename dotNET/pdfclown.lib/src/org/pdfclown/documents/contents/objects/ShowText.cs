@@ -93,17 +93,17 @@ namespace org.pdfclown.documents.contents.objects
             SKMatrix tm = state.Tm;
 
             var context = state.Scanner.RenderContext;
-            var fill = context != null ? state.FillColorSpace?.GetPaint(state.FillColor) : null;
+            var fill = context != null && state.RenderModeFill ? state.FillColorSpace?.GetPaint(state.FillColor) : null;
             if (fill != null)
             {
-                fill.Typeface = SKTypeface.FromFamilyName(font.Name);
+                fill.Typeface = font.GetTypeface();
                 fill.TextSize = (float)state.FontSize;
                 fill.TextScaleX = (float)state.Scale;
             }
-            var stroke = context != null ? state.StrokeColorSpace?.GetPaint(state.StrokeColor) : null;
+            var stroke = context != null && state.RenderModeStroke ? state.StrokeColorSpace?.GetPaint(state.StrokeColor) : null;
             if (stroke != null)
             {
-                stroke.Typeface = SKTypeface.FromFamilyName(font.Name);
+                stroke.Typeface = font.GetTypeface();
                 stroke.TextSize = (float)state.FontSize;
                 stroke.TextScaleX = (float)state.Scale;
                 stroke.Style = SKPaintStyle.Stroke;
@@ -140,28 +140,27 @@ namespace org.pdfclown.documents.contents.objects
                 if (textElement is byte[] byteElement) // Text string.
                 {
                     string textString = font.Decode(byteElement);
-
+                    
                     foreach (char textChar in textString)
                     {
-                        if (context != null && !(textString.Length == 1 && textString[0] == ' '))
+                        if (context != null
+                            && !(textString.Length == 1
+                            && (textString[0] == ' '
+                            || textString[0] == '\r'
+                            || textString[0] == '\n')))
                         {
+                            var glyph = font.GetGlyph(textChar);
                             SKMatrix trm = ctm;
                             SKMatrix.PreConcat(ref trm, tm);
                             SKMatrix.PreConcat(ref trm, SKMatrix.MakeScale(1, -1));
-
+                            
                             context.Save();
                             context.SetMatrix(trm);
-                            if (state.RenderMode == TextRenderModeEnum.Fill
-                                || state.RenderMode == TextRenderModeEnum.FillStroke
-                                || state.RenderMode == TextRenderModeEnum.FillClip
-                                || state.RenderMode == TextRenderModeEnum.FillStrokeClip)
+                            if (fill != null)
                             {
                                 context.DrawText(textChar.ToString(), 0, 0, fill);
                             }
-                            if (state.RenderMode == TextRenderModeEnum.Stroke
-                                || state.RenderMode == TextRenderModeEnum.FillStroke
-                                || state.RenderMode == TextRenderModeEnum.StrokeClip
-                                || state.RenderMode == TextRenderModeEnum.FillStrokeClip)
+                            if (stroke != null)
                             {
                                 context.DrawText(textChar.ToString(), 0, 0, stroke);
                             }

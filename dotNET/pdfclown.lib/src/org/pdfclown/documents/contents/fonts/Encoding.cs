@@ -43,8 +43,7 @@ namespace org.pdfclown.documents.contents.fonts
         #endregion
 
         #region constructors
-        static Encoding(
-          )
+        static Encoding()
         {
             //TODO:this collection MUST be automatically populated looking for Encoding subclasses!
             Encodings[PdfName.StandardEncoding] = new StandardEncoding();
@@ -57,9 +56,7 @@ namespace org.pdfclown.documents.contents.fonts
         #endregion
 
         #region interface
-        public static Encoding Get(
-          PdfName name
-          )
+        public static Encoding Get(PdfName name)
         { return Encodings[name]; }
         #endregion
         #endregion
@@ -71,22 +68,15 @@ namespace org.pdfclown.documents.contents.fonts
 
         #region interface
         #region public
-        public Dictionary<ByteArray, int> GetCodes(
-          )
+        public Dictionary<ByteArray, int> GetCodes()
         { return new Dictionary<ByteArray, int>(codes); }
         #endregion
 
         #region protected
-        protected void Put(
-          int charCode,
-          string charName
-          )
+        protected void Put(int charCode, string charName)
         { Put(charCode, GlyphMapping.NameToCode(charName).Value); }
 
-        protected void Put(
-          int charCode,
-          int unicode
-          )
+        protected void Put(int charCode, int unicode)
         { codes[new ByteArray(new byte[] { (byte)charCode })] = unicode; }
         #endregion
         #endregion

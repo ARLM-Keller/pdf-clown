@@ -38,7 +38,7 @@ namespace org.pdfclown.samples.cli
 
                 using (var stream = new SKFileWStream(GetOutputPath("ContentRenderingSample.jpg")))
                 {
-                    image.Encode(stream, SKEncodedImageFormat.Jpeg, 100);
+                    SKPixmap.Encode(stream, image, SKEncodedImageFormat.Jpeg, 100);
                 };
             }
         }

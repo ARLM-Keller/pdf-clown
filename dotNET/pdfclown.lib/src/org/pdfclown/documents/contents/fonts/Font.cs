@@ -36,6 +36,9 @@ using io = System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SkiaSharp;
+using SkiaSharp.HarfBuzz;
+using HarfBuzzSharp;
 
 namespace org.pdfclown.documents.contents.fonts
 {
@@ -43,8 +46,7 @@ namespace org.pdfclown.documents.contents.fonts
       <summary>Abstract font [PDF:1.6:5.4].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public abstract class Font
-      : PdfObjectWrapper<PdfDictionary>
+    public abstract class Font : PdfObjectWrapper<PdfDictionary>
     {
         #region types
         /**
@@ -108,12 +110,7 @@ namespace org.pdfclown.documents.contents.fonts
             return Get(
               context,
               new bytes.Stream(
-                new io::FileStream(
-                  path,
-                  io::FileMode.Open,
-                  io::FileAccess.Read
-                  )
-                )
+                  new io::FileStream(path, io::FileMode.Open, io::FileAccess.Read))
               );
         }
 
@@ -282,6 +279,51 @@ namespace org.pdfclown.documents.contents.fonts
 
         #region interface
         #region public
+        public virtual SKTypeface GetTypeface()
+        {
+            if (BaseDataObject is PdfDictionary dict)
+            {
+                if (BaseDataObject.Resolve(PdfName.FontDescriptor) is PdfDictionary fontDescription)
+                {
+                    if (fontDescription.Resolve(PdfName.FontFile) is PdfStream stream)
+                    {
+                        var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
+                        return GetTypeface(stream, name);
+                    }
+                    if (fontDescription.Resolve(PdfName.FontFile2) is PdfStream stream2)
+                    {
+                        var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
+                        return GetTypeface(stream2, name);
+                    }
+                    if (fontDescription.Resolve(PdfName.FontFile3) is PdfStream stream3)
+                    {
+                        var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
+                        return GetTypeface(stream3, name);
+                    }
+                }
+                else if (BaseDataObject.Resolve(PdfName.BaseFont) is PdfName baseFont)
+                {
+                    return SKTypeface.FromFamilyName(baseFont.StringValue);
+                }
+            }
+
+            return null;
+        }
+
+        private static SKTypeface GetTypeface(PdfStream stream, string name)
+        {
+            var body = stream.GetBody(true).ToByteArray();
+            //System.IO.File.WriteAllBytes($"export{name}.ttf", body);
+
+            //.BlobExtensions.ToHarfBuzzBlob
+            var data = new SKMemoryStream(body);
+            //var blob = data.ToHarfBuzzBlob();
+            //var face = new HarfBuzzSharp.Face(blob, 0);
+            //var font = new HarfBuzzSharp.Font(face);
+
+            return SKTypeface.FromStream(data);
+        }
+
         /**
           <summary>Gets the unscaled vertical offset from the baseline to the ascender line (ascent).
           The value is a positive number.</summary>
@@ -301,6 +343,11 @@ namespace org.pdfclown.documents.contents.fonts
         public ICollection<int> CodePoints
         {
             get { return glyphIndexes.Keys; }
+        }
+
+        public ushort GetGlyph(int key)
+        {
+            return glyphIndexes.TryGetValue(key, out var glyph) ? (ushort)glyph : (ushort)0;
         }
 
         /**
@@ -349,7 +396,9 @@ namespace org.pdfclown.documents.contents.fonts
                         }
                     }
                     if (textChar > -1)
-                    { textBuilder.Append((char)textChar); }
+                    {
+                        textBuilder.Append((char)textChar);
+                    }
                     index += codeBufferSize;
                     codeBufferSize = 1;
                 }
@@ -723,6 +772,14 @@ namespace org.pdfclown.documents.contents.fonts
                 CMapParser parser = new CMapParser(toUnicodeStream.Body);
                 codes = new BiDictionary<ByteArray, int>(parser.Parse());
                 symbolic = false;
+            }
+
+            if (BaseDataObject.ContainsKey(PdfName.Encoding)) // Encoding explicit mapping.
+            {
+                //PdfStream toUnicodeStream = (PdfStream)BaseDataObject.Resolve(PdfName.Encoding);
+                //CMapParser parser = new CMapParser(toUnicodeStream.Body);
+                //codes = new BiDictionary<ByteArray, int>(parser.Parse());
+                //symbolic = false;
             }
 
             OnLoad();

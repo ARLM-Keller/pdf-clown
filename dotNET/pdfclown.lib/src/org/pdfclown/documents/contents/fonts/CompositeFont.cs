@@ -45,16 +45,12 @@ namespace org.pdfclown.documents.contents.fonts
       a composite font descendant describing glyphs based on Adobe Type 1 font format.</remarks>
     */
     [PDF(VersionEnum.PDF12)]
-    public abstract class CompositeFont
-      : Font
+    public abstract class CompositeFont : Font
     {
         #region static
         #region interface
         #region public
-        new public static CompositeFont Get(
-          Document context,
-          bytes::IInputStream fontData
-          )
+        new public static CompositeFont Get(Document context, bytes::IInputStream fontData)
         {
             OpenFontParser parser = new OpenFontParser(fontData);
             switch (parser.OutlineFormat)
@@ -75,15 +71,12 @@ namespace org.pdfclown.documents.contents.fonts
         #endregion
 
         #region constructors
-        internal CompositeFont(
-          Document context,
-          OpenFontParser parser
-          ) : base(context)
+        internal CompositeFont(Document context, OpenFontParser parser)
+            : base(context)
         { Load(parser); }
 
-        protected CompositeFont(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected CompositeFont(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
         #endregion
 
@@ -94,8 +87,7 @@ namespace org.pdfclown.documents.contents.fonts
         */
         protected PdfDictionary CIDFontDictionary
         {
-            get
-            { return (PdfDictionary)((PdfArray)BaseDataObject.Resolve(PdfName.DescendantFonts)).Resolve(0); }
+            get { return (PdfDictionary)((PdfArray)BaseDataObject.Resolve(PdfName.DescendantFonts)).Resolve(0); }
         }
 
         protected override PdfDataObject GetDescriptorValue(
@@ -103,8 +95,7 @@ namespace org.pdfclown.documents.contents.fonts
           )
         { return ((PdfDictionary)CIDFontDictionary.Resolve(PdfName.FontDescriptor)).Resolve(key); }
 
-        protected void LoadEncoding(
-          )
+        protected void LoadEncoding()
         {
             PdfDataObject encodingObject = BaseDataObject.Resolve(PdfName.Encoding);
 
@@ -166,8 +157,7 @@ namespace org.pdfclown.documents.contents.fonts
             }
         }
 
-        protected override void OnLoad(
-          )
+        protected override void OnLoad()
         {
             LoadEncoding();
 
@@ -218,9 +208,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads the font data.</summary>
         */
-        private void Load(
-          OpenFontParser parser
-          )
+        private void Load(OpenFontParser parser)
         {
             glyphIndexes = parser.GlyphIndexes;
             glyphKernings = parser.GlyphKernings;
@@ -280,10 +268,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Creates the character code mapping for composite fonts.</summary>
         */
-        private void Load_CreateEncoding(
-          PdfDictionary font,
-          PdfDictionary cidFont
-          )
+        private void Load_CreateEncoding(PdfDictionary font, PdfDictionary cidFont)
         {
             /*
               NOTE: Composite fonts map text shown by content stream strings through a 2-level encoding
@@ -368,34 +353,34 @@ namespace org.pdfclown.documents.contents.fonts
                       { return glyphIndexes[codeEntry.Value]; }
                       );
                     encodingObject = File.Register(
-                      new PdfStream(
-                        new PdfDictionary(
-                          new PdfName[]
-                          {
-                  PdfName.Type,
-                  PdfName.CMapName,
-                  PdfName.CIDSystemInfo
-                          },
-                          new PdfDirectObject[]
-                          {
-                  PdfName.CMap,
-                  new PdfName(cmapName),
-                  new PdfDictionary(
-                    new PdfName[]
-                    {
-                      PdfName.Registry,
-                      PdfName.Ordering,
-                      PdfName.Supplement
-                    },
-                    new PdfDirectObject[]
-                    {
-                      PdfTextString.Get("Adobe"),
-                      PdfTextString.Get("Identity"),
-                      PdfInteger.Get(0)
-                    }
-                    )
-                          }
-                          ),
+                        new PdfStream(
+                            new PdfDictionary(
+                                new PdfName[]
+                                {
+                                    PdfName.Type,
+                                    PdfName.CMapName,
+                                    PdfName.CIDSystemInfo
+                                },
+                                new PdfDirectObject[]
+                                {
+                                    PdfName.CMap,
+                                    new PdfName(cmapName),
+                                    new PdfDictionary(
+                                        new PdfName[]
+                                        {
+                                            PdfName.Registry,
+                                            PdfName.Ordering,
+                                            PdfName.Supplement
+                                        },
+                                        new PdfDirectObject[]
+                                        {
+                                            PdfTextString.Get("Adobe"),
+                                            PdfTextString.Get("Identity"),
+                                            PdfInteger.Get(0)
+                                        }
+                                        )
+                                }
+                                ),
                         cmapBuffer
                         )
                       );
@@ -443,9 +428,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Creates the font descriptor.</summary>
         */
-        private PdfReference Load_CreateFontDescriptor(
-          OpenFontParser parser
-          )
+        private PdfReference Load_CreateFontDescriptor(OpenFontParser parser)
         {
             PdfDictionary fontDescriptor = new PdfDictionary();
             {
@@ -502,9 +485,7 @@ namespace org.pdfclown.documents.contents.fonts
                 fontDescriptor[PdfName.StemV] = PdfInteger.Get(100);
 
                 // FontFile.
-                fontDescriptor[PdfName.FontFile2] = File.Register(
-                  new PdfStream(new bytes::Buffer(parser.FontData.ToByteArray()))
-                  );
+                fontDescriptor[PdfName.FontFile2] = File.Register(new PdfStream(new bytes::Buffer(parser.FontData.ToByteArray())));
             }
             return File.Register(fontDescriptor);
         }

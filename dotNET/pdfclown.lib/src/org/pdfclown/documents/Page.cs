@@ -134,9 +134,7 @@ namespace org.pdfclown.documents
             }
         }
 
-        public static Page Wrap(
-          PdfDirectObject baseObject
-          )
+        public static Page Wrap(PdfDirectObject baseObject)
         { return baseObject == null ? null : new Page(baseObject); }
         #endregion
 
@@ -144,17 +142,13 @@ namespace org.pdfclown.documents
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
-        private static PdfName ToCode(
-          TabOrderEnum value
-          )
+        private static PdfName ToCode(TabOrderEnum value)
         { return TabOrderEnumCodes[value]; }
 
         /**
           <summary>Gets the tab order corresponding to the given value.</summary>
         */
-        private static TabOrderEnum ToTabOrderEnum(
-          PdfName value
-          )
+        private static TabOrderEnum ToTabOrderEnum(PdfName value)
         {
             foreach (KeyValuePair<TabOrderEnum, PdfName> tabOrder in TabOrderEnumCodes)
             {
@@ -174,9 +168,7 @@ namespace org.pdfclown.documents
           </summary>
           <param name="context">Document where to place this page.</param>
         */
-        public Page(
-          Document context
-          ) : this(context, null)
+        public Page(Document context) : this(context, null)
         { }
 
         /**
@@ -184,22 +176,11 @@ namespace org.pdfclown.documents
           <param name="context">Document where to place this page.</param>
           <param name="size">Page size. In case of <code>null</code>, uses the default SKSize.</param>
         */
-        public Page(
-          Document context,
-          SKSize? size
-          ) : base(
+        public Page(Document context, SKSize? size) : base(
             context,
             new PdfDictionary(
-              new PdfName[]
-              {
-            PdfName.Type,
-            PdfName.Contents
-              },
-              new PdfDirectObject[]
-              {
-            PdfName.Page,
-            context.File.Register(new PdfStream())
-              }
+              new PdfName[] { PdfName.Type, PdfName.Contents },
+              new PdfDirectObject[] { PdfName.Page, context.File.Register(new PdfStream()) }
               )
             )
         {
@@ -207,9 +188,7 @@ namespace org.pdfclown.documents
             { size = size.Value; }
         }
 
-        private Page(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        private Page(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -221,10 +200,8 @@ namespace org.pdfclown.documents
         [PDF(VersionEnum.PDF12)]
         public PageActions Actions
         {
-            get
-            { return new PageActions(BaseDataObject.Get<PdfDictionary>(PdfName.AA)); }
-            set
-            { BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return new PageActions(BaseDataObject.Get<PdfDictionary>(PdfName.AA)); }
+            set { BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         /**
@@ -232,10 +209,8 @@ namespace org.pdfclown.documents
         */
         public PageAnnotations Annotations
         {
-            get
-            { return new PageAnnotations(BaseDataObject.Get<PdfArray>(PdfName.Annots), this); }
-            set
-            { BaseDataObject[PdfName.Annots] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return new PageAnnotations(BaseDataObject.Get<PdfArray>(PdfName.Annots), this); }
+            set { BaseDataObject[PdfName.Annots] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         /**

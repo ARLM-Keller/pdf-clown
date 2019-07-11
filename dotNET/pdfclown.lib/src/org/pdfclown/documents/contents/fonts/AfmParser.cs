@@ -76,9 +76,7 @@ namespace org.pdfclown.documents.contents.fonts
         #endregion
 
         #region constructors
-        internal AfmParser(
-          IInputStream fontData
-          )
+        internal AfmParser(IInputStream fontData)
         {
             FontData = fontData;
 
@@ -88,8 +86,7 @@ namespace org.pdfclown.documents.contents.fonts
 
         #region interface
         #region private
-        private void Load(
-          )
+        private void Load()
         {
             Metrics = new FontMetrics();
             LoadFontHeader();
@@ -100,8 +97,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads the font header [AFM:4.1:3,4.1-4.4].</summary>
         */
-        private void LoadFontHeader(
-          )
+        private void LoadFontHeader()
         {
             string line;
             Regex linePattern = new Regex("(\\S+)\\s+(.+)");
@@ -160,8 +156,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads individual character metrics [AFM:4.1:3,4,4.4,8].</summary>
         */
-        private void LoadCharMetrics(
-          )
+        private void LoadCharMetrics()
         {
             GlyphIndexes = new Dictionary<int, int>();
             GlyphWidths = new Dictionary<int, int>();
@@ -207,8 +202,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads kerning data [AFM:4.1:3,4,4.5,9].</summary>
         */
-        private void LoadKerningData(
-          )
+        private void LoadKerningData()
         {
             GlyphKernings = new Dictionary<int, int>();
 

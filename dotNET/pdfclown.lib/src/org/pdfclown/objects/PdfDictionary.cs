@@ -62,17 +62,14 @@ namespace org.pdfclown.objects
         /**
           <summary>Creates a new empty dictionary object with the default initial capacity.</summary>
         */
-        public PdfDictionary(
-          )
+        public PdfDictionary()
         { entries = new Dictionary<PdfName, PdfDirectObject>(); }
 
         /**
           <summary>Creates a new empty dictionary object with the specified initial capacity.</summary>
           <param name="capacity">Initial capacity.</param>
         */
-        public PdfDictionary(
-          int capacity
-          )
+        public PdfDictionary(int capacity)
         { entries = new Dictionary<PdfName, PdfDirectObject>(capacity); }
 
         /**
@@ -81,17 +78,10 @@ namespace org.pdfclown.objects
           <param name="values">Entry values to add to this dictionary; their position and number must
           match the <code>keys</code> argument.</param>
         */
-        public PdfDictionary(
-          PdfName[] keys,
-          PdfDirectObject[] values
-          ) : this(values.Length)
+        public PdfDictionary(PdfName[] keys, PdfDirectObject[] values) : this(values.Length)
         {
             Updateable = false;
-            for (
-              int index = 0;
-              index < values.Length;
-              index++
-              )
+            for (int index = 0; index < values.Length; index++)
             { this[keys[index]] = values[index]; }
             Updateable = true;
         }
@@ -128,15 +118,10 @@ namespace org.pdfclown.objects
 
         #region interface
         #region public
-        public override PdfObject Accept(
-          IVisitor visitor,
-          object data
-          )
+        public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
-        public override int CompareTo(
-          PdfDirectObject obj
-          )
+        public override int CompareTo(PdfDirectObject obj)
         { throw new NotImplementedException(); }
 
         /**
@@ -144,9 +129,7 @@ namespace org.pdfclown.objects
           object in case of missing entry.</summary>
           <param name="key">Key whose associated value is to be returned.</param>
         */
-        public PdfDirectObject Get<T>(
-          PdfName key
-          ) where T : PdfDataObject, new()
+        public PdfDirectObject Get<T>(PdfName key) where T : PdfDataObject, new()
         { return Get<T>(key, true); }
 
         /**
@@ -156,10 +139,7 @@ namespace org.pdfclown.objects
           <param name="direct">Whether the item has to be instantiated directly within its container
           instead of being referenced through an indirect object.</param>
         */
-        public PdfDirectObject Get<T>(
-          PdfName key,
-          bool direct
-          ) where T : PdfDataObject, new()
+        public PdfDirectObject Get<T>(PdfName key, bool direct) where T : PdfDataObject, new()
         {
             PdfDirectObject value = this[key];
             if (value == null)
@@ -183,9 +163,7 @@ namespace org.pdfclown.objects
             return value;
         }
 
-        public override bool Equals(
-          object @object
-          )
+        public override bool Equals(object @object)
         {
             return base.Equals(@object)
               || (@object != null
@@ -193,16 +171,13 @@ namespace org.pdfclown.objects
                 && ((PdfDictionary)@object).entries.Equals(entries));
         }
 
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         { return entries.GetHashCode(); }
 
         /**
           Gets the key associated to the specified value.
         */
-        public PdfName GetKey(
-          PdfDirectObject value
-          )
+        public PdfName GetKey(PdfDirectObject value)
         {
             /*
               NOTE: Current PdfDictionary implementation doesn't support bidirectional maps, to say that
@@ -219,10 +194,8 @@ namespace org.pdfclown.objects
 
         public override PdfObject Parent
         {
-            get
-            { return parent; }
-            internal set
-            { parent = value; }
+            get { return parent; }
+            internal set { parent = value; }
         }
 
         /**
@@ -232,9 +205,7 @@ namespace org.pdfclown.objects
           <param name="key">Key whose associated value is to be returned.</param>
           <returns>null, if the map contains no mapping for this key.</returns>
         */
-        public PdfDataObject Resolve(
-          PdfName key
-          )
+        public PdfDataObject Resolve(PdfName key)
         { return Resolve(this[key]); }
 
         /**
@@ -245,14 +216,10 @@ namespace org.pdfclown.objects
           <param name="key">Key whose associated value is to be returned.</param>
           <returns>null, if the map contains no mapping for this key.</returns>
         */
-        public T Resolve<T>(
-          PdfName key
-          ) where T : PdfDataObject, new()
+        public T Resolve<T>(PdfName key) where T : PdfDataObject, new()
         { return (T)Resolve(Get<T>(key)); }
 
-        public override PdfObject Swap(
-          PdfObject other
-          )
+        public override PdfObject Swap(PdfObject other)
         {
             PdfDictionary otherDictionary = (PdfDictionary)other;
             IDictionary<PdfName, PdfDirectObject> otherEntries = otherDictionary.entries;
@@ -265,8 +232,7 @@ namespace org.pdfclown.objects
             return this;
         }
 
-        public override string ToString(
-          )
+        public override string ToString()
         {
             text::StringBuilder buffer = new text::StringBuilder();
             {
@@ -289,24 +255,17 @@ namespace org.pdfclown.objects
 
         public override bool Updateable
         {
-            get
-            { return updateable; }
-            set
-            { updateable = value; }
+            get { return updateable; }
+            set { updateable = value; }
         }
 
         public override bool Updated
         {
-            get
-            { return updated; }
-            protected internal set
-            { updated = value; }
+            get { return updated; }
+            protected internal set { updated = value; }
         }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          File context
-          )
+        public override void WriteTo(IOutputStream stream, File context)
         {
             // Begin.
             stream.Write(BeginDictionaryChunk);
@@ -328,29 +287,21 @@ namespace org.pdfclown.objects
         }
 
         #region IDictionary
-        public void Add(
-          PdfName key,
-          PdfDirectObject value
-          )
+        public void Add(PdfName key, PdfDirectObject value)
         {
             entries.Add(key, (PdfDirectObject)Include(value));
             Update();
         }
 
-        public bool ContainsKey(
-          PdfName key
-          )
+        public bool ContainsKey(PdfName key)
         { return entries.ContainsKey(key); }
 
         public ICollection<PdfName> Keys
         {
-            get
-            { return entries.Keys; }
+            get { return entries.Keys; }
         }
 
-        public bool Remove(
-          PdfName key
-          )
+        public bool Remove(PdfName key)
         {
             PdfDirectObject oldValue = this[key];
             if (entries.Remove(key))
@@ -362,9 +313,7 @@ namespace org.pdfclown.objects
             return false;
         }
 
-        public PdfDirectObject this[
-          PdfName key
-          ]
+        public PdfDirectObject this[PdfName key]
         {
             get
             {
@@ -391,57 +340,41 @@ namespace org.pdfclown.objects
             }
         }
 
-        public bool TryGetValue(
-          PdfName key,
-          out PdfDirectObject value
-          )
+        public bool TryGetValue(PdfName key, out PdfDirectObject value)
         { return entries.TryGetValue(key, out value); }
 
         public ICollection<PdfDirectObject> Values
         {
-            get
-            { return entries.Values; }
+            get { return entries.Values; }
         }
 
         #region ICollection
-        void ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Add(
-          KeyValuePair<PdfName, PdfDirectObject> entry
-          )
+        void ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Add(KeyValuePair<PdfName, PdfDirectObject> entry)
         { Add(entry.Key, entry.Value); }
 
-        public void Clear(
-          )
+        public void Clear()
         {
             foreach (PdfName key in new List<PdfDirectObject>(entries.Keys))
             { Remove(key); }
         }
 
-        bool ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Contains(
-          KeyValuePair<PdfName, PdfDirectObject> entry
-          )
+        bool ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Contains(KeyValuePair<PdfName, PdfDirectObject> entry)
         { return ((ICollection<KeyValuePair<PdfName, PdfDirectObject>>)entries).Contains(entry); }
 
-        public void CopyTo(
-          KeyValuePair<PdfName, PdfDirectObject>[] entries,
-          int index
-          )
+        public void CopyTo(KeyValuePair<PdfName, PdfDirectObject>[] entries, int index)
         { throw new NotImplementedException(); }
 
         public int Count
         {
-            get
-            { return entries.Count; }
+            get { return entries.Count; }
         }
 
         public bool IsReadOnly
         {
-            get
-            { return false; }
+            get { return false; }
         }
 
-        public bool Remove(
-          KeyValuePair<PdfName, PdfDirectObject> entry
-          )
+        public bool Remove(KeyValuePair<PdfName, PdfDirectObject> entry)
         {
             if (entry.Value.Equals(this[entry.Key]))
                 return Remove(entry.Key);
@@ -450,13 +383,11 @@ namespace org.pdfclown.objects
         }
 
         #region IEnumerable<KeyValuePair<PdfName,PdfDirectObject>>
-        IEnumerator<KeyValuePair<PdfName, PdfDirectObject>> IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>.GetEnumerator(
-          )
+        IEnumerator<KeyValuePair<PdfName, PdfDirectObject>> IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>.GetEnumerator()
         { return entries.GetEnumerator(); }
 
         #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator(
-          )
+        IEnumerator IEnumerable.GetEnumerator()
         { return ((IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>)this).GetEnumerator(); }
         #endregion
         #endregion
@@ -467,10 +398,8 @@ namespace org.pdfclown.objects
         #region protected
         protected internal override bool Virtual
         {
-            get
-            { return virtual_; }
-            set
-            { virtual_ = value; }
+            get { return virtual_; }
+            set { virtual_ = value; }
         }
         #endregion
         #endregion

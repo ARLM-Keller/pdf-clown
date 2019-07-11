@@ -60,9 +60,7 @@ namespace org.pdfclown.documents.contents.fonts
         #region static
         #region interface
         #region private
-        private static bool IsSymbolic(
-          FamilyEnum value
-          )
+        private static bool IsSymbolic(FamilyEnum value)
         {
             switch (value)
             {
@@ -83,12 +81,8 @@ namespace org.pdfclown.documents.contents.fonts
 
         #region dynamic
         #region constructors
-        public StandardType1Font(
-          Document context,
-          FamilyEnum family,
-          bool bold,
-          bool italic
-          ) : base(context)
+        public StandardType1Font(Document context, FamilyEnum family, bool bold, bool italic)
+            : base(context)
         {
             string fontName = family.ToString();
             switch (family)
@@ -124,9 +118,7 @@ namespace org.pdfclown.documents.contents.fonts
             Create(fontName, encodingName);
         }
 
-        internal StandardType1Font(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal StandardType1Font(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -134,28 +126,23 @@ namespace org.pdfclown.documents.contents.fonts
         #region public
         public override double Ascent
         {
-            get
-            { return metrics.Ascender; }
+            get { return metrics.Ascender; }
         }
 
         public override double Descent
         {
-            get
-            { return metrics.Descender; }
+            get { return metrics.Descender; }
         }
 
         public override FlagsEnum Flags
         {
             //TODO:IMPL!!!
-            get
-            { return 0; }
+            get { return 0; }
         }
         #endregion
 
         #region protected
-        protected override IDictionary<ByteArray, int> GetBaseEncoding(
-          PdfName encodingName
-          )
+        protected override IDictionary<ByteArray, int> GetBaseEncoding(PdfName encodingName)
         {
             if (encodingName == null && Symbolic)
             {
@@ -167,8 +154,7 @@ namespace org.pdfclown.documents.contents.fonts
             return base.GetBaseEncoding(encodingName);
         }
 
-        protected override void OnLoad(
-          )
+        protected override void OnLoad()
         {
             /*
               NOTE: Standard Type 1 fonts ordinarily omit their descriptor;
@@ -185,10 +171,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Creates the font structures.</summary>
         */
-        private void Create(
-          string fontName,
-          PdfName encodingName
-          )
+        private void Create(string fontName, PdfName encodingName)
         {
             /*
               NOTE: Standard Type 1 fonts SHOULD omit extended font descriptions [PDF:1.6:5.5.1].
@@ -207,9 +190,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Loads the font metrics.</summary>
         */
-        private void Load(
-          string fontName
-          )
+        private void Load(string fontName)
         {
             try
             {

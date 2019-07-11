@@ -73,6 +73,11 @@ namespace org.pdfclown.documents.contents.objects
             get { return (PdfName)operands[0]; }
             set { operands[0] = value; }
         }
+
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            base.Scan(state);
+        }
         #endregion
         #endregion
         #endregion

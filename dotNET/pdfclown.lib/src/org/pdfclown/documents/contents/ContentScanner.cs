@@ -451,6 +451,29 @@ namespace org.pdfclown.documents.contents
             }
 
             public double HorizontalScale { get; set; }
+
+            public bool RenderModeFill
+            {
+                get
+                {
+                    return RenderMode == TextRenderModeEnum.Fill
+                        || RenderMode == TextRenderModeEnum.FillStroke
+                        || RenderMode == TextRenderModeEnum.FillClip
+                        || RenderMode == TextRenderModeEnum.FillStrokeClip;
+                }
+            }
+
+            public bool RenderModeStroke
+            {
+                get
+                {
+                    return RenderMode == TextRenderModeEnum.Stroke
+                        || RenderMode == TextRenderModeEnum.FillStroke
+                        || RenderMode == TextRenderModeEnum.StrokeClip
+                        || RenderMode == TextRenderModeEnum.FillStrokeClip;
+                }
+            }
+
             #endregion
 
             #region internal
@@ -1166,7 +1189,19 @@ namespace org.pdfclown.documents.contents
 
                 // Scan this level for rendering!
                 MoveStart();
-                while (MoveNext()) ;
+                while (MoveNext())
+                {
+                    if (Current is XObject xobject)
+                    {
+                        // Scan the external level!
+                        var scanner = xobject.GetScanner(this);
+                        if (scanner != null)
+                        {
+                            scanner.renderContext = renderContext;
+                            while (scanner.MoveNext()) ;
+                        }
+                    }
+                }
             }
             finally
             {

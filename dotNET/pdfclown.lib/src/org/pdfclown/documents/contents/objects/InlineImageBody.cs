@@ -45,9 +45,7 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public InlineImageBody(
-          IBuffer value
-          ) : base(null)
+        public InlineImageBody(IBuffer value) : base(null)
         { this.value = value; }
         #endregion
 
@@ -55,16 +53,11 @@ namespace org.pdfclown.documents.contents.objects
         #region public
         public IBuffer Value
         {
-            get
-            { return value; }
-            set
-            { this.value = value; }
+            get { return value; }
+            set { this.value = value; }
         }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          Document context
-          )
+        public override void WriteTo(IOutputStream stream, Document context)
         { stream.Write(value); }
         #endregion
         #endregion

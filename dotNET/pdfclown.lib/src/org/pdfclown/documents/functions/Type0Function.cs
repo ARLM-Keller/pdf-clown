@@ -59,17 +59,13 @@ namespace org.pdfclown.documents.functions
         #region constructors
         //TODO:implement function creation!
 
-        internal Type0Function(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Type0Function(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
         #region interface
         #region public
-        public override double[] Calculate(
-          double[] inputs
-          )
+        public override double[] Calculate(double[] inputs)
         {
             // FIXME: Auto-generated method stub
             return null;
@@ -113,8 +109,7 @@ namespace org.pdfclown.documents.functions
         */
         public IList<Interval<double>> RangeDecodes
         {
-            get
-            { return GetIntervals<double>(PdfName.Decode, null); }
+            get { return GetIntervals<double>(PdfName.Decode, null); }
         }
 
         /**
@@ -122,8 +117,7 @@ namespace org.pdfclown.documents.functions
         */
         public int SampleBitsCount
         {
-            get
-            { return ((PdfInteger)Dictionary[PdfName.BitsPerSample]).RawValue; }
+            get { return ((PdfInteger)Dictionary[PdfName.BitsPerSample]).RawValue; }
         }
 
         /**

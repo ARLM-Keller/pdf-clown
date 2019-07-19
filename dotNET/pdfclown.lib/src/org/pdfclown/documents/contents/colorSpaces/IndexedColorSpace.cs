@@ -98,15 +98,9 @@ namespace org.pdfclown.documents.contents.colorSpaces
                     int componentCount = baseSpace.ComponentCount;
                     int componentValueIndex = colorIndex * componentCount;
                     byte[] baseComponentValues = BaseComponentValues;
-                    for (
-                      int componentIndex = 0;
-                      componentIndex < componentCount;
-                      componentIndex++
-                      )
+                    for (int componentIndex = 0; componentIndex < componentCount; componentIndex++)
                     {
-                        components.Add(
-                          PdfReal.Get(((int)baseComponentValues[componentValueIndex++] & 0xff) / 255d)
-                          );
+                        components.Add(PdfReal.Get(((int)baseComponentValues[componentValueIndex++] & 0xff) / 255d));
                     }
                 }
                 baseColor = baseSpace.GetColor(components, null);

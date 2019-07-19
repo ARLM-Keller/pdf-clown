@@ -39,8 +39,7 @@ namespace org.pdfclown.objects
     /**
       <summary>PDF simple object interface.</summary>
     */
-    public interface IPdfSimpleObject<TValue>
-      : IPdfSimpleObject
+    public interface IPdfSimpleObject<TValue> : IPdfSimpleObject
     {
         TValue RawValue
         {

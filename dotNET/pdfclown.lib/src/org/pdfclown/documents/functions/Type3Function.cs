@@ -43,9 +43,7 @@ namespace org.pdfclown.documents.functions
         #region constructors
         //TODO:implement function creation!
 
-        internal Type3Function(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Type3Function(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 

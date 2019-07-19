@@ -55,8 +55,28 @@ namespace org.pdfclown.documents.functions
         #region public
         public override double[] Calculate(double[] inputs)
         {
-            // FIXME: Auto-generated method stub
-            return new double[] { inputs[0], inputs[0], inputs[0], inputs[0] };
+            var n = Exponent;
+            var c0 = C0;
+            var c1 = C1;
+            var domains = Domains;
+            var ranges = Ranges;
+            for (int i = 0; i < domains.Count; i++)
+            {
+                var domain = domains[i];
+                inputs[i] = Math.Min(Math.Max(inputs[i], domain.Low), domain.High);
+            }
+            var result = new double[ranges.Count];
+            var x = inputs[0];
+            var inputN = Math.Pow(x, Exponent);
+            for (int i = 0; i < ranges.Count; i++)
+            {
+                var range = ranges[i];
+                var exponenta = n == 1
+                    ? linear(x, domains[0].Low, domains[0].High, c0[i], c1[i])
+                    : exponential(x, c0[i], c1[i], inputN);
+                result[i] = Math.Min(Math.Max(exponenta, range.Low), range.High);
+            }
+            return result;// new double[] { inputs[0], inputs[0], inputs[0], inputs[0] };
         }
 
         /**
@@ -104,6 +124,55 @@ namespace org.pdfclown.documents.functions
         public double Exponent
         {
             get { return ((IPdfNumber)Dictionary[PdfName.N]).RawValue; }
+        }
+
+        public double[] C0
+        {
+            get
+            {
+                var c0 = (PdfArray)Dictionary[PdfName.C0];
+
+                if (c0 == null)
+                {
+                    return new double[] { 0, 0 };
+                }
+                var result = new double[c0.Count];
+                for (int index = 0, length = c0.Count; index < length; index++)
+                { result[index] = ((IPdfNumber)c0[index]).RawValue; }
+                return result;
+            }
+        }
+
+        public double[] C1
+        {
+            get
+            {
+                var c1 = (PdfArray)Dictionary[PdfName.C1];
+
+                if (c1 == null)
+                {
+                    return new double[] { 1, 0 };
+                }
+                var result = new double[c1.Count];
+                for (int index = 0, length = c1.Count; index < length; index++)
+                { result[index] = ((IPdfNumber)c1[index]).RawValue; }
+                return result;
+            }
+        }
+
+        //https://stackoverflow.com/questions/12838007/c-sharp-linear-interpolation
+        static public double linear(double x, double x0, double x1, double y0, double y1)
+        {
+            if ((x1 - x0) == 0)
+            {
+                return (y0 + y1) / 2;
+            }
+            return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
+        }
+
+        static public double exponential(double x, double c0, double c1, double inputN)
+        {
+            return c0 + inputN * (c1 - c0);
         }
         #endregion
         #endregion

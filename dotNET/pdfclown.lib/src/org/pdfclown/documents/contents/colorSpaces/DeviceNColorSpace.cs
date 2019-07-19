@@ -76,12 +76,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
             get
             {
                 double[] components = new double[ComponentCount];
-                for (
-                  int index = 0,
-                    length = components.Length;
-                  index < length;
-                  index++
-                  )
+                for (int index = 0, length = components.Length; index < length; index++)
                 { components[index] = 1; }
 
                 return new DeviceNColor(components);

@@ -40,9 +40,7 @@ namespace org.pdfclown.objects
       <summary>PDF array object, that is a one-dimensional collection of (possibly-heterogeneous)
       objects arranged sequentially [PDF:1.7:3.2.5].</summary>
     */
-    public sealed class PdfArray
-      : PdfDirectObject,
-        IList<PdfDirectObject>
+    public sealed class PdfArray : PdfDirectObject, IList<PdfDirectObject>
     {
         #region static
         #region fields
@@ -62,27 +60,22 @@ namespace org.pdfclown.objects
         #endregion
 
         #region constructors
-        public PdfArray(
-          ) : this(10)
+        public PdfArray() : this(10)
         { }
 
-        public PdfArray(
-          int capacity
-          )
+        public PdfArray(int capacity)
         { items = new List<PdfDirectObject>(capacity); }
 
-        public PdfArray(
-          params PdfDirectObject[] items
-          ) : this(items.Length)
+        public PdfArray(params PdfDirectObject[] items)
+            : this(items.Length)
         {
             Updateable = false;
             this.AddAll(items);
             Updateable = true;
         }
 
-        public PdfArray(
-          IList<PdfDirectObject> items
-          ) : this(items.Count)
+        public PdfArray(IList<PdfDirectObject> items)
+            : this(items.Count)
         {
             Updateable = false;
             this.AddAll(items);
@@ -92,20 +85,13 @@ namespace org.pdfclown.objects
 
         #region interface
         #region public
-        public override PdfObject Accept(
-          IVisitor visitor,
-          object data
-          )
+        public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
-        public override int CompareTo(
-          PdfDirectObject obj
-          )
+        public override int CompareTo(PdfDirectObject obj)
         { throw new NotImplementedException(); }
 
-        public override bool Equals(
-          object @object
-          )
+        public override bool Equals(object @object)
         {
             return base.Equals(@object)
               || (@object != null
@@ -119,9 +105,7 @@ namespace org.pdfclown.objects
           <param name="index">Index of the item to return.</param>
           <param name="itemClass">Class to use for instantiating the item in case of missing entry.</param>
         */
-        public PdfDirectObject Get<T>(
-          int index
-          ) where T : PdfDataObject, new()
+        public PdfDirectObject Get<T>(int index) where T : PdfDataObject, new()
         { return Get<T>(index, true); }
 
         /**
@@ -131,10 +115,7 @@ namespace org.pdfclown.objects
           <param name="direct">Whether the item has to be instantiated directly within its container
           instead of being referenced through an indirect object.</param>
         */
-        public PdfDirectObject Get<T>(
-          int index,
-          bool direct
-          ) where T : PdfDataObject, new()
+        public PdfDirectObject Get<T>(int index, bool direct) where T : PdfDataObject, new()
         {
             PdfDirectObject item;
             if (index == Count
@@ -165,16 +146,13 @@ namespace org.pdfclown.objects
             return item;
         }
 
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         { return items.GetHashCode(); }
 
         public override PdfObject Parent
         {
-            get
-            { return parent; }
-            internal set
-            { parent = value; }
+            get { return parent; }
+            internal set { parent = value; }
         }
 
         /**
@@ -183,9 +161,7 @@ namespace org.pdfclown.objects
           <see cref="this[int]">this[int]</see>.</remarks>
           <param name="index">Index of the item to return.</param>
         */
-        public PdfDataObject Resolve(
-          int index
-          )
+        public PdfDataObject Resolve(int index)
         { return Resolve(this[index]); }
 
         /**
@@ -195,14 +171,10 @@ namespace org.pdfclown.objects
           <see cref="Get<T>">Get<T></see>.</remarks>
           <param name="index">Index of the item to return.</param>
         */
-        public T Resolve<T>(
-          int index
-          ) where T : PdfDataObject, new()
+        public T Resolve<T>(int index) where T : PdfDataObject, new()
         { return (T)Resolve(Get<T>(index)); }
 
-        public override PdfObject Swap(
-          PdfObject other
-          )
+        public override PdfObject Swap(PdfObject other)
         {
             PdfArray otherArray = (PdfArray)other;
             List<PdfDirectObject> otherItems = (List<PdfDirectObject>)otherArray.items;
@@ -215,8 +187,7 @@ namespace org.pdfclown.objects
             return this;
         }
 
-        public override string ToString(
-          )
+        public override string ToString()
         {
             text::StringBuilder buffer = new text::StringBuilder();
             {
@@ -233,24 +204,17 @@ namespace org.pdfclown.objects
 
         public override bool Updateable
         {
-            get
-            { return updateable; }
-            set
-            { updateable = value; }
+            get { return updateable; }
+            set { updateable = value; }
         }
 
         public override bool Updated
         {
-            get
-            { return updated; }
-            protected internal set
-            { updated = value; }
+            get { return updated; }
+            protected internal set { updated = value; }
         }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          File context
-          )
+        public override void WriteTo(IOutputStream stream, File context)
         {
             // Begin.
             stream.Write(BeginArrayChunk);
@@ -267,23 +231,16 @@ namespace org.pdfclown.objects
         }
 
         #region IList
-        public int IndexOf(
-          PdfDirectObject item
-          )
+        public int IndexOf(PdfDirectObject item)
         { return items.IndexOf(item); }
 
-        public void Insert(
-          int index,
-          PdfDirectObject item
-          )
+        public void Insert(int index, PdfDirectObject item)
         {
             items.Insert(index, (PdfDirectObject)Include(item));
             Update();
         }
 
-        public void RemoveAt(
-          int index
-          )
+        public void RemoveAt(int index)
         {
             PdfDirectObject oldItem = items[index];
             items.RemoveAt(index);
@@ -291,12 +248,9 @@ namespace org.pdfclown.objects
             Update();
         }
 
-        public PdfDirectObject this[
-          int index
-          ]
+        public PdfDirectObject this[int index]
         {
-            get
-            { return items[index]; }
+            get { return items[index]; }
             set
             {
                 PdfDirectObject oldItem = items[index];
@@ -307,47 +261,35 @@ namespace org.pdfclown.objects
         }
 
         #region ICollection
-        public void Add(
-          PdfDirectObject item
-          )
+        public void Add(PdfDirectObject item)
         {
             items.Add((PdfDirectObject)Include(item));
             Update();
         }
 
-        public void Clear(
-          )
+        public void Clear()
         {
             while (items.Count > 0)
             { RemoveAt(0); }
         }
 
-        public bool Contains(
-          PdfDirectObject item
-          )
+        public bool Contains(PdfDirectObject item)
         { return items.Contains(item); }
 
-        public void CopyTo(
-          PdfDirectObject[] items,
-          int index
-          )
+        public void CopyTo(PdfDirectObject[] items, int index)
         { this.items.CopyTo(items, index); }
 
         public int Count
         {
-            get
-            { return items.Count; }
+            get { return items.Count; }
         }
 
         public bool IsReadOnly
         {
-            get
-            { return false; }
+            get { return false; }
         }
 
-        public bool Remove(
-          PdfDirectObject item
-          )
+        public bool Remove(PdfDirectObject item)
         {
             if (!items.Remove(item))
                 return false;
@@ -358,8 +300,7 @@ namespace org.pdfclown.objects
         }
 
         #region IEnumerable<PdfDirectObject>
-        public IEnumerator<PdfDirectObject> GetEnumerator(
-          )
+        public IEnumerator<PdfDirectObject> GetEnumerator()
         { return items.GetEnumerator(); }
 
         #region IEnumerable
@@ -374,10 +315,8 @@ namespace org.pdfclown.objects
         #region protected
         protected internal override bool Virtual
         {
-            get
-            { return virtual_; }
-            set
-            { virtual_ = value; }
+            get { return virtual_; }
+            set { virtual_ = value; }
         }
         #endregion
         #endregion

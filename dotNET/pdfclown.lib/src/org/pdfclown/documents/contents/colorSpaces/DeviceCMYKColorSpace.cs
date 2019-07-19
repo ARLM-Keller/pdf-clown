@@ -82,10 +82,13 @@ namespace org.pdfclown.documents.contents.colorSpaces
               NOTE: This convertion algorithm was from Apache FOP.
             */
             //FIXME: verify whether this algorithm is effective (limit checking seems quite ugly to me!).
-            float keyCorrection = (float)spaceColor.K / 2.5f;
-            int r = (int)Math.Round((1 - spaceColor.C + keyCorrection) * 255); if (r > 255) { r = 255; } else if (r < 0) { r = 0; }
-            int g = (int)Math.Round((1 - spaceColor.M + keyCorrection) * 255); if (g > 255) { g = 255; } else if (g < 0) { g = 0; }
-            int b = (int)Math.Round((1 - spaceColor.Y + keyCorrection) * 255); if (b > 255) { b = 255; } else if (b < 0) { b = 0; }
+            //float keyCorrection = (float)spaceColor.K;// / 2.5f;
+            //int r = (int)((1 - Math.Min(1, spaceColor.C + keyCorrection)) * 255); if (r < 0) { r = 0; }
+            //int g = (int)((1 - Math.Min(1, spaceColor.M + keyCorrection)) * 255); if (g < 0) { g = 0; }
+            //int b = (int)((1 - Math.Min(1, spaceColor.Y + keyCorrection)) * 255); if (b < 0) { b = 0; }
+            var r = (int)(255 * (1 - spaceColor.C) * (1 - spaceColor.K));
+            var g = (int)(255 * (1 - spaceColor.M) * (1 - spaceColor.K));
+            var b = (int)(255 * (1 - spaceColor.Y) * (1 - spaceColor.K));
             return new SKColor((byte)r, (byte)g, (byte)b);
         }
 

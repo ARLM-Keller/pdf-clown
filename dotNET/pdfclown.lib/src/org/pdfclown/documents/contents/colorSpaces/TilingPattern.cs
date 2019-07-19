@@ -40,7 +40,6 @@ namespace org.pdfclown.documents.contents.colorSpaces
       <remarks>Painting with the pattern replicates the cell at fixed horizontal and vertical intervals
       to fill an area.</remarks>
     */
-    //TODO: define as IContentContext?
     [PDF(VersionEnum.PDF12)]
     public class TilingPattern : Pattern, IContentContext
     {

@@ -43,9 +43,7 @@ namespace org.pdfclown.documents.functions
         /**
           <summary>Default intervals callback.</summary>
         */
-        protected delegate IList<Interval<T>> DefaultIntervalsCallback<T>(
-          IList<Interval<T>> intervals
-          ) where T : IComparable<T>;
+        protected delegate IList<Interval<T>> DefaultIntervalsCallback<T>(IList<Interval<T>> intervals) where T : IComparable<T>;
         #endregion
 
         #region static
@@ -63,9 +61,7 @@ namespace org.pdfclown.documents.functions
           <param name="baseObject">Function base object.</param>
           <returns>Function object associated to the base object.</returns>
         */
-        public static Function Wrap(
-          PdfDirectObject baseObject
-          )
+        public static Function Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
@@ -94,9 +90,7 @@ namespace org.pdfclown.documents.functions
           <summary>Gets a function's dictionary.</summary>
           <param name="functionDataObject">Function data object.</param>
         */
-        private static PdfDictionary GetDictionary(
-          PdfDataObject functionDataObject
-          )
+        private static PdfDictionary GetDictionary(PdfDataObject functionDataObject)
         {
             if (functionDataObject is PdfDictionary)
                 return (PdfDictionary)functionDataObject;
@@ -109,15 +103,12 @@ namespace org.pdfclown.documents.functions
 
         #region dynamic
         #region constructors
-        protected Function(
-          Document context,
-          PdfDataObject baseDataObject
-          ) : base(context, baseDataObject)
+        protected Function(Document context, PdfDataObject baseDataObject)
+            : base(context, baseDataObject)
         { }
 
-        protected Function(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected Function(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
         #endregion
 
@@ -128,36 +119,22 @@ namespace org.pdfclown.documents.functions
           to the specified input values.</summary>
           <param name="inputs">Input values.</param>
          */
-        public abstract double[] Calculate(
-          double[] inputs
-          );
+        public abstract double[] Calculate(double[] inputs);
 
         /**
           <summary>Gets the result of the calculation applied by this function
           to the specified input values.</summary>
           <param name="inputs">Input values.</param>
          */
-        public IList<PdfDirectObject> Calculate(
-          IList<PdfDirectObject> inputs
-          )
+        public IList<PdfDirectObject> Calculate(IList<PdfDirectObject> inputs)
         {
             IList<PdfDirectObject> outputs = new List<PdfDirectObject>();
             {
                 double[] inputValues = new double[inputs.Count];
-                for (
-                  int index = 0,
-                    length = inputValues.Length;
-                  index < length;
-                  index++
-                  )
+                for (int index = 0, length = inputValues.Length; index < length; index++)
                 { inputValues[index] = ((IPdfNumber)inputs[index]).RawValue; }
                 double[] outputValues = Calculate(inputValues);
-                for (
-                  int index = 0,
-                    length = outputValues.Length;
-                  index < length;
-                  index++
-                  )
+                for (int index = 0, length = outputValues.Length; index < length; index++)
                 { outputs.Add(PdfReal.Get(outputValues[index])); }
             }
             return outputs;
@@ -169,8 +146,7 @@ namespace org.pdfclown.documents.functions
         */
         public IList<Interval<double>> Domains
         {
-            get
-            { return GetIntervals<double>(PdfName.Domain, null); }
+            get { return GetIntervals<double>(PdfName.Domain, null); }
         }
 
         /**
@@ -178,8 +154,7 @@ namespace org.pdfclown.documents.functions
         */
         public int InputCount
         {
-            get
-            { return ((PdfArray)Dictionary[PdfName.Domain]).Count / 2; }
+            get { return ((PdfArray)Dictionary[PdfName.Domain]).Count / 2; }
         }
 
         /**
@@ -202,8 +177,7 @@ namespace org.pdfclown.documents.functions
         */
         public IList<Interval<double>> Ranges
         {
-            get
-            { return GetIntervals<double>(PdfName.Range, null); }
+            get { return GetIntervals<double>(PdfName.Range, null); }
         }
         #endregion
 
@@ -213,17 +187,14 @@ namespace org.pdfclown.documents.functions
         */
         protected PdfDictionary Dictionary
         {
-            get
-            { return GetDictionary(BaseDataObject); }
+            get { return GetDictionary(BaseDataObject); }
         }
 
         /**
           <summary>Gets the intervals corresponding to the specified key.</summary>
         */
-        protected IList<Interval<T>> GetIntervals<T>(
-          PdfName key,
-          DefaultIntervalsCallback<T> defaultIntervalsCallback
-          ) where T : IComparable<T>
+        protected IList<Interval<T>> GetIntervals<T>(PdfName key, DefaultIntervalsCallback<T> defaultIntervalsCallback)
+            where T : IComparable<T>
         {
             IList<Interval<T>> intervals;
             {
@@ -237,17 +208,12 @@ namespace org.pdfclown.documents.functions
                 else
                 {
                     intervals = new List<Interval<T>>();
-                    for (
-                      int index = 0,
-                        length = intervalsObject.Count;
-                      index < length;
-                      index += 2
-                      )
+                    for (int index = 0, length = intervalsObject.Count; index < length; index += 2)
                     {
                         intervals.Add(
                           new Interval<T>(
-                            (T)((IPdfNumber)intervalsObject[index]).Value,
-                            (T)((IPdfNumber)intervalsObject[index + 1]).Value
+                            (T)Convert.ChangeType(((IPdfNumber)intervalsObject[index]).Value, typeof(T)),
+                            (T)Convert.ChangeType(((IPdfNumber)intervalsObject[index + 1]).Value, typeof(T))
                             )
                           );
                     }

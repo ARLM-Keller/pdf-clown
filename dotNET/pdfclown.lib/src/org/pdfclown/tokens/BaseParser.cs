@@ -34,26 +34,20 @@ namespace org.pdfclown.tokens
     /**
       <summary>Base PDF parser [PDF:1.7:3.2].</summary>
     */
-    public class BaseParser
-      : PostScriptParser
+    public class BaseParser : PostScriptParser
     {
         #region dynamic
         #region constructors
-        protected BaseParser(
-          IInputStream stream
-          ) : base(stream)
+        protected BaseParser(IInputStream stream) : base(stream)
         { }
 
-        protected BaseParser(
-          byte[] data
-          ) : base(data)
+        protected BaseParser(byte[] data) : base(data)
         { }
         #endregion
 
         #region interface
         #region public
-        public override bool MoveNext(
-          )
+        public override bool MoveNext()
         {
             bool moved;
             while (moved = base.MoveNext())
@@ -84,8 +78,7 @@ namespace org.pdfclown.tokens
         /**
           <summary>Parses the current PDF object [PDF:1.6:3.2].</summary>
         */
-        public virtual PdfDataObject ParsePdfObject(
-          )
+        public virtual PdfDataObject ParsePdfObject()
         {
             switch (TokenType)
             {
@@ -153,9 +146,7 @@ namespace org.pdfclown.tokens
           <param name="offset">Number of tokens to skip before reaching the intended one.</param>
           <seealso cref="ParsePdfObject()"/>
         */
-        public PdfDataObject ParsePdfObject(
-          int offset
-          )
+        public PdfDataObject ParsePdfObject(int offset)
         {
             MoveNext(offset);
             return ParsePdfObject();

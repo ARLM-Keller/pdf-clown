@@ -35,8 +35,7 @@ namespace org.pdfclown.util
     /*
       NOTE: This class is useful when applied as key for dictionaries using the default IEqualityComparer.
     */
-    public class ByteArray
-      : IComparable<ByteArray>
+    public class ByteArray : IComparable<ByteArray>
     {
         public readonly byte[] Data; //TODO: yes, I know it's risky (temporary simplification)...
 
@@ -57,16 +56,13 @@ namespace org.pdfclown.util
             return comparison;
         }
 
-        public override bool Equals(
-          object obj
-          )
+        public override bool Equals(object obj)
         {
             return obj is ByteArray
               && Data.SequenceEqual(((ByteArray)obj).Data);
         }
 
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         {
             int hashCode = 0;
             for (int index = 0, length = Data.Length; index < length; index++)
@@ -74,8 +70,7 @@ namespace org.pdfclown.util
             return hashCode;
         }
 
-        public override string ToString(
-          )
+        public override string ToString()
         {
             StringBuilder builder = new StringBuilder("[");
             {

@@ -25,7 +25,7 @@
 
 using org.pdfclown.files;
 using org.pdfclown.objects;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 
@@ -146,6 +146,44 @@ namespace org.pdfclown.documents.contents.colorSpaces
               ((IPdfNumber)matrix[4]).RawValue, // e.
               ((IPdfNumber)matrix[5]).RawValue // f.
                       };
+            }
+        }
+
+        public SKMatrix SKMatrix
+        {
+            get
+            {
+                /*
+                  NOTE: Form-space-to-user-space matrix is identity [1 0 0 1 0 0] by default,
+                  but may be adjusted by setting the matrix entry in the form dictionary [PDF:1.6:4.9].
+                */
+                PdfArray matrix = (PdfArray)Dictionary[PdfName.Matrix];
+                if (matrix == null)
+                    return SKMatrix.MakeIdentity();
+                else
+                    return new SKMatrix
+                    {
+                        ScaleX = ((IPdfNumber)matrix[0]).FloatValue,
+                        SkewY = ((IPdfNumber)matrix[1]).FloatValue,
+                        SkewX = ((IPdfNumber)matrix[2]).FloatValue,
+                        ScaleY = ((IPdfNumber)matrix[3]).FloatValue,
+                        TransX = ((IPdfNumber)matrix[4]).FloatValue,
+                        TransY = ((IPdfNumber)matrix[5]).FloatValue,
+                        Persp2 = 1
+                    };
+            }
+            set
+            {
+                Dictionary[PdfName.Matrix] =
+                 new PdfArray(
+                    PdfReal.Get(value.ScaleX),
+                    PdfReal.Get(value.SkewY),
+                    PdfReal.Get(value.SkewX),
+                    PdfReal.Get(value.ScaleY),
+                    PdfReal.Get(value.TransX),
+                    PdfReal.Get(value.TransY)
+                    )
+                ;
             }
         }
         #endregion

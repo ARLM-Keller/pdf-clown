@@ -46,9 +46,7 @@ namespace org.pdfclown.util
 
         #region interface
         #region public
-        public static string ByteArrayToHex(
-          byte[] data
-          )
+        public static string ByteArrayToHex(byte[] data)
         {
             int dataLength = data.Length;
             char[] result = new char[dataLength * 2];
@@ -60,24 +58,13 @@ namespace org.pdfclown.util
             return new string(result);
         }
 
-        public static int ByteArrayToInt(
-          byte[] data
-          )
+        public static int ByteArrayToInt(byte[] data)
         { return ByteArrayToInt(data, 0, ByteOrderEnum.BigEndian); }
 
-        public static int ByteArrayToInt(
-          byte[] data,
-          int index,
-          ByteOrderEnum byteOrder
-          )
+        public static int ByteArrayToInt(byte[] data, int index, ByteOrderEnum byteOrder)
         { return ByteArrayToNumber(data, index, 4, byteOrder); }
 
-        public static int ByteArrayToNumber(
-          byte[] data,
-          int index,
-          int length,
-          ByteOrderEnum byteOrder
-          )
+        public static int ByteArrayToNumber(byte[] data, int index, int length, ByteOrderEnum byteOrder)
         {
             int value = 0;
             length = (int)Math.Min(length, data.Length - index);
@@ -86,9 +73,7 @@ namespace org.pdfclown.util
             return value;
         }
 
-        public static byte[] HexToByteArray(
-          string data
-          )
+        public static byte[] HexToByteArray(string data)
         {
             byte[] result;
             {
@@ -113,50 +98,30 @@ namespace org.pdfclown.util
             return result;
         }
 
-        public static byte[] IntToByteArray(
-          int data
-          )
+        public static byte[] IntToByteArray(int data)
         { return new byte[] { (byte)(data >> 24), (byte)(data >> 16), (byte)(data >> 8), (byte)data }; }
 
-        public static byte[] NumberToByteArray(
-          int data,
-          int length,
-          ByteOrderEnum byteOrder
-          )
+        public static byte[] NumberToByteArray(int data, int length, ByteOrderEnum byteOrder)
         {
             byte[] result = new byte[length];
-            for (
-              int index = 0;
-              index < length;
-              index++
-              )
+            for (int index = 0; index < length; index++)
             { result[index] = (byte)(data >> 8 * (byteOrder == ByteOrderEnum.LittleEndian ? index : length - index - 1)); }
             return result;
         }
 
-        public static int ParseAsIntInvariant(
-          string value
-          )
+        public static int ParseAsIntInvariant(string value)
         { return (int)ParseFloatInvariant(value); }
 
-        public static double ParseDoubleInvariant(
-          string value
-          )
+        public static double ParseDoubleInvariant(string value)
         { return Double.Parse(value, NumberStyles.Float, NumberFormatInfo.InvariantInfo); }
 
-        public static float ParseFloatInvariant(
-          string value
-          )
+        public static float ParseFloatInvariant(string value)
         { return Single.Parse(value, NumberStyles.Float, NumberFormatInfo.InvariantInfo); }
 
-        public static int ParseIntInvariant(
-          string value
-          )
+        public static int ParseIntInvariant(string value)
         { return Int32.Parse(value, NumberStyles.Integer, NumberFormatInfo.InvariantInfo); }
 
-        public static float[] ToFloatArray(
-          double[] array
-          )
+        public static float[] ToFloatArray(double[] array)
         {
             float[] result = new float[array.Length];
             for (int index = 0, length = array.Length; index < length; index++)

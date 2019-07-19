@@ -14,11 +14,9 @@ namespace org.pdfclown.samples.cli
       <remarks>Note: rendering is currently in pre-alpha stage; therefore this sample is
       nothing but an initial stub (no assumption to work!).</remarks>
     */
-    public class RenderingSample
-      : Sample
+    public class RenderingSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
@@ -36,9 +34,9 @@ namespace org.pdfclown.samples.cli
 
                 // 3. Save the page image!
 
-                using (var stream = new SKFileWStream(GetOutputPath("ContentRenderingSample.jpg")))
+                using (var stream = new SKFileWStream(GetOutputPath("ContentRenderingSample.png")))
                 {
-                    SKPixmap.Encode(stream, image, SKEncodedImageFormat.Jpeg, 100);
+                    SKPixmap.Encode(stream, image, SKEncodedImageFormat.Png, 100);
                 };
             }
         }

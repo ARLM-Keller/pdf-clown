@@ -46,16 +46,13 @@ namespace org.pdfclown.documents.contents
       into this content stream.</remarks>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class Contents
-      : PdfObjectWrapper<PdfDataObject>,
-        IList<ContentObject>
+    public sealed class Contents : PdfObjectWrapper<PdfDataObject>, IList<ContentObject>
     {
         #region types
         /**
           <summary>Content stream wrapper.</summary>
         */
-        private class ContentStream
-          : bytes::IInputStream
+        private class ContentStream : bytes::IInputStream
         {
             private readonly PdfDataObject baseDataObject;
 
@@ -72,9 +69,7 @@ namespace org.pdfclown.documents.contents
             */
             private int streamIndex = -1;
 
-            public ContentStream(
-              PdfDataObject baseDataObject
-              )
+            public ContentStream(PdfDataObject baseDataObject)
             {
                 this.baseDataObject = baseDataObject;
                 MoveNextStream();
@@ -82,14 +77,11 @@ namespace org.pdfclown.documents.contents
 
             public ByteOrderEnum ByteOrder
             {
-                get
-                { return stream.ByteOrder; }
-                set
-                { throw new NotSupportedException(); }
+                get { return stream.ByteOrder; }
+                set { throw new NotSupportedException(); }
             }
 
-            public void Dispose(
-              )
+            public void Dispose()
             {/* NOOP */}
 
             public long Length
@@ -110,20 +102,13 @@ namespace org.pdfclown.documents.contents
 
             public long Position
             {
-                get
-                { return basePosition + stream.Position; }
+                get { return basePosition + stream.Position; }
             }
 
-            public void Read(
-              byte[] data
-              )
+            public void Read(byte[] data)
             { Read(data, 0, data.Length); }
 
-            public void Read(
-              byte[] data,
-              int offset,
-              int length
-              )
+            public void Read(byte[] data, int offset, int length)
             {
                 while (length > 0)
                 {
@@ -135,8 +120,7 @@ namespace org.pdfclown.documents.contents
                 }
             }
 
-            public int ReadByte(
-              )
+            public int ReadByte()
             {
                 //TODO:harmonize with other Read*() method EOF exceptions!!!
                 try
@@ -146,30 +130,22 @@ namespace org.pdfclown.documents.contents
                 return stream.ReadByte();
             }
 
-            public int ReadInt(
-              )
+            public int ReadInt()
             { throw new NotImplementedException(); }
 
-            public int ReadInt(
-              int length
-              )
+            public int ReadInt(int length)
             { throw new NotImplementedException(); }
 
-            public string ReadLine(
-              )
+            public string ReadLine()
             { throw new NotImplementedException(); }
 
-            public short ReadShort(
-              )
+            public short ReadShort()
             { throw new NotImplementedException(); }
 
-            public sbyte ReadSignedByte(
-              )
+            public sbyte ReadSignedByte()
             { throw new NotImplementedException(); }
 
-            public string ReadString(
-              int length
-              )
+            public string ReadString(int length)
             {
                 StringBuilder builder = new StringBuilder();
                 while (length > 0)
@@ -182,13 +158,10 @@ namespace org.pdfclown.documents.contents
                 return builder.ToString();
             }
 
-            public ushort ReadUnsignedShort(
-              )
+            public ushort ReadUnsignedShort()
             { throw new NotImplementedException(); }
 
-            public void Seek(
-              long position
-              )
+            public void Seek(long position)
             {
                 if (position < 0)
                     throw new ArgumentException("Negative positions cannot be sought.");
@@ -210,21 +183,17 @@ namespace org.pdfclown.documents.contents
                 }
             }
 
-            public void Skip(
-              long offset
-              )
+            public void Skip(long offset)
             { Seek(Position + offset); }
 
-            public byte[] ToByteArray(
-              )
+            public byte[] ToByteArray()
             { throw new NotImplementedException(); }
 
             /**
               <summary>Ensures stream availability, moving to the next stream in case the current one has
               run out of data.</summary>
             */
-            private void EnsureStream(
-              )
+            private void EnsureStream()
             {
                 if ((stream == null
                     || stream.Position >= stream.Length)
@@ -232,8 +201,7 @@ namespace org.pdfclown.documents.contents
                     throw new EndOfStreamException();
             }
 
-            private bool MoveNextStream(
-              )
+            private bool MoveNextStream()
             {
                 // Is the content stream just a single stream?
                 /*
@@ -277,8 +245,7 @@ namespace org.pdfclown.documents.contents
                 return true;
             }
 
-            private bool MovePreviousStream(
-              )
+            private bool MovePreviousStream()
             {
                 if (streamIndex == 0)
                 {
@@ -312,10 +279,7 @@ namespace org.pdfclown.documents.contents
         #region static
         #region interface
         #region public
-        public static Contents Wrap(
-          PdfDirectObject baseObject,
-          IContentContext contentContext
-          )
+        public static Contents Wrap(PdfDirectObject baseObject, IContentContext contentContext)
         { return baseObject != null ? new Contents(baseObject, contentContext) : null; }
         #endregion
         #endregion
@@ -329,10 +293,8 @@ namespace org.pdfclown.documents.contents
         #endregion
 
         #region constructors
-        private Contents(
-          PdfDirectObject baseObject,
-          IContentContext contentContext
-          ) : base(baseObject)
+        private Contents(PdfDirectObject baseObject, IContentContext contentContext)
+            : base(baseObject)
         {
             this.contentContext = contentContext;
             Load();
@@ -341,16 +303,13 @@ namespace org.pdfclown.documents.contents
 
         #region interface
         #region public
-        public override object Clone(
-          Document context
-          )
+        public override object Clone(Document context)
         { throw new NotSupportedException(); }
 
         /**
           <summary>Serializes the contents into the content stream.</summary>
         */
-        public void Flush(
-          )
+        public void Flush()
         {
             PdfStream stream;
             PdfDataObject baseDataObject = BaseDataObject;
@@ -399,49 +358,32 @@ namespace org.pdfclown.documents.contents
         { get { return contentContext; } }
 
         #region IList
-        public int IndexOf(
-          ContentObject obj
-          )
+        public int IndexOf(ContentObject obj)
         { return items.IndexOf(obj); }
 
-        public void Insert(
-          int index,
-          ContentObject obj
-          )
+        public void Insert(int index, ContentObject obj)
         { items.Insert(index, obj); }
 
-        public void RemoveAt(
-          int index
-          )
+        public void RemoveAt(int index)
         { items.RemoveAt(index); }
 
-        public ContentObject this[
-          int index
-          ]
+        public ContentObject this[int index]
         {
             get { return items[index]; }
             set { items[index] = value; }
         }
 
         #region ICollection
-        public void Add(
-          ContentObject obj
-          )
+        public void Add(ContentObject obj)
         { items.Add(obj); }
 
-        public void Clear(
-          )
+        public void Clear()
         { items.Clear(); }
 
-        public bool Contains(
-          ContentObject obj
-          )
+        public bool Contains(ContentObject obj)
         { return items.Contains(obj); }
 
-        public void CopyTo(
-          ContentObject[] objs,
-          int index
-          )
+        public void CopyTo(ContentObject[] objs, int index)
         { items.CopyTo(objs, index); }
 
         public int Count
@@ -450,14 +392,11 @@ namespace org.pdfclown.documents.contents
         public bool IsReadOnly
         { get { return false; } }
 
-        public bool Remove(
-          ContentObject obj
-          )
+        public bool Remove(ContentObject obj)
         { return items.Remove(obj); }
 
         #region IEnumerable<ContentObject>
-        public IEnumerator<ContentObject> GetEnumerator(
-          )
+        public IEnumerator<ContentObject> GetEnumerator()
         { return items.GetEnumerator(); }
 
         #region IEnumerable
@@ -470,8 +409,7 @@ namespace org.pdfclown.documents.contents
         #endregion
 
         #region private
-        private void Load(
-          )
+        private void Load()
         {
             ContentParser parser = new ContentParser(new ContentStream(BaseDataObject));
             items = parser.ParseContentObjects();

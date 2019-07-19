@@ -106,6 +106,15 @@ namespace org.pdfclown.documents.contents.colorSpaces
         public override SKPaint GetPaint(Color color)
         {
             // FIXME: Auto-generated method stub
+            if (color is TilingPattern pattern)
+            {
+                return new SKPaint
+                {
+                    Shader = pattern.GetShader(),
+                    Style = SKPaintStyle.Fill,
+                    IsAntialias = true
+                };
+            }
             return new SKPaint
             {
                 Color = GetColor(color),

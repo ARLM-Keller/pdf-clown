@@ -39,19 +39,14 @@ namespace org.pdfclown.documents.contents.tokens
     /**
       <summary>Content stream parser [PDF:1.6:3.7.1].</summary>
     */
-    public sealed class ContentParser
-      : BaseParser
+    public sealed class ContentParser : BaseParser
     {
         #region dynamic
         #region constructors
-        internal ContentParser(
-          bytes::IInputStream stream
-          ) : base(stream)
+        internal ContentParser(bytes::IInputStream stream) : base(stream)
         { }
 
-        public ContentParser(
-          byte[] data
-          ) : base(data)
+        public ContentParser(byte[] data) : base(data)
         { }
         #endregion
 
@@ -60,8 +55,7 @@ namespace org.pdfclown.documents.contents.tokens
         /**
           <summary>Parses the next content object [PDF:1.6:4.1].</summary>
         */
-        public ContentObject ParseContentObject(
-          )
+        public ContentObject ParseContentObject()
         {
             Operation operation = ParseOperation();
             if (operation is PaintXObject) // External object.
@@ -86,8 +80,7 @@ namespace org.pdfclown.documents.contents.tokens
         /**
           <summary>Parses the next content objects.</summary>
         */
-        public IList<ContentObject> ParseContentObjects(
-          )
+        public IList<ContentObject> ParseContentObjects()
         {
             List<ContentObject> contentObjects = new List<ContentObject>();
             while (MoveNext())
@@ -108,8 +101,7 @@ namespace org.pdfclown.documents.contents.tokens
         /**
           <summary>Parses the next operation.</summary>
         */
-        public Operation ParseOperation(
-          )
+        public Operation ParseOperation()
         {
             string @operator = null;
             List<PdfDirectObject> operands = new List<PdfDirectObject>();
@@ -129,8 +121,7 @@ namespace org.pdfclown.documents.contents.tokens
             return Operation.Get(@operator, operands);
         }
 
-        public override PdfDataObject ParsePdfObject(
-          )
+        public override PdfDataObject ParsePdfObject()
         {
             switch (TokenType)
             {
@@ -146,8 +137,7 @@ namespace org.pdfclown.documents.contents.tokens
         #endregion
 
         #region private
-        private InlineImage ParseInlineImage(
-          )
+        private InlineImage ParseInlineImage()
         {
             /*
               NOTE: Inline images use a peculiar syntax that's an exception to the usual rule
@@ -235,9 +225,7 @@ namespace org.pdfclown.documents.contents.tokens
               );
         }
 
-        private Path ParsePath(
-          Operation beginOperation
-          )
+        private Path ParsePath(Operation beginOperation)
         {
             /*
               NOTE: Paths do not have an explicit end operation, so we must infer it

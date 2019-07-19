@@ -140,7 +140,7 @@ namespace org.pdfclown.documents.contents.objects
                 if (textElement is byte[] byteElement) // Text string.
                 {
                     string textString = font.Decode(byteElement);
-                    
+
                     foreach (char textChar in textString)
                     {
                         if (context != null
@@ -153,7 +153,7 @@ namespace org.pdfclown.documents.contents.objects
                             SKMatrix trm = ctm;
                             SKMatrix.PreConcat(ref trm, tm);
                             SKMatrix.PreConcat(ref trm, SKMatrix.MakeScale(1, -1));
-                            
+
                             context.Save();
                             context.SetMatrix(trm);
                             if (fill != null)
@@ -166,7 +166,6 @@ namespace org.pdfclown.documents.contents.objects
                             }
                             context.Restore();
                         }
-
                         double charWidth = font.GetWidth(textChar) * scaledFactor;
 
                         if (textScanner != null)

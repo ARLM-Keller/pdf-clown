@@ -34,8 +34,7 @@ namespace org.pdfclown.documents.contents.objects
       within the content stream model.</remarks>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class InlineImageBody
-      : Operation
+    public sealed class InlineImageBody : Operation
     {
         #region static
         #region fields

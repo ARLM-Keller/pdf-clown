@@ -152,8 +152,8 @@ namespace org.pdfclown.tools
               SKAlphaType.Opaque
               //PixelFormat.Format24bppRgb
               );
-            
-            contentContext.Render(new SKCanvas(image), size);
+            using (var canvas = new SKCanvas(image))
+                contentContext.Render(canvas, size);
             return image;
         }
         #endregion

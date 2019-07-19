@@ -34,8 +34,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
       <summary>Separation color value [PDF:1.6:4.5.5].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class SeparationColor
-      : LeveledColor
+    public sealed class SeparationColor : LeveledColor
     {
         #region static
         #region fields

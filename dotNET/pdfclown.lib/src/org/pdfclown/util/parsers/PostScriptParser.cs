@@ -35,8 +35,7 @@ namespace org.pdfclown.util.parsers
     /**
       <summary>PostScript (non-procedural subset) parser [PS].</summary>
     */
-    public class PostScriptParser
-      : IDisposable
+    public class PostScriptParser : IDisposable
     {
         #region types
         public enum TokenTypeEnum // [PS:3.3].
@@ -60,9 +59,7 @@ namespace org.pdfclown.util.parsers
         #region static
         #region interface
         #region protected
-        protected static int GetHex(
-          int c
-          )
+        protected static int GetHex(int c)
         {
             if (c >= '0' && c <= '9')
                 return (c - '0');
@@ -77,9 +74,7 @@ namespace org.pdfclown.util.parsers
         /**
           <summary>Evaluate whether a character is a delimiter.</summary>
         */
-        protected static bool IsDelimiter(
-          int c
-          )
+        protected static bool IsDelimiter(int c)
         {
             return c == Symbol.OpenRoundBracket
               || c == Symbol.CloseRoundBracket
@@ -94,17 +89,13 @@ namespace org.pdfclown.util.parsers
         /**
           <summary>Evaluate whether a character is an EOL marker.</summary>
         */
-        protected static bool IsEOL(
-          int c
-          )
+        protected static bool IsEOL(int c)
         { return (c == 10 || c == 13); }
 
         /**
           <summary>Evaluate whether a character is a white-space.</summary>
         */
-        protected static bool IsWhitespace(
-          int c
-          )
+        protected static bool IsWhitespace(int c)
         { return c == 32 || IsEOL(c) || c == 0 || c == 9 || c == 12; }
         #endregion
         #endregion
@@ -119,25 +110,19 @@ namespace org.pdfclown.util.parsers
         #endregion
 
         #region constructors
-        public PostScriptParser(
-          IInputStream stream
-          )
+        public PostScriptParser(IInputStream stream)
         { this.stream = stream; }
 
-        public PostScriptParser(
-          byte[] data
-          )
+        public PostScriptParser(byte[] data)
         { this.stream = new org.pdfclown.bytes.Buffer(data); }
 
-        ~PostScriptParser(
-          )
+        ~PostScriptParser()
         { Dispose(false); }
         #endregion
 
         #region interface
         #region public
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         { return stream.GetHashCode(); }
 
         /**
@@ -145,30 +130,21 @@ namespace org.pdfclown.util.parsers
           <param name="offset">Number of tokens to skip before reaching the intended one.</param>
           <seealso cref="Token"/>
         */
-        public object GetToken(
-          int offset
-          )
+        public object GetToken(int offset)
         { MoveNext(offset); return Token; }
 
         public long Length
         {
-            get
-            { return stream.Length; }
+            get { return stream.Length; }
         }
 
         /**
           <summary>Moves the pointer to the next token.</summary>
           <param name="offset">Number of tokens to skip before reaching the intended one.</param>
         */
-        public bool MoveNext(
-          int offset
-          )
+        public bool MoveNext(int offset)
         {
-            for (
-              int index = 0;
-              index < offset;
-              index++
-              )
+            for (int index = 0; index < offset; index++)
             {
                 if (!MoveNext())
                     return false;
@@ -183,8 +159,7 @@ namespace org.pdfclown.util.parsers
           at the last byte of the current token.</remarks>
           <returns>Whether a new token was found.</returns>
         */
-        public virtual bool MoveNext(
-          )
+        public virtual bool MoveNext()
         {
             StringBuilder buffer = null;
             token = null;
@@ -472,24 +447,19 @@ namespace org.pdfclown.util.parsers
 
         public long Position
         {
-            get
-            { return stream.Position; }
+            get { return stream.Position; }
         }
 
         /**
           <summary>Moves the pointer to the given absolute byte position.</summary>
         */
-        public void Seek(
-          long offset
-          )
+        public void Seek(long offset)
         { stream.Seek(offset); }
 
         /**
           <summary>Moves the pointer to the given relative byte position.</summary>
         */
-        public void Skip(
-          long offset
-          )
+        public void Skip(long offset)
         { stream.Skip(offset); }
 
         /**
@@ -497,8 +467,7 @@ namespace org.pdfclown.util.parsers
           the non-EOL character following the EOL sequence).</summary>
           <returns>Whether the stream can be further read.</returns>
         */
-        public bool SkipEOL(
-          )
+        public bool SkipEOL()
         {
             int c;
             bool found = false;
@@ -521,8 +490,7 @@ namespace org.pdfclown.util.parsers
           non-whitespace character following the whitespace sequence).</summary>
           <returns>Whether the stream can be further read.</returns>
         */
-        public bool SkipWhitespace(
-          )
+        public bool SkipWhitespace()
         {
             int c;
             do
@@ -537,8 +505,7 @@ namespace org.pdfclown.util.parsers
 
         public IInputStream Stream
         {
-            get
-            { return stream; }
+            get { return stream; }
         }
 
         /**
@@ -546,10 +513,8 @@ namespace org.pdfclown.util.parsers
         */
         public object Token
         {
-            get
-            { return token; }
-            protected set
-            { token = value; }
+            get { return token; }
+            protected set { token = value; }
         }
 
         /**
@@ -557,15 +522,12 @@ namespace org.pdfclown.util.parsers
         */
         public TokenTypeEnum TokenType
         {
-            get
-            { return tokenType; }
-            protected set
-            { tokenType = value; }
+            get { return tokenType; }
+            protected set { tokenType = value; }
         }
 
         #region IDisposable
-        public void Dispose(
-          )
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -574,9 +536,7 @@ namespace org.pdfclown.util.parsers
         #endregion
 
         #region protected
-        protected virtual void Dispose(
-          bool disposing
-          )
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {

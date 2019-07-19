@@ -113,18 +113,12 @@ namespace org.pdfclown.documents.contents.objects
         #region public
         public IList<PdfDirectObject> Components
         {
-            get
-            { return operands; }
+            get { return operands; }
         }
 
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(ContentScanner.GraphicsState state)
         {
-            state.StrokeColor = state.StrokeColorSpace.GetColor(
-              operands,
-              state.Scanner.ContentContext
-              );
+            state.StrokeColor = state.StrokeColorSpace.GetColor(operands, state.Scanner.ContentContext);
         }
         #endregion
         #endregion

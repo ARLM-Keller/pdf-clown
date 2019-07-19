@@ -46,20 +46,16 @@ namespace org.pdfclown.tools
         #endregion
 
         #region constructors
-        public PageStamper(
-          ) : this(null)
+        public PageStamper() : this(null)
         { }
 
-        public PageStamper(
-          Page page
-          )
+        public PageStamper(Page page)
         { Page = page; }
         #endregion
 
         #region interface
         #region public
-        public void Flush(
-          )
+        public void Flush()
         {
             // Ensuring that there's room for the new content chunks inside the page's content stream...
             /*
@@ -101,20 +97,17 @@ namespace org.pdfclown.tools
 
         public PrimitiveComposer Background
         {
-            get
-            { return background; }
+            get { return background; }
         }
 
         public PrimitiveComposer Foreground
         {
-            get
-            { return foreground; }
+            get { return foreground; }
         }
 
         public Page Page
         {
-            get
-            { return page; }
+            get { return page; }
             set
             {
                 page = value;
@@ -146,17 +139,11 @@ namespace org.pdfclown.tools
         #endregion
 
         #region private
-        private PrimitiveComposer CreateFilter(
-          )
+        private PrimitiveComposer CreateFilter()
         {
             return new PrimitiveComposer(
-              new ContentScanner(
-                Contents.Wrap(
-                  page.File.Register(new PdfStream()),
-                  page
-                  )
-                )
-              );
+                new ContentScanner(
+                    Contents.Wrap(page.File.Register(new PdfStream()), page)));
         }
         #endregion
         #endregion

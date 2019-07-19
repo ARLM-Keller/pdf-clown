@@ -38,9 +38,7 @@ namespace org.pdfclown.documents.contents.objects
       within the content stream model.</remarks>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class InlineImageHeader
-      : Operation,
-        IDictionary<PdfName, PdfDirectObject>
+    public sealed class InlineImageHeader : Operation, IDictionary<PdfName, PdfDirectObject>
     {
         #region dynamic
         #region constructors

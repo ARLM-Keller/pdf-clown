@@ -28,6 +28,10 @@ using org.pdfclown.objects;
 using System;
 using SkiaSharp;
 using System.Collections.Generic;
+using org.pdfclown.documents.contents.composition;
+using org.pdfclown.documents.contents.objects;
+using org.pdfclown.documents.contents.xObjects;
+using org.pdfclown.documents.interchange.metadata;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
@@ -38,7 +42,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
     */
     //TODO: define as IContentContext?
     [PDF(VersionEnum.PDF12)]
-    public class TilingPattern : Pattern
+    public class TilingPattern : Pattern, IContentContext
     {
         #region types
         /**
@@ -110,10 +114,12 @@ namespace org.pdfclown.documents.contents.colorSpaces
 
         #region dynamic
         #region constructors
-        internal TilingPattern(PatternColorSpace colorSpace, PdfDirectObject baseObject) : base(colorSpace, baseObject)
+        internal TilingPattern(PatternColorSpace colorSpace, PdfDirectObject baseObject)
+            : base(colorSpace, baseObject)
         { }
 
-        internal TilingPattern(PdfDirectObject baseObject) : base(baseObject)
+        internal TilingPattern(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
         #endregion
 
@@ -186,12 +192,80 @@ namespace org.pdfclown.documents.contents.colorSpaces
         {
             get { return ((IPdfNumber)BaseHeader[PdfName.YStep]).RawValue; }
         }
+
+        public Contents Contents
+        {
+            get { return Contents.Wrap(BaseObject, this); }
+        }
+
+        public SKBitmap GetBitmap()
+        {
+            var box = Box;
+            var bitmap = new SKBitmap((int)box.Width * 2,
+              (int)box.Height * 2,
+              SKColorType.Rgba8888,
+              SKAlphaType.Opaque);
+            using (var canvas = new SKCanvas(bitmap))
+            {
+                Render(canvas, new SKSize(box.Width * 2, box.Height * 2));
+            }
+
+            return bitmap;
+        }
+
+        public SKShader GetShader()
+        {
+            return SKShader.CreateBitmap(GetBitmap(), SKShaderTileMode.Repeat, SKShaderTileMode.Repeat, SKMatrix);
+        }
+
+        public void Render(SKCanvas context, SKSize size)
+        {
+            var scanner = new ContentScanner(Contents);
+            scanner.Render(context, size);
+        }
+
+        public AppData GetAppData(PdfName appName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Touch(PdfName appName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Touch(PdfName appName, DateTime modificationDate)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ContentObject ToInlineObject(PrimitiveComposer composer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public xObjects.XObject ToXObject(Document context)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
 
         #region private
         private PdfDictionary BaseHeader
         {
             get { return ((PdfStream)BaseDataObject).Header; }
+        }
+
+        public RotationEnum Rotation
+        {
+            get { return RotationEnum.Downward; }
+        }
+
+        public AppDataCollection AppData => throw new NotImplementedException();
+
+        public DateTime? ModificationDate
+        {
+            get { return (DateTime?)PdfSimpleObject<object>.GetValue(Dictionary[PdfName.LastModified]); }
         }
         #endregion
         #endregion

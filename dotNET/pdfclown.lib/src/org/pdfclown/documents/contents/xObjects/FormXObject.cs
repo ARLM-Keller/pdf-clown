@@ -40,16 +40,12 @@ namespace org.pdfclown.documents.contents.xObjects
       <summary>Form external object [PDF:1.6:4.9].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class FormXObject
-      : XObject,
-        IContentContext
+    public sealed class FormXObject : XObject, IContentContext
     {
         #region static
         #region interface
         #region public
-        public static new FormXObject Wrap(
-          PdfDirectObject baseObject
-          )
+        public static new FormXObject Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
@@ -62,9 +58,13 @@ namespace org.pdfclown.documents.contents.xObjects
               example in case of Acroform flattening).
             */
             if (subtype == null && header.ContainsKey(PdfName.BBox))
-            { header[PdfName.Subtype] = PdfName.Form; }
+            {
+                header[PdfName.Subtype] = PdfName.Form;
+            }
             else if (!subtype.Equals(PdfName.Form))
+            {
                 return null;
+            }
 
             return new FormXObject(baseObject);
         }
@@ -79,10 +79,8 @@ namespace org.pdfclown.documents.contents.xObjects
           <param name="context">Document where to place this form.</param>
           <param name="size">Form size.</param>
         */
-        public FormXObject(
-          Document context,
-          SKSize size
-          ) : this(context, SKRect.Create(new SKPoint(0, 0), size))
+        public FormXObject(Document context, SKSize size)
+            : this(context, SKRect.Create(new SKPoint(0, 0), size))
         { }
 
         /**
@@ -90,18 +88,15 @@ namespace org.pdfclown.documents.contents.xObjects
           <param name="context">Document where to place this form.</param>
           <param name="box">Form box.</param>
         */
-        public FormXObject(
-          Document context,
-          SKRect box
-          ) : base(context)
+        public FormXObject(Document context, SKRect box)
+            : base(context)
         {
             BaseDataObject.Header[PdfName.Subtype] = PdfName.Form;
             Box = box;
         }
 
-        private FormXObject(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        private FormXObject(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
         #endregion
 

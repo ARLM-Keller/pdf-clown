@@ -43,8 +43,7 @@ namespace org.pdfclown.documents.contents.fonts
     /**
       <summary>CMap parser [PDF:1.6:5.6.4;CMAP].</summary>
     */
-    internal sealed class CMapParser
-      : PostScriptParser
+    internal sealed class CMapParser : PostScriptParser
     {
         #region static
         #region fields
@@ -61,14 +60,10 @@ namespace org.pdfclown.documents.contents.fonts
 
         #region dynamic
         #region constructors
-        public CMapParser(
-          io::Stream stream
-          ) : this(new bytes::Buffer(stream))
+        public CMapParser(io::Stream stream) : this(new bytes::Buffer(stream))
         { }
 
-        public CMapParser(
-          bytes::IInputStream stream
-          ) : base(stream)
+        public CMapParser(bytes::IInputStream stream) : base(stream)
         { }
         #endregion
 
@@ -77,8 +72,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Parses the character-code-to-unicode mapping [PDF:1.6:5.9.1].</summary>
         */
-        public IDictionary<ByteArray, int> Parse(
-          )
+        public IDictionary<ByteArray, int> Parse()
         {
             Stream.Seek(0);
             IDictionary<ByteArray, int> codes = new Dictionary<ByteArray, int>();
@@ -210,15 +204,13 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Converts the current token into its input code value.</summary>
         */
-        private byte[] ParseInputCode(
-          )
+        private byte[] ParseInputCode()
         { return ConvertUtils.HexToByteArray((string)Token); }
 
         /**
           <summary>Converts the current token into its Unicode value.</summary>
         */
-        private int ParseUnicode(
-          )
+        private int ParseUnicode()
         {
             switch (TokenType)
             {

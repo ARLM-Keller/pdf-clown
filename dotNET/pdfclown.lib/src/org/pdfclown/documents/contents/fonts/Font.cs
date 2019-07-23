@@ -125,6 +125,11 @@ namespace org.pdfclown.documents.contents.fonts
                 throw new NotImplementedException();
         }
 
+        internal SKTextEncoding GetEnoding()
+        {
+            return charCodeMaxLength == 2 ? SKTextEncoding.Utf16 : SKTextEncoding.Utf8;// Symbolic ? SKTextEncoding.GlyphId : SKTextEncoding.Utf8;
+        }
+
         /**
           <summary>Gets the scaling factor to be applied to unscaled metrics to get actual
           measures.</summary>
@@ -234,7 +239,9 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Used unicodes.</summary>
         */
-        protected HashSet<int> usedCodes;
+        //protected HashSet<int> usedCodes;
+
+        protected SKTypeface typeface;
 
         /**
           <summary>Average glyph width.</summary>
@@ -281,33 +288,73 @@ namespace org.pdfclown.documents.contents.fonts
         #region public
         public virtual SKTypeface GetTypeface()
         {
-            if (BaseDataObject is PdfDictionary dict)
+            if (typeface != null)
+                return typeface;
+
+            var fontDescription = GetFontDescription();
+            if (fontDescription != null)
             {
-                if (BaseDataObject.Resolve(PdfName.FontDescriptor) is PdfDictionary fontDescription)
+                if (fontDescription.Resolve(PdfName.FontFile) is PdfStream stream)
                 {
-                    if (fontDescription.Resolve(PdfName.FontFile) is PdfStream stream)
-                    {
-                        var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
-                        return GetTypeface(stream, name);
-                    }
-                    if (fontDescription.Resolve(PdfName.FontFile2) is PdfStream stream2)
-                    {
-                        var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
-                        return GetTypeface(stream2, name);
-                    }
-                    if (fontDescription.Resolve(PdfName.FontFile3) is PdfStream stream3)
-                    {
-                        var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
-                        return GetTypeface(stream3, name);
-                    }
+                    var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
+                    return typeface = GetTypeface(stream, name);
                 }
-                else if (BaseDataObject.Resolve(PdfName.BaseFont) is PdfName baseFont)
+                if (fontDescription.Resolve(PdfName.FontFile2) is PdfStream stream2)
                 {
-                    return SKTypeface.FromFamilyName(baseFont.StringValue);
+                    var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
+                    return typeface = GetTypeface(stream2, name);
                 }
+                if (fontDescription.Resolve(PdfName.FontFile3) is PdfStream stream3)
+                {
+                    var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
+                    return typeface = GetTypeface(stream3, name);
+                }
+            }
+            else if (BaseDataObject.Resolve(PdfName.BaseFont) is PdfName baseFont)
+            {
+                return typeface = ParseName(baseFont.StringValue);
             }
 
             return null;
+        }
+
+        public PdfDictionary GetFontDescription()
+        {
+            if (BaseDataObject.Resolve(PdfName.FontDescriptor) is PdfDictionary fontDescription)
+                return fontDescription;
+            if (BaseDataObject.Resolve(PdfName.DescendantFonts) is PdfArray array 
+                && array.Resolve(0) is PdfDictionary descendant
+                && descendant.Resolve(PdfName.FontDescriptor) is PdfDictionary descendantDescription)
+                return descendantDescription;
+            return null;
+        }
+
+        private static SKTypeface ParseName(string name)
+        {
+            if (cache == null)
+            { cache = new Dictionary<string, SKTypeface>(StringComparer.Ordinal); }
+            if (cache.TryGetValue(name, out var typeface))
+            {
+                return typeface;
+            }
+
+            var parameters = name.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+            var style = new SKFontStyle(
+                name.IndexOf("Bold", StringComparison.OrdinalIgnoreCase) > -1
+                    ? SKFontStyleWeight.Bold
+                    : SKFontStyleWeight.Normal,
+                 SKFontStyleWidth.Normal,
+                 name.IndexOf("Italic", StringComparison.OrdinalIgnoreCase) > -1
+                    ? SKFontStyleSlant.Italic
+                    : name.IndexOf("Oblique", StringComparison.OrdinalIgnoreCase) > -1
+                        ? SKFontStyleSlant.Oblique
+                        : SKFontStyleSlant.Upright);
+            var fontName = parameters[0].Equals("Courier", StringComparison.OrdinalIgnoreCase)
+                ? "Courier New"
+                : parameters[0].Equals("Times", StringComparison.OrdinalIgnoreCase)
+                ? "Times New Roman"
+                : parameters[0];
+            return cache[name] = SKTypeface.FromFamilyName(fontName, style);
         }
 
         private static SKTypeface GetTypeface(PdfStream stream, string name)
@@ -317,11 +364,16 @@ namespace org.pdfclown.documents.contents.fonts
 
             //.BlobExtensions.ToHarfBuzzBlob
             var data = new SKMemoryStream(body);
-            //var blob = data.ToHarfBuzzBlob();
-            //var face = new HarfBuzzSharp.Face(blob, 0);
-            //var font = new HarfBuzzSharp.Font(face);
+            //var harf = new SKHarfBuzzFontFace();
+            //harf.Load(body);
 
-            return SKTypeface.FromStream(data);
+            var typeface = SKFontManager.Default.CreateTypeface(data);
+            //           var typeface = SKTypeface.FromStream(data);
+            if (typeface == null)
+            {
+                typeface = ParseName(name);
+            }
+            return typeface;
         }
 
         /**
@@ -472,7 +524,7 @@ namespace org.pdfclown.documents.contents.fonts
 
                 byte[] charCode = code.Data;
                 encodedStream.Write(charCode, 0, charCode.Length);
-                usedCodes.Add(textCode);
+                //usedCodes.Add(textCode);
             }
             encodedStream.Close();
             return encodedStream.ToArray();
@@ -517,6 +569,7 @@ namespace org.pdfclown.documents.contents.fonts
         { return Name.GetHashCode(); }
 
         private double textHeight = -1; // TODO: temporary until glyph bounding boxes are implemented.
+        private static Dictionary<string, SKTypeface> cache;
 
         /**
           <summary>Gets the unscaled height of the given character.</summary>
@@ -812,7 +865,7 @@ namespace org.pdfclown.documents.contents.fonts
         #region private
         private void Initialize()
         {
-            usedCodes = new HashSet<int>();
+            //usedCodes = new HashSet<int>();
 
             // Put the newly-instantiated font into the common cache!
             /*

@@ -55,6 +55,7 @@ namespace org.pdfclown.documents.contents.fonts
         private static readonly string UseCMapOperator = "usecmap";
 
         private static readonly string CMapName = PdfName.CMapName.StringValue;
+        private static readonly string CMapType = PdfName.CMapType.StringValue;
         #endregion
         #endregion
 
@@ -79,6 +80,7 @@ namespace org.pdfclown.documents.contents.fonts
             {
                 IList<object> operands = new List<object>();
                 string cmapName = null;
+                int cmapType;
                 while (MoveNext())
                 {
                     switch (TokenType)
@@ -167,8 +169,10 @@ namespace org.pdfclown.documents.contents.fonts
                                 { codes = CMap.Get((string)operands[0]); }
                                 else if (@operator.Equals(DefOperator, StringComparison.Ordinal) && operands.Count != 0)
                                 {
-                                    if (CMapName.Equals(operands[0]))
+                                    if (CMapName.Equals((string)operands[0], StringComparison.Ordinal))
                                     { cmapName = (string)operands[1]; }
+                                    if (CMapType.Equals((string)operands[0], StringComparison.Ordinal))
+                                    { cmapType = (int)operands[1]; }
                                 }
                                 operands.Clear();
                                 break;
@@ -205,7 +209,7 @@ namespace org.pdfclown.documents.contents.fonts
           <summary>Converts the current token into its input code value.</summary>
         */
         private byte[] ParseInputCode()
-        { return ConvertUtils.HexToByteArray((string)Token); }
+        { return ConvertUtils.HexStringToByteArray((string)Token); }
 
         /**
           <summary>Converts the current token into its Unicode value.</summary>

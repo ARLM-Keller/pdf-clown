@@ -103,9 +103,7 @@ namespace org.pdfclown.documents.interaction.annotations
           <param name="baseObject">Annotation base object.</param>
           <returns>Annotation object associated to the base object.</returns>
         */
-        public static Annotation Wrap(
-          PdfDirectObject baseObject
-          )
+        public static Annotation Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
@@ -164,20 +162,11 @@ namespace org.pdfclown.documents.interaction.annotations
 
         #region dynamic
         #region constructors
-        protected Annotation(
-          Page page,
-          PdfName subtype,
-          SKRect box,
-          string text
-          ) : base(
+        protected Annotation(Page page, PdfName subtype, SKRect box, string text)
+            : base(
             page.Document,
             new PdfDictionary(
-              new PdfName[]
-              {
-            PdfName.Type,
-            PdfName.Subtype,
-            PdfName.Border
-              },
+              new PdfName[] { PdfName.Type, PdfName.Subtype, PdfName.Border },
               new PdfDirectObject[]
               {
             PdfName.Annot,
@@ -193,9 +182,7 @@ namespace org.pdfclown.documents.interaction.annotations
             Printable = true;
         }
 
-        protected Annotation(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected Annotation(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -207,10 +194,8 @@ namespace org.pdfclown.documents.interaction.annotations
         [PDF(VersionEnum.PDF11)]
         public virtual actions.Action Action
         {
-            get
-            { return actions.Action.Wrap(BaseDataObject[PdfName.A]); }
-            set
-            { BaseDataObject[PdfName.A] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return actions.Action.Wrap(BaseDataObject[PdfName.A]); }
+            set { BaseDataObject[PdfName.A] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         /**
@@ -219,10 +204,8 @@ namespace org.pdfclown.documents.interaction.annotations
         [PDF(VersionEnum.PDF12)]
         public virtual AnnotationActions Actions
         {
-            get
-            { return new CommonAnnotationActions(this, BaseDataObject.Get<PdfDictionary>(PdfName.AA)); }
-            set
-            { BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return new CommonAnnotationActions(this, BaseDataObject.Get<PdfDictionary>(PdfName.AA)); }
+            set { BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         /**
@@ -231,10 +214,8 @@ namespace org.pdfclown.documents.interaction.annotations
         [PDF(VersionEnum.PDF12)]
         public virtual Appearance Appearance
         {
-            get
-            { return Appearance.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.AP)); }
-            set
-            { BaseDataObject[PdfName.AP] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return Appearance.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.AP)); }
+            set { BaseDataObject[PdfName.AP] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         /**
@@ -243,8 +224,7 @@ namespace org.pdfclown.documents.interaction.annotations
         [PDF(VersionEnum.PDF11)]
         public virtual Border Border
         {
-            get
-            { return new Border(BaseDataObject.Get<PdfDictionary>(PdfName.BS)); }
+            get { return new Border(BaseDataObject.Get<PdfDictionary>(PdfName.BS)); }
             set
             {
                 BaseDataObject[PdfName.BS] = PdfObjectWrapper.GetBaseObject(value);
@@ -286,17 +266,14 @@ namespace org.pdfclown.documents.interaction.annotations
         [PDF(VersionEnum.PDF11)]
         public virtual DeviceColor Color
         {
-            get
-            { return DeviceColor.Get((PdfArray)BaseDataObject[PdfName.C]); }
-            set
-            { BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return DeviceColor.Get((PdfArray)BaseDataObject[PdfName.C]); }
+            set { BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         /**
           <summary>Deletes this annotation removing also its reference on the page.</summary>
         */
-        public override bool Delete(
-          )
+        public override bool Delete()
         {
             // Shallow removal (references):
             // * reference on page
@@ -348,10 +325,8 @@ namespace org.pdfclown.documents.interaction.annotations
         [PDF(VersionEnum.PDF14)]
         public virtual string Name
         {
-            get
-            { return (string)PdfSimpleObject<Object>.GetValue(BaseDataObject[PdfName.NM]); }
-            set
-            { BaseDataObject[PdfName.NM] = PdfTextString.Get(value); }
+            get { return (string)PdfSimpleObject<Object>.GetValue(BaseDataObject[PdfName.NM]); }
+            set { BaseDataObject[PdfName.NM] = PdfTextString.Get(value); }
         }
 
         /**
@@ -360,8 +335,7 @@ namespace org.pdfclown.documents.interaction.annotations
         [PDF(VersionEnum.PDF13)]
         public virtual Page Page
         {
-            get
-            { return Page.Wrap(BaseDataObject[PdfName.P]); }
+            get { return Page.Wrap(BaseDataObject[PdfName.P]); }
         }
 
         /**
@@ -370,10 +344,8 @@ namespace org.pdfclown.documents.interaction.annotations
         [PDF(VersionEnum.PDF11)]
         public virtual bool Printable
         {
-            get
-            { return (Flags & FlagsEnum.Print) == FlagsEnum.Print; }
-            set
-            { Flags = EnumUtils.Mask(Flags, FlagsEnum.Print, value); }
+            get { return (Flags & FlagsEnum.Print) == FlagsEnum.Print; }
+            set { Flags = EnumUtils.Mask(Flags, FlagsEnum.Print, value); }
         }
 
         /**
@@ -383,8 +355,7 @@ namespace org.pdfclown.documents.interaction.annotations
         */
         public virtual string Text
         {
-            get
-            { return (string)PdfSimpleObject<Object>.GetValue(BaseDataObject[PdfName.Contents]); }
+            get { return (string)PdfSimpleObject<Object>.GetValue(BaseDataObject[PdfName.Contents]); }
             set
             {
                 BaseDataObject[PdfName.Contents] = PdfTextString.Get(value);
@@ -408,17 +379,14 @@ namespace org.pdfclown.documents.interaction.annotations
         [PDF(VersionEnum.PDF15)]
         public virtual LayerEntity Layer
         {
-            get
-            { return (LayerEntity)PropertyList.Wrap(BaseDataObject[PdfName.OC]); }
-            set
-            { BaseDataObject[PdfName.OC] = value != null ? value.Membership.BaseObject : null; }
+            get { return (LayerEntity)PropertyList.Wrap(BaseDataObject[PdfName.OC]); }
+            set { BaseDataObject[PdfName.OC] = value != null ? value.Membership.BaseObject : null; }
         }
         #endregion
         #endregion
 
         #region private
-        private float GetPageHeight(
-          )
+        private float GetPageHeight()
         {
             Page page = Page;
             return (page != null

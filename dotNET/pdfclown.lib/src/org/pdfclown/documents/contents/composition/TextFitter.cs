@@ -55,14 +55,7 @@ namespace org.pdfclown.documents.contents.composition
         #endregion
 
         #region constructors
-        internal TextFitter(
-          string text,
-          double width,
-          Font font,
-          double fontSize,
-          bool hyphenation,
-          char hyphenationCharacter
-          )
+        internal TextFitter(string text, double width, Font font, double fontSize, bool hyphenation, char hyphenationCharacter)
         {
             this.text = text;
             this.width = width;
@@ -80,15 +73,9 @@ namespace org.pdfclown.documents.contents.composition
           <param name="unspacedFitting">Whether fitting of unspaced text is allowed.</param>
           <returns>Whether the operation was successful.</returns>
         */
-        public bool Fit(
-          bool unspacedFitting
-          )
+        public bool Fit(bool unspacedFitting)
         {
-            return Fit(
-              endIndex + 1,
-              width,
-              unspacedFitting
-              );
+            return Fit(endIndex + 1, width, unspacedFitting);
         }
 
         /**
@@ -98,11 +85,7 @@ namespace org.pdfclown.documents.contents.composition
           <param name="unspacedFitting">Whether fitting of unspaced text is allowed.</param>
           <returns>Whether the operation was successful.</returns>
         */
-        public bool Fit(
-          int index,
-          double width,
-          bool unspacedFitting
-          )
+        public bool Fit(int index, double width, bool unspacedFitting)
         {
             beginIndex = index;
             this.width = width;
@@ -189,8 +172,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public int BeginIndex
         {
-            get
-            { return beginIndex; }
+            get { return beginIndex; }
         }
 
         /**
@@ -198,8 +180,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public int EndIndex
         {
-            get
-            { return endIndex; }
+            get { return endIndex; }
         }
 
         /**
@@ -207,8 +188,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public string FittedText
         {
-            get
-            { return fittedText; }
+            get { return fittedText; }
         }
 
         /**
@@ -216,8 +196,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public double FittedWidth
         {
-            get
-            { return fittedWidth; }
+            get { return fittedWidth; }
         }
 
         /**
@@ -225,8 +204,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public Font Font
         {
-            get
-            { return font; }
+            get { return font; }
         }
 
         /**
@@ -234,8 +212,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public double FontSize
         {
-            get
-            { return fontSize; }
+            get { return fontSize; }
         }
 
         /**
@@ -243,8 +220,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public bool Hyphenation
         {
-            get
-            { return hyphenation; }
+            get { return hyphenation; }
         }
 
         /**
@@ -253,8 +229,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public char HyphenationCharacter
         {
-            get
-            { return hyphenationCharacter; }
+            get { return hyphenationCharacter; }
         }
 
         /**
@@ -262,8 +237,7 @@ namespace org.pdfclown.documents.contents.composition
         */
         public string Text
         {
-            get
-            { return text; }
+            get { return text; }
         }
 
         /**
@@ -271,19 +245,12 @@ namespace org.pdfclown.documents.contents.composition
         */
         public double Width
         {
-            get
-            { return width; }
+            get { return width; }
         }
         #endregion
 
         #region private
-        private void Hyphenate(
-          bool hyphenation,
-          ref int index,
-          ref int wordEndIndex,
-          double wordWidth,
-          out string hyphen
-          )
+        private void Hyphenate(bool hyphenation, ref int index, ref int wordEndIndex, double wordWidth, out string hyphen)
         {
             /*
               TODO: This hyphenation algorithm is quite primitive (to improve!).

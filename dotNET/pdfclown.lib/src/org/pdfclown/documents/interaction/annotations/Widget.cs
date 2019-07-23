@@ -94,17 +94,13 @@ namespace org.pdfclown.documents.interaction.annotations
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
-        private static PdfName ToCode(
-          HighlightModeEnum value
-          )
+        private static PdfName ToCode(HighlightModeEnum value)
         { return HighlightModeEnumCodes[value]; }
 
         /**
           <summary>Gets the highlighting mode corresponding to the given value.</summary>
         */
-        private static HighlightModeEnum ToHighlightModeEnum(
-          PdfName value
-          )
+        private static HighlightModeEnum ToHighlightModeEnum(PdfName value)
         {
             foreach (KeyValuePair<HighlightModeEnum, PdfName> mode in HighlightModeEnumCodes)
             {
@@ -122,21 +118,14 @@ namespace org.pdfclown.documents.interaction.annotations
         /**
           <summary>Creates a new generic widget.</summary>
         */
-        public Widget(
-          Page page,
-          SKRect box
-          ) : base(page, PdfName.Widget, box, null)
+        public Widget(Page page, SKRect box) : base(page, PdfName.Widget, box, null)
         { Flags = EnumUtils.Mask(Flags, FlagsEnum.Print, true); }
 
         /**
           <summary>Creates a new dual-state widget (required by <see
           cref="org.pdfclown.documents.forms.RadioButton"/> fields).</summary>
         */
-        public Widget(
-          Page page,
-          SKRect box,
-          string name
-          ) : this(page, box)
+        public Widget(Page page, SKRect box, string name) : this(page, box)
         {
             // Initialize the on-state appearance!
             /*
@@ -148,9 +137,7 @@ namespace org.pdfclown.documents.interaction.annotations
             normalAppearance[new PdfName(name)] = new FormXObject(page.Document, Box.Size);
         }
 
-        internal Widget(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Widget(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -158,10 +145,8 @@ namespace org.pdfclown.documents.interaction.annotations
         #region public
         public override AnnotationActions Actions
         {
-            get
-            { return new WidgetActions(this, BaseDataObject.Get<PdfDictionary>(PdfName.AA)); }
-            set
-            { base.Actions = value; }
+            get { return new WidgetActions(this, BaseDataObject.Get<PdfDictionary>(PdfName.AA)); }
+            set { base.Actions = value; }
         }
 
         /**
@@ -170,10 +155,8 @@ namespace org.pdfclown.documents.interaction.annotations
         */
         public AppearanceCharacteristics AppearanceCharacteristics
         {
-            get
-            { return AppearanceCharacteristics.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.MK)); }
-            set
-            { BaseDataObject[PdfName.MK] = value.BaseObject; }
+            get { return AppearanceCharacteristics.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.MK)); }
+            set { BaseDataObject[PdfName.MK] = value.BaseObject; }
         }
 
         /**
@@ -182,10 +165,8 @@ namespace org.pdfclown.documents.interaction.annotations
         */
         public HighlightModeEnum HighlightMode
         {
-            get
-            { return ToHighlightModeEnum((PdfName)BaseDataObject[PdfName.H]); }
-            set
-            { BaseDataObject[PdfName.H] = ToCode(value); }
+            get { return ToHighlightModeEnum((PdfName)BaseDataObject[PdfName.H]); }
+            set { BaseDataObject[PdfName.H] = ToCode(value); }
         }
 
         /**

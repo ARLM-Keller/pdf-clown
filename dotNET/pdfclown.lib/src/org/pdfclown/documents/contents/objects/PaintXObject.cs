@@ -101,25 +101,19 @@ namespace org.pdfclown.documents.contents.objects
                 var bitmap = LoadImage(stream.GetBody(false));
                 if (bitmap != null)
                 {
-                    canvas.Save();
                     var matrix = state.Ctm;
                     SKMatrix.PreConcat(ref matrix, imageObject.Matrix);
-                    //SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1, -1));
+                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1, -1));
+
                     canvas.SetMatrix(matrix);
                     canvas.DrawBitmap(bitmap, 0, 0);
-                    canvas.Restore();
                 }
             }
         }
 
         private SKBitmap LoadImage(IBuffer data)
         {
-            try
-            {
-                return SKBitmap.Decode(data.ToByteArray());
-            }
-            catch (Exception e)
-            { return null; }
+            return SKBitmap.Decode(data.ToByteArray());
         }
         #endregion
         #endregion

@@ -131,19 +131,22 @@ namespace org.pdfclown.documents.contents
             }
 
             public int ReadInt()
-            { throw new NotImplementedException(); }
+            { return stream.ReadInt(); }
+
+            public uint ReadUnsignedInt()
+            { return stream.ReadUnsignedInt(); }
 
             public int ReadInt(int length)
-            { throw new NotImplementedException(); }
+            { return stream.ReadInt(length); }
 
             public string ReadLine()
-            { throw new NotImplementedException(); }
+            { return stream.ReadLine(); }
 
             public short ReadShort()
-            { throw new NotImplementedException(); }
+            { return stream.ReadShort(); }
 
             public sbyte ReadSignedByte()
-            { throw new NotImplementedException(); }
+            { return stream.ReadSignedByte(); }
 
             public string ReadString(int length)
             {
@@ -159,7 +162,7 @@ namespace org.pdfclown.documents.contents
             }
 
             public ushort ReadUnsignedShort()
-            { throw new NotImplementedException(); }
+            { return stream.ReadUnsignedShort(); }
 
             public void Seek(long position)
             {

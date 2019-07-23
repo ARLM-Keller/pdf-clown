@@ -48,13 +48,10 @@ namespace org.pdfclown.bytes
         #endregion
 
         #region constructors
-        public Stream(
-          System.IO.Stream stream
-          )
+        public Stream(System.IO.Stream stream)
         { this.stream = stream; }
 
-        ~Stream(
-          )
+        ~Stream()
         { Dispose(false); }
         #endregion
 
@@ -90,6 +87,11 @@ namespace org.pdfclown.bytes
             byte[] data = new byte[sizeof(int)];
             Read(data);
             return ConvertUtils.ByteArrayToInt(data, 0, byteOrder);
+        }
+
+        public uint ReadUnsignedInt()
+        {
+            return (uint)ReadInt();
         }
 
         public int ReadInt(int length)

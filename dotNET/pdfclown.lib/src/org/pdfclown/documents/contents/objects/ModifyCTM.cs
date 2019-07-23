@@ -102,7 +102,11 @@ namespace org.pdfclown.documents.contents.objects
             state.Ctm = ctm;
             var context = state.Scanner.RenderContext;
             if (context != null)
-            { context.SetMatrix(state.Ctm); }
+            {
+                //var matrix = context.TotalMatrix;
+                //SKMatrix.PreConcat(ref matrix, ctm);
+                context.SetMatrix( state.Ctm);
+            }
         }
 
         public SKMatrix Value

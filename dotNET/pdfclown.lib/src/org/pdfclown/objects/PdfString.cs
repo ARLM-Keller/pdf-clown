@@ -203,7 +203,7 @@ namespace org.pdfclown.objects
                         RawValue = tokens::Encoding.Pdf.Encode((string)value);
                         break;
                     case SerializationModeEnum.Hex:
-                        RawValue = ConvertUtils.HexToByteArray((string)value);
+                        RawValue = ConvertUtils.HexStringToByteArray((string)value);
                         break;
                     default:
                         throw new NotImplementedException(serializationMode + " serialization mode is not implemented.");

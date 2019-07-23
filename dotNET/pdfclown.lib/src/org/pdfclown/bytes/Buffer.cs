@@ -39,8 +39,7 @@ namespace org.pdfclown.bytes
     /**
       <summary>Byte buffer.</summary>
     */
-    public sealed class Buffer
-      : IBuffer
+    public sealed class Buffer : IBuffer
     {
         #region static
         #region fields
@@ -269,6 +268,13 @@ namespace org.pdfclown.bytes
         public int ReadInt()
         {
             int value = ConvertUtils.ByteArrayToInt(data, position, byteOrder);
+            position += sizeof(int);
+            return value;
+        }
+
+        public uint ReadUnsignedInt()
+        {
+            var value = (uint)ConvertUtils.ByteArrayToInt(data, position, byteOrder);
             position += sizeof(int);
             return value;
         }

@@ -137,6 +137,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName ClosedArrow = new PdfName("ClosedArrow");
         public static readonly PdfName CMap = new PdfName("CMap");
         public static readonly PdfName CMapName = new PdfName("CMapName");
+        public static readonly PdfName CMapType = new PdfName("CMapType");
         public static readonly PdfName Color = new PdfName("Color");
         public static readonly PdfName ColorBurn = new PdfName("ColorBurn");
         public static readonly PdfName ColorDodge = new PdfName("ColorDodge");

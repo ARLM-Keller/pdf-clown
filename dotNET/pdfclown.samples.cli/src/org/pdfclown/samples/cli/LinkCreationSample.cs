@@ -22,8 +22,7 @@ namespace org.pdfclown.samples.cli
     public class LinkCreationSample
       : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Creating the document...
             files::File file = new files::File();
@@ -36,9 +35,7 @@ namespace org.pdfclown.samples.cli
             Serialize(file, "Link annotations", "applying link annotations", "links, creation");
         }
 
-        private void BuildLinks(
-          Document document
-          )
+        private void BuildLinks(Document document)
         {
             Pages pages = document.Pages;
             Page page = new Page(document);
@@ -65,15 +62,8 @@ namespace org.pdfclown.samples.cli
                 /*
                   NOTE: This statement instructs the PDF viewer to navigate to the given URI when the link is clicked.
                 */
-                new Link(
-                  page,
-                  SKRect.Create(240, 100, 100, 50),
-                  "Link annotation",
-                  new GoToURI(
-                    document,
-                    new Uri("http://www.sourceforge.net/projects/clown")
-                    )
-                  )
+                new Link(page, SKRect.Create(240, 100, 100, 50), "Link annotation",
+                  new GoToURI(document, new Uri("http://www.sourceforge.net/projects/clown")))
                 { Border = new Border(3, Border.StyleEnum.Beveled) };
             }
 
@@ -92,14 +82,10 @@ namespace org.pdfclown.samples.cli
                 string fileAttachmentName = "attachedSamplePDF";
                 string fileName = System.IO.Path.GetFileName(filePath);
                 new FileAttachment(
-                  page,
-                  SKRect.Create(0, -20, 10, 10),
-                  "File attachment annotation",
-                  FileSpecification.Get(
-                    EmbeddedFile.Get(
-                      document,
-                      filePath
-                      ),
+                    page,
+                    SKRect.Create(0, -20, 10, 10),
+                    "File attachment annotation",
+                    FileSpecification.Get(EmbeddedFile.Get(document, filePath),
                     fileName
                     )
                   )

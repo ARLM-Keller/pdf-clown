@@ -40,9 +40,7 @@ namespace org.pdfclown.documents.interaction.annotations
       or an action to be performed.</remarks>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class Link
-      : Annotation,
-        ILink
+    public sealed class Link : Annotation, ILink
     {
         #region dynamic
         #region constructors

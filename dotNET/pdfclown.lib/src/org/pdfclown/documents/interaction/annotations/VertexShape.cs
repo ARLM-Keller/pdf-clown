@@ -37,22 +37,16 @@ namespace org.pdfclown.documents.interaction.annotations
       <summary>Abstract vertexed shape annotation.</summary>
     */
     [PDF(VersionEnum.PDF15)]
-    public abstract class VertexShape
-      : Shape
+    public abstract class VertexShape : Shape
     {
         #region dynamic
         #region constructors
-        protected VertexShape(
-          Page page,
-          SKRect box,
-          string text,
-          PdfName subtype
-          ) : base(page, box, text, subtype)
+        protected VertexShape(Page page, SKRect box, string text, PdfName subtype)
+            : base(page, box, text, subtype)
         { }
 
-        protected VertexShape(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected VertexShape(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
         #endregion
 
@@ -68,12 +62,7 @@ namespace org.pdfclown.documents.interaction.annotations
                 PdfArray verticesObject = (PdfArray)BaseDataObject[PdfName.Vertices];
                 IList<SKPoint> vertices = new List<SKPoint>();
                 float pageHeight = Page.Box.Height;
-                for (
-                  int index = 0,
-                    length = verticesObject.Count;
-                  index < length;
-                  index += 2
-                  )
+                for (int index = 0, length = verticesObject.Count; index < length; index += 2)
                 {
                     vertices.Add(
                       new SKPoint(

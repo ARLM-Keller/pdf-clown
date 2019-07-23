@@ -35,8 +35,7 @@ namespace org.pdfclown.documents.functions
       small subset of the PostScript language [PDF:1.6:3.9.4].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class Type4Function
-      : Function
+    public sealed class Type4Function : Function
     {
         #region dynamic
         #region constructors

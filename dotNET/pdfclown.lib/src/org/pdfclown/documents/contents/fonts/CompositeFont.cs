@@ -90,9 +90,7 @@ namespace org.pdfclown.documents.contents.fonts
             get { return (PdfDictionary)((PdfArray)BaseDataObject.Resolve(PdfName.DescendantFonts)).Resolve(0); }
         }
 
-        protected override PdfDataObject GetDescriptorValue(
-          PdfName key
-          )
+        protected override PdfDataObject GetDescriptorValue(PdfName key)
         { return ((PdfDictionary)CIDFontDictionary.Resolve(PdfName.FontDescriptor)).Resolve(key); }
 
         protected void LoadEncoding()

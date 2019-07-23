@@ -47,9 +47,13 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        private SaveGraphicsState(
-          ) : base(OperatorKeyword)
+        private SaveGraphicsState() : base(OperatorKeyword)
         { }
+
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            state?.Scanner?.RenderContext?.Save();
+        }
         #endregion
         #endregion
     }

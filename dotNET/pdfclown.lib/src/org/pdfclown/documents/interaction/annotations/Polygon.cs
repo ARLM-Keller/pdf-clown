@@ -37,21 +37,16 @@ namespace org.pdfclown.documents.interaction.annotations
       <remarks>It represents a closed polygon to display on a page.</remarks>
     */
     [PDF(VersionEnum.PDF15)]
-    public sealed class Polygon
-      : VertexShape
+    public sealed class Polygon : VertexShape
     {
         #region dynamic
         #region constructors
-        public Polygon(
-          Page page,
-          SKRect box,
-          string text
-          ) : base(page, box, text, PdfName.Polygon)
+        public Polygon(Page page, SKRect box, string text)
+            : base(page, box, text, PdfName.Polygon)
         { }
 
-        internal Polygon(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Polygon(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
         #endregion
 

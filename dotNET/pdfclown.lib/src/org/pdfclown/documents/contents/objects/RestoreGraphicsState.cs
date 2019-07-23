@@ -48,9 +48,15 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        private RestoreGraphicsState(
-          ) : base(OperatorKeyword)
-        { }
+        private RestoreGraphicsState() : base(OperatorKeyword)
+        {
+
+        }
+
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            state?.Scanner?.RenderContext?.Restore();
+        }
         #endregion
         #endregion
     }

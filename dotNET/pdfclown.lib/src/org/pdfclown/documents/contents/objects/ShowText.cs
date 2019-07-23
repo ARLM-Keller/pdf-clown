@@ -97,6 +97,7 @@ namespace org.pdfclown.documents.contents.objects
             if (fill != null)
             {
                 fill.Typeface = font.GetTypeface();
+                fill.TextEncoding = font.GetEnoding();
                 fill.TextSize = (float)state.FontSize;
                 fill.TextScaleX = (float)state.Scale;
             }
@@ -149,7 +150,7 @@ namespace org.pdfclown.documents.contents.objects
                             || textString[0] == '\r'
                             || textString[0] == '\n')))
                         {
-                            var glyph = font.GetGlyph(textChar);
+                            var text = font.Encode(textChar.ToString());
                             SKMatrix trm = ctm;
                             SKMatrix.PreConcat(ref trm, tm);
                             SKMatrix.PreConcat(ref trm, SKMatrix.MakeScale(1, -1));
@@ -158,11 +159,11 @@ namespace org.pdfclown.documents.contents.objects
                             context.SetMatrix(trm);
                             if (fill != null)
                             {
-                                context.DrawText(textChar.ToString(), 0, 0, fill);
+                                context.DrawText(text, 0, 0, fill);
                             }
                             if (stroke != null)
                             {
-                                context.DrawText(textChar.ToString(), 0, 0, stroke);
+                                context.DrawText(text, 0, 0, stroke);
                             }
                             context.Restore();
                         }

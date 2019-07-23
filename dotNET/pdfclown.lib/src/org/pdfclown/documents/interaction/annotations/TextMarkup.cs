@@ -44,8 +44,7 @@ namespace org.pdfclown.documents.interaction.annotations
       the text of a document.</remarks>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class TextMarkup
-      : Markup
+    public sealed class TextMarkup : Markup
     {
         #region types
         /**
@@ -97,17 +96,13 @@ namespace org.pdfclown.documents.interaction.annotations
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
-        private static PdfName ToCode(
-          MarkupTypeEnum value
-          )
+        private static PdfName ToCode(MarkupTypeEnum value)
         { return MarkupTypeEnumCodes[value]; }
 
         /**
           <summary>Gets the markup type corresponding to the given value.</summary>
         */
-        private static MarkupTypeEnum ToMarkupTypeEnum(
-          PdfName value
-          )
+        private static MarkupTypeEnum ToMarkupTypeEnum(PdfName value)
         {
             foreach (KeyValuePair<MarkupTypeEnum, PdfName> markupType in MarkupTypeEnumCodes)
             {
@@ -126,9 +121,7 @@ namespace org.pdfclown.documents.interaction.annotations
         #endregion
 
         #region interface
-        private static float GetMarkupBoxMargin(
-          float boxHeight
-          )
+        private static float GetMarkupBoxMargin(float boxHeight)
         { return boxHeight * .25f; }
         #endregion
         #endregion
@@ -144,12 +137,8 @@ namespace org.pdfclown.documents.interaction.annotations
           <param name="text">Annotation text.</param>
           <param name="markupType">Markup type.</param>
         */
-        public TextMarkup(
-          Page page,
-          Quad markupBox,
-          string text,
-          MarkupTypeEnum markupType
-          ) : this(page, new List<Quad>() { markupBox }, text, markupType)
+        public TextMarkup(Page page, Quad markupBox, string text, MarkupTypeEnum markupType)
+            : this(page, new List<Quad>() { markupBox }, text, markupType)
         { }
 
         /**
@@ -161,26 +150,15 @@ namespace org.pdfclown.documents.interaction.annotations
           <param name="text">Annotation text.</param>
           <param name="markupType">Markup type.</param>
         */
-        public TextMarkup(
-          Page page,
-          IList<Quad> markupBoxes,
-          string text,
-          MarkupTypeEnum markupType
-          ) : base(
-            page,
-            ToCode(markupType),
-            markupBoxes[0].GetBounds(),
-            text
-            )
+        public TextMarkup(Page page, IList<Quad> markupBoxes, string text, MarkupTypeEnum markupType)
+            : base(page, ToCode(markupType), markupBoxes[0].GetBounds(), text)
         {
             MarkupType = markupType;
             MarkupBoxes = markupBoxes;
             Printable = true;
         }
 
-        internal TextMarkup(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal TextMarkup(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 

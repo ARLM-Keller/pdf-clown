@@ -40,39 +40,29 @@ namespace org.pdfclown.bytes.filters
       <summary>zlib/deflate [RFC:1950,1951] filter [PDF:1.6:3.3.3].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class FlateFilter
-      : Filter
+    public sealed class FlateFilter : Filter
     {
         #region dynamic
         #region constructors
-        internal FlateFilter(
-          )
+        internal FlateFilter()
         { }
         #endregion
 
         #region interface
         #region public
-        public override byte[] Decode(
-          byte[] data,
-          int offset,
-          int length,
-          PdfDictionary parameters
-          )
+        public override byte[] Decode(byte[] data, int offset, int length, PdfDictionary parameters)
         {
-            MemoryStream outputStream = new MemoryStream();
-            MemoryStream inputStream = new MemoryStream(data, offset, length);
-            DeflateStream inputFilter = new DeflateStream(inputStream, CompressionMode.Decompress);
-            inputStream.Position = 2; // Skips zlib's 2-byte header [RFC 1950] [FIX:0.0.8:JCT].
-            Transform(inputFilter, outputStream);
-            return DecodePredictor(outputStream.ToArray(), parameters);
+            using (MemoryStream outputStream = new MemoryStream())
+            using (MemoryStream inputStream = new MemoryStream(data, offset, length))
+            using (DeflateStream inputFilter = new DeflateStream(inputStream, CompressionMode.Decompress))
+            {
+                inputStream.Position = 2; // Skips zlib's 2-byte header [RFC 1950] [FIX:0.0.8:JCT].
+                Transform(inputFilter, outputStream);
+                return DecodePredictor(outputStream.ToArray(), parameters);
+            }
         }
 
-        public override byte[] Encode(
-          byte[] data,
-          int offset,
-          int length,
-          PdfDictionary parameters
-          )
+        public override byte[] Encode(byte[] data, int offset, int length, PdfDictionary parameters)
         {
             MemoryStream inputStream = new MemoryStream(data, offset, length);
             MemoryStream outputStream = new MemoryStream();
@@ -86,10 +76,7 @@ namespace org.pdfclown.bytes.filters
         #endregion
 
         #region private
-        private byte[] DecodePredictor(
-          byte[] data,
-          PdfDictionary parameters
-          )
+        private byte[] DecodePredictor(byte[] data, PdfDictionary parameters)
         {
             if (parameters == null)
                 return data;
@@ -195,10 +182,7 @@ namespace org.pdfclown.bytes.filters
             return output.ToArray();
         }
 
-        private void Transform(
-          System.IO.Stream input,
-          System.IO.Stream output
-          )
+        private void Transform(System.IO.Stream input, System.IO.Stream output)
         {
             byte[] buffer = new byte[8192]; int bufferLength;
             while ((bufferLength = input.Read(buffer, 0, buffer.Length)) != 0)

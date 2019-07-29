@@ -35,23 +35,13 @@ namespace org.pdfclown.tokens
     {
         public static readonly Encoding Pdf = new PdfEncoding();
 
-        public abstract string Decode(
-          byte[] value
-          );
+        public abstract string Decode(byte[] value);
 
-        public abstract string Decode(
-          byte[] value,
-          int index,
-          int length
-          );
+        public abstract string Decode(byte[] value, int index, int length);
 
-        public abstract byte[] Encode(
-          string value
-          );
+        public abstract byte[] Encode(string value);
 
-        public byte[] Encode(
-          char value
-          )
+        public byte[] Encode(char value)
         { return Encode(value); }
     }
 }

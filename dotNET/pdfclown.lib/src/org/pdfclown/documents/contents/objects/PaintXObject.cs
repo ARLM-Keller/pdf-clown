@@ -95,26 +95,22 @@ namespace org.pdfclown.documents.contents.objects
             if (canvas == null)
                 return;
             var xObject = GetXObject(scanner.ContentContext);
-            if (xObject is xObjects.ImageXObject imageObject
-                && imageObject.BaseDataObject is PdfStream stream)
+            if (xObject is xObjects.ImageXObject imageObject)
             {
-                var bitmap = LoadImage(stream.GetBody(false));
-                if (bitmap != null)
+                var image = imageObject.LoadImage();
+                if (image != null)
                 {
-                    var matrix = state.Ctm;
-                    SKMatrix.PreConcat(ref matrix, imageObject.Matrix);
-                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1, -1));
-
-                    canvas.SetMatrix(matrix);
-                    canvas.DrawBitmap(bitmap, 0, 0);
+                    //var matrix = state.Ctm;
+                    //SKMatrix.PreConcat(ref matrix, imageObject.Matrix);
+                    //SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1, -1));
+                    //canvas.Save();
+                    // canvas.SetMatrix(matrix);
+                    canvas.DrawImage(image, SKRect.Create(0, 0, 1 / imageObject.Size.Width, 1 / imageObject.Size.Height));
+                    //canvas.Restore();
                 }
             }
         }
 
-        private SKBitmap LoadImage(IBuffer data)
-        {
-            return SKBitmap.Decode(data.ToByteArray());
-        }
         #endregion
         #endregion
         #endregion

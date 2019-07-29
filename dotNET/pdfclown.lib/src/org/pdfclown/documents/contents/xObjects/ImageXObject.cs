@@ -30,6 +30,7 @@ using org.pdfclown.objects;
 
 using System;
 using SkiaSharp;
+using System.IO;
 
 namespace org.pdfclown.documents.contents.xObjects
 {
@@ -97,7 +98,7 @@ namespace org.pdfclown.documents.contents.xObjects
                 */
                 return new SKMatrix
                 {
-                    Values = new float[] { 1f / size.Width, 0, 0, 0, 1f / size.Height, 0, 0, 0, 1 }
+                    Values = new float[] { 1f / size.Width, 0, 0, 0, -1f / size.Height, 0, 0, 0, 1 }
                 };
             }
             set
@@ -119,6 +120,49 @@ namespace org.pdfclown.documents.contents.xObjects
                   );
             }
             set { throw new NotSupportedException(); }
+        }
+
+
+        public SKImage LoadImage()
+        {
+            var stream = BaseDataObject as PdfStream;
+            var data = stream.GetBody(false);
+            var buffer = data.ToByteArray();
+            var image = SKImage.FromEncodedData(buffer);
+            if (image == null)
+            {
+                SKImageInfo info = new SKImageInfo
+                {
+                    Width = (int)Size.Width,
+                    Height = (int)Size.Height,
+                    AlphaType = SKAlphaType.Opaque
+                };
+                var colorSpace = ColorSpace;
+                if (ColorSpace is IndexedColorSpace indexed)
+                {
+                    colorSpace = indexed.BaseSpace;
+                }
+                if (colorSpace is DeviceRGBColorSpace)
+                {
+                    info.ColorSpace = SKColorSpace.CreateRgb(SKColorSpaceRenderTargetGamma.Linear, SKColorSpaceGamut.AdobeRgb);
+                }
+                else if (colorSpace is ICCBasedColorSpace iccColorSpace)
+                {
+                    info.ColorSpace = SKColorSpace.CreateIcc(iccColorSpace.Profile.GetBody(true).ToByteArray());
+                }
+                if (BitsPerComponent == 8)
+                {
+                    info.ColorType = SKColorType.Gray8;
+                    //info.ColorType = SKColorType.Rgb888x;
+                }
+
+                using (var memoryStream = new MemoryStream(stream.GetBody(true).ToByteArray()))
+                using (var skData = SKData.Create(memoryStream))
+                {
+                    image = SKImage.FromPixelData(info, skData, (int)(memoryStream.Length / info.Height));
+                }
+            }
+            return image;
         }
         #endregion
         #endregion

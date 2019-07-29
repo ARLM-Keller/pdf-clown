@@ -36,8 +36,7 @@ namespace org.pdfclown.objects
       <remarks>Text strings are meaningful only as part of the document hierarchy; they cannot appear
       within content streams. They represent information that is intended to be human-readable.</remarks>
     */
-    public sealed class PdfTextString
-      : PdfString
+    public sealed class PdfTextString : PdfString
     {
         /*
           NOTE: Text strings are string objects encoded in either PdfDocEncoding (superset of the ISO
@@ -53,9 +52,7 @@ namespace org.pdfclown.objects
         /**
           <summary>Gets the object equivalent to the given value.</summary>
         */
-        public static PdfTextString Get(
-          string value
-          )
+        public static PdfTextString Get(string value)
         { return value != null ? new PdfTextString(value) : null; }
         #endregion
         #endregion
@@ -67,35 +64,24 @@ namespace org.pdfclown.objects
         #endregion
 
         #region constructors
-        public PdfTextString(
-          byte[] rawValue
-          ) : base(rawValue)
+        public PdfTextString(byte[] rawValue) : base(rawValue)
         { }
 
-        public PdfTextString(
-          string value
-          ) : base(value)
+        public PdfTextString(string value) : base(value)
         { }
 
-        public PdfTextString(
-          byte[] rawValue,
-          SerializationModeEnum serializationMode
-          ) : base(rawValue, serializationMode)
+        public PdfTextString(byte[] rawValue, SerializationModeEnum serializationMode)
+            : base(rawValue, serializationMode)
         { }
 
-        public PdfTextString(
-          String value,
-          SerializationModeEnum serializationMode
-          ) : base(value, serializationMode)
+        public PdfTextString(String value, SerializationModeEnum serializationMode)
+            : base(value, serializationMode)
         { }
         #endregion
 
         #region interface
         #region public
-        public override PdfObject Accept(
-          IVisitor visitor,
-          object data
-          )
+        public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
         public override byte[] RawValue

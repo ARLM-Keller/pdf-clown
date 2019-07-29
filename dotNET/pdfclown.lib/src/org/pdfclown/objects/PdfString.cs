@@ -46,9 +46,7 @@ namespace org.pdfclown.objects
         </list>
       </remarks>
     */
-    public class PdfString
-      : PdfSimpleObject<byte[]>,
-        IDataWrapper
+    public class PdfString : PdfSimpleObject<byte[]>, IDataWrapper
     {
         /*
           NOTE: String objects are internally represented as unescaped sequences of bytes.
@@ -130,20 +128,27 @@ namespace org.pdfclown.objects
 
         #region interface
         #region public
-        public override PdfObject Accept(
-          IVisitor visitor,
-          object data
-          )
+        public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
-        public override int CompareTo(
-          PdfDirectObject obj
-          )
+        public override int CompareTo(PdfDirectObject obj)
         {
-            if (!(obj is PdfString))
+            if (!(obj is PdfString objString))
                 throw new ArgumentException("Object MUST be a PdfString");
 
-            return String.CompareOrdinal(StringValue, ((PdfString)obj).StringValue);
+            return string.Compare(StringValue, ((PdfString)obj).StringValue, StringComparison.Ordinal);
+        }
+
+        public override bool Equals(object @object)
+        {
+            if (@object is PdfString objString)
+                return string.Equals(StringValue, objString.StringValue, StringComparison.Ordinal);
+            return base.Equals(@object);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         /**
@@ -151,24 +156,19 @@ namespace org.pdfclown.objects
         */
         public virtual SerializationModeEnum SerializationMode
         {
-            get
-            { return serializationMode; }
-            set
-            { serializationMode = value; }
+            get { return serializationMode; }
+            set { serializationMode = value; }
         }
 
         public string StringValue
         {
-            get
-            { return (string)Value; }
+            get { return (string)Value; }
         }
 
-        public byte[] ToByteArray(
-          )
+        public byte[] ToByteArray()
         { return (byte[])RawValue.Clone(); }
 
-        public override string ToString(
-          )
+        public override string ToString()
         {
             switch (serializationMode)
             {
@@ -211,10 +211,7 @@ namespace org.pdfclown.objects
             }
         }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          files.File context
-          )
+        public override void WriteTo(IOutputStream stream, files.File context)
         {
             MemoryStream buffer = new MemoryStream();
             {
@@ -235,11 +232,7 @@ namespace org.pdfclown.objects
                             - \) Right parenthesis
                             - \\ Backslash
                         */
-                        for (
-                          int index = 0;
-                          index < rawValue.Length;
-                          index++
-                          )
+                        for (int index = 0; index < rawValue.Length; index++)
                         {
                             byte valueByte = rawValue[index];
                             switch (valueByte)

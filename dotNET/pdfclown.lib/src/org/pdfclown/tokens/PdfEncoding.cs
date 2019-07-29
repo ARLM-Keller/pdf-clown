@@ -35,32 +35,22 @@ namespace org.pdfclown.tokens
       carriage return, and line feed characters. However, a PDF file is not restricted to the ASCII
       character set; it can contain arbitrary 8-bit bytes.</remarks>
     */
-    public sealed class PdfEncoding
-      : Encoding
+    public sealed class PdfEncoding : Encoding
     {
         #region dynamic
         #region constructors
-        internal PdfEncoding(
-          )
+        internal PdfEncoding()
         { }
         #endregion
 
         #region interface
-        public override string Decode(
-          byte[] value
-          )
+        public override string Decode(byte[] value)
         { return Charset.ISO88591.GetString(value); }
 
-        public override string Decode(
-          byte[] value,
-          int index,
-          int length
-          )
+        public override string Decode(byte[] value, int index, int length)
         { return Charset.ISO88591.GetString(value, index, length); }
 
-        public override byte[] Encode(
-          string value
-          )
+        public override byte[] Encode(string value)
         { return Charset.ISO88591.GetBytes(value); }
         #endregion
         #endregion

@@ -37,8 +37,7 @@ namespace org.pdfclown.objects
     /**
       <summary>PDF name object [PDF:1.6:3.2.4].</summary>
     */
-    public sealed class PdfName
-      : PdfSimpleObject<string>
+    public sealed class PdfName : PdfSimpleObject<string>
     {
         /*
           NOTE: As name objects are simple symbols uniquely defined by sequences of characters,
@@ -70,6 +69,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName AllOff = new PdfName("AllOff");
         public static readonly PdfName AllOn = new PdfName("AllOn");
         public static readonly PdfName AllPages = new PdfName("AllPages");
+        public static readonly PdfName Alternate = new PdfName("Alternate");
         public static readonly PdfName AN = new PdfName("AN");
         public static readonly PdfName And = new PdfName("And");
         public static readonly PdfName Annot = new PdfName("Annot");
@@ -645,10 +645,22 @@ namespace org.pdfclown.objects
 
         public override int CompareTo(PdfDirectObject obj)
         {
-            if (!(obj is PdfName))
+            if (!(obj is PdfName objName))
                 throw new ArgumentException("Object MUST be a PdfName");
 
-            return RawValue.CompareTo(((PdfName)obj).RawValue);
+            return string.Compare(RawValue, objName.RawValue, StringComparison.Ordinal);
+        }
+
+        public override bool Equals(object @object)
+        {
+            if (@object is PdfName objName)
+               return string.Equals(RawValue, objName.RawValue, StringComparison.Ordinal);
+            return base.Equals(@object);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         public string StringValue

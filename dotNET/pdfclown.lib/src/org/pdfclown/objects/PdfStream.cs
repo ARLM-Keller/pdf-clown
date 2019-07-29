@@ -160,10 +160,7 @@ namespace org.pdfclown.objects
                     PdfDataObject parameters = Parameters;
                     if (filter is PdfName) // Single filter.
                     {
-                        body.Decode(
-                          bytes.filters.Filter.Get((PdfName)filter),
-                          (PdfDictionary)parameters
-                          );
+                        body.Decode(bytes.filters.Filter.Get((PdfName)filter), (PdfDictionary)parameters);
                     }
                     else // Multiple filters.
                     {

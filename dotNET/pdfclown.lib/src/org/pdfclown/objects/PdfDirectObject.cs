@@ -34,9 +34,7 @@ namespace org.pdfclown.objects
     /**
       <summary>Abstract PDF direct object.</summary>
     */
-    public abstract class PdfDirectObject
-      : PdfDataObject,
-        IComparable<PdfDirectObject>
+    public abstract class PdfDirectObject : PdfDataObject, IComparable<PdfDirectObject>
     {
         #region static
         #region fields
@@ -49,20 +47,14 @@ namespace org.pdfclown.objects
           <summary>Ensures that the given direct object is properly represented as string.</summary>
           <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
         */
-        internal static string ToString(
-          PdfDirectObject obj
-          )
+        internal static string ToString(PdfDirectObject obj)
         { return (obj == null ? Keyword.Null : obj.ToString()); }
 
         /**
           <summary>Ensures that the given direct object is properly serialized.</summary>
           <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
         */
-        internal static void WriteTo(
-          IOutputStream stream,
-          File context,
-          PdfDirectObject obj
-          )
+        internal static void WriteTo(IOutputStream stream, File context, PdfDirectObject obj)
         {
             if (obj == null)
             { stream.Write(NullChunk); }
@@ -75,16 +67,13 @@ namespace org.pdfclown.objects
 
         #region dynamic
         #region constructors
-        protected PdfDirectObject(
-          )
+        protected PdfDirectObject()
         { }
         #endregion
 
         #region public
         #region IComparable
-        public abstract int CompareTo(
-          PdfDirectObject obj
-          );
+        public abstract int CompareTo(PdfDirectObject obj);
         #endregion
         #endregion
         #endregion

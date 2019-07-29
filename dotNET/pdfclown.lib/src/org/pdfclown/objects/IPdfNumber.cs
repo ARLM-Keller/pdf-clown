@@ -60,10 +60,7 @@ namespace org.pdfclown.objects
 
     internal class PdfNumber
     {
-        public static int Compare(
-          object obj1,
-          object obj2
-          )
+        public static int Compare(object obj1, object obj2)
         {
             if (!(obj1 is IPdfNumber))
                 throw new ArgumentException("obj1 MUST implement IPdfNumber");
@@ -73,10 +70,7 @@ namespace org.pdfclown.objects
             return ((IPdfNumber)obj1).RawValue.CompareTo(((IPdfNumber)obj2).RawValue);
         }
 
-        public static bool Equal(
-          object obj1,
-          object obj2
-          )
+        public static bool Equal(object obj1, object obj2)
         {
             if (!(obj1 is IPdfNumber))
                 throw new ArgumentException("obj1 MUST implement IPdfNumber");
@@ -86,9 +80,7 @@ namespace org.pdfclown.objects
             return ((IPdfNumber)obj1).RawValue.Equals(((IPdfNumber)obj2).RawValue);
         }
 
-        public static int GetHashCode(
-          object obj
-          )
+        public static int GetHashCode(object obj)
         {
             if (!(obj is IPdfNumber))
                 throw new ArgumentException("obj MUST implement IPdfNumber");

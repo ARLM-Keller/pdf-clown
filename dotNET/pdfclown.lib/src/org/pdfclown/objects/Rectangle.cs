@@ -78,35 +78,16 @@ namespace org.pdfclown.objects
 
         #region dynamic
         #region constructors
-        public Rectangle(
-          SKRect rectangle
-          ) : this(
-            rectangle.Left,
-            rectangle.Bottom,
-            rectangle.Width,
-            rectangle.Height
-            )
+        public Rectangle(SKRect rectangle)
+            : this(rectangle.Left, rectangle.Bottom, rectangle.Width, rectangle.Height)
         { }
 
-        public Rectangle(
-          SKPoint lowerLeft,
-          SKPoint upperRight
-          ) : this(
-            lowerLeft.X,
-            upperRight.Y,
-            upperRight.X - lowerLeft.X,
-            upperRight.Y - lowerLeft.Y
-            )
+        public Rectangle(SKPoint lowerLeft, SKPoint upperRight)
+            : this(lowerLeft.X, upperRight.Y, upperRight.X - lowerLeft.X, upperRight.Y - lowerLeft.Y)
         { }
 
-        public Rectangle(
-          double left,
-          double top,
-          double width,
-          double height
-          ) : this(
-            new PdfArray(
-              new PdfDirectObject[]
+        public Rectangle(double left, double top, double width, double height)
+            : this(new PdfArray(new PdfDirectObject[]
               {
             PdfReal.Get(left), // Left (X).
             PdfReal.Get(top - height), // Bottom (Y).
@@ -117,9 +98,7 @@ namespace org.pdfclown.objects
             )
         { }
 
-        private Rectangle(
-          PdfDirectObject baseObject
-          ) : base(Normalize((PdfArray)baseObject.Resolve()))
+        private Rectangle(PdfDirectObject baseObject) : base(Normalize((PdfArray)baseObject.Resolve()))
         { }
         #endregion
 
@@ -127,70 +106,53 @@ namespace org.pdfclown.objects
         #region public
         public double Bottom
         {
-            get
-            { return ((IPdfNumber)BaseDataObject[1]).RawValue; }
-            set
-            { BaseDataObject[1] = PdfReal.Get(value); }
-        }
-
-        public double Height
-        {
-            get
-            { return (Top - Bottom); }
-            set
-            { Bottom = Top - value; }
+            get { return ((IPdfNumber)BaseDataObject[1]).RawValue; }
+            set { BaseDataObject[1] = PdfReal.Get(value); }
         }
 
         public double Left
         {
-            get
-            { return ((IPdfNumber)BaseDataObject[0]).RawValue; }
-            set
-            { BaseDataObject[0] = PdfReal.Get(value); }
+            get { return ((IPdfNumber)BaseDataObject[0]).RawValue; }
+            set { BaseDataObject[0] = PdfReal.Get(value); }
         }
 
         public double Right
         {
-            get
-            { return ((IPdfNumber)BaseDataObject[2]).RawValue; }
-            set
-            { BaseDataObject[2] = PdfReal.Get(value); }
+            get { return ((IPdfNumber)BaseDataObject[2]).RawValue; }
+            set { BaseDataObject[2] = PdfReal.Get(value); }
         }
 
         public double Top
         {
-            get
-            { return ((IPdfNumber)BaseDataObject[3]).RawValue; }
-            set
-            { BaseDataObject[3] = PdfReal.Get(value); }
+            get { return ((IPdfNumber)BaseDataObject[3]).RawValue; }
+            set { BaseDataObject[3] = PdfReal.Get(value); }
         }
 
-        public SKRect ToRectangleF(
-          )
+        public SKRect ToRectangleF()
         { return SKRect.Create((float)X, (float)Y, (float)Width, (float)Height); }
 
         public double Width
         {
-            get
-            { return Right - Left; }
-            set
-            { Right = Left + value; }
+            get { return Right - Left; }
+            set { Right = Left + value; }
+        }
+
+        public double Height
+        {
+            get { return (Top - Bottom); }
+            set { Bottom = Top - value; }
         }
 
         public double X
         {
-            get
-            { return Left; }
-            set
-            { Left = value; }
+            get { return Left; }
+            set { Left = value; }
         }
 
         public double Y
         {
-            get
-            { return Bottom; }
-            set
-            { Bottom = value; }
+            get { return Bottom; }
+            set { Bottom = value; }
         }
         #endregion
         #endregion

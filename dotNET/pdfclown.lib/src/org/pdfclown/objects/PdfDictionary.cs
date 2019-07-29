@@ -37,9 +37,7 @@ namespace org.pdfclown.objects
     /**
       <summary>PDF dictionary object [PDF:1.6:3.2.6].</summary>
     */
-    public sealed class PdfDictionary
-      : PdfDirectObject,
-        IDictionary<PdfName, PdfDirectObject>
+    public sealed class PdfDictionary : PdfDirectObject, IDictionary<PdfName, PdfDirectObject>
     {
         #region static
         #region fields

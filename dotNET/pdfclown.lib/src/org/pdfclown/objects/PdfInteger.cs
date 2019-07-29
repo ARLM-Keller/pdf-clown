@@ -45,9 +45,7 @@ namespace org.pdfclown.objects
         /**
           <summary>Gets the object equivalent to the given value.</summary>
         */
-        public static PdfInteger Get(
-          int? value
-          )
+        public static PdfInteger Get(int? value)
         { return value.HasValue ? new PdfInteger(value.Value) : null; }
         #endregion
         #endregion
@@ -55,38 +53,25 @@ namespace org.pdfclown.objects
 
         #region dynamic
         #region constructors
-        public PdfInteger(
-          int value
-          )
+        public PdfInteger(int value)
         { RawValue = value; }
         #endregion
 
         #region interface
         #region public
-        public override PdfObject Accept(
-          IVisitor visitor,
-          object data
-          )
+        public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
-        public override int CompareTo(
-          PdfDirectObject obj
-          )
+        public override int CompareTo(PdfDirectObject obj)
         { return PdfNumber.Compare(this, obj); }
 
-        public override bool Equals(
-          object obj
-          )
+        public override bool Equals(object obj)
         { return PdfNumber.Equal(this, obj); }
 
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         { return PdfNumber.GetHashCode(this); }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          File context
-          )
+        public override void WriteTo(IOutputStream stream, File context)
         { stream.Write(RawValue.ToString()); }
 
         #region IPdfNumber

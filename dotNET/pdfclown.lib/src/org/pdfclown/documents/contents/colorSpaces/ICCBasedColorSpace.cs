@@ -108,8 +108,17 @@ namespace org.pdfclown.documents.contents.colorSpaces
 
         public PdfStream Profile
         {
-            get
-            { return (PdfStream)((PdfArray)BaseDataObject).Resolve(1); }
+            get { return (PdfStream)((PdfArray)BaseDataObject).Resolve(1); }
+        }
+
+        public PdfName Alternate
+        {
+            get => Profile?.Header.Resolve(PdfName.Alternate) as PdfName;
+        }
+
+        public int N
+        {
+            get => ((PdfInteger)Profile?.Header.Resolve(PdfName.N))?.RawValue ?? 0;
         }
         #endregion
         #endregion

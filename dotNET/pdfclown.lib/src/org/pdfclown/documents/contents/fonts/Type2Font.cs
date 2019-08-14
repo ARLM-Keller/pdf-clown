@@ -39,8 +39,7 @@ namespace org.pdfclown.documents.contents.fonts
       * OpenFont/CFF (in case "CFF" table's Top DICT has CIDFont operators).
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class Type2Font
-      : CompositeFont
+    public sealed class Type2Font : CompositeFont
     {
         #region constructors
         internal Type2Font(Document context, OpenFontParser parser) : base(context, parser)

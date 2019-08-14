@@ -127,7 +127,7 @@ namespace org.pdfclown.documents.contents.fonts
 
         internal SKTextEncoding GetEnoding()
         {
-            return charCodeMaxLength == 2 ? SKTextEncoding.Utf16 : SKTextEncoding.Utf8;// Symbolic ? SKTextEncoding.GlyphId : SKTextEncoding.Utf8;
+            return charCodeMaxLength == 2 ? SKTextEncoding.Utf16 : SKTextEncoding.Utf8;// Symbolic ? SKTextEncoding.GlyphId : SKTextEncoding.Utf8; 
         }
 
         /**

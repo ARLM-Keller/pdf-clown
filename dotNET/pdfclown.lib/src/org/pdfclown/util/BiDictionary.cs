@@ -33,8 +33,7 @@ namespace org.pdfclown.util
     /**
       <summary>Bidirectional bijective map.</summary>
     */
-    public class BiDictionary<TKey, TValue>
-      : IDictionary<TKey, TValue>
+    public class BiDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
         #region dynamic
         #region fields
@@ -43,24 +42,19 @@ namespace org.pdfclown.util
         #endregion
 
         #region constructors
-        public BiDictionary(
-          )
+        public BiDictionary()
         {
             dictionary = new Dictionary<TKey, TValue>();
             inverseDictionary = new Dictionary<TValue, TKey>();
         }
 
-        public BiDictionary(
-          int capacity
-          )
+        public BiDictionary(int capacity)
         {
             dictionary = new Dictionary<TKey, TValue>(capacity);
             inverseDictionary = new Dictionary<TValue, TKey>(capacity);
         }
 
-        public BiDictionary(
-          IDictionary<TKey, TValue> dictionary
-          )
+        public BiDictionary(IDictionary<TKey, TValue> dictionary)
         {
             this.dictionary = new Dictionary<TKey, TValue>(dictionary);
             //TODO: key duplicate collisions to resolve!
@@ -73,21 +67,14 @@ namespace org.pdfclown.util
 
         #region interface
         #region public
-        public bool ContainsValue(
-          TValue value
-          )
+        public bool ContainsValue(TValue value)
         { return inverseDictionary.ContainsKey(value); }
 
-        public virtual TKey GetKey(
-          TValue value
-          )
+        public virtual TKey GetKey(TValue value)
         { TKey key; inverseDictionary.TryGetValue(value, out key); return key; }
 
         #region IDictionary
-        public void Add(
-          TKey key,
-          TValue value
-          )
+        public void Add(TKey key, TValue value)
         {
             dictionary.Add(key, value); // Adds the entry.
             try
@@ -99,20 +86,15 @@ namespace org.pdfclown.util
             }
         }
 
-        public bool ContainsKey(
-          TKey key
-          )
+        public bool ContainsKey(TKey key)
         { return dictionary.ContainsKey(key); }
 
         public ICollection<TKey> Keys
         {
-            get
-            { return dictionary.Keys; }
+            get { return dictionary.Keys; }
         }
 
-        public bool Remove(
-          TKey key
-          )
+        public bool Remove(TKey key)
         {
             TValue value;
             if (!dictionary.TryGetValue(key, out value))
@@ -123,9 +105,7 @@ namespace org.pdfclown.util
             return true;
         }
 
-        public virtual TValue this[
-          TKey key
-          ]
+        public virtual TValue this[TKey key]
         {
             get
             {
@@ -151,10 +131,7 @@ namespace org.pdfclown.util
             }
         }
 
-        public bool TryGetValue(
-          TKey key,
-          out TValue value
-          )
+        public bool TryGetValue(TKey key, out TValue value)
         { return dictionary.TryGetValue(key, out value); }
 
         public ICollection<TValue> Values
@@ -164,44 +141,32 @@ namespace org.pdfclown.util
         }
 
         #region ICollection
-        void ICollection<KeyValuePair<TKey, TValue>>.Add(
-          KeyValuePair<TKey, TValue> keyValuePair
-          )
+        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> keyValuePair)
         { Add(keyValuePair.Key, keyValuePair.Value); }
 
-        public void Clear(
-          )
+        public void Clear()
         {
             dictionary.Clear();
             inverseDictionary.Clear();
         }
 
-        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(
-          KeyValuePair<TKey, TValue> keyValuePair
-          )
+        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> keyValuePair)
         { return dictionary.Contains(keyValuePair); }
 
-        public void CopyTo(
-          KeyValuePair<TKey, TValue>[] keyValuePairs,
-          int index
-          )
+        public void CopyTo(KeyValuePair<TKey, TValue>[] keyValuePairs, int index)
         { throw new NotImplementedException(); }
 
         public virtual int Count
         {
-            get
-            { return dictionary.Count; }
+            get { return dictionary.Count; }
         }
 
         public bool IsReadOnly
         {
-            get
-            { return false; }
+            get { return false; }
         }
 
-        public bool Remove(
-          KeyValuePair<TKey, TValue> keyValuePair
-          )
+        public bool Remove(KeyValuePair<TKey, TValue> keyValuePair)
         {
             if (!((ICollection<KeyValuePair<TKey, TValue>>)dictionary).Remove(keyValuePair))
                 return false;
@@ -211,13 +176,11 @@ namespace org.pdfclown.util
         }
 
         #region IEnumerable<KeyValuePair<TKey,TValue>>
-        IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator(
-          )
+        IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
         { return dictionary.GetEnumerator(); }
 
         #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator(
-          )
+        IEnumerator IEnumerable.GetEnumerator()
         { return ((IEnumerable<KeyValuePair<TKey, TValue>>)this).GetEnumerator(); }
         #endregion
         #endregion

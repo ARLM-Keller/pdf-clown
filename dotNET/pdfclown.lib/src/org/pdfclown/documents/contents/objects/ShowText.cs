@@ -91,13 +91,12 @@ namespace org.pdfclown.documents.contents.objects
             double charSpace = state.CharSpace * state.Scale;
             SKMatrix ctm = state.Ctm;
             SKMatrix tm = state.Tm;
-
+            var encoding = font.GetEnoding();
             var context = state.Scanner.RenderContext;
             var fill = context != null && state.RenderModeFill ? state.FillColorSpace?.GetPaint(state.FillColor) : null;
             if (fill != null)
             {
                 fill.Typeface = font.GetTypeface();
-                fill.TextEncoding = font.GetEnoding();
                 fill.TextSize = (float)state.FontSize;
                 fill.TextScaleX = (float)state.Scale;
             }
@@ -150,7 +149,9 @@ namespace org.pdfclown.documents.contents.objects
                             || textString[0] == '\r'
                             || textString[0] == '\n')))
                         {
-                            var text = font.Encode(textChar.ToString());
+                            var text = font is Type2Font || font is Type1Font
+                                ? System.Text.Encoding.UTF8.GetBytes(new[] { textChar })
+                                : font.Encode(textChar.ToString());
                             SKMatrix trm = ctm;
                             SKMatrix.PreConcat(ref trm, tm);
                             SKMatrix.PreConcat(ref trm, SKMatrix.MakeScale(1, -1));

@@ -28,7 +28,7 @@ namespace org.pdfclown.samples.cli
                 // 2. Page rasterization.
                 int pageIndex = PromptPageChoice("Select the page to render", pages.Count);
                 Page page = pages[pageIndex];
-                SKSize imageSize = new SKSize(page.Size.Width * 2, page.Size.Height * 2);
+                SKSize imageSize = new SKSize(page.RotatedBox.Width * 2.5F, page.RotatedBox.Height * 2.5F);
                 Renderer renderer = new Renderer();
                 var image = renderer.Render(page, imageSize);
 

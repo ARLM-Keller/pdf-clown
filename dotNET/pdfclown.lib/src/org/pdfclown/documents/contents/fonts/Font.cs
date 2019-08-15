@@ -354,6 +354,10 @@ namespace org.pdfclown.documents.contents.fonts
                 : parameters[0].Equals("Times", StringComparison.OrdinalIgnoreCase)
                 ? "Times New Roman"
                 : parameters[0];
+            if (fontName.IndexOf("Arial", StringComparison.Ordinal) > 1)
+            {
+                fontName = "Arial";
+            }
             return cache[name] = SKTypeface.FromFamilyName(fontName, style);
         }
 

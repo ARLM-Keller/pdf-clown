@@ -260,6 +260,11 @@ namespace org.pdfclown.documents.contents.colorSpaces
             get { return RotationEnum.Downward; }
         }
 
+        public int Rotate
+        {
+            get { return 0; }
+        }
+
         public AppDataCollection AppData => throw new NotImplementedException();
 
         public DateTime? ModificationDate

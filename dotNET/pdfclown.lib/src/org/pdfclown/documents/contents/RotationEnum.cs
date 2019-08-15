@@ -76,5 +76,12 @@ namespace org.pdfclown.documents.contents
             else
                 return new SKSize(size.Height, size.Width);
         }
+
+        public static SKRect RotateRect(this SKRect rect, float rotate)
+        {
+            var size = SKMatrix.MakeRotationDegrees(rotate).MapVector(rect.Width, rect.Height);
+            return SKRect.Create(rect.Left, rect.Top, (float)Math.Abs(Math.Round(size.X, 2)), (float)Math.Abs(Math.Round(size.Y, 2)));
+        }
+
     }
 }

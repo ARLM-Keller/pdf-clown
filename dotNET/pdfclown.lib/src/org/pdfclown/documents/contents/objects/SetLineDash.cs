@@ -54,15 +54,12 @@ namespace org.pdfclown.documents.contents.objects
 
         #region interface
         #region public
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(ContentScanner.GraphicsState state)
         { state.LineDash = Value; }
 
         public LineDash Value
         {
-            get
-            { return LineDash.Get((PdfArray)operands[0], (IPdfNumber)operands[1]); }
+            get { return LineDash.Get((PdfArray)operands[0], (IPdfNumber)operands[1]); }
             set
             {
                 operands.Clear();

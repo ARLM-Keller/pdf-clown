@@ -44,9 +44,7 @@ namespace org.pdfclown.documents
       <summary>Document page [PDF:1.6:3.6.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public class Page
-      : PdfObjectWrapper<PdfDictionary>,
-        IContentContext
+    public class Page : PdfObjectWrapper<PdfDictionary>, IContentContext
     {
         /*
           NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
@@ -106,10 +104,7 @@ namespace org.pdfclown.documents
           <param name="pageObject">Page object.</param>
           <param name="key">Attribute key.</param>
         */
-        public static PdfDirectObject GetInheritableAttribute(
-          PdfDictionary pageObject,
-          PdfName key
-          )
+        public static PdfDirectObject GetInheritableAttribute(PdfDictionary pageObject, PdfName key)
         {
             /*
               NOTE: It moves upward until it finds the inherited attribute.
@@ -229,8 +224,7 @@ namespace org.pdfclown.documents
                 PdfDirectObject artBoxObject = GetInheritableAttribute(PdfName.ArtBox);
                 return artBoxObject != null ? Rectangle.Wrap(artBoxObject).ToRectangleF() : CropBox;
             }
-            set
-            { BaseDataObject[PdfName.ArtBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null); }
+            set { BaseDataObject[PdfName.ArtBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null); }
         }
 
         /**
@@ -238,8 +232,7 @@ namespace org.pdfclown.documents
         */
         public PageArticleElements ArticleElements
         {
-            get
-            { return new PageArticleElements(BaseDataObject.Get<PdfArray>(PdfName.B), this); }
+            get { return new PageArticleElements(BaseDataObject.Get<PdfArray>(PdfName.B), this); }
         }
 
         /**
@@ -263,8 +256,7 @@ namespace org.pdfclown.documents
                 PdfDirectObject bleedBoxObject = GetInheritableAttribute(PdfName.BleedBox);
                 return bleedBoxObject != null ? Rectangle.Wrap(bleedBoxObject).ToRectangleF() : CropBox;
             }
-            set
-            { BaseDataObject[PdfName.BleedBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null); }
+            set { BaseDataObject[PdfName.BleedBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null); }
         }
 
         /**
@@ -288,8 +280,7 @@ namespace org.pdfclown.documents
                 PdfDirectObject cropBoxObject = GetInheritableAttribute(PdfName.CropBox);
                 return cropBoxObject != null ? Rectangle.Wrap(cropBoxObject).ToRectangleF() : Box;
             }
-            set
-            { BaseDataObject[PdfName.CropBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null); }
+            set { BaseDataObject[PdfName.CropBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null); }
         }
 
         /**
@@ -310,8 +301,7 @@ namespace org.pdfclown.documents
                 IPdfNumber durationObject = (IPdfNumber)BaseDataObject[PdfName.Dur];
                 return durationObject == null ? 0 : durationObject.RawValue;
             }
-            set
-            { BaseDataObject[PdfName.Dur] = (value > 0 ? PdfReal.Get(value) : null); }
+            set { BaseDataObject[PdfName.Dur] = (value > 0 ? PdfReal.Get(value) : null); }
         }
 
         /**
@@ -331,11 +321,7 @@ namespace org.pdfclown.documents
                 PdfDictionary parent = (PdfDictionary)parentReference.DataObject;
                 PdfArray kids = (PdfArray)parent.Resolve(PdfName.Kids);
                 int index = 0;
-                for (
-                  int i = 0;
-                  true;
-                  i++
-                  )
+                for (int i = 0; true; i++)
                 {
                     PdfReference kidReference = (PdfReference)kids[i];
                     // Is the current-level counting complete?
@@ -373,8 +359,7 @@ namespace org.pdfclown.documents
         */
         public int Number
         {
-            get
-            { return Index + 1; }
+            get { return Index + 1; }
         }
 
         /**
@@ -382,8 +367,7 @@ namespace org.pdfclown.documents
         */
         public SKSize Size
         {
-            get
-            { return Box.Size; }
+            get { return Box.Size; }
             set
             {
                 SKRect box;
@@ -402,10 +386,8 @@ namespace org.pdfclown.documents
         [PDF(VersionEnum.PDF15)]
         public TabOrderEnum TabOrder
         {
-            get
-            { return ToTabOrderEnum((PdfName)BaseDataObject[PdfName.Tabs]); }
-            set
-            { BaseDataObject[PdfName.Tabs] = ToCode(value); }
+            get { return ToTabOrderEnum((PdfName)BaseDataObject[PdfName.Tabs]); }
+            set { BaseDataObject[PdfName.Tabs] = ToCode(value); }
         }
 
         /**
@@ -415,10 +397,8 @@ namespace org.pdfclown.documents
         [PDF(VersionEnum.PDF11)]
         public Transition Transition
         {
-            get
-            { return Transition.Wrap(BaseDataObject[PdfName.Trans]); }
-            set
-            { BaseDataObject[PdfName.Trans] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return Transition.Wrap(BaseDataObject[PdfName.Trans]); }
+            set { BaseDataObject[PdfName.Trans] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         /**
@@ -441,8 +421,7 @@ namespace org.pdfclown.documents
                 PdfDirectObject trimBoxObject = GetInheritableAttribute(PdfName.TrimBox);
                 return trimBoxObject != null ? Rectangle.Wrap(trimBoxObject).ToRectangleF() : CropBox;
             }
-            set
-            { BaseDataObject[PdfName.TrimBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null); }
+            set { BaseDataObject[PdfName.TrimBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null); }
         }
 
         #region IContentContext
@@ -451,6 +430,11 @@ namespace org.pdfclown.documents
             get { return Rectangle.Wrap(GetInheritableAttribute(PdfName.MediaBox)).ToRectangleF(); }
             /* NOTE: Mandatory. */
             set { BaseDataObject[PdfName.MediaBox] = new Rectangle(value).BaseDataObject; }
+        }
+
+        public SKRect RotatedBox
+        {
+            get { return Box.RotateRect(Rotate); }
         }
 
         public Contents Contents
@@ -481,39 +465,34 @@ namespace org.pdfclown.documents
 
         public RotationEnum Rotation
         {
-            get
-            { return RotationEnumExtension.Get((IPdfNumber)GetInheritableAttribute(PdfName.Rotate)); }
-            set
-            { BaseDataObject[PdfName.Rotate] = PdfInteger.Get((int)value); }
+            get { return RotationEnumExtension.Get((IPdfNumber)GetInheritableAttribute(PdfName.Rotate)); }
+            set { BaseDataObject[PdfName.Rotate] = PdfInteger.Get((int)value); }
+        }
+
+        public int Rotate
+        {
+            get { return ((IPdfNumber)GetInheritableAttribute(PdfName.Rotate))?.IntValue ?? 0; }
+            set { BaseDataObject[PdfName.Rotate] = PdfInteger.Get(value); }
         }
 
         #region IAppDataHolder
         public AppDataCollection AppData
         {
-            get
-            { return AppDataCollection.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PieceInfo), this); }
+            get { return AppDataCollection.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PieceInfo), this); }
         }
 
-        public AppData GetAppData(
-          PdfName appName
-          )
+        public AppData GetAppData(PdfName appName)
         { return AppData.Ensure(appName); }
 
         public DateTime? ModificationDate
         {
-            get
-            { return (DateTime)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.LastModified]); }
+            get { return (DateTime)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.LastModified]); }
         }
 
-        public void Touch(
-          PdfName appName
-          )
+        public void Touch(PdfName appName)
         { Touch(appName, DateTime.Now); }
 
-        public void Touch(
-          PdfName appName,
-          DateTime modificationDate
-          )
+        public void Touch(PdfName appName, DateTime modificationDate)
         {
             GetAppData(appName).ModificationDate = modificationDate;
             BaseDataObject[PdfName.LastModified] = new PdfDate(modificationDate);
@@ -521,14 +500,10 @@ namespace org.pdfclown.documents
         #endregion
 
         #region IContentEntity
-        public ContentObject ToInlineObject(
-          PrimitiveComposer composer
-          )
+        public ContentObject ToInlineObject(PrimitiveComposer composer)
         { throw new NotImplementedException(); }
 
-        public xObjects::XObject ToXObject(
-          Document context
-          )
+        public xObjects::XObject ToXObject(Document context)
         {
             xObjects::FormXObject form;
             {
@@ -559,9 +534,7 @@ namespace org.pdfclown.documents
         #endregion
 
         #region private
-        private PdfDirectObject GetInheritableAttribute(
-          PdfName key
-          )
+        private PdfDirectObject GetInheritableAttribute(PdfName key)
         { return GetInheritableAttribute(BaseDataObject, key); }
         #endregion
         #endregion

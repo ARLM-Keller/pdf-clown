@@ -71,5 +71,8 @@ namespace org.pdfclown.documents.contents
         */
         RotationEnum Rotation
         { get; }
+
+        int Rotate
+        { get; }
     }
 }

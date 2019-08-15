@@ -155,7 +155,6 @@ namespace org.pdfclown.documents.contents.objects
                             SKMatrix trm = ctm;
                             SKMatrix.PreConcat(ref trm, tm);
                             SKMatrix.PreConcat(ref trm, SKMatrix.MakeScale(1, -1));
-
                             context.Save();
                             context.SetMatrix(trm);
                             if (fill != null)

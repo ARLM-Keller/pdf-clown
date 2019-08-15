@@ -71,7 +71,7 @@ namespace org.pdfclown.documents.interaction.annotations
 
         #region static
         #region fields
-        private static readonly LineDash DefaultLineDash = new LineDash(new double[] { 3 });
+        private static readonly LineDash DefaultLineDash = new LineDash(new double[] { 3, 1 });
         private static readonly StyleEnum DefaultStyle = StyleEnum.Solid;
         private static readonly double DefaultWidth = 1;
 

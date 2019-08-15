@@ -104,12 +104,7 @@ namespace org.pdfclown.samples.cli
                             diameterY = 40;
                             break;
                     }
-                    for (
-                      int index = 0,
-                        length = 360 / angleStep;
-                      index < length;
-                      index++
-                      )
+                    for (int index = 0, length = 360 / angleStep; index < length; index++)
                     {
                         SKRect arcFrame = SKRect.Create((float)x, (float)y, (float)diameterX, (float)diameterY);
 

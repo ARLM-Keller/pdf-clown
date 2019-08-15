@@ -189,6 +189,11 @@ namespace org.pdfclown.documents.contents.xObjects
             get { return RotationEnum.Downward; }
         }
 
+        public int Rotate
+        {
+            get { return 0; }
+        }
+
         #region IAppDataHolder
         public AppDataCollection AppData
         {

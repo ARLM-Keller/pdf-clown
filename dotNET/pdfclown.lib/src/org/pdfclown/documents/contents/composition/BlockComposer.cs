@@ -690,12 +690,7 @@ namespace org.pdfclown.documents.contents.composition
                         wordSpace = (frame.Width - currentRow.Width) / currentRow.SpaceCount;
 
                         // Define the horizontal offsets for justified alignment.
-                        for (
-                          int index = 1,
-                            count = objects.Count;
-                          index < count;
-                          index++
-                          )
+                        for (int index = 1, count = objects.Count; index < count; index++)
                         {
                             /*
                               NOTE: The offset represents the horizontal justification gap inserted at the left

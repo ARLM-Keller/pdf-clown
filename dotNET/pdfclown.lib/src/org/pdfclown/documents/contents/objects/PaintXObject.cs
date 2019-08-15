@@ -100,14 +100,22 @@ namespace org.pdfclown.documents.contents.objects
                 var image = imageObject.LoadImage();
                 if (image != null)
                 {
-                    //var matrix = state.Ctm;
-                    //SKMatrix.PreConcat(ref matrix, imageObject.Matrix);
-                    //SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1, -1));
-                    //canvas.Save();
-                    // canvas.SetMatrix(matrix);
-                    canvas.DrawImage(image, SKRect.Create(0, 0, 1 / imageObject.Size.Width, 1 / imageObject.Size.Height));
-                    //canvas.Restore();
+                    var matrix = canvas.TotalMatrix;
+
+                    SKMatrix.PreConcat(ref matrix, imageObject.Matrix);
+                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(0, -imageObject.Size.Height));
+                    canvas.SetMatrix(matrix);
+                    var rect = SKRect.Create(0, 0, imageObject.Size.Width, imageObject.Size.Height);
+                    var test = canvas.TotalMatrix.MapRect(rect);
+                    canvas.DrawImage(image, 0, 0);
                 }
+            }
+            else if (xObject is xObjects.FormXObject formObject)
+            {
+                // Scan the external level!
+                var xScanner = new ContentScanner(formObject, scanner);
+                xScanner.RenderContext = scanner.RenderContext;
+                while (xScanner.MoveNext()) ;
             }
         }
 

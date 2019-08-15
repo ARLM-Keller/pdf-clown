@@ -41,22 +41,17 @@ namespace org.pdfclown.objects
         positively-oriented axes).</para>
       </remarks>
     */
-    public sealed class Rectangle
-      : PdfObjectWrapper<PdfArray>
+    public sealed class Rectangle : PdfObjectWrapper<PdfArray>
     {
         #region static
         #region interface
         #region public
-        public static Rectangle Wrap(
-          PdfDirectObject baseObject
-          )
+        public static Rectangle Wrap(PdfDirectObject baseObject)
         { return baseObject != null ? new Rectangle(baseObject) : null; }
         #endregion
 
         #region private
-        private static PdfArray Normalize(
-          PdfArray rectangle
-          )
+        private static PdfArray Normalize(PdfArray rectangle)
         {
             if (rectangle[0].CompareTo(rectangle[2]) > 0)
             {

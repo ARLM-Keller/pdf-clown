@@ -242,6 +242,26 @@ namespace org.pdfclown.documents.contents
                 {
                     initialCtm = SKMatrix.MakeIdentity(); // Identity.
                 }
+                //else if (true)//alternative
+                //{
+                //    IContentContext contentContext = Scanner.ContentContext;
+                //    var canvasSize = Scanner.CanvasSize;
+                //    var originalBox = contentContext.Box;
+                //    var contentBox = originalBox.RotateRect(contentContext.Rotate);
+
+                //    using (SKPath path = new SKPath())
+                //    {
+                //        path.AddRect(originalBox);
+                //        var rotate = SKMatrix.MakeRotationDegrees(contentContext.Rotate);
+                //        path.Transform(rotate);
+
+                //        initialCtm = new SKMatrix { Values = new float[] { 1, 0, 0, 0, -1, canvasSize.Height, 0, 0, 1 } };
+                //        SKMatrix.PreConcat(ref initialCtm, rotate);
+                //        SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(originalBox.Left - path.Bounds.Left, originalBox.Top - path.Bounds.Top));
+                //        SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeScale(canvasSize.Width / contentBox.Width, canvasSize.Height / contentBox.Height));
+                //        SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-contentBox.Left, -contentBox.Top));
+                //    }
+                //}
                 else // Device-dependent.
                 {
                     IContentContext contentContext = Scanner.ContentContext;
@@ -1189,19 +1209,7 @@ namespace org.pdfclown.documents.contents
 
                 // Scan this level for rendering!
                 MoveStart();
-                while (MoveNext())
-                {
-                    if (Current is XObject xobject)
-                    {
-                        // Scan the external level!
-                        var scanner = xobject.GetScanner(this);
-                        if (scanner != null)
-                        {
-                            scanner.renderContext = renderContext;
-                            while (scanner.MoveNext()) ;
-                        }
-                    }
-                }
+                while (MoveNext()) ;
             }
             finally
             {
@@ -1218,6 +1226,7 @@ namespace org.pdfclown.documents.contents
         public SKCanvas RenderContext
         {
             get { return renderContext; }
+            internal set { renderContext = value; }
         }
 
         /**

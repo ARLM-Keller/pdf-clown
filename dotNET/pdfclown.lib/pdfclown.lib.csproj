@@ -6,7 +6,7 @@
     <OutputType>Library</OutputType>
     <AssemblyName>PDFClown</AssemblyName>
     <RootNamespace>org.pdfclown</RootNamespace>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.2</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <ProjectGuid>{DBED0809-EE4C-45B0-92FA-E4789ECC2AEC}</ProjectGuid>
     <Version>0.2.1.0</Version>
     <Company>Stefano Chizzolini</Company>

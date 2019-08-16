@@ -15,8 +15,7 @@ namespace org.pdfclown.samples.cli
     public class BookmarksParsingSample
       : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");

@@ -288,10 +288,8 @@ namespace org.pdfclown.documents
         */
         public Pages Pages
         {
-            get
-            { return new Pages(BaseDataObject[PdfName.Pages]); }
-            set
-            { BaseDataObject[PdfName.Pages] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return new Pages(BaseDataObject[PdfName.Pages]); }
+            set { BaseDataObject[PdfName.Pages] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         /**

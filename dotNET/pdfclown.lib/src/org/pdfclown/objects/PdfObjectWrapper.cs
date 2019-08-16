@@ -47,9 +47,7 @@ namespace org.pdfclown.objects
           <summary>Gets the PDF object backing the specified wrapper.</summary>
           <param name="wrapper">Object to extract the base from.</param>
         */
-        public static PdfDirectObject GetBaseObject(
-          PdfObjectWrapper wrapper
-          )
+        public static PdfDirectObject GetBaseObject(PdfObjectWrapper wrapper)
         { return (wrapper != null ? wrapper.BaseObject : null); }
         #endregion
         #endregion
@@ -64,8 +62,7 @@ namespace org.pdfclown.objects
         /**
           <summary>Instantiates an empty wrapper.</summary>
         */
-        protected PdfObjectWrapper(
-          )
+        protected PdfObjectWrapper()
         { }
 
         /**
@@ -73,9 +70,7 @@ namespace org.pdfclown.objects
           <param name="baseObject">PDF object backing this wrapper. MUST be a <see cref="PdfReference"/>
           every time available.</param>
         */
-        protected PdfObjectWrapper(
-          PdfDirectObject baseObject
-          )
+        protected PdfObjectWrapper(PdfDirectObject baseObject)
         { BaseObject = baseObject; }
         #endregion
 
@@ -85,17 +80,13 @@ namespace org.pdfclown.objects
           <summary>Gets a clone of the object, registered inside the specified document context using
           the default object cloner.</summary>
         */
-        public virtual object Clone(
-          Document context
-          )
+        public virtual object Clone(Document context)
         { return Clone(context.File.Cloner); }
 
         /**
           <summary>Gets a clone of the object, registered using the specified object cloner.</summary>
         */
-        public virtual object Clone(
-          Cloner cloner
-          )
+        public virtual object Clone(Cloner cloner)
         {
             PdfObjectWrapper clone = (PdfObjectWrapper)base.MemberwiseClone();
             clone.BaseObject = (PdfDirectObject)BaseObject.Clone(cloner);
@@ -107,8 +98,7 @@ namespace org.pdfclown.objects
         */
         public PdfIndirectObject Container
         {
-            get
-            { return baseObject.Container; }
+            get { return baseObject.Container; }
         }
 
         /**
@@ -116,8 +106,7 @@ namespace org.pdfclown.objects
         */
         public PdfIndirectObject DataContainer
         {
-            get
-            { return baseObject.DataContainer; }
+            get { return baseObject.DataContainer; }
         }
 
         /**
@@ -157,25 +146,20 @@ namespace org.pdfclown.objects
         */
         public File File
         {
-            get
-            { return baseObject.File; }
+            get { return baseObject.File; }
         }
 
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         { return baseObject.GetHashCode(); }
 
-        public override string ToString(
-          )
+        public override string ToString()
         { return String.Format("{0} {{{1}}}", GetType().Name, BaseObject is PdfReference ? (PdfObject)BaseObject.DataContainer : BaseObject); }
 
         #region IPdfObjectWrapper
         public virtual PdfDirectObject BaseObject
         {
-            get
-            { return baseObject; }
-            protected set
-            { baseObject = value; }
+            get { return baseObject; }
+            protected set { baseObject = value; }
         }
         #endregion
         #endregion
@@ -192,9 +176,7 @@ namespace org.pdfclown.objects
             </list>
           </param>
         */
-        internal void CheckCompatibility(
-          object feature
-          )
+        internal void CheckCompatibility(object feature)
         {
             /*
               TODO: Caching!
@@ -279,8 +261,7 @@ namespace org.pdfclown.objects
           <summary>Retrieves the name possibly associated to this object, walking through the document's
           name dictionary.</summary>
         */
-        protected virtual PdfString RetrieveName(
-          )
+        protected virtual PdfString RetrieveName()
         {
             object names = Document.Names.Get(GetType());
             if (names == null)
@@ -296,8 +277,7 @@ namespace org.pdfclown.objects
           <summary>Retrieves the object name, if available; otherwise, behaves like
           <see cref="PdfObjectWrapper.BaseObject"/>.</summary>
         */
-        protected PdfDirectObject RetrieveNamedBaseObject(
-          )
+        protected PdfDirectObject RetrieveNamedBaseObject()
         {
             PdfString name = RetrieveName();
             return name != null ? name : BaseObject;

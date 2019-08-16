@@ -35,9 +35,7 @@ namespace org.pdfclown.objects
     /**
       <summary>PDF indirect object [PDF:1.6:3.2.9].</summary>
     */
-    public class PdfIndirectObject
-      : PdfObject,
-        IPdfIndirectObject
+    public class PdfIndirectObject : PdfObject, IPdfIndirectObject
     {
         #region static
         #region fields
@@ -72,11 +70,7 @@ namespace org.pdfclown.objects
           <param name="xrefEntry">Cross-reference entry associated to the indirect object. If the
             indirect object is new, its offset field MUST be set to 0.</param>
         */
-        internal PdfIndirectObject(
-          File file,
-          PdfDataObject dataObject,
-          XRefEntry xrefEntry
-          )
+        internal PdfIndirectObject(File file, PdfDataObject dataObject, XRefEntry xrefEntry)
         {
             this.file = file;
             this.dataObject = Include(dataObject);
@@ -89,10 +83,7 @@ namespace org.pdfclown.objects
 
         #region interface
         #region public
-        public override PdfObject Accept(
-          IVisitor visitor,
-          object data
-          )
+        public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
         /**
@@ -100,9 +91,7 @@ namespace org.pdfclown.objects
           [PDF:1.6:3.4.6].</summary>
           <param name="objectStream">Target object stream.</param>
          */
-        public void Compress(
-          ObjectStream objectStream
-          )
+        public void Compress(ObjectStream objectStream)
         {
             // Remove from previous object stream!
             Uncompress();
@@ -121,34 +110,29 @@ namespace org.pdfclown.objects
 
         public override PdfIndirectObject Container
         {
-            get
-            { return this; }
+            get { return this; }
         }
 
         public override File File
         {
-            get
-            { return file; }
+            get { return file; }
         }
 
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         { return reference.GetHashCode(); }
 
         /**
           <summary>Gets whether this object is compressed within an object stream [PDF:1.6:3.4.6].
           </summary>
         */
-        public bool IsCompressed(
-          )
+        public bool IsCompressed()
         { return xrefEntry.Usage == XRefEntry.UsageEnum.InUseCompressed; }
 
         /**
           <summary>Gets whether this object can be compressed within an object stream [PDF:1.6:3.4.6].
           </summary>
         */
-        public bool IsCompressible(
-          )
+        public bool IsCompressible()
         {
             return !IsCompressed()
               && IsInUse()
@@ -160,28 +144,22 @@ namespace org.pdfclown.objects
         /**
           <summary>Gets whether this object contains a data object.</summary>
         */
-        public bool IsInUse(
-          )
+        public bool IsInUse()
         { return (xrefEntry.Usage == XRefEntry.UsageEnum.InUse); }
 
         /**
           <summary>Gets whether this object comes intact from an existing file.</summary>
         */
-        public bool IsOriginal(
-          )
+        public bool IsOriginal()
         { return original; }
 
         public override PdfObject Parent
         {
-            get
-            { return null; } // NOTE: As indirect objects are root objects, no parent can be associated.
-            internal set
-            {/* NOOP: As indirect objects are root objects, no parent can be associated. */}
+            get { return null; } // NOTE: As indirect objects are root objects, no parent can be associated.
+            internal set {/* NOOP: As indirect objects are root objects, no parent can be associated. */}
         }
 
-        public override PdfObject Swap(
-          PdfObject other
-          )
+        public override PdfObject Swap(PdfObject other)
         {
             PdfIndirectObject otherObject = (PdfIndirectObject)other;
             PdfDataObject otherDataObject = otherObject.dataObject;
@@ -195,8 +173,7 @@ namespace org.pdfclown.objects
         /**
           <summary>Removes the <see cref="DataObject">data object</see> from its object stream [PDF:1.6:3.4.6].</summary>
         */
-        public void Uncompress(
-          )
+        public void Uncompress()
         {
             if (!IsCompressed())
                 return;
@@ -212,16 +189,13 @@ namespace org.pdfclown.objects
 
         public override bool Updateable
         {
-            get
-            { return updateable; }
-            set
-            { updateable = value; }
+            get { return updateable; }
+            set { updateable = value; }
         }
 
         public override bool Updated
         {
-            get
-            { return updated; }
+            get { return updated; }
             protected internal set
             {
                 if (value && original)
@@ -237,10 +211,7 @@ namespace org.pdfclown.objects
             }
         }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          File context
-          )
+        public override void WriteTo(IOutputStream stream, File context)
         {
             // Header.
             stream.Write(reference.Id); stream.Write(BeginIndirectObjectChunk);
@@ -252,8 +223,7 @@ namespace org.pdfclown.objects
 
         public XRefEntry XrefEntry
         {
-            get
-            { return xrefEntry; }
+            get { return xrefEntry; }
         }
 
         #region IPdfIndirectObject
@@ -299,8 +269,7 @@ namespace org.pdfclown.objects
             }
         }
 
-        public override bool Delete(
-          )
+        public override bool Delete()
         {
             if (file != null)
             {
@@ -316,18 +285,15 @@ namespace org.pdfclown.objects
 
         public override PdfIndirectObject IndirectObject
         {
-            get
-            { return this; }
+            get { return this; }
         }
 
         public override PdfReference Reference
         {
-            get
-            { return reference; }
+            get { return reference; }
         }
 
-        public override string ToString(
-          )
+        public override string ToString()
         {
             StringBuilder buffer = new StringBuilder();
             {
@@ -344,8 +310,7 @@ namespace org.pdfclown.objects
         #region protected
         protected internal override bool Virtual
         {
-            get
-            { return virtual_; }
+            get { return virtual_; }
             set
             {
                 if (virtual_ && !value)
@@ -365,15 +330,13 @@ namespace org.pdfclown.objects
         #endregion
 
         #region internal
-        internal void DropFile(
-          )
+        internal void DropFile()
         {
             Uncompress();
             file = null;
         }
 
-        internal void DropOriginal(
-          )
+        internal void DropOriginal()
         { original = false; }
         #endregion
         #endregion

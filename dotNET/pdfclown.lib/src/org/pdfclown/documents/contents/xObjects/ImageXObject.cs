@@ -125,6 +125,10 @@ namespace org.pdfclown.documents.contents.xObjects
 
         public SKImage LoadImage()
         {
+            if (Document.Cache.TryGetValue((PdfReference)BaseObject, out var existingBitmap))
+            {
+                return (SKImage)existingBitmap;
+            }
             var stream = BaseDataObject as PdfStream;
             var data = stream.GetBody(false);
             var buffer = data.ToByteArray();
@@ -162,6 +166,7 @@ namespace org.pdfclown.documents.contents.xObjects
                     image = SKImage.FromPixelData(info, skData, (int)(memoryStream.Length / info.Height));
                 }
             }
+            Document.Cache[(PdfReference)BaseObject] = image;
             return image;
         }
         #endregion

@@ -73,12 +73,12 @@ namespace org.pdfclown.documents.contents.objects
                   so no inner operation can alter its subsequent scanning.
                 */
                 // Save outer graphics state!
-                var contextState = context.Save();
+                context.Save();
 
                 Render(state);
 
                 // Restore outer graphics state!
-                context.RestoreToCount(contextState);
+                context.Restore();
             }
         }
 

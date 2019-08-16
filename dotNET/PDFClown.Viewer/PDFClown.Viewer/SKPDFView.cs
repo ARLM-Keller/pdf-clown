@@ -49,9 +49,7 @@ namespace PDFClown.Viewer
         {
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.Silver);
-            var matrix = canvas.TotalMatrix;
-            SKMatrix.PreConcat(ref matrix, currentMatrix);
-            canvas.SetMatrix(matrix);
+            canvas.Concat(ref currentMatrix);
             var area = SKRect.Create(0, 0, (float)Width, (float)Height);
             foreach (var picture in pictures)
             {

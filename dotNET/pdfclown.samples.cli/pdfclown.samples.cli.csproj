@@ -6,7 +6,7 @@
     <Version>0.2.1.0</Version>
     <ProjectGuid>{BDBDC0A1-6937-4BB6-964D-DDC62CE2832F}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>org.pdfclown.samples.cli</RootNamespace>
     <StartupObject>org.pdfclown.samples.cli.SampleLoader</StartupObject>
     <AssemblyName>PDFClownCLISamples</AssemblyName>

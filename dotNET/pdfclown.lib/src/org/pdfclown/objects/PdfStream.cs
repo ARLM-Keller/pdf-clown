@@ -38,9 +38,7 @@ namespace org.pdfclown.objects
     /**
       <summary>PDF stream object [PDF:1.6:3.2.7].</summary>
     */
-    public class PdfStream
-      : PdfDataObject,
-        IFileResource
+    public class PdfStream : PdfDataObject, IFileResource
     {
         #region static
         #region fields
@@ -82,10 +80,7 @@ namespace org.pdfclown.objects
 
             this.body = body;
             body.Dirty = false;
-            body.OnChange += delegate (
-              object sender,
-              EventArgs args
-              )
+            body.OnChange += delegate (object sender, EventArgs args)
             { Update(); };
         }
         #endregion

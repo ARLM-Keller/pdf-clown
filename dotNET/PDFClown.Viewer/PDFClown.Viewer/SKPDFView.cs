@@ -70,9 +70,9 @@ namespace PDFClown.Viewer
             base.OnScrolled(delta, keyModifiers);
             if (keyModifiers == KeyModifiers.Ctrl)
             {
-                var scaleStep = 0.01F * Math.Sign(delta);
+                var scaleStep = 0.025F * Math.Sign(delta);
                 var newSclae = scale + scaleStep;
-                if (newSclae > 0.05 && newSclae < 3)
+                if (newSclae > 0.05 && newSclae < 4)
                 {
                     ScaleFactor = newSclae;
                 }
@@ -82,6 +82,7 @@ namespace PDFClown.Viewer
         protected override void OnSizeAllocated(double width, double height)
         {
             base.OnSizeAllocated(width, height);
+            UpdateCurrentMatrix();
         }
 
         public Task LoadAsync(System.IO.Stream stream)
@@ -139,21 +140,38 @@ namespace PDFClown.Viewer
 
         private void UpdateMaximums()
         {
-            currentMatrix.SetScaleTranslate(scale, scale, (float)-HorizontalValue, (float)-VerticalValue);
+            UpdateCurrentMatrix();
             HorizontalMaximum = DocumentSize.Width * scale;
             VerticalMaximum = DocumentSize.Height * scale;
             InvalidateSurface();
         }
 
+        private void UpdateCurrentMatrix()
+        {
+            var maximumWidth = DocumentSize.Width * scale;
+            var maximumHeight = DocumentSize.Height * scale;
+            var dx = 0F; var dy = 0F;
+            if (maximumWidth < Width)
+            {
+                dx = (float)(Width - maximumWidth) / 2;
+            }
+
+            if (maximumHeight < Height)
+            {
+                dy = (float)(Height - maximumHeight) / 2;
+            }
+            currentMatrix.SetScaleTranslate(scale, scale, ((float)-HorizontalValue) + dx, ((float)-VerticalValue) + dy);
+        }
+
         protected override void OnVerticalValueChanged(double oldValue, double newValue)
         {
-            currentMatrix.SetScaleTranslate(scale, scale, (float)-HorizontalValue, (float)-VerticalValue);
+            UpdateCurrentMatrix();
             base.OnVerticalValueChanged(oldValue, newValue);
         }
 
         protected override void OnHorizontalValueChanged(double oldValue, double newValue)
         {
-            currentMatrix.SetScaleTranslate(scale, scale, (float)-HorizontalValue, (float)-VerticalValue);
+            UpdateCurrentMatrix();
             base.OnHorizontalValueChanged(oldValue, newValue);
         }
 

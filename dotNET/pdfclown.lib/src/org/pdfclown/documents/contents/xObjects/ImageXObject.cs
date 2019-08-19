@@ -123,16 +123,16 @@ namespace org.pdfclown.documents.contents.xObjects
         }
 
 
-        public SKImage LoadImage()
+        public SKBitmap LoadImage()
         {
             if (Document.Cache.TryGetValue((PdfReference)BaseObject, out var existingBitmap))
             {
-                return (SKImage)existingBitmap;
+                return (SKBitmap)existingBitmap;
             }
             var stream = BaseDataObject as PdfStream;
             var data = stream.GetBody(false);
             var buffer = data.ToByteArray();
-            var image = SKImage.FromEncodedData(buffer);
+            var image = SKBitmap.Decode(buffer);
             if (image == null)
             {
                 SKImageInfo info = new SKImageInfo
@@ -159,11 +159,10 @@ namespace org.pdfclown.documents.contents.xObjects
                     info.ColorType = SKColorType.Gray8;
                     //info.ColorType = SKColorType.Rgb888x;
                 }
-
+                image = new SKBitmap(info);
                 using (var memoryStream = new MemoryStream(stream.GetBody(true).ToByteArray()))
-                using (var skData = SKData.Create(memoryStream))
                 {
-                    image = SKImage.FromPixelData(info, skData, (int)(memoryStream.Length / info.Height));
+                    
                 }
             }
             Document.Cache[(PdfReference)BaseObject] = image;

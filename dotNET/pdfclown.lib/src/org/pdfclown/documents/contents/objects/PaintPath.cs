@@ -114,7 +114,8 @@ namespace org.pdfclown.documents.contents.objects
                 if (dashArray.Length % 2 != 0)
                 {
                     var list = new double[dashArray.Length + 1];
-                    list[dashArray.Length] = lineDash.DashPhase;
+                    System.Array.Copy(dashArray, 0, list, 0, dashArray.Length);
+                    list[dashArray.Length] = dashArray[dashArray.Length - 1];
                     dashArray = list;
                 }
                 stroke.PathEffect = SKPathEffect.CreateDash(ConvertUtils.ToFloatArray(dashArray), (float)lineDash.DashPhase);

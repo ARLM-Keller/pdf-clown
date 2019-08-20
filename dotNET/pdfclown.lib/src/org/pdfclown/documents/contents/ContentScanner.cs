@@ -891,10 +891,11 @@ namespace org.pdfclown.documents.contents
           <summary>Instantiates a top-level content scanner.</summary>
           <param name="contents">Content objects collection to scan.</param>
         */
+
         public ContentScanner(Contents contents)
         {
-            this.parentLevel = null;
-            this.objects = this.contents = contents;
+            parentLevel = null;
+            objects = this.contents = contents;
 
             canvasSize = contextSize = contents.ContentContext.Box.Size;
 
@@ -1195,9 +1196,9 @@ namespace org.pdfclown.documents.contents
         */
         public void Render(SKCanvas renderContext, SKSize renderSize, SKPath renderObject)
         {
-            if (IsRootLevel())
+            if (IsRootLevel() && renderContext != null)
             {
-                // Paint the canvas background!
+                renderContext.ClipRect(SKRect.Create(renderSize));
                 renderContext.Clear(SKColors.White);
             }
 

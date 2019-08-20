@@ -110,9 +110,8 @@ namespace org.pdfclown.documents.contents
 
             public void Read(byte[] data, int offset, int length)
             {
-                while (length > 0)
+                while (length > 0 && EnsureStream())
                 {
-                    EnsureStream();
                     int readLength = Math.Min(length, (int)(stream.Length - stream.Position));
                     stream.Read(data, offset, readLength);
                     offset += readLength;
@@ -122,12 +121,7 @@ namespace org.pdfclown.documents.contents
 
             public int ReadByte()
             {
-                //TODO:harmonize with other Read*() method EOF exceptions!!!
-                try
-                { EnsureStream(); }
-                catch (EndOfStreamException)
-                { return -1; }
-                return stream.ReadByte();
+                return EnsureStream() ? stream.ReadByte() : -1;
             }
 
             public int ReadInt()
@@ -151,9 +145,8 @@ namespace org.pdfclown.documents.contents
             public string ReadString(int length)
             {
                 StringBuilder builder = new StringBuilder();
-                while (length > 0)
+                while (length > 0 && EnsureStream())
                 {
-                    EnsureStream();
                     int readLength = Math.Min(length, (int)(stream.Length - stream.Position));
                     builder.Append(stream.ReadString(readLength));
                     length -= readLength;
@@ -196,12 +189,11 @@ namespace org.pdfclown.documents.contents
               <summary>Ensures stream availability, moving to the next stream in case the current one has
               run out of data.</summary>
             */
-            private void EnsureStream()
+            private bool EnsureStream()
             {
-                if ((stream == null
+                return !(stream == null
                     || stream.Position >= stream.Length)
-                  && !MoveNextStream())
-                    throw new EndOfStreamException();
+                    || MoveNextStream();
             }
 
             private bool MoveNextStream()

@@ -22,6 +22,7 @@ namespace PDFClown.Viewer
         private List<SKPictureDetails> pictures = new List<SKPictureDetails>();
         private float scale = 1;
         private float indent = 10;
+        private SKPoint pointerLocation;
 
         public SKPDFView()
         {
@@ -51,11 +52,15 @@ namespace PDFClown.Viewer
             canvas.Clear(SKColors.Silver);
             canvas.Concat(ref currentMatrix);
             var area = SKRect.Create(0, 0, (float)Width, (float)Height);
-            foreach (var picture in pictures)
+            foreach (var pictureDetails in pictures)
             {
-                if (currentMatrix.MapRect(picture.Bounds).IntersectsWith(area))
+                if (currentMatrix.MapRect(pictureDetails.Bounds).IntersectsWith(area))
                 {
-                    canvas.DrawPicture(picture.Picture, ref picture.Matrix);
+                    var picture = pictureDetails.GetPicture();
+                    if (picture != null)
+                    {
+                        canvas.DrawPicture(picture, ref pictureDetails.Matrix);
+                    }
                 }
             }
         }
@@ -63,6 +68,7 @@ namespace PDFClown.Viewer
         protected override void OnTouch(object sender, SKTouchEventArgs e)
         {
             base.OnTouch(sender, e);
+            pointerLocation = e.Location;
         }
 
         public override void OnScrolled(int delta, KeyModifiers keyModifiers)
@@ -70,11 +76,23 @@ namespace PDFClown.Viewer
             base.OnScrolled(delta, keyModifiers);
             if (keyModifiers == KeyModifiers.Ctrl)
             {
-                var scaleStep = 0.025F * Math.Sign(delta);
+                var scaleStep = 0.03F * Math.Sign(delta);
                 var newSclae = scale + scaleStep;
-                if (newSclae > 0.05 && newSclae < 4)
+                if (newSclae > 0.03 && newSclae < 4)
                 {
+                    currentMatrix.TryInvert(out var oldMatrix);
+                    var oldPointer = oldMatrix.MapPoint(pointerLocation);
                     ScaleFactor = newSclae;
+                    var newPointerLocation = currentMatrix.MapPoint(oldPointer);
+                    if (HorizontalScrollBarVisible)
+                    {
+                        HorizontalValue += newPointerLocation.X - pointerLocation.X;
+                    }
+                    if (VerticalScrollBarVisible)
+                    {
+                        VerticalValue += newPointerLocation.Y - pointerLocation.Y;
+                    }
+
                 }
             }
         }
@@ -92,6 +110,10 @@ namespace PDFClown.Viewer
 
         public void Load(System.IO.Stream stream)
         {
+            if (File != null)
+            {
+                File.Dispose();
+            }
             File = new File(stream);
             Document = File.Document;
             LoadPages();
@@ -106,30 +128,20 @@ namespace PDFClown.Viewer
             totalHeight = 0F;
             foreach (var page in Pages)
             {
+                totalHeight += indent;
                 var box = page.RotatedBox;
                 var imageSize = new SKSize(box.Width, box.Height);
-
-                using (var recorder = new SKPictureRecorder())
-                using (var canvas = recorder.BeginRecording(SKRect.Create(SKPoint.Empty, imageSize)))
+                var details = new SKPictureDetails()
                 {
-                    totalHeight += indent;
-                    canvas.ClipRect(box);
-                    page.Render(canvas, imageSize);
-                    var picture = recorder.EndRecording();
-                    var details = new SKPictureDetails()
-                    {
-                        Page = page,
-                        Picture = picture
-                    };
-                    details.Matrix.SetScaleTranslate(1, 1, indent, totalHeight);
-                    pictures.Add(details);
+                    Page = page,
+                    Size = imageSize
+                };
+                details.Matrix.SetScaleTranslate(1, 1, indent, totalHeight);
+                pictures.Add(details);
+                if (imageSize.Width > totalWidth)
+                    totalWidth = imageSize.Width;
 
-                    if (picture.CullRect.Width > totalWidth)
-                        totalWidth = picture.CullRect.Width;
-
-                    totalHeight += picture.CullRect.Height;
-
-                }
+                totalHeight += imageSize.Height;
             }
             DocumentSize = new SKSize(totalWidth, totalHeight);
 
@@ -187,25 +199,38 @@ namespace PDFClown.Viewer
 
     public class SKPictureDetails : IDisposable
     {
+        SKPicture picture;
         public SKPictureDetails()
         {
         }
 
         public SKMatrix Matrix = SKMatrix.MakeIdentity();
 
-        public SKPicture Picture { get; set; }
+        public SKPicture GetPicture()
+        {
+            if (picture == null)
+            {
+                using (var recorder = new SKPictureRecorder())
+                using (var canvas = recorder.BeginRecording(SKRect.Create(SKPoint.Empty, Size)))
+                {
+                    Page.Render(canvas, Size);
+                    picture = recorder.EndRecording();
+                }
+            }
+            return picture;
+        }
 
         public org.pdfclown.documents.Page Page { get; set; }
-
+        public SKSize Size { get; set; }
         public SKRect Bounds => SKRect.Create(
             Matrix.TransX,
             Matrix.TransY,
-            Picture.CullRect.Width * Matrix.ScaleX,
-            Picture.CullRect.Height * Matrix.ScaleY);
+            Size.Width * Matrix.ScaleX,
+            Size.Height * Matrix.ScaleY);
 
         public void Dispose()
         {
-            Picture.Dispose();
+            picture?.Dispose();
         }
     }
 }

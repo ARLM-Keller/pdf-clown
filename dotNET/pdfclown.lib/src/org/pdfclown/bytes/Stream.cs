@@ -36,9 +36,7 @@ namespace org.pdfclown.bytes
     /**
       <summary>Generic stream.</summary>
     */
-    public sealed class Stream
-      : IInputStream,
-        IOutputStream
+    public sealed class Stream : IInputStream, IOutputStream
     {
         #region dynamic
         #region fields
@@ -81,6 +79,9 @@ namespace org.pdfclown.bytes
 
         public int ReadByte()
         { return stream.ReadByte(); }
+
+        public sbyte ReadSignedByte()
+        { return (sbyte)stream.ReadByte(); }
 
         public int ReadInt()
         {
@@ -128,6 +129,25 @@ namespace org.pdfclown.bytes
             return (short)ConvertUtils.ByteArrayToNumber(data, 0, data.Length, byteOrder);
         }
 
+        public ushort ReadUnsignedShort()
+        {
+            byte[] data = new byte[sizeof(ushort)];
+            Read(data);
+            return (ushort)ConvertUtils.ByteArrayToNumber(data, 0, data.Length, byteOrder);
+        }
+
+        public float ReadFloat()
+        {
+            return ReadShort() // Fixed-point mantissa (16 bits).
+               + ReadUnsignedShort() / 16384f; // Fixed-point fraction (16 bits).
+        }
+
+        public float ReadUnsignedFloat()
+        {
+            return ReadUnsignedShort() // Fixed-point mantissa (16 bits).
+               + ReadUnsignedShort() / 16384f; // Fixed-point fraction (16 bits).
+        }
+
         public string ReadString(int length)
         {
             text::StringBuilder buffer = new text::StringBuilder();
@@ -143,16 +163,6 @@ namespace org.pdfclown.bytes
             }
 
             return buffer.ToString();
-        }
-
-        public sbyte ReadSignedByte()
-        { throw new NotImplementedException(); }
-
-        public ushort ReadUnsignedShort()
-        {
-            byte[] data = new byte[sizeof(ushort)];
-            Read(data);
-            return (ushort)ConvertUtils.ByteArrayToNumber(data, 0, data.Length, byteOrder);
         }
 
         public void Seek(long offset)

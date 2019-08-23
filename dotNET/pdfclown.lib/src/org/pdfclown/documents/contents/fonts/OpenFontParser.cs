@@ -711,9 +711,7 @@ namespace org.pdfclown.documents.contents.fonts
 
             // Go to the italic angle!
             FontData.Seek(tableOffset + 4);
-            Metrics.ItalicAngle =
-              FontData.ReadShort() // Fixed-point mantissa (16 bits).
-              + FontData.ReadUnsignedShort() / 16384f; // Fixed-point fraction (16 bits).
+            Metrics.ItalicAngle = FontData.ReadFloat();              
             Metrics.UnderlinePosition = FontData.ReadShort();
             Metrics.UnderlineThickness = FontData.ReadShort();
             Metrics.IsFixedPitch = (FontData.ReadInt() != 0);

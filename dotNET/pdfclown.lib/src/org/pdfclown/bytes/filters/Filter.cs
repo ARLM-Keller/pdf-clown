@@ -40,6 +40,7 @@ namespace org.pdfclown.bytes.filters
         #region fields
         private static readonly Filter ASCII85Filter = new ASCII85Filter();
         private static readonly Filter FlateDecode = new FlateFilter();
+        private static readonly Filter CCITTFaxDecode = new CCITTFaxFilter();
         #endregion
 
         #region interface
@@ -49,9 +50,7 @@ namespace org.pdfclown.bytes.filters
           <param name="name">Name of the requested filter.</param>
           <returns>Filter object associated to the name.</returns>
         */
-        public static Filter Get(
-          PdfName name
-          )
+        public static Filter Get(PdfName name)
         {
             /*
               NOTE: This is a factory singleton method for any filter-derived object.
@@ -76,7 +75,7 @@ namespace org.pdfclown.bytes.filters
                 throw new NotImplementedException("RunLengthDecode");
             else if (name.Equals(PdfName.CCITTFaxDecode)
               || name.Equals(PdfName.CCF))
-                throw new NotImplementedException("CCITTFaxDecode");
+                return CCITTFaxDecode;
             else if (name.Equals(PdfName.JBIG2Decode))
                 throw new NotImplementedException("JBIG2Decode");
             else if (name.Equals(PdfName.DCTDecode)
@@ -95,8 +94,7 @@ namespace org.pdfclown.bytes.filters
 
         #region dynamic
         #region constructors
-        protected Filter(
-          )
+        protected Filter()
         { }
         #endregion
 

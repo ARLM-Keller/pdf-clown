@@ -147,7 +147,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
                 /*
                   NOTE: 'BBox' entry MUST be defined.
                 */
-                org.pdfclown.objects.Rectangle box = org.pdfclown.objects.Rectangle.Wrap(BaseHeader[PdfName.BBox]);
+                var box = org.pdfclown.objects.Rectangle.Wrap(BaseHeader[PdfName.BBox]);
                 return SKRect.Create((float)box.X, (float)box.Y, (float)box.Width, (float)box.Height);
             }
         }
@@ -200,13 +200,13 @@ namespace org.pdfclown.documents.contents.colorSpaces
         public SKBitmap GetBitmap()
         {
             var box = Box;
-            var bitmap = new SKBitmap((int)box.Width * 2,
-              (int)box.Height * 2,
+            var bitmap = new SKBitmap((int)box.Width,
+              (int)box.Height,
               SKColorType.Rgba8888,
               SKAlphaType.Opaque);
             using (var canvas = new SKCanvas(bitmap))
             {
-                Render(canvas, new SKSize(box.Width * 2, box.Height * 2));
+                Render(canvas, new SKSize(box.Width, box.Height));
             }
 
             return bitmap;

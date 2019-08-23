@@ -104,8 +104,8 @@ namespace org.pdfclown.files
                 Reader.FileInfo info = reader.ReadInfo();
                 version = info.Version;
                 trailer = PrepareTrailer(info.Trailer);
-               //if (trailer.ContainsKey(PdfName.Encrypt)) // Encrypted file.
-               //     throw new NotImplementedException("Encrypted files are currently not supported.");
+                //if (trailer.ContainsKey(PdfName.Encrypt)) // Encrypted file.
+                //     throw new NotImplementedException("Encrypted files are currently not supported.");
 
                 indirectObjects = new IndirectObjects(this, info.XrefEntries);
                 document = new Document(trailer[PdfName.Root]);

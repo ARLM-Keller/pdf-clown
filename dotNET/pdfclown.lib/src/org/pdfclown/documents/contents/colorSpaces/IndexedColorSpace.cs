@@ -89,8 +89,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
         public Color GetBaseColor(IndexedColor color)
         {
             int colorIndex = color.Index;
-            Color baseColor = baseColors[colorIndex];
-            if (baseColor == null)
+            if (!baseColors.TryGetValue(colorIndex, out var baseColor))
             {
                 ColorSpace baseSpace = BaseSpace;
                 IList<PdfDirectObject> components = new List<PdfDirectObject>();
@@ -100,10 +99,15 @@ namespace org.pdfclown.documents.contents.colorSpaces
                     byte[] baseComponentValues = BaseComponentValues;
                     for (int componentIndex = 0; componentIndex < componentCount; componentIndex++)
                     {
-                        components.Add(PdfReal.Get(((int)baseComponentValues[componentValueIndex++] & 0xff) / 255d));
+                        var byteValue = componentValueIndex < baseComponentValues.Length
+                            ? baseComponentValues[componentValueIndex]
+                            : 0;
+                        var value = ((int)byteValue & 0xff) / 255d;
+                        components.Add(PdfReal.Get(value));
+                        componentValueIndex++;
                     }
                 }
-                baseColor = baseSpace.GetColor(components, null);
+                baseColor = baseColors[colorIndex] = baseSpace.GetColor(components, null);
             }
             return baseColor;
         }
@@ -131,7 +135,17 @@ namespace org.pdfclown.documents.contents.colorSpaces
             get
             {
                 if (baseComponentValues == null)
-                { baseComponentValues = ((IDataWrapper)((PdfArray)BaseDataObject).Resolve(3)).ToByteArray(); }
+                {
+                    var value = ((PdfArray)BaseDataObject).Resolve(3);
+                    if (value is IDataWrapper wrapper)
+                    {
+                        baseComponentValues = wrapper.ToByteArray();
+                    }
+                    else if (value is PdfStream stream)
+                    {
+                        baseComponentValues = stream.GetBody(false).ToByteArray();
+                    }
+                }
                 return baseComponentValues;
             }
         }

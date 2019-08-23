@@ -50,11 +50,7 @@ namespace org.pdfclown.tokens
             private Version version;
             private SortedDictionary<int, XRefEntry> xrefEntries;
 
-            internal FileInfo(
-              Version version,
-              PdfDictionary trailer,
-              SortedDictionary<int, XRefEntry> xrefEntries
-              )
+            internal FileInfo(Version version, PdfDictionary trailer, SortedDictionary<int, XRefEntry> xrefEntries)
             {
                 this.version = version;
                 this.trailer = trailer;
@@ -63,20 +59,17 @@ namespace org.pdfclown.tokens
 
             public PdfDictionary Trailer
             {
-                get
-                { return trailer; }
+                get { return trailer; }
             }
 
             public Version Version
             {
-                get
-                { return version; }
+                get { return version; }
             }
 
             public SortedDictionary<int, XRefEntry> XrefEntries
             {
-                get
-                { return xrefEntries; }
+                get { return xrefEntries; }
             }
         }
         #endregion
@@ -87,34 +80,27 @@ namespace org.pdfclown.tokens
         #endregion
 
         #region constructors
-        internal Reader(
-          IInputStream stream,
-          files.File file
-          )
+        internal Reader(IInputStream stream, files.File file)
         { this.parser = new FileParser(stream, file); }
 
-        ~Reader(
-          )
+        ~Reader()
         { Dispose(false); }
         #endregion
 
         #region interface
         #region public
-        public override int GetHashCode(
-          )
+        public override int GetHashCode()
         { return parser.GetHashCode(); }
 
         public FileParser Parser
         {
-            get
-            { return parser; }
+            get { return parser; }
         }
 
         /**
           <summary>Retrieves the file information.</summary>
         */
-        public FileInfo ReadInfo(
-          )
+        public FileInfo ReadInfo()
         {
             //TODO:hybrid xref table/stream
             Version version = Version.Get(parser.RetrieveVersion());
@@ -158,11 +144,7 @@ namespace org.pdfclown.tokens
                             int endObjectNumber = (int)parser.Token + startObjectNumber;
 
                             // 3. XRef-table subsection entries.
-                            for (
-                              int index = startObjectNumber;
-                              index < endObjectNumber;
-                              index++
-                              )
+                            for (int index = startObjectNumber; index < endObjectNumber; index++)
                             {
                                 if (xrefEntries.ContainsKey(index)) // Already-defined entry.
                                 {
@@ -229,8 +211,7 @@ namespace org.pdfclown.tokens
         }
 
         #region IDisposable
-        public void Dispose(
-          )
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -239,9 +220,7 @@ namespace org.pdfclown.tokens
         #endregion
 
         #region private
-        private void Dispose(
-          bool disposing
-          )
+        private void Dispose(bool disposing)
         {
             if (disposing)
             {

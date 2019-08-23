@@ -98,6 +98,18 @@ namespace org.pdfclown.bytes
         string ReadLine();
 
         /**
+          <summary>Reads a float.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        float ReadFloat();
+
+        /**
+          <summary>Reads a float.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        float ReadUnsignedFloat();
+
+        /**
           <summary>Reads a short integer.</summary>
           <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
         */

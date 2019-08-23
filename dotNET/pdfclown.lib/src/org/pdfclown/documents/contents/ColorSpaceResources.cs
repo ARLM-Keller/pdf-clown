@@ -43,22 +43,16 @@ namespace org.pdfclown.documents.contents
     {
         #region dynamic
         #region constructors
-        public ColorSpaceResources(
-          Document context
-          ) : base(context)
+        public ColorSpaceResources(Document context) : base(context)
         { }
 
-        internal ColorSpaceResources(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal ColorSpaceResources(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
         #region interface
         #region protected
-        protected override ColorSpace Wrap(
-          PdfDirectObject baseObject
-          )
+        protected override ColorSpace Wrap(PdfDirectObject baseObject)
         { return ColorSpace.Wrap(baseObject); }
         #endregion
         #endregion

@@ -36,8 +36,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
     /**
       <summary>Color space [PDF:1.6:4.5].</summary>
     */
-    public abstract class ColorSpace
-      : PdfObjectWrapper<PdfDirectObject>
+    public abstract class ColorSpace : PdfObjectWrapper<PdfDirectObject>
     {
         #region static
         #region interface
@@ -135,6 +134,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
         public abstract Color GetColor(IList<PdfDirectObject> components, IContentContext context);
 
         public abstract SKColor GetColor(Color color);
+
         #endregion
         #endregion
         #endregion

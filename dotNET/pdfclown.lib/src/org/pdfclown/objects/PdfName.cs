@@ -288,6 +288,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName IdentityV = new PdfName("Identity-V");
         public static readonly PdfName IF = new PdfName("IF");
         public static readonly PdfName Image = new PdfName("Image");
+        public static readonly PdfName ImageMask = new PdfName("ImageMask");
         public static readonly PdfName ImportData = new PdfName("ImportData");
         public static readonly PdfName Ind = new PdfName("Ind");
         public static readonly PdfName Index = new PdfName("Index");
@@ -601,6 +602,7 @@ namespace org.pdfclown.objects
 #pragma warning restore 0108
 
         private static readonly byte[] NamePrefixChunk = tokens::Encoding.Pdf.Encode(tokens.Keyword.NamePrefix);
+        
         #endregion
 
         #region interface

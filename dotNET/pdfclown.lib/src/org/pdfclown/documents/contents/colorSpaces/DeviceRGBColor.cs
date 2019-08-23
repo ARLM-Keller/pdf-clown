@@ -89,15 +89,16 @@ namespace org.pdfclown.documents.contents.colorSpaces
           )
         { }
 
-        internal DeviceRGBColor(IList<PdfDirectObject> components) : base(
-            DeviceRGBColorSpace.Default,
-            new PdfArray(components)
-            )
+        internal DeviceRGBColor(IList<PdfDirectObject> components)
+            : base(DeviceRGBColorSpace.Default, new PdfArray(components) )
         { }
         #endregion
 
         #region interface
         #region public
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+
         /**
           <summary>Gets/Sets the blue component.</summary>
         */
@@ -106,9 +107,6 @@ namespace org.pdfclown.documents.contents.colorSpaces
             get { return GetComponentValue(2); }
             set { SetComponentValue(2, value); }
         }
-
-        public override object Clone(Document context)
-        { throw new NotImplementedException(); }
 
         /**
           <summary>Gets/Sets the green component.</summary>
@@ -127,6 +125,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
             get { return GetComponentValue(0); }
             set { SetComponentValue(0, value); }
         }
+
         #endregion
         #endregion
         #endregion

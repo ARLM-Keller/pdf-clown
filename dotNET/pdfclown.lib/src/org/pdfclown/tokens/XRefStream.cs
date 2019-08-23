@@ -62,9 +62,7 @@ namespace org.pdfclown.tokens
           <summary>Gets the number of bytes needed to store the specified value.</summary>
           <param name="maxValue">Maximum storable value.</param>
         */
-        private static int GetFieldSize(
-          int maxValue
-          )
+        private static int GetFieldSize(int maxValue)
         { return (int)Math.Ceiling(Math.Log(maxValue) / ByteBaseLog); }
 
         /**
@@ -72,10 +70,7 @@ namespace org.pdfclown.tokens
           <param name="value">Value to convert.</param>
           <param name="length">Byte array's length.</param>
          */
-        private static byte[] NumberToByteArray(
-          int value,
-          int length
-          )
+        private static byte[] NumberToByteArray(int value, int length)
         { return ConvertUtils.NumberToByteArray(value, length, ByteOrderEnum.BigEndian); }
         #endregion
         #endregion

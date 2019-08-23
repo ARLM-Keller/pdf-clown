@@ -78,6 +78,23 @@ namespace org.pdfclown.util
             { value |= (data[i] & 0xff) << 8 * (byteOrder == ByteOrderEnum.LittleEndian ? i - index : endIndex - i - 1); }
             return value;
         }
+        internal static long ByteArrayToLong(byte[] data, int position, int size, ByteOrderEnum byteOrder)
+        {
+            var buffer = new byte[size];
+            data.CopyTo(buffer, position);
+            if (byteOrder == ByteOrderEnum.BigEndian)
+                Array.Reverse(data);
+            return BitConverter.ToInt64(data, position);
+        }
+
+        internal static ulong ByteArrayToULong(byte[] data, int position, int size, ByteOrderEnum byteOrder)
+        {
+            var buffer = new byte[size];
+            data.CopyTo(buffer, position);
+            if (byteOrder == ByteOrderEnum.BigEndian)
+                Array.Reverse(data);
+            return BitConverter.ToUInt64(data, position);
+        }
 
         public static byte[] HexToByteArray(string data)
         {
@@ -88,12 +105,7 @@ namespace org.pdfclown.util
                     throw new Exception("Odd number of characters.");
 
                 result = new byte[dataLength / 2];
-                for (
-                  int resultIndex = 0,
-                    dataIndex = 0;
-                  dataIndex < dataLength;
-                  resultIndex++
-                  )
+                for (int resultIndex = 0, dataIndex = 0; dataIndex < dataLength; resultIndex++)
                 {
                     result[resultIndex] = byte.Parse(
                       data[dataIndex++].ToString() + data[dataIndex++].ToString(),
@@ -162,6 +174,8 @@ namespace org.pdfclown.util
             { result[index] = (float)array[index]; }
             return result;
         }
+
+
         #endregion
         #endregion
         #endregion

@@ -188,8 +188,7 @@ namespace org.pdfclown.documents.interaction.actions
     {
         private static readonly BiDictionary<Render.OperationEnum, PdfInteger> codes;
 
-        static OperationEnumExtension(
-          )
+        static OperationEnumExtension()
         {
             codes = new BiDictionary<Render.OperationEnum, PdfInteger>();
             codes[Render.OperationEnum.Play] = new PdfInteger(0);
@@ -199,9 +198,7 @@ namespace org.pdfclown.documents.interaction.actions
             codes[Render.OperationEnum.PlayResume] = new PdfInteger(4);
         }
 
-        public static Render.OperationEnum? Get(
-          PdfInteger code
-          )
+        public static Render.OperationEnum? Get(PdfInteger code)
         {
             if (code == null)
                 return null;
@@ -213,9 +210,7 @@ namespace org.pdfclown.documents.interaction.actions
             return operation;
         }
 
-        public static PdfInteger GetCode(
-          this Render.OperationEnum operation
-          )
+        public static PdfInteger GetCode(this Render.OperationEnum operation)
         { return codes[operation]; }
     }
 }

@@ -39,9 +39,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
         #region constructors
         //TODO:IMPL new element constructor!
 
-        protected SpecialColorSpace(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected SpecialColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
         #endregion

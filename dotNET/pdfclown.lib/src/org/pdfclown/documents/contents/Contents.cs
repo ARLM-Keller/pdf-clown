@@ -142,6 +142,12 @@ namespace org.pdfclown.documents.contents
             public sbyte ReadSignedByte()
             { return stream.ReadSignedByte(); }
 
+            public float ReadFloat()
+            { return stream.ReadFloat(); }
+
+            public float ReadUnsignedFloat()
+            { return stream.ReadUnsignedFloat(); }
+
             public string ReadString(int length)
             {
                 StringBuilder builder = new StringBuilder();

@@ -194,7 +194,7 @@ namespace org.pdfclown.objects
         */
         public PdfDataObject Resolve()
         {
-            return this is IPdfIndirectObject ? ((IPdfIndirectObject)this).DataObject : (PdfDataObject)this;
+            return this is IPdfIndirectObject inderect ? inderect.DataObject : (PdfDataObject)this;
         }
 
         /**

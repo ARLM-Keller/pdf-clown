@@ -40,29 +40,21 @@ namespace org.pdfclown.documents.contents
       <summary>Resources collection [PDF:1.6:3.7.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class Resources
-      : PdfObjectWrapper<PdfDictionary>,
-        ICompositeDictionary<PdfName>
+    public sealed class Resources : PdfObjectWrapper<PdfDictionary>, ICompositeDictionary<PdfName>
     {
         #region static
         #region interface
-        public static Resources Wrap(
-          PdfDirectObject baseObject
-          )
+        public static Resources Wrap(PdfDirectObject baseObject)
         { return baseObject != null ? new Resources(baseObject) : null; }
         #endregion
         #endregion
 
         #region dynamic
         #region constructors
-        public Resources(
-          Document context
-          ) : base(context, new PdfDictionary())
+        public Resources(Document context) : base(context, new PdfDictionary())
         { }
 
-        private Resources(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        private Resources(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -70,10 +62,8 @@ namespace org.pdfclown.documents.contents
         #region public
         public ColorSpaceResources ColorSpaces
         {
-            get
-            { return new ColorSpaceResources(BaseDataObject.Get<PdfDictionary>(PdfName.ColorSpace)); }
-            set
-            { BaseDataObject[PdfName.ColorSpace] = value.BaseObject; }
+            get { return new ColorSpaceResources(BaseDataObject.Get<PdfDictionary>(PdfName.ColorSpace)); }
+            set { BaseDataObject[PdfName.ColorSpace] = value.BaseObject; }
         }
 
         public ExtGStateResources ExtGStates
@@ -119,9 +109,7 @@ namespace org.pdfclown.documents.contents
         }
 
         #region ICompositeDictionary
-        public PdfObjectWrapper Get(
-          Type type
-          )
+        public PdfObjectWrapper Get(Type type)
         {
             if (typeof(ColorSpace).IsAssignableFrom(type))
                 return ColorSpaces;
@@ -141,9 +129,7 @@ namespace org.pdfclown.documents.contents
                 throw new ArgumentException(type.Name + " does NOT represent a valid resource class.");
         }
 
-        public T Get<T>(
-          PdfName key
-          ) where T : PdfObjectWrapper
+        public T Get<T>(PdfName key) where T : PdfObjectWrapper
         {
             PdfObjectWrapper resources = Get(typeof(T));
             return (T)resources.GetType().GetProperty("Item", BindingFlags.Public | BindingFlags.Instance).GetValue(resources, new object[] { key });

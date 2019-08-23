@@ -41,6 +41,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
     public sealed class ICCBasedColorSpace
       : ColorSpace
     {
+        private ICCProfile profile;
         #region dynamic
         #region constructors
         //TODO:IMPL new element constructor!
@@ -57,11 +58,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
 
         public override int ComponentCount
         {
-            get
-            {
-                // FIXME: Auto-generated method stub
-                return 0;
-            }
+            get { return N; }
         }
 
         public override Color DefaultColor
@@ -76,13 +73,29 @@ namespace org.pdfclown.documents.contents.colorSpaces
 
         public override SKColor GetColor(Color color)
         {
+            if (profile == null)
+                profile = ICCProfile.Load(Profile.GetBody(true).ToByteArray());
+
             // FIXME: temporary hack
             if (color is DeviceRGBColor devRGB)
             {
+                //var matrix = skColorSpace.ToXyzD50();
+                //var scalars = new[]{
+                //    (float)devRGB.R,
+                //    (float)devRGB.G,
+                //    (float)devRGB.B,
+                //    0F};
+                //scalars = matrix.MapScalars(scalars);
+                //var skColor = new SKColor(
+                //    (byte)(scalars[0] * 255),
+                //    (byte)(scalars[1] * 255),
+                //    (byte)(scalars[2] * 255),
+                //    (byte)(scalars[3] * 255));
+
                 return new SKColor(
-                    (byte)(devRGB.R * 255),
-                    (byte)(devRGB.G * 255),
-                    (byte)(devRGB.B * 255));
+                   (byte)(devRGB.R * 255),
+                   (byte)(devRGB.G * 255),
+                   (byte)(devRGB.B * 255));
             }
             else if (color is CalRGBColor calRGB)
             {
@@ -120,8 +133,15 @@ namespace org.pdfclown.documents.contents.colorSpaces
         {
             get => ((PdfInteger)Profile?.Header.Resolve(PdfName.N))?.RawValue ?? 0;
         }
+
+
+
+
         #endregion
         #endregion
         #endregion
     }
+
+
+
 }

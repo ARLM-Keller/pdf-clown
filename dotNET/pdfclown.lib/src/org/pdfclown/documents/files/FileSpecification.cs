@@ -149,8 +149,7 @@ namespace org.pdfclown.documents.files
         /**
           <summary>Gets an input stream to read from the file.</summary>
         */
-        public virtual bytes::IInputStream GetInputStream(
-          )
+        public virtual bytes::IInputStream GetInputStream()
         {
             return new bytes::Stream(
               new io::FileStream(

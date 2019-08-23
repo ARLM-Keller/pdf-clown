@@ -16,6 +16,9 @@
     <Description>PDF engine</Description>
     <Copyright>Copyright 2006-2015 Stefano Chizzolini</Copyright>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="build\**" />
     <EmbeddedResource Remove="build\**" />
@@ -107,6 +110,7 @@
     </EmbeddedResource>
   </ItemGroup>    
   <ItemGroup>
+    <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.633" />
     <PackageReference Include="SkiaSharp" Version="1.68.0" />
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="1.68.0" />
   </ItemGroup>

@@ -60,9 +60,10 @@ namespace org.pdfclown.bytes
           <summary>Inner buffer where data are stored.</summary>
         */
         private byte[] data;
+
         /**
-          <summary>Number of bytes actually used in the buffer.</summary>
-        */
+ <summary>Number of bytes actually used in the buffer.</summary>
+*/
         private int length;
         /**
           <summary>Pointer position within the buffer.</summary>
@@ -257,6 +258,21 @@ namespace org.pdfclown.bytes
             position += length;
         }
 
+        public byte[] ReadNullTermitaded()
+        {
+            var start = position;
+            var length = 0;
+            while (ReadByte() > 0) { length++; }
+            return GetByteArray(start, length);
+        }
+
+        public byte[] ReadBytes(int length)
+        {
+            var start = position;
+            position += length;
+            return GetByteArray(start, length);
+        }
+
         public int ReadByte()
         {
             if (position >= data.Length)
@@ -283,6 +299,22 @@ namespace org.pdfclown.bytes
         {
             int value = ConvertUtils.ByteArrayToNumber(data, position, length, byteOrder);
             position += length;
+            return value;
+        }
+
+        public ulong ReadUnsignedLong()
+        {
+            var size = sizeof(long);
+            var value = ConvertUtils.ByteArrayToULong(data, position, size, byteOrder);
+            position += size;
+            return value;
+        }
+
+        public long ReadLong()
+        {
+            var size = sizeof(long);
+            var value = ConvertUtils.ByteArrayToLong(data, position, size, byteOrder);
+            position += size;
             return value;
         }
 
@@ -331,6 +363,18 @@ namespace org.pdfclown.bytes
             ushort value = (ushort)ConvertUtils.ByteArrayToNumber(data, position, sizeof(ushort), byteOrder);
             position += sizeof(ushort);
             return value;
+        }
+
+        public float ReadFloat()
+        {
+            return ReadShort() // Fixed-point mantissa (16 bits).
+               + ReadUnsignedShort() / 16384f; // Fixed-point fraction (16 bits).
+        }
+
+        public float ReadUnsignedFloat()
+        {
+            return ReadUnsignedShort() // Fixed-point mantissa (16 bits).
+               + ReadUnsignedShort() / 16384f; // Fixed-point fraction (16 bits).
         }
 
         public void Seek(long position)
@@ -419,6 +463,8 @@ namespace org.pdfclown.bytes
             dirty = true;
             OnChange(this, null);
         }
+
+
         #endregion
         #endregion
         #endregion

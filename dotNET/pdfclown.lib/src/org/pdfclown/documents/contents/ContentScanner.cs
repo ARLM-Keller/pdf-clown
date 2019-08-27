@@ -1155,7 +1155,7 @@ namespace org.pdfclown.documents.contents
         */
         public CompositeObject Parent
         {
-            get { return (parentLevel == null ? null : (CompositeObject)parentLevel.Current); }
+            get { return (parentLevel == null ? null : parentLevel.Current as CompositeObject); }
         }
 
         /**

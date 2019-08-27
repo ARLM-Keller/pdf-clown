@@ -494,6 +494,9 @@ namespace org.pdfclown.documents.contents
                 }
             }
 
+            public double? StrokeAlpha { get; internal set; }
+            public double? FillAlpha { get; internal set; }
+
             #endregion
 
             #region internal

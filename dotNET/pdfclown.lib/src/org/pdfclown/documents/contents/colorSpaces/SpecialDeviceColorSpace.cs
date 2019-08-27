@@ -79,29 +79,10 @@ namespace org.pdfclown.documents.contents.colorSpaces
         }
 
         public override SKColor GetColor(Color color)
-        {           
-           
-            return SKColors.Black;
-        }
-
-        public override SKPaint GetPaint(Color color)
         {
-            //TODO:enable!!!
             IList<PdfDirectObject> alternateColorComponents = TintFunction.Calculate(color.Components);
             ColorSpace alternateSpace = AlternateSpace;
-            return alternateSpace.GetPaint(
-              alternateSpace.GetColor(
-                alternateColorComponents,
-                null
-                )
-              );
-
-            //TODO: remove (temporary hack)!
-            //return new SKPaint
-            //{
-            //    Color = GetColor(color),
-            //    Style = SKPaintStyle.Fill
-            //};
+            return alternateSpace.GetColor(alternateSpace.GetColor(alternateColorComponents, null));
         }
 
         /**

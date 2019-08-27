@@ -84,16 +84,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
             return SKColors.Black;
         }
 
-        public override SKPaint GetPaint(Color color)
-        {
-            // FIXME: temporary hack
-            return new SKPaint
-            {
-                Color = GetColor(color),
-                Style = SKPaintStyle.Fill,
-                IsAntialias = true,
-            };
-        }
+        
         #endregion
         #endregion
         #endregion

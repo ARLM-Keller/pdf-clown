@@ -103,7 +103,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
             return SKColors.Black;
         }
 
-        public override SKPaint GetPaint(Color color)
+        public override SKPaint GetPaint(Color color, double? alpha)
         {
             // FIXME: Auto-generated method stub
             if (color is TilingPattern pattern)

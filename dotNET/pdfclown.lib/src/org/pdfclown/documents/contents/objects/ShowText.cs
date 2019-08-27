@@ -93,14 +93,14 @@ namespace org.pdfclown.documents.contents.objects
             SKMatrix tm = state.Tm;
             var encoding = font.GetEnoding();
             var context = state.Scanner.RenderContext;
-            var fill = context != null && state.RenderModeFill ? state.FillColorSpace?.GetPaint(state.FillColor) : null;
+            var fill = context != null && state.RenderModeFill ? state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha) : null;
             if (fill != null)
             {
                 fill.Typeface = font.GetTypeface();
                 fill.TextSize = (float)state.FontSize;
                 fill.TextScaleX = (float)state.Scale;
             }
-            var stroke = context != null && state.RenderModeStroke ? state.StrokeColorSpace?.GetPaint(state.StrokeColor) : null;
+            var stroke = context != null && state.RenderModeStroke ? state.StrokeColorSpace?.GetPaint(state.StrokeColor, state.StrokeAlpha) : null;
             if (stroke != null)
             {
                 stroke.Typeface = font.GetTypeface();

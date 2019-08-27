@@ -34,16 +34,13 @@ namespace org.pdfclown.documents.contents.colorSpaces
       <remarks>The transition is continuous and independent of the resolution of any particular output device.</remarks>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class ShadingPattern
-      : Pattern
+    public sealed class ShadingPattern : Pattern
     {
         #region dynamic
         #region constructors
         //TODO:IMPL new element constructor!
 
-        internal ShadingPattern(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal ShadingPattern(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -58,8 +55,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
          */
         public ExtGState ExtGState
         {
-            get
-            { return ExtGState.Wrap(((PdfDictionary)BaseDataObject)[PdfName.ExtGState]); }
+            get { return ExtGState.Wrap(((PdfDictionary)BaseDataObject)[PdfName.ExtGState]); }
         }
 
         /**
@@ -67,8 +63,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
         */
         public Shading Shading
         {
-            get
-            { return Shading.Wrap(((PdfDictionary)BaseDataObject)[PdfName.Shading]); }
+            get { return Shading.Wrap(((PdfDictionary)BaseDataObject)[PdfName.Shading]); }
         }
         #endregion
         #endregion

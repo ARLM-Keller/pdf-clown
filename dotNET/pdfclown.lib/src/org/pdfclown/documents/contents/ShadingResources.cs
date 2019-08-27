@@ -37,27 +37,20 @@ namespace org.pdfclown.documents.contents
       <summary>Shading resources collection [PDF:1.6:3.7.2].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class ShadingResources
-      : ResourceItems<Shading>
+    public sealed class ShadingResources : ResourceItems<Shading>
     {
         #region dynamic
         #region constructors
-        public ShadingResources(
-          Document context
-          ) : base(context)
+        public ShadingResources(Document context) : base(context)
         { }
 
-        internal ShadingResources(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal ShadingResources(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
         #region interface
         #region protected
-        protected override Shading Wrap(
-          PdfDirectObject baseObject
-          )
+        protected override Shading Wrap(PdfDirectObject baseObject)
         { return Shading.Wrap(baseObject); }
         #endregion
         #endregion

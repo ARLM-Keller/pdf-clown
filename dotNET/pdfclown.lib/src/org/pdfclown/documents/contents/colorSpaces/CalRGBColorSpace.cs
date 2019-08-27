@@ -29,6 +29,7 @@ using org.pdfclown.objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using org.pdfclown.documents.functions;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
@@ -44,9 +45,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
         #region constructors
         //TODO:IMPL new element constructor!
 
-        internal CalRGBColorSpace(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal CalRGBColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -69,21 +68,44 @@ namespace org.pdfclown.documents.contents.colorSpaces
         {
             get
             {
-                PdfArray gammaObject = (PdfArray)Dictionary[PdfName.Gamma];
-                return (gammaObject == null
-                  ? new double[]
-                    {
-              1,
-              1,
-              1
-                    }
-                  : new double[]
-                    {
-              ((IPdfNumber)gammaObject[0]).RawValue,
-              ((IPdfNumber)gammaObject[1]).RawValue,
-              ((IPdfNumber)gammaObject[2]).RawValue
-                    }
+                PdfArray gamma = (PdfArray)Dictionary[PdfName.Gamma];
+                return (gamma == null
+                  ? new double[] { 1, 1, 1 }
+                  : new double[] { ((IPdfNumber)gamma[0]).RawValue, ((IPdfNumber)gamma[1]).RawValue, ((IPdfNumber)gamma[2]).RawValue }
                   );
+            }
+        }
+
+        public SKMatrix Matrix
+        {
+            get
+            {
+                PdfArray matrix = (PdfArray)Dictionary.Resolve(PdfName.Matrix);
+                if (matrix == null)
+                    return SKMatrix.MakeIdentity();
+                else
+                    return new SKMatrix
+                    {
+                        ScaleX = ((IPdfNumber)matrix[0]).FloatValue,
+                        SkewY = ((IPdfNumber)matrix[1]).FloatValue,
+                        SkewX = ((IPdfNumber)matrix[2]).FloatValue,
+                        ScaleY = ((IPdfNumber)matrix[3]).FloatValue,
+                        TransX = ((IPdfNumber)matrix[4]).FloatValue,
+                        TransY = ((IPdfNumber)matrix[5]).FloatValue,
+                        Persp2 = 1
+                    };
+            }
+            set
+            {
+                Dictionary[PdfName.Matrix] =
+                 new PdfArray(
+                    PdfReal.Get(value.ScaleX),
+                    PdfReal.Get(value.SkewY),
+                    PdfReal.Get(value.SkewX),
+                    PdfReal.Get(value.ScaleY),
+                    PdfReal.Get(value.TransX),
+                    PdfReal.Get(value.TransY)
+                    );
             }
         }
 
@@ -92,20 +114,12 @@ namespace org.pdfclown.documents.contents.colorSpaces
 
         public override SKColor GetColor(Color color)
         {
+
             // FIXME: temporary hack
             return SKColors.Black;
         }
 
-        public override SKPaint GetPaint(Color color)
-        {
-            // FIXME: temporary hack
-            return new SKPaint
-            {
-                Color = GetColor(color),
-                Style = SKPaintStyle.Fill,
-                IsAntialias = true,
-            };
-        }
+       
         #endregion
         #endregion
         #endregion

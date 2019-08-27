@@ -97,16 +97,13 @@ namespace org.pdfclown.documents.contents.objects
         #region private
         private static SKPaint GetStroke(ContentScanner.GraphicsState state)
         {
-            var stroke = new SKPaint
-            {
-                Color = state.StrokeColorSpace.GetColor(state.StrokeColor),
-                Style = SKPaintStyle.Stroke,
-                StrokeWidth = (float)state.LineWidth,
-                StrokeCap = state.LineCap.ToSkia(),
-                StrokeJoin = state.LineJoin.ToSkia(),
-                StrokeMiter = (float)state.MiterLimit,
-                IsAntialias = true,
-            };
+            var stroke = state.StrokeColorSpace.GetPaint(state.StrokeColor, state.StrokeAlpha);
+            stroke.Style = SKPaintStyle.Stroke;
+            stroke.StrokeWidth = (float)state.LineWidth;
+            stroke.StrokeCap = state.LineCap.ToSkia();
+            stroke.StrokeJoin = state.LineJoin.ToSkia();
+            stroke.StrokeMiter = (float)state.MiterLimit;
+
             LineDash lineDash = state.LineDash;
             double[] dashArray = lineDash.DashArray;
             if (dashArray.Length > 0)
@@ -122,6 +119,7 @@ namespace org.pdfclown.documents.contents.objects
             }
             return stroke;
         }
+
         #endregion
         #endregion
         #endregion
@@ -185,7 +183,7 @@ namespace org.pdfclown.documents.contents.objects
                 if (filled)
                 {
                     pathObject.FillType = fillMode.ToSkia();
-                    context.DrawPath(pathObject, state.FillColorSpace.GetPaint(state.FillColor));
+                    context.DrawPath(pathObject, state.FillColorSpace.GetPaint(state.FillColor, state.FillAlpha));
                 }
                 if (stroked)
                 {

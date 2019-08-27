@@ -60,7 +60,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
                 return null;
 
             PdfDataObject dataObject = baseObject.Resolve();
-            PdfDictionary dictionary = GetDictionary(dataObject);
+            PdfDictionary dictionary = TryGetDictionary(dataObject);
             int patternType = ((PdfInteger)dictionary[PdfName.PatternType]).RawValue;
             switch (patternType)
             {
@@ -75,17 +75,6 @@ namespace org.pdfclown.documents.contents.colorSpaces
         #endregion
 
         #region private
-        /**
-          <summary>Gets a pattern's dictionary.</summary>
-          <param name="patternDataObject">Pattern data object.</param>
-        */
-        private static PdfDictionary GetDictionary(PdfDataObject patternDataObject)
-        {
-            if (patternDataObject is PdfDictionary)
-                return (PdfDictionary)patternDataObject;
-            else // MUST be PdfStream.
-                return ((PdfStream)patternDataObject).Header;
-        }
         #endregion
         #endregion
         #endregion
@@ -129,22 +118,22 @@ namespace org.pdfclown.documents.contents.colorSpaces
                 if (matrix == null)
                     return new double[]
                       {
-              1, // a.
-              0, // b.
-              0, // c.
-              1, // d.
-              0, // e.
-              0 // f.
+                          1, // a.
+                          0, // b.
+                          0, // c.
+                          1, // d.
+                          0, // e.
+                          0 // f.
                       };
                 else
                     return new double[]
                       {
-              ((IPdfNumber)matrix[0]).RawValue, // a.
-              ((IPdfNumber)matrix[1]).RawValue, // b.
-              ((IPdfNumber)matrix[2]).RawValue, // c.
-              ((IPdfNumber)matrix[3]).RawValue, // d.
-              ((IPdfNumber)matrix[4]).RawValue, // e.
-              ((IPdfNumber)matrix[5]).RawValue // f.
+                          ((IPdfNumber)matrix[0]).RawValue, // a.
+                          ((IPdfNumber)matrix[1]).RawValue, // b.
+                          ((IPdfNumber)matrix[2]).RawValue, // c.
+                          ((IPdfNumber)matrix[3]).RawValue, // d.
+                          ((IPdfNumber)matrix[4]).RawValue, // e.
+                          ((IPdfNumber)matrix[5]).RawValue // f.
                       };
             }
         }
@@ -192,10 +181,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
         /**
           <summary>Gets this pattern's dictionary.</summary>
         */
-        protected PdfDictionary Dictionary
-        {
-            get { return GetDictionary(BaseDataObject); }
-        }
+
         #endregion
         #endregion
         #endregion

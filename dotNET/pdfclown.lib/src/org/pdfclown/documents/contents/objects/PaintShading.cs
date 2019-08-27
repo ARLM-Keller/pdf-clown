@@ -35,9 +35,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>'Paint the shape and color shading' operation [PDF:1.6:4.6.3].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class PaintShading
-      : Operation,
-        IResourceReference<colorSpaces::Shading>
+    public sealed class PaintShading : Operation, IResourceReference<colorSpaces::Shading>
     {
         #region static
         #region fields
@@ -66,7 +64,9 @@ namespace org.pdfclown.documents.contents.objects
 
         #region IResourceReference
         public colorSpaces::Shading GetResource(IContentContext context)
-        { return context.Resources.Shadings[Name]; }
+        {
+            return context.Resources.Shadings[Name];
+        }
 
         public PdfName Name
         {
@@ -76,7 +76,15 @@ namespace org.pdfclown.documents.contents.objects
 
         public override void Scan(ContentScanner.GraphicsState state)
         {
-            base.Scan(state);
+            var scanner = state.Scanner;
+
+            if (scanner.RenderContext != null)
+            {
+                var shading = GetShading(scanner.ContentContext);
+                var paint = state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha);
+                paint.Shader = shading?.GetShader();
+                scanner.RenderContext.DrawPaint(paint);
+            }
         }
         #endregion
         #endregion

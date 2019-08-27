@@ -32,16 +32,13 @@ namespace org.pdfclown.documents.contents.colorSpaces
       <summary>Abstract CIE-based color space [PDF:1.6:4.5.4].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public abstract class CIEBasedColorSpace
-      : ColorSpace
+    public abstract class CIEBasedColorSpace : ColorSpace
     {
         #region dynamic
         #region constructors
         //TODO:IMPL new element constructor!
 
-        protected CIEBasedColorSpace(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected CIEBasedColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -54,20 +51,10 @@ namespace org.pdfclown.documents.contents.colorSpaces
         {
             get
             {
-                PdfArray blackPointObject = (PdfArray)Dictionary[PdfName.BlackPoint];
-                return (blackPointObject == null
-                  ? new double[]
-                    {
-              0,
-              0,
-              0
-                    }
-                  : new double[]
-                    {
-              ((IPdfNumber)blackPointObject[0]).RawValue,
-              ((IPdfNumber)blackPointObject[1]).RawValue,
-              ((IPdfNumber)blackPointObject[2]).RawValue
-                    });
+                PdfArray black = (PdfArray)Dictionary[PdfName.BlackPoint];
+                return (black == null
+                  ? new double[] { 0, 0, 0 }
+                  : new double[] { ((IPdfNumber)black[0]).RawValue, ((IPdfNumber)black[1]).RawValue, ((IPdfNumber)black[2]).RawValue });
             }
         }
 
@@ -78,13 +65,8 @@ namespace org.pdfclown.documents.contents.colorSpaces
         {
             get
             {
-                PdfArray whitePointObject = (PdfArray)Dictionary[PdfName.WhitePoint];
-                return new double[]
-                  {
-            ((IPdfNumber)whitePointObject[0]).RawValue,
-            ((IPdfNumber)whitePointObject[1]).RawValue,
-            ((IPdfNumber)whitePointObject[2]).RawValue
-                  };
+                PdfArray white = (PdfArray)Dictionary[PdfName.WhitePoint];
+                return new double[] { ((IPdfNumber)white[0]).RawValue, ((IPdfNumber)white[1]).RawValue, ((IPdfNumber)white[2]).RawValue };
             }
         }
         #endregion
@@ -93,10 +75,9 @@ namespace org.pdfclown.documents.contents.colorSpaces
         /**
           <summary>Gets this color space's dictionary.</summary>
         */
-        protected PdfDictionary Dictionary
+        protected override PdfDictionary Dictionary
         {
-            get
-            { return (PdfDictionary)((PdfArray)BaseDataObject)[1]; }
+            get { return (PdfDictionary)((PdfArray)BaseDataObject)[1]; }
         }
         #endregion
         #endregion

@@ -93,7 +93,8 @@ namespace org.pdfclown.documents.contents.colorSpaces
                 var key = buffer.ReadUnsignedInt();
                 if (Types.TryGetValue(key, out var type))
                 {
-                    Activator.CreateInstance(type, tagTable);
+                    tagTable.Tag = (ICCTag)Activator.CreateInstance(type, tagTable);
+                    tagTable.Tag.Load(buffer);
                 }
             }
             return profile;

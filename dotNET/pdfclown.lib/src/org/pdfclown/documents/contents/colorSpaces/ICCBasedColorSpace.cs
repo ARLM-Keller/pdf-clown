@@ -68,7 +68,13 @@ namespace org.pdfclown.documents.contents.colorSpaces
 
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         {
-            return new DeviceRGBColor(components); // FIXME:temporary hack...
+            if (components.Count == 1)
+                return new DeviceGrayColor(components);
+            else if (components.Count == 3)
+                return new DeviceRGBColor(components); // FIXME:temporary hack...
+            else if (components.Count == 4)
+                return new DeviceCMYKColor(components);
+            return null;
         }
 
         public override SKColor GetColor(Color color)
@@ -79,46 +85,22 @@ namespace org.pdfclown.documents.contents.colorSpaces
             // FIXME: temporary hack
             if (color is DeviceRGBColor devRGB)
             {
-                //var matrix = skColorSpace.ToXyzD50();
-                //var scalars = new[]{
-                //    (float)devRGB.R,
-                //    (float)devRGB.G,
-                //    (float)devRGB.B,
-                //    0F};
-                //scalars = matrix.MapScalars(scalars);
-                //var skColor = new SKColor(
-                //    (byte)(scalars[0] * 255),
-                //    (byte)(scalars[1] * 255),
-                //    (byte)(scalars[2] * 255),
-                //    (byte)(scalars[3] * 255));
-
                 return new SKColor(
                    (byte)(devRGB.R * 255),
                    (byte)(devRGB.G * 255),
                    (byte)(devRGB.B * 255));
             }
-            else if (color is CalRGBColor calRGB)
+            else if (color is DeviceGrayColor devGray)
             {
                 return new SKColor(
-                    (byte)(calRGB.R * 255),
-                    (byte)(calRGB.G * 255),
-                    (byte)(calRGB.B * 255));
+                    (byte)(devGray.G * 255),
+                    (byte)(devGray.G * 255),
+                    (byte)(devGray.G * 255));
             }
 
             return SKColors.Black;
         }
-
-        public override SKPaint GetPaint(Color color)
-        {
-            // FIXME: temporary hack
-            return new SKPaint
-            {
-                Color = GetColor(color),
-                Style = SKPaintStyle.Fill,
-                IsAntialias = true,
-            };
-        }
-
+        
         public PdfStream Profile
         {
             get { return (PdfStream)((PdfArray)BaseDataObject).Resolve(1); }
@@ -133,8 +115,6 @@ namespace org.pdfclown.documents.contents.colorSpaces
         {
             get => ((PdfInteger)Profile?.Header.Resolve(PdfName.N))?.RawValue ?? 0;
         }
-
-
 
 
         #endregion

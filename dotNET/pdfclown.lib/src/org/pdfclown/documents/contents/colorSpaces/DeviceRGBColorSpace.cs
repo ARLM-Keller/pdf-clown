@@ -85,15 +85,6 @@ namespace org.pdfclown.documents.contents.colorSpaces
                (byte)Math.Round(spaceColor.B * 255));
         }
 
-        public override SKPaint GetPaint(Color color)
-        {
-            return new SKPaint
-            {
-                Color = GetColor(color),
-                Style = SKPaintStyle.Fill,
-                IsAntialias = true,
-            };
-        }
         #endregion
         #endregion
         #endregion

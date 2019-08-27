@@ -36,8 +36,7 @@ namespace org.pdfclown.documents.functions
       <summary>Function [PDF:1.6:3.9].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public abstract class Function
-      : PdfObjectWrapper<PdfDataObject>
+    public abstract class Function : PdfObjectWrapper<PdfDataObject>
     {
         #region types
         /**
@@ -185,11 +184,6 @@ namespace org.pdfclown.documents.functions
         /**
           <summary>Gets this function's dictionary.</summary>
         */
-        protected PdfDictionary Dictionary
-        {
-            get { return GetDictionary(BaseDataObject); }
-        }
-
         /**
           <summary>Gets the intervals corresponding to the specified key.</summary>
         */

@@ -63,11 +63,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
             get
             {
                 IList<Interval<double>> ranges = Ranges;
-                return new LabColor(
-                  ranges[0].Low,
-                  ranges[1].Low,
-                  ranges[2].Low
-                  );
+                return new LabColor(ranges[0].Low, ranges[1].Low, ranges[2].Low);
             }
         }
 
@@ -80,17 +76,6 @@ namespace org.pdfclown.documents.contents.colorSpaces
             return SKColors.Black;
         }
 
-        public override SKPaint GetPaint(Color color)
-        {
-            // FIXME: temporary hack
-            return new SKPaint
-            {
-                Color = GetColor(color),
-                Style = SKPaintStyle.Fill,
-                IsAntialias = true,
-            };
-        }
-
         /**
           <summary>Gets the (inclusive) ranges of the color components.</summary>
           <remarks>Component values falling outside the specified range are adjusted
@@ -101,12 +86,10 @@ namespace org.pdfclown.documents.contents.colorSpaces
         {
             get
             {
-                IList<Interval<double>> ranges = new List<Interval<double>>();
+                var ranges = new List<Interval<double>>();
                 {
                     // 1. L* component.
-                    ranges.Add(
-                      new Interval<double>(0d, 100d)
-                      );
+                    ranges.Add(new Interval<double>(0d, 100d));
 
                     PdfArray rangesObject = (PdfArray)Dictionary[PdfName.Range];
                     if (rangesObject == null)
@@ -123,12 +106,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
                     else
                     {
                         // 2/3. a*/b* components.
-                        for (
-                          int index = 0,
-                            length = rangesObject.Count;
-                          index < length;
-                          index += 2
-                          )
+                        for (int index = 0, length = rangesObject.Count; index < length; index += 2)
                         {
                             ranges.Add(
                               new Interval<double>(

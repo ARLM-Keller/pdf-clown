@@ -123,7 +123,20 @@ namespace org.pdfclown.documents.contents.colorSpaces
           <summary>Gets the rendering representation of the specified color value.</summary>
           <param name="color">Color value to convert into an equivalent rendering representation.</param>
         */
-        public abstract SKPaint GetPaint(Color color);
+        public virtual SKPaint GetPaint(Color color, double? alpha)
+        {
+            var skColor = GetColor(color);
+            if (alpha != null)
+            {
+                skColor = skColor.WithAlpha((byte)(alpha.Value * 255));
+            }
+            return new SKPaint
+            {
+                Color = skColor,
+                Style = SKPaintStyle.Fill,
+                IsAntialias = true,
+            };
+        }
 
         /**
           <summary>Gets the color value corresponding to the specified components

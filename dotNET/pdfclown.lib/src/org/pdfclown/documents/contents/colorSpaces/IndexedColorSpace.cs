@@ -120,9 +120,9 @@ namespace org.pdfclown.documents.contents.colorSpaces
             return BaseSpace.GetColor(GetBaseColor((IndexedColor)color));
         }
 
-        public override SKPaint GetPaint(Color color)
+        public override SKPaint GetPaint(Color color, double? alpha)
         {
-            return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color));
+            return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color), alpha);
         }
         #endregion
 

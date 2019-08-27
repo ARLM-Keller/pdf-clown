@@ -49,6 +49,16 @@ namespace org.pdfclown.objects
         */
         public static PdfDirectObject GetBaseObject(PdfObjectWrapper wrapper)
         { return (wrapper != null ? wrapper.BaseObject : null); }
+
+        public static PdfDictionary TryGetDictionary(PdfDataObject baseDataObject)
+        {
+            if (baseDataObject is PdfDictionary dictionary)
+                return dictionary;
+            else if (baseDataObject is PdfStream stream)
+                return stream.Header;
+            else
+                return null;
+        }
         #endregion
         #endregion
         #endregion
@@ -308,8 +318,7 @@ namespace org.pdfclown.objects
         </para>
       </remarks>
     */
-    public abstract class PdfObjectWrapper<TDataObject>
-      : PdfObjectWrapper
+    public abstract class PdfObjectWrapper<TDataObject> : PdfObjectWrapper
       where TDataObject : PdfDataObject
     {
         #region dynamic
@@ -348,8 +357,8 @@ namespace org.pdfclown.objects
           <param name="baseDataObject">PDF data object backing this wrapper.</param>
           <seealso cref="PdfObjectWrapper(Document, PdfDataObject)"/>
         */
-        protected PdfObjectWrapper(File context, TDataObject baseDataObject
-          ) : this(context != null ? context.Register(baseDataObject) : (PdfDirectObject)(PdfDataObject)baseDataObject)
+        protected PdfObjectWrapper(File context, TDataObject baseDataObject)
+            : this(context != null ? context.Register(baseDataObject) : (PdfDirectObject)(PdfDataObject)baseDataObject)
         { }
         #endregion
 
@@ -398,7 +407,7 @@ namespace org.pdfclown.objects
         #endregion
 
         #region private
-        private PdfDictionary Dictionary
+        protected virtual PdfDictionary Dictionary
         {
             get
             {

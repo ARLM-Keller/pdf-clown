@@ -25,11 +25,12 @@
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-    public struct ICCTagTable
+    public class ICCTagTable
     {
         public ICCTagTypes Signature;
         public uint Offset;
         public uint ElementSize;
+        public ICCTag Tag;
         public override string ToString()
         {
             return $"{Signature} {Offset} {ElementSize}";

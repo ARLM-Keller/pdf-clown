@@ -35,9 +35,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>Shading object [PDF:1.6:4.6.3].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class Shading
-      : GraphicsObject,
-        IResourceReference<colorSpaces::Shading>
+    public sealed class Shading : GraphicsObject, IResourceReference<colorSpaces::Shading>
     {
         #region static
         #region fields
@@ -48,26 +46,26 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public Shading(
-          PaintShading operation
-          ) : base(operation)
+        public Shading(PaintShading operation) : base(operation)
         { }
         #endregion
 
         #region interface
         #region public
         #region IResourceReference
-        public colorSpaces::Shading GetResource(
-          IContentContext context
-          )
+        public colorSpaces::Shading GetResource(IContentContext context)
         { return Operation.GetResource(context); }
 
         public PdfName Name
         {
-            get
-            { return Operation.Name; }
-            set
-            { Operation.Name = value; }
+            get { return Operation.Name; }
+            set { Operation.Name = value; }
+        }
+
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            var shading = GetResource(state.Scanner.ContentContext);
+            base.Scan(state);
         }
         #endregion
         #endregion
@@ -75,8 +73,7 @@ namespace org.pdfclown.documents.contents.objects
         #region private
         private PaintShading Operation
         {
-            get
-            { return (PaintShading)Objects[0]; }
+            get { return (PaintShading)Objects[0]; }
         }
         #endregion
         #endregion

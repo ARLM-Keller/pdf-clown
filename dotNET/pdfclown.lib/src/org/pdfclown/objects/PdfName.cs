@@ -77,6 +77,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName Annots = new PdfName("Annots");
         public static readonly PdfName AnyOff = new PdfName("AnyOff");
         public static readonly PdfName AnyOn = new PdfName("AnyOn");
+        public static readonly PdfName AntiAlias = new PdfName("AntiAlias");
         public static readonly PdfName AP = new PdfName("AP");
         public static readonly PdfName AppDefault = new PdfName("AppDefault");
         public static readonly PdfName Approved = new PdfName("Approved");
@@ -89,6 +90,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName Author = new PdfName("Author");
         public static readonly PdfName AvgWidth = new PdfName("AvgWidth");
         public static readonly PdfName B = new PdfName("B");
+        public static readonly PdfName Background = new PdfName("Background");
         public static readonly PdfName BaseEncoding = new PdfName("BaseEncoding");
         public static readonly PdfName BaseFont = new PdfName("BaseFont");
         public static readonly PdfName BaseState = new PdfName("BaseState");
@@ -98,6 +100,8 @@ namespace org.pdfclown.objects
         public static readonly PdfName Bead = new PdfName("Bead");
         public static readonly PdfName BG = new PdfName("BG");
         public static readonly PdfName BitsPerComponent = new PdfName("BitsPerComponent");
+        public static readonly PdfName BitsPerCoordinate = new PdfName("BitsPerCoordinate");
+        public static readonly PdfName BitsPerFlag = new PdfName("BitsPerFlag");
         public static readonly PdfName BitsPerSample = new PdfName("BitsPerSample");
         public static readonly PdfName Bl = new PdfName("Bl");
         public static readonly PdfName BlackPoint = new PdfName("BlackPoint");
@@ -148,6 +152,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName Confidential = new PdfName("Confidential");
         public static readonly PdfName Configs = new PdfName("Configs");
         public static readonly PdfName Contents = new PdfName("Contents");
+        public static readonly PdfName Coords = new PdfName("Coords");
         public static readonly PdfName Count = new PdfName("Count");
         public static readonly PdfName Cover = new PdfName("Cover");
         public static readonly PdfName CreationDate = new PdfName("CreationDate");
@@ -209,6 +214,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName Expired = new PdfName("Expired");
         public static readonly PdfName Export = new PdfName("Export");
         public static readonly PdfName ExportState = new PdfName("ExportState");
+        public static readonly PdfName Extend = new PdfName("Extend");
         public static readonly PdfName Extends = new PdfName("Extends");
         public static readonly PdfName ExtGState = new PdfName("ExtGState");
         public static readonly PdfName F = new PdfName("F");
@@ -255,6 +261,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName FreeTextCallout = new PdfName("FreeTextCallout");
         public static readonly PdfName FreeTextTypeWriter = new PdfName("FreeTextTypeWriter");
         public static readonly PdfName FullScreen = new PdfName("FullScreen");
+        public static readonly PdfName Function = new PdfName("Function");
         public static readonly PdfName Functions = new PdfName("Functions");
         public static readonly PdfName FunctionType = new PdfName("FunctionType");
         public static readonly PdfName FWParams = new PdfName("FWParams");
@@ -493,6 +500,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName SetOCGState = new PdfName("SetOCGState");
         public static readonly PdfName SHAccepted = new PdfName("SHAccepted");
         public static readonly PdfName Shading = new PdfName("Shading");
+        public static readonly PdfName ShadingType = new PdfName("ShadingType");
         public static readonly PdfName SHInitialHere = new PdfName("SHInitialHere");
         public static readonly PdfName SHSignHere = new PdfName("SHSignHere");
         public static readonly PdfName SHWitness = new PdfName("SHWitness");
@@ -603,6 +611,12 @@ namespace org.pdfclown.objects
 
         private static readonly byte[] NamePrefixChunk = tokens::Encoding.Pdf.Encode(tokens.Keyword.NamePrefix);
         
+
+
+
+
+
+
         #endregion
 
         #region interface
@@ -656,7 +670,7 @@ namespace org.pdfclown.objects
         public override bool Equals(object @object)
         {
             if (@object is PdfName objName)
-               return string.Equals(RawValue, objName.RawValue, StringComparison.Ordinal);
+                return string.Equals(RawValue, objName.RawValue, StringComparison.Ordinal);
             return base.Equals(@object);
         }
 

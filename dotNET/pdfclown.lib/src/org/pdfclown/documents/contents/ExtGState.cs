@@ -99,6 +99,16 @@ namespace org.pdfclown.documents.contents
                     state.Font = Font;
                     state.FontSize = FontSize.Value;
                 }
+                else if (parameterName.Equals(PdfName.CA))
+                {
+                    if (!AlphaShape)
+                        state.StrokeAlpha = StrokeAlpha;
+                }
+                else if (parameterName.Equals(PdfName.ca))
+                {
+                    if (!AlphaShape)
+                        state.FillAlpha = FillAlpha;
+                }
                 else if (parameterName.Equals(PdfName.LC))
                 { state.LineCap = LineCap.Value; }
                 else if (parameterName.Equals(PdfName.D))
@@ -112,7 +122,7 @@ namespace org.pdfclown.documents.contents
                 else if (parameterName.Equals(PdfName.BM))
                 { state.BlendMode = BlendMode; }
                 else if (parameterName.Equals(PdfName.Type))
-                {  }
+                { }
                 //TODO:extend supported parameters!!!
             }
         }

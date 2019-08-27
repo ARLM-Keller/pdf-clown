@@ -64,31 +64,23 @@ namespace org.pdfclown.documents.contents.objects
           </summary>
           <param name="context">Content context.</param>
         */
-        public ExtGState GetExtGState(
-          IContentContext context
-          )
+        public ExtGState GetExtGState(IContentContext context)
         { return GetResource(context); }
 
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(ContentScanner.GraphicsState state)
         {
             ExtGState extGState = GetExtGState(state.Scanner.ContentContext);
             extGState.ApplyTo(state);
         }
 
         #region IResourceReference
-        public ExtGState GetResource(
-          IContentContext context
-          )
+        public ExtGState GetResource(IContentContext context)
         { return context.Resources.ExtGStates[Name]; }
 
         public PdfName Name
         {
-            get
-            { return (PdfName)operands[0]; }
-            set
-            { operands[0] = value; }
+            get { return (PdfName)operands[0]; }
+            set { operands[0] = value; }
         }
         #endregion
         #endregion

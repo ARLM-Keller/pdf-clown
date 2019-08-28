@@ -152,28 +152,8 @@ namespace org.pdfclown.objects
                 if (filter != null) // Stream encoded.
                 {
                     header.Updateable = false;
-                    PdfDataObject parameters = Parameters;
-                    if (filter is PdfName) // Single filter.
-                    {
-                        body.Decode(bytes.filters.Filter.Get((PdfName)filter), (PdfDictionary)parameters);
-                    }
-                    else // Multiple filters.
-                    {
-                        IEnumerator<PdfDirectObject> filterIterator = ((PdfArray)filter).GetEnumerator();
-                        IEnumerator<PdfDirectObject> parametersIterator = (parameters != null ? ((PdfArray)parameters).GetEnumerator() : null);
-                        while (filterIterator.MoveNext())
-                        {
-                            PdfDictionary filterParameters;
-                            if (parametersIterator == null)
-                            { filterParameters = null; }
-                            else
-                            {
-                                parametersIterator.MoveNext();
-                                filterParameters = (PdfDictionary)Resolve(parametersIterator.Current);
-                            }
-                            body.Decode(bytes.filters.Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters);
-                        }
-                    }
+                    
+                    Decode(body, filter, Parameters);
                     // The stream is free from encodings.
                     Filter = null;
                     Parameters = null;
@@ -181,6 +161,32 @@ namespace org.pdfclown.objects
                 }
             }
             return body;
+        }
+
+        public static void Decode(IBuffer body, PdfDataObject filter, PdfDirectObject parameters)
+        {
+            
+            if (filter is PdfName) // Single filter.
+            {
+                body.Decode(bytes.filters.Filter.Get((PdfName)filter), (PdfDictionary)parameters);
+            }
+            else // Multiple filters.
+            {
+                IEnumerator<PdfDirectObject> filterIterator = ((PdfArray)filter).GetEnumerator();
+                IEnumerator<PdfDirectObject> parametersIterator = (parameters != null ? ((PdfArray)parameters).GetEnumerator() : null);
+                while (filterIterator.MoveNext())
+                {
+                    PdfDictionary filterParameters;
+                    if (parametersIterator == null)
+                    { filterParameters = null; }
+                    else
+                    {
+                        parametersIterator.MoveNext();
+                        filterParameters = (PdfDictionary)Resolve(parametersIterator.Current);
+                    }
+                    body.Decode(bytes.filters.Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters);
+                }
+            }
         }
 
         /**

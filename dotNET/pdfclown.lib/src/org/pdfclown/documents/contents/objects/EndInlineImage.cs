@@ -31,8 +31,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>'End inline image object' operation [PDF:1.6:4.8.6].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class EndInlineImage
-      : Operation
+    public sealed class EndInlineImage : Operation
     {
         #region static
         #region fields
@@ -44,8 +43,7 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        private EndInlineImage(
-          ) : base(OperatorKeyword)
+        private EndInlineImage() : base(OperatorKeyword)
         { }
         #endregion
         #endregion

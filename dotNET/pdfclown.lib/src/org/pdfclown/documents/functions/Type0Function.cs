@@ -172,8 +172,6 @@ namespace org.pdfclown.documents.functions
             var stream = BaseDataObject as PdfStream;
             var buffer = stream.GetBody(true) as bytes.Buffer;
             buffer.Seek(0);
-            var iTotal = 0;
-            var iDomain = 0;
             for (var r = 0; r < ranges.Count; r++)
             {
                 var rangeList = new List<List<int>>();

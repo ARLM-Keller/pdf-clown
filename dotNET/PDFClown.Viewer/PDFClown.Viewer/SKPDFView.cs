@@ -216,15 +216,18 @@ namespace PDFClown.Viewer
                     try
                     {
                         Page.Render(canvas, Size);
-                        
+
                     }
                     catch (Exception ex)
                     {
                         using (var paint = new SKPaint { Color = SKColors.DarkRed })
                         {
                             canvas.Save();
-                            var matrix = SKMatrix.MakeScale(1, -1);
-                            canvas.Concat(ref matrix);
+                            if (canvas.TotalMatrix.ScaleY < 0)
+                            {
+                                var matrix = SKMatrix.MakeScale(1, -1);
+                                canvas.Concat(ref matrix);
+                            }
                             canvas.DrawText(ex.Message, 0, 0, paint);
                             canvas.Restore();
                         }

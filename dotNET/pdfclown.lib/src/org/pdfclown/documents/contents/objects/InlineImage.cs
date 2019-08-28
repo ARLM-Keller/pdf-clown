@@ -28,6 +28,8 @@ using org.pdfclown.objects;
 
 using System.Collections.Generic;
 using SkiaSharp;
+using System;
+using org.pdfclown.documents.contents.colorSpaces;
 
 namespace org.pdfclown.documents.contents.objects
 {
@@ -35,7 +37,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>Inline image object [PDF:1.6:4.8.6].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class InlineImage : GraphicsObject
+    public sealed class InlineImage : GraphicsObject, IImageObject
     {
         #region static
         #region fields
@@ -43,6 +45,7 @@ namespace org.pdfclown.documents.contents.objects
         public static readonly string EndOperatorKeyword = EndInlineImage.OperatorKeyword;
 
         private static readonly string DataOperatorKeyword = "ID";
+        private SKBitmap image;
         #endregion
         #endregion
 
@@ -73,6 +76,10 @@ namespace org.pdfclown.documents.contents.objects
             get { return (Operation)Objects[0]; }
         }
 
+        public InlineImageHeader ImageHeader => (InlineImageHeader)Header;
+
+        public InlineImageBody ImageBody => (InlineImageBody)Body;
+
         /**
           <summary>Gets the image size.</summary>
         */
@@ -80,12 +87,46 @@ namespace org.pdfclown.documents.contents.objects
         {
             get
             {
-                InlineImageHeader header = (InlineImageHeader)Header;
-                return new SKSize(
-                  (int)((IPdfNumber)header[header.ContainsKey(PdfName.W) ? PdfName.W : PdfName.Width]).Value,
-                  (int)((IPdfNumber)header[header.ContainsKey(PdfName.H) ? PdfName.H : PdfName.Height]).Value
-                  );
+                InlineImageHeader header = ImageHeader;
+                return new SKSize(header.Width, header.Height);
             }
+        }
+
+        public SKMatrix Matrix => SKMatrix.MakeScale(1F / ImageHeader.Width, -1F / ImageHeader.Height);
+
+        public int BitsPerComponent
+        {
+            get => ImageHeader.BitsPerComponent;
+        }
+
+        public ColorSpace ColorSpace => ColorSpace.Wrap(ImageHeader.FormatColorSpace);
+
+        public override void Scan(ContentScanner.GraphicsState state)
+        {
+            if (state.Scanner?.RenderContext != null)
+            {
+                var canvas = state.Scanner.RenderContext;
+                var image = LoadImage();
+                if (image != null)
+                {
+                    var size = Size;
+                    var matrix = canvas.TotalMatrix;
+
+                    SKMatrix.PreConcat(ref matrix, Matrix);
+                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(0, -size.Height));
+                    canvas.SetMatrix(matrix);
+                    var rect = SKRect.Create(0, 0, size.Width, size.Height);
+                    var test = canvas.TotalMatrix.MapRect(rect);
+                    canvas.DrawBitmap(image, 0, 0);
+                }
+            }
+        }
+
+        public SKBitmap LoadImage()
+        {
+            if (image != null)
+                return image;
+            return image = ImageLoader.Load(ImageBody.Value, ImageHeader.Filter, ImageHeader.DecodeParms, this);
         }
 
         public override void WriteTo(IOutputStream stream, Document context)

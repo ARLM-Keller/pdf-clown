@@ -131,6 +131,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName CCF = new PdfName("CCF");
         public static readonly PdfName CCITTFaxDecode = new PdfName("CCITTFaxDecode");
         public static readonly PdfName CenterWindow = new PdfName("CenterWindow");
+        public static readonly PdfName CMYK = new PdfName("CMYK");
         public static readonly PdfName Ch = new PdfName("Ch");
         public static readonly PdfName CIDFontType0 = new PdfName("CIDFontType0");
         public static readonly PdfName CIDFontType2 = new PdfName("CIDFontType2");
@@ -265,6 +266,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName Functions = new PdfName("Functions");
         public static readonly PdfName FunctionType = new PdfName("FunctionType");
         public static readonly PdfName FWParams = new PdfName("FWParams");
+        public static readonly PdfName G = new PdfName("G");
         public static readonly PdfName Gamma = new PdfName("Gamma");
         public static readonly PdfName Glitter = new PdfName("Glitter");
         public static readonly PdfName GoTo = new PdfName("GoTo");
@@ -294,6 +296,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName IdentityH = new PdfName("Identity-H");
         public static readonly PdfName IdentityV = new PdfName("Identity-V");
         public static readonly PdfName IF = new PdfName("IF");
+        public static readonly PdfName IM = new PdfName("IM");
         public static readonly PdfName Image = new PdfName("Image");
         public static readonly PdfName ImageMask = new PdfName("ImageMask");
         public static readonly PdfName ImportData = new PdfName("ImportData");
@@ -304,6 +307,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName Ink = new PdfName("Ink");
         public static readonly PdfName InkList = new PdfName("InkList");
         public static readonly PdfName Insert = new PdfName("Insert");
+        public static readonly PdfName Interpolate = new PdfName("Interpolate");
         public static readonly PdfName Intent = new PdfName("Intent");
         public static readonly PdfName IRT = new PdfName("IRT");
         public static readonly PdfName IT = new PdfName("IT");

@@ -148,8 +148,7 @@ namespace org.pdfclown.documents.contents.tokens
             {
                 List<PdfDirectObject> operands = new List<PdfDirectObject>();
                 // Parsing the image entries...
-                while (MoveNext()
-                  && TokenType != TokenTypeEnum.Keyword) // Not keyword (i.e. end at image data beginning (ID operator)).
+                while (MoveNext() && TokenType != TokenTypeEnum.Keyword) // Not keyword (i.e. end at image data beginning (ID operator)).
                 { operands.Add((PdfDirectObject)ParsePdfObject()); }
                 header = new InlineImageHeader(operands);
             }
@@ -160,69 +159,27 @@ namespace org.pdfclown.documents.contents.tokens
                 bytes::IInputStream stream = Stream;
                 stream.ReadByte(); // Should be the whitespace following the 'ID' token.
                 bytes::Buffer data = new bytes::Buffer();
-                var endChunkBuffer = new sysIO::MemoryStream(3);
-                int endChunkIndex = -1;
                 while (true)
                 {
-                    int curByte = stream.ReadByte();
-                    if (curByte == -1)
-                        throw new PostScriptParseException("No 'EI' token found to close inline image data stream.");
-
-                    if (endChunkIndex == -1)
-                    {
-                        if (IsWhitespace(curByte))
-                        {
-                            /*
-                              NOTE: Whitespace characters may announce the beginning of the end image operator.
-                            */
-                            endChunkBuffer.WriteByte((byte)curByte);
-                            endChunkIndex++;
-                        }
-                        else
-                        { data.Append((byte)curByte); }
-                    }
-                    else if (endChunkIndex == 0 && IsWhitespace(curByte))
-                    {
-                        /*
-                          NOTE: Only the last whitespace character may announce the beginning of the end image
-                          operator.
-                        */
-                        data.Append(endChunkBuffer.ToArray());
-                        endChunkBuffer.SetLength(0);
-                        endChunkBuffer.WriteByte((byte)curByte);
-                    }
-                    else if ((endChunkIndex == 0 && curByte == 'E')
-                      || (endChunkIndex == 1 && curByte == 'I'))
-                    {
-                        /*
-                          NOTE: End image operator characters.
-                        */
-                        endChunkBuffer.WriteByte((byte)curByte);
-                        endChunkIndex++;
-                    }
-                    else if (endChunkIndex == 2 && IsWhitespace(curByte))
-                        /*
-                          NOTE: The whitespace character after the end image operator completes the pattern.
-                        */
+                    int curByte1 = stream.ReadByte();
+                    if (curByte1 == -1)
                         break;
-                    else
-                    {
-                        if (endChunkIndex > -1)
-                        {
-                            data.Append(endChunkBuffer.ToArray());
-                            endChunkBuffer.SetLength(0);
-                            endChunkIndex = -1;
-                        }
-                        data.Append((byte)curByte);
-                    }
+                    int curByte2 = stream.ReadByte();
+                    if (curByte2 == -1)
+                        break;
+
+                    if (((char)curByte1 == 'E' && (char)curByte2 == 'I'))
+                        break;
+                    if (((char)curByte1 == ' ' && (char)curByte2 == 'E'))
+                        break;
+                    data.Append((byte)curByte1);
+                    data.Append((byte)curByte2);
+                    
                 }
                 body = new InlineImageBody(data);
             }
 
-            return new InlineImage(
-              header,
-              body
-              );
+            return new InlineImage(header, body);
         }
 
         private Path ParsePath(Operation beginOperation)

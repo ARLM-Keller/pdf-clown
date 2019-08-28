@@ -38,8 +38,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>Content stream instruction [PDF:1.6:3.7.1].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public abstract class Operation
-      : ContentObject
+    public abstract class Operation : ContentObject
     {
         #region static
         #region interface
@@ -49,10 +48,7 @@ namespace org.pdfclown.documents.contents.objects
           <param name="@operator">Operator.</param>
           <param name="operands">List of operands.</param>
         */
-        public static Operation Get(
-          string @operator,
-          IList<PdfDirectObject> operands
-          )
+        public static Operation Get(string @operator, IList<PdfDirectObject> operands)
         {
             if (@operator == null)
                 return null;
@@ -196,15 +192,10 @@ namespace org.pdfclown.documents.contents.objects
         #endregion
 
         #region constructors
-        protected Operation(
-          string @operator
-          )
+        protected Operation(string @operator)
         { this.@operator = @operator; }
 
-        protected Operation(
-          string @operator,
-          PdfDirectObject operand
-          )
+        protected Operation(string @operator, PdfDirectObject operand)
         {
             this.@operator = @operator;
 
@@ -212,19 +203,13 @@ namespace org.pdfclown.documents.contents.objects
             this.operands.Add(operand);
         }
 
-        protected Operation(
-          string @operator,
-          params PdfDirectObject[] operands
-          )
+        protected Operation(string @operator, params PdfDirectObject[] operands)
         {
             this.@operator = @operator;
             this.operands = new List<PdfDirectObject>(operands);
         }
 
-        protected Operation(
-          string @operator,
-          IList<PdfDirectObject> operands
-          )
+        protected Operation(string @operator, IList<PdfDirectObject> operands)
         {
             this.@operator = @operator;
             this.operands = operands;
@@ -239,8 +224,7 @@ namespace org.pdfclown.documents.contents.objects
         public IList<PdfDirectObject> Operands
         { get { return operands; } }
 
-        public override string ToString(
-          )
+        public override string ToString()
         {
             StringBuilder buffer = new StringBuilder();
 
@@ -254,11 +238,7 @@ namespace org.pdfclown.documents.contents.objects
             if (operands != null)
             {
                 buffer.Append(" [");
-                for (
-                  int i = 0, count = operands.Count;
-                  i < count;
-                  i++
-                  )
+                for (int i = 0, count = operands.Count; i < count; i++)
                 {
                     if (i > 0)
                     { buffer.Append(", "); }
@@ -274,10 +254,7 @@ namespace org.pdfclown.documents.contents.objects
             return buffer.ToString();
         }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          Document context
-          )
+        public override void WriteTo(IOutputStream stream, Document context)
         {
             if (operands != null)
             {

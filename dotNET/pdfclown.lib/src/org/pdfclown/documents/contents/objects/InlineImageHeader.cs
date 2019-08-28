@@ -57,6 +57,79 @@ namespace org.pdfclown.documents.contents.objects
             this[key] = value;
         }
 
+        public int BitsPerComponent
+        {
+            get => (((IPdfNumber)this[PdfName.BPC]) ?? ((IPdfNumber)this[PdfName.BitsPerComponent]))?.IntValue ?? 8;
+            set => this[PdfName.BPC] = new PdfInteger(value);
+        }
+
+        public PdfName ColorSpace
+        {
+            get => (((PdfName)this[PdfName.CS]) ?? ((PdfName)this[PdfName.ColorSpace]));
+            set => this[PdfName.CS] = value;
+        }
+
+        public PdfName FormatColorSpace
+        {
+            get
+            {
+                var space = ColorSpace;
+                if (space.Equals(PdfName.G)) return PdfName.DeviceGray;
+                if (space.Equals(PdfName.RGB)) return PdfName.DeviceRGB;
+                if (space.Equals(PdfName.CMYK)) return PdfName.DeviceCMYK;
+                if (space.Equals(PdfName.I)) return PdfName.Indexed;
+                return space;
+            }
+        }
+
+        public string Decode
+        {
+            get => (((PdfName)this[PdfName.D]) ?? ((PdfName)this[PdfName.Decode]))?.StringValue;
+            set => this[PdfName.D] = new PdfName(value);
+        }
+
+        public PdfDirectObject DecodeParms
+        {
+            get => ((PdfDirectObject)this[PdfName.DP]) ?? ((PdfDirectObject)this[PdfName.DecodeParms]);
+            set => this[PdfName.DP] = value;
+        }
+
+        public PdfDirectObject Filter
+        {
+            get => ((PdfDirectObject)this[PdfName.F]) ?? ((PdfDirectObject)this[PdfName.Filter]);
+            set => this[PdfName.F] = value;
+        }
+
+        public int Height
+        {
+            get => (((IPdfNumber)this[PdfName.H]) ?? ((IPdfNumber)this[PdfName.Height]))?.IntValue ?? 0;
+            set => this[PdfName.H] = new PdfInteger(value);
+        }
+
+        public int Width
+        {
+            get => (((IPdfNumber)this[PdfName.W]) ?? ((IPdfNumber)this[PdfName.Width]))?.IntValue ?? 0;
+            set => this[PdfName.W] = new PdfInteger(value);
+        }
+
+        public string ImageMask
+        {
+            get => (((PdfName)this[PdfName.IM]) ?? ((PdfName)this[PdfName.ImageMask]))?.StringValue;
+            set => this[PdfName.IM] = new PdfName(value);
+        }
+
+        public string Interpolate
+        {
+            get => (((PdfName)this[PdfName.I]) ?? ((PdfName)this[PdfName.Interpolate]))?.StringValue;
+            set => this[PdfName.I] = new PdfName(value);
+        }
+
+        public string Intent
+        {
+            get => ((PdfName)this[PdfName.Intent])?.StringValue;
+            set => this[PdfName.Intent] = new PdfName(value);
+        }
+
         public bool ContainsKey(PdfName key)
         { return GetKeyIndex(key) != null; }
 
@@ -65,12 +138,7 @@ namespace org.pdfclown.documents.contents.objects
             get
             {
                 ICollection<PdfName> keys = new List<PdfName>();
-                for (
-                  int index = 0,
-                    length = operands.Count - 1;
-                  index < length;
-                  index += 2
-                  )
+                for (int index = 0, length = operands.Count - 1; index < length; index += 2)
                 { keys.Add((PdfName)operands[index]); }
                 return keys;
             }
@@ -125,12 +193,7 @@ namespace org.pdfclown.documents.contents.objects
             get
             {
                 ICollection<PdfDirectObject> values = new List<PdfDirectObject>();
-                for (
-                  int index = 1,
-                    length = operands.Count - 1;
-                  index < length;
-                  index += 2
-                  )
+                for (int index = 1, length = operands.Count - 1; index < length; index += 2)
                 { values.Add(operands[index]); }
                 return values;
             }
@@ -165,12 +228,7 @@ namespace org.pdfclown.documents.contents.objects
         #region IEnumerable<KeyValuePair<PdfName,PdfDirectObject>>
         IEnumerator<KeyValuePair<PdfName, PdfDirectObject>> IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>.GetEnumerator()
         {
-            for (
-              int index = 0,
-                length = operands.Count - 1;
-              index < length;
-              index += 2
-              )
+            for (int index = 0, length = operands.Count - 1; index < length; index += 2)
             {
                 yield return new KeyValuePair<PdfName, PdfDirectObject>(
                   (PdfName)operands[index],
@@ -191,12 +249,7 @@ namespace org.pdfclown.documents.contents.objects
         #region private
         private int? GetKeyIndex(object key)
         {
-            for (
-              int index = 0,
-                length = operands.Count - 1;
-              index < length;
-              index += 2
-              )
+            for (int index = 0, length = operands.Count - 1; index < length; index += 2)
             {
                 if (operands[index].Equals(key))
                     return index;

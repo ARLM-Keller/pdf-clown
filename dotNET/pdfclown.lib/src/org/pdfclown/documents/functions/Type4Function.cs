@@ -50,7 +50,7 @@ namespace org.pdfclown.documents.functions
         public override double[] Calculate(double[] inputs)
         {
             // FIXME: Auto-generated method stub
-            return inputs;
+            return new double[] { inputs[0], inputs[0], inputs[0], inputs[0] };
         }
         #endregion
         #endregion

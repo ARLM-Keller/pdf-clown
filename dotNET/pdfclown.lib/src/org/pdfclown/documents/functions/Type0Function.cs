@@ -67,14 +67,40 @@ namespace org.pdfclown.documents.functions
         #region public
         public override double[] Calculate(double[] inputs)
         {
-            // FIXME: Auto-generated method stub
-            return null;
+            var domains = Domains;
+            var ranges = Ranges;
+            var decode = Decodes;
+            var encode = Encodes;
+            var sampleCount = SampleCounts;
+            var samples = GetSamples();
+            var sampleMax = Math.Pow(2, BitsPerSample) - 1;
+            for (int i = 0; i < domains.Count; i++)
+            {
+                var domain = domains[i];
+                inputs[i] = Math.Min(Math.Max(inputs[i], domain.Low), domain.High);
+            }
+            var result = new double[ranges.Count * domains.Count];
+
+            for (int d = 0; d < domains.Count; d++)
+            {
+                var x = inputs[d];
+
+                for (int r = 0; r < ranges.Count; r++)
+                {
+                    var e = linear(x, domains[d].Low, domains[d].High, encode[d].Low, encode[d].High);
+                    e = Math.Min(Math.Max(e, 0), sampleCount[d]);
+                    e = samples[r][d][(int)e];
+                    e = linear(e, 0, sampleMax, decode[r].Low, decode[r].High);
+                    result[d * ranges.Count + r] = Math.Min(Math.Max(e, ranges[r].Low), ranges[r].High);
+                }
+            }
+            return result;
         }
 
         /**
           <summary>Gets the linear mapping of input values into the domain of the function's sample table.</summary>
         */
-        public IList<Interval<int>> DomainEncodes
+        public IList<Interval<int>> Encodes
         {
             get
             {
@@ -107,7 +133,7 @@ namespace org.pdfclown.documents.functions
         /**
           <summary>Gets the linear mapping of sample values into the ranges of the function's output values.</summary>
         */
-        public IList<Interval<double>> RangeDecodes
+        public IList<Interval<double>> Decodes
         {
             get { return GetIntervals<double>(PdfName.Decode, null); }
         }
@@ -115,7 +141,7 @@ namespace org.pdfclown.documents.functions
         /**
           <summary>Gets the number of bits used to represent each sample.</summary>
         */
-        public int SampleBitsCount
+        public int BitsPerSample
         {
             get { return ((PdfInteger)Dictionary[PdfName.BitsPerSample]).RawValue; }
         }
@@ -136,6 +162,40 @@ namespace org.pdfclown.documents.functions
                 return sampleCounts;
             }
         }
+        public List<List<List<int>>> GetSamples()
+        {
+            var ranges = Ranges;
+            var domains = Domains;
+            var sampleCounts = SampleCounts;
+            var samples = new List<List<List<int>>>();
+            var bytes = BitsPerSample / 8;
+            var stream = BaseDataObject as PdfStream;
+            var buffer = stream.GetBody(true) as bytes.Buffer;
+            buffer.Seek(0);
+            var iTotal = 0;
+            var iDomain = 0;
+            for (var r = 0; r < ranges.Count; r++)
+            {
+                var rangeList = new List<List<int>>();
+                samples.Add(rangeList);
+                for (var d = 0; d < domains.Count; d++)
+                {
+                    var domainList = new List<int>();
+                    rangeList.Add(domainList);
+                    for (var s = 0; s < sampleCounts[d]; s++)
+                    {
+                        domainList.Add(buffer.ReadInt(bytes));
+                        //if (buffer.Position == buffer.Length - 1)
+                        //    break;
+                    }
+                }
+
+            }
+            
+            return samples;
+        }
+
+
         #endregion
         #endregion
         #endregion

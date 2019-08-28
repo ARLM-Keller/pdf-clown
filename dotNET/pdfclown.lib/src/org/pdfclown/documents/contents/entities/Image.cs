@@ -34,23 +34,14 @@ namespace org.pdfclown.documents.contents.entities
     /**
       <summary>Abstract image object [PDF:1.6:4.8].</summary>
     */
-    public abstract class Image
-      : Entity
+    public abstract class Image : Entity
     {
         #region static
         #region interface
         #region public
-        public static Image Get(
-          string path
-          )
+        public static Image Get(string path)
         {
-            return Get(
-              new FileStream(
-                path,
-                FileMode.Open,
-                FileAccess.Read
-                )
-              );
+            return Get(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
         }
 
         public static Image Get(System.IO.Stream stream)

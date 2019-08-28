@@ -362,7 +362,7 @@ namespace org.pdfclown.samples.cli
             BlockComposer blockComposer = new BlockComposer(composer);
 
             SKSize breakSize = new SKSize(0, 20); // Size of a paragraph break.
-                                                // Instantiate the page body's font!
+                                                  // Instantiate the page body's font!
             fonts::Font font = fonts::Font.Get(
               document,
               GetResourcePath("fonts" + Path.DirectorySeparatorChar + "lazyDog.ttf")
@@ -495,10 +495,7 @@ namespace org.pdfclown.samples.cli
             composer.Flush();
         }
 
-        private FormXObject BuildTemplate(
-          Document document,
-          DateTime creationDate
-          )
+        private FormXObject BuildTemplate(Document document, DateTime creationDate)
         {
             // Create a template (form)!
             FormXObject template = new FormXObject(document, document.PageSize.Value);

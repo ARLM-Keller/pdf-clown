@@ -1026,7 +1026,7 @@ namespace org.pdfclown.documents.contents.composition
             { size = xObjectSize; }
 
             // Scaling.
-            SKMatrix matrix = xObject.Matrix;
+            SKMatrix matrix = SKMatrix.MakeScale(1f / xObjectSize.Width, 1f / xObjectSize.Height);
             double scaleX, scaleY;
             scaleX = size.Value.Width / (xObjectSize.Width * matrix.ScaleX);
             scaleY = size.Value.Height / (xObjectSize.Height * matrix.ScaleY);

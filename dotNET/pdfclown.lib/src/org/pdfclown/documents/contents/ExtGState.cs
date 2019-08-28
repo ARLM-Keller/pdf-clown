@@ -177,9 +177,27 @@ namespace org.pdfclown.documents.contents
         public double? FillAlpha
         {
             get
-            { return (double?)PdfSimpleObject<PdfObject>.GetValue(BaseDataObject[PdfName.ca]); }
-            set
-            { BaseDataObject[PdfName.ca] = PdfReal.Get(value); }
+            {
+                var number = BaseDataObject[PdfName.ca] as IPdfNumber;
+                return number == null ? null : (double?)number.DoubleValue;
+            }
+            set { BaseDataObject[PdfName.ca] = PdfReal.Get(value); }
+        }
+
+        /**
+          <summary>Gets/Sets the stroking alpha constant, specifying the constant shape or constant
+          opacity value to be used for stroking operations in the transparent imaging model
+          [PDF:1.7:7.2.6].</summary>
+        */
+        [PDF(VersionEnum.PDF14)]
+        public double? StrokeAlpha
+        {
+            get
+            {
+                var number = BaseDataObject[PdfName.CA] as IPdfNumber;
+                return number == null ? null : (double?)number.DoubleValue;
+            }
+            set { BaseDataObject[PdfName.CA] = PdfReal.Get(value); }
         }
 
         [PDF(VersionEnum.PDF13)]
@@ -290,19 +308,7 @@ namespace org.pdfclown.documents.contents
             { BaseDataObject[PdfName.ML] = PdfReal.Get(value); }
         }
 
-        /**
-          <summary>Gets/Sets the stroking alpha constant, specifying the constant shape or constant
-          opacity value to be used for stroking operations in the transparent imaging model
-          [PDF:1.7:7.2.6].</summary>
-        */
-        [PDF(VersionEnum.PDF14)]
-        public double? StrokeAlpha
-        {
-            get
-            { return (double?)PdfSimpleObject<PdfObject>.GetValue(BaseDataObject[PdfName.CA]); }
-            set
-            { BaseDataObject[PdfName.CA] = PdfReal.Get(value); }
-        }
+
         #endregion
         #endregion
         #endregion

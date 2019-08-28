@@ -213,9 +213,25 @@ namespace PDFClown.Viewer
                 using (var recorder = new SKPictureRecorder())
                 using (var canvas = recorder.BeginRecording(SKRect.Create(SKPoint.Empty, Size)))
                 {
-                    Page.Render(canvas, Size);
+                    try
+                    {
+                        Page.Render(canvas, Size);
+                        
+                    }
+                    catch (Exception ex)
+                    {
+                        using (var paint = new SKPaint { Color = SKColors.DarkRed })
+                        {
+                            canvas.Save();
+                            var matrix = SKMatrix.MakeScale(1, -1);
+                            canvas.Concat(ref matrix);
+                            canvas.DrawText(ex.Message, 0, 0, paint);
+                            canvas.Restore();
+                        }
+                    }
                     picture = recorder.EndRecording();
                 }
+
             }
             return picture;
         }

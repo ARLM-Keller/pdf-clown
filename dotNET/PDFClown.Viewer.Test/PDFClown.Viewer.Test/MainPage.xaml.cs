@@ -21,11 +21,18 @@ namespace PDFClown.Viewer.Test
         private async void OnOpenFileClicked(object sender, EventArgs e)
         {
             var service = DependencyService.Get<IOpenFileService>();
-            var fileInfo = await service.OpenFileDialog();
-            if (fileInfo.Stream != null)
+            try
             {
-                label.Text = Path.GetFileName(fileInfo.FileName);
-                viewer.Load(fileInfo.Stream);
+                var fileInfo = await service.OpenFileDialog();
+                if (fileInfo.Stream != null)
+                {
+                    label.Text = Path.GetFileName(fileInfo.FileName);
+                    viewer.Load(fileInfo.Stream);
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error: " + ex.GetType().Name, ex.Message, "Close");
             }
         }
     }

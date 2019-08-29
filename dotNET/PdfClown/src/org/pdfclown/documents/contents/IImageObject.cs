@@ -30,7 +30,7 @@ namespace org.pdfclown.documents.contents
             {
                 if (filter != null)
                 {
-                    PdfStream.Decode(buffer, filter, parameters);
+                    bytes.Buffer.Decode(buffer, filter, parameters);
                     data = buffer.ToByteArray();
                 }
                 image = SKBitmap.Decode(data);

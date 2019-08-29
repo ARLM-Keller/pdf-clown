@@ -30,6 +30,7 @@ using org.pdfclown.util;
 using org.pdfclown.util.io;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using text = System.Text;
 
@@ -48,6 +49,36 @@ namespace org.pdfclown.bytes
         */
         private const int DefaultCapacity = 1 << 8;
         #endregion
+        public static PdfDataObject Resolve(PdfObject @object)
+        {
+            return @object == null ? null : @object.Resolve();
+        }
+
+        public static void Decode(IBuffer buffer, PdfDataObject filter, PdfDirectObject parameters)
+        {
+
+            if (filter is PdfName) // Single filter.
+            {
+                buffer.Decode(Filter.Get((PdfName)filter), (PdfDictionary)parameters);
+            }
+            else // Multiple filters.
+            {
+                IEnumerator<PdfDirectObject> filterIterator = ((PdfArray)filter).GetEnumerator();
+                IEnumerator<PdfDirectObject> parametersIterator = (parameters != null ? ((PdfArray)parameters).GetEnumerator() : null);
+                while (filterIterator.MoveNext())
+                {
+                    PdfDictionary filterParameters;
+                    if (parametersIterator == null)
+                    { filterParameters = null; }
+                    else
+                    {
+                        parametersIterator.MoveNext();
+                        filterParameters = (PdfDictionary)Resolve(parametersIterator.Current);
+                    }
+                    buffer.Decode(Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters);
+                }
+            }
+        }
         #endregion
 
         #region dynamic

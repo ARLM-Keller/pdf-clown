@@ -41,6 +41,7 @@ namespace org.pdfclown.bytes.filters
         private static readonly Filter ASCII85Filter = new ASCII85Filter();
         private static readonly Filter FlateDecode = new FlateFilter();
         private static readonly Filter CCITTFaxDecode = new CCITTFaxFilter();
+        private static readonly Filter JBIG2Decode = new JBIG2Filter();
         #endregion
 
         #region interface
@@ -77,7 +78,7 @@ namespace org.pdfclown.bytes.filters
               || name.Equals(PdfName.CCF))
                 return CCITTFaxDecode;
             else if (name.Equals(PdfName.JBIG2Decode))
-                throw new NotImplementedException("JBIG2Decode");
+                return JBIG2Decode;
             else if (name.Equals(PdfName.DCTDecode)
               || name.Equals(PdfName.DCT))
                 throw new NotImplementedException("DCTDecode");

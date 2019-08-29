@@ -135,7 +135,7 @@ namespace org.pdfclown.documents.contents.xObjects
             }
             var stream = BaseDataObject as PdfStream;
 
-            SKBitmap image = ImageLoader.Load(stream.GetBody(false), stream.Filter, stream.Parameters, this);
+            SKBitmap image = ImageLoader.Load(stream.GetBody(false), stream.Filter, stream.Parameters ?? stream.Header, this);
             Document.Cache[(PdfReference)BaseObject] = image;
             return image;
         }

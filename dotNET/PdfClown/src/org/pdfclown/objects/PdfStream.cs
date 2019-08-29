@@ -25,6 +25,7 @@
 
 using org.pdfclown.bytes;
 using org.pdfclown.bytes.filters;
+using org.pdfclown.documents.contents;
 using org.pdfclown.documents.files;
 using org.pdfclown.files;
 using org.pdfclown.tokens;
@@ -152,8 +153,8 @@ namespace org.pdfclown.objects
                 if (filter != null) // Stream encoded.
                 {
                     header.Updateable = false;
-                    
-                    Decode(body, filter, Parameters);
+
+                    bytes.Buffer.Decode(body, filter, Parameters);
                     // The stream is free from encodings.
                     Filter = null;
                     Parameters = null;
@@ -163,31 +164,7 @@ namespace org.pdfclown.objects
             return body;
         }
 
-        public static void Decode(IBuffer body, PdfDataObject filter, PdfDirectObject parameters)
-        {
-            
-            if (filter is PdfName) // Single filter.
-            {
-                body.Decode(bytes.filters.Filter.Get((PdfName)filter), (PdfDictionary)parameters);
-            }
-            else // Multiple filters.
-            {
-                IEnumerator<PdfDirectObject> filterIterator = ((PdfArray)filter).GetEnumerator();
-                IEnumerator<PdfDirectObject> parametersIterator = (parameters != null ? ((PdfArray)parameters).GetEnumerator() : null);
-                while (filterIterator.MoveNext())
-                {
-                    PdfDictionary filterParameters;
-                    if (parametersIterator == null)
-                    { filterParameters = null; }
-                    else
-                    {
-                        parametersIterator.MoveNext();
-                        filterParameters = (PdfDictionary)Resolve(parametersIterator.Current);
-                    }
-                    body.Decode(bytes.filters.Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters);
-                }
-            }
-        }
+
 
         /**
           <summary>Gets the stream header.</summary>

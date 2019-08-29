@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
-namespace PDFClown.Viewer
+namespace PdfClown.Viewer
 {
     public class SKScrollView : SKCanvasView
     {

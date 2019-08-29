@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PDFClown.Viewer.Test.WPF.Properties
+namespace PdfClown.Viewer.Test.WPF.Properties
 {
 
 
@@ -44,7 +44,7 @@ namespace PDFClown.Viewer.Test.WPF.Properties
             {
                 if ((resourceMan == null))
                 {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PDFClown.Viewer.Test.WPF.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PdfClown.Viewer.Test.WPF.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

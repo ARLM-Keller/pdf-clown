@@ -9,9 +9,9 @@
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TemplateGuid>{6143fdea-f3c2-4a09-aafa-6e230626515e}</TemplateGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>PDFClown.Viewer.Test.iOS</RootNamespace>
+    <RootNamespace>PdfClown.Viewer.Test.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>PDFClown.Viewer.Test.iOS</AssemblyName>
+    <AssemblyName>PdfClown.Viewer.Test.iOS</AssemblyName>
     <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
     <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
   </PropertyGroup>
@@ -125,15 +125,15 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\..\PDFClown.Viewer\PDFClown.Viewer.iOS\PDFClown.Viewer.iOS.csproj">
+    <ProjectReference Include="..\..\PdfClown.Viewer\PdfClown.Viewer.iOS\PdfClown.Viewer.iOS.csproj">
       <Project>{de7256c7-e047-4bd0-b172-a040274e3611}</Project>
-      <Name>PDFClown.Viewer.iOS</Name>
+      <Name>PdfClown.Viewer.iOS</Name>
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
-    <ProjectReference Include="..\PDFClown.Viewer.Test\PDFClown.Viewer.Test.csproj">
+    <ProjectReference Include="..\PdfClown.Viewer.Test\PdfClown.Viewer.Test.csproj">
       <Project>{72C25E0E-744B-4888-B38A-3C8765F45434}</Project>
-      <Name>PDFClown.Viewer.Test</Name>
+      <Name>PdfClown.Viewer.Test</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

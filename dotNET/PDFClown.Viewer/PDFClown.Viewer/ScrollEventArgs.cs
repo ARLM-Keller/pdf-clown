@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PDFClown.Viewer
+namespace PdfClown.Viewer
 {
     public class ScrollEventArgs : EventArgs
     {

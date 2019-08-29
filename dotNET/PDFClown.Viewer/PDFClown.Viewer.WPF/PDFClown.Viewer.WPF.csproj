@@ -4,10 +4,10 @@
     <!-- <LanguageTargets>$(MSBuildExtensionsPath)\$(VisualStudioVersion)\Bin\Microsoft.CSharp.targets</LanguageTargets> -->
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B8934FC2-8E2C-4A88-B519-A5552C2F3819}</ProjectGuid>
+    <ProjectGuid>{A4862F12-66AA-4FB1-8EA7-BF6821C48830}</ProjectGuid>
     <OutputType>library</OutputType>
-    <AssemblyName>PDFClown.Viewer.WPF</AssemblyName> 
-    <RootNamespace>PDFClown.Viewer.WPF</RootNamespace>
+    <AssemblyName>PdfClown.Viewer.WPF</AssemblyName> 
+    <RootNamespace>PdfClown.Viewer.WPF</RootNamespace>
     <TargetFramework>net472</TargetFramework>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -52,6 +52,6 @@
     <None Include="OpenTK.dll.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PDFClown.Viewer\PDFClown.Viewer.csproj" />
+    <ProjectReference Include="..\PdfClown.Viewer\PdfClown.Viewer.csproj" />
   </ItemGroup>  
 </Project>

@@ -1,5 +1,5 @@
-﻿using PDFClown.Viewer;
-using PDFClown.Viewer.WPF;
+﻿using PdfClown.Viewer;
+using PdfClown.Viewer.WPF;
 using SkiaSharp.Views.Forms;
 using SkiaSharp.Views.WPF;
 using System.ComponentModel;
@@ -8,7 +8,7 @@ using System.Windows.Input;
 using Xamarin.Forms.Platform.WPF;
 
 [assembly: ExportRenderer(typeof(SKScrollView), typeof(SKScrollViewRenderer))]
-namespace PDFClown.Viewer.WPF
+namespace PdfClown.Viewer.WPF
 {
     public class SKScrollViewRenderer : SKCanvasViewRenderer
     {

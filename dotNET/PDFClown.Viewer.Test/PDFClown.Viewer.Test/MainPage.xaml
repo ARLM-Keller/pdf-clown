@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:pdf="clr-namespace:PDFClown.Viewer;assembly=PDFClown.Viewer"
+             xmlns:pdf="clr-namespace:PdfClown.Viewer;assembly=PdfClown.Viewer"
              mc:Ignorable="d"
-             x:Class="PDFClown.Viewer.Test.MainPage">
+             x:Class="PdfClown.Viewer.Test.MainPage">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -16,7 +16,7 @@
             <Label x:Name="label" Text="Welcome to PDF Viewer!" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" />
             <Button Text="Open File..." HorizontalOptions="End" VerticalOptions="CenterAndExpand" Clicked="OnOpenFileClicked"/>
         </StackLayout>
-        <pdf:SKPDFView x:Name="viewer" Grid.Row="1" />
+        <pdf:PdfView x:Name="viewer" Grid.Row="1" />
 
     </Grid>
 </ContentPage>

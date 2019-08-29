@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{FCF8C99B-7FDC-4018-991C-EE0DC002E4B9}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>PDFClown.Viewer.Test.WPF</RootNamespace>
-    <AssemblyName>PDFClown.Viewer.Test.WPF</AssemblyName>
+    <RootNamespace>PdfClown.Viewer.Test.WPF</RootNamespace>
+    <AssemblyName>PdfClown.Viewer.Test.WPF</AssemblyName>
     <TargetFramework>net472</TargetFramework>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -88,8 +88,8 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\PDFClown.Viewer\PDFClown.Viewer.WPF\PDFClown.Viewer.WPF.csproj" />
-    <ProjectReference Include="..\PDFClown.Viewer.Test\PDFClown.Viewer.Test.csproj" />
+    <ProjectReference Include="..\..\PdfClown.Viewer\PdfClown.Viewer.WPF\PdfClown.Viewer.WPF.csproj" />
+    <ProjectReference Include="..\PdfClown.Viewer.Test\PdfClown.Viewer.Test.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 </Project>

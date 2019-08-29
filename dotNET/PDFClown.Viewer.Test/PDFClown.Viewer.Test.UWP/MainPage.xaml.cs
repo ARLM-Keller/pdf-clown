@@ -13,7 +13,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-namespace PDFClown.Viewer.Test.UWP
+namespace PdfClown.Viewer.Test.UWP
 {
     public sealed partial class MainPage
     {
@@ -21,7 +21,7 @@ namespace PDFClown.Viewer.Test.UWP
         {
             this.InitializeComponent();
 
-            LoadApplication(new PDFClown.Viewer.Test.App());
+            LoadApplication(new PdfClown.Viewer.Test.App());
         }
     }
 }

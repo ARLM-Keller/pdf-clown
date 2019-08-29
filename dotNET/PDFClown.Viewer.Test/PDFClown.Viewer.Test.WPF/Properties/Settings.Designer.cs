@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PDFClown.Viewer.Test.WPF.Properties
+namespace PdfClown.Viewer.Test.WPF.Properties
 {
 
 

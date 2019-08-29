@@ -1,5 +1,5 @@
-﻿using PDFClown.Viewer.Test;
-using PDFClown.Viewer.Test.UWP;
+﻿using PdfClown.Viewer.Test;
+using PdfClown.Viewer.Test.UWP;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +9,7 @@ using Windows.Storage.Pickers;
 using Windows.System;
 
 [assembly: Xamarin.Forms.Dependency(typeof(OpenFileService))]
-namespace PDFClown.Viewer.Test.UWP
+namespace PdfClown.Viewer.Test.UWP
 {
     public class OpenFileService : IOpenFileService
     {

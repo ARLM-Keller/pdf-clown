@@ -13,7 +13,7 @@ This is the C#/.NET source code distribution of  [http://www.pdfclown.org/], a g
 ---------------
 Copyright
 ---------------
-Copyright © 2006-2013 Stefano Chizzolini
+Copyright ï¿½ 2006-2013 Stefano Chizzolini
 
 Contacts:
  * url: http://www.stefanochizzolini.it [http://www.stefanochizzolini.it]
@@ -54,7 +54,7 @@ PDF Clown for .NET currently depends on:
 ---------------
 Resources
 ---------------
- *  [pdfclown.lib/README.html]: PDF Clown source code
+ *  [PdfClown/README.html]: PDF Clown source code
  *  [pdfclown.samples.cli/README.html]: Functionality demonstrations
  *  [../main/doc/README.html]: PDF Clown common guides
  *  [../main/res/README.html]: Material supporting PDF Clown distribution
@@ -64,5 +64,5 @@ Resources
   * Current directory [.]: browse current section contents
   * Parent section [../main/README.html]: move to parent section
   * Previous section [../java/README.html]: move to previous section
-  * Next section [pdfclown.lib/README.html]: move to next section
+  * Next section [PdfClown/README.html]: move to next section
   * INDEX [../main/INDEX.html]: move to the distribution map

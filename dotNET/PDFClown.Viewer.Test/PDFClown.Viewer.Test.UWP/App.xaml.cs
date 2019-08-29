@@ -1,4 +1,4 @@
-﻿using PDFClown.Viewer.UWP;
+﻿using PdfClown.Viewer.UWP;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,7 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-namespace PDFClown.Viewer.Test.UWP
+namespace PdfClown.Viewer.Test.UWP
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.

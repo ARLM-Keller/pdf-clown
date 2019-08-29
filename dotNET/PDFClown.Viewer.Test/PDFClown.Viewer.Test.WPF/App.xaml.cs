@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace PDFClown.Viewer.Test.WPF
+namespace PdfClown.Viewer.Test.WPF
 {
     /// <summary>
     /// Логика взаимодействия для App.xaml

@@ -1,5 +1,5 @@
-﻿using PDFClown.Viewer;
-using PDFClown.Viewer.UWP;
+﻿using PdfClown.Viewer;
+using PdfClown.Viewer.UWP;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System.ComponentModel;
@@ -11,7 +11,7 @@ using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Platform.UWP;
 
 [assembly: ExportRenderer(typeof(SKScrollView), typeof(SKScrollViewRenderer))]
-namespace PDFClown.Viewer.UWP
+namespace PdfClown.Viewer.UWP
 {
     public class SKScrollViewRenderer : FocusableCanvasViewRenderer
     {

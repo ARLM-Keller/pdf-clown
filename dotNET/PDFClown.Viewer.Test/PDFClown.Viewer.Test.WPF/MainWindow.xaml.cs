@@ -1,4 +1,4 @@
-﻿using PDFClown.Viewer.WPF;
+﻿using PdfClown.Viewer.WPF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,7 @@ using System.Windows.Shapes;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.WPF;
 
-namespace PDFClown.Viewer.Test.WPF
+namespace PdfClown.Viewer.Test.WPF
 {
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml

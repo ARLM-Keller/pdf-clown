@@ -31,6 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\pdfclown.lib\pdfclown.lib.csproj" />
+    <ProjectReference Include="..\..\PdfClown\PdfClown.csproj" />
   </ItemGroup>
 </Project>

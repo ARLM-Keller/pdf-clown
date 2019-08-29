@@ -15,6 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\PDFClown.Viewer\PDFClown.Viewer\PDFClown.Viewer.csproj" />
+    <ProjectReference Include="..\..\PdfClown.Viewer\PdfClown.Viewer\PdfClown.Viewer.csproj" />
   </ItemGroup>
 </Project>

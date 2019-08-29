@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
-namespace PDFClown.Viewer
+namespace PdfClown.Viewer
 {
 
     //http://www.pshul.com/2018/01/25/xamarin-forms-using-svg-images-with-skiasharp/

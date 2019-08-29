@@ -2,7 +2,7 @@
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
-namespace PDFClown.Viewer.Test
+namespace PdfClown.Viewer.Test
 {
     public partial class App : Application
     {

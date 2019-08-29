@@ -7,8 +7,8 @@
     <ProjectGuid>{4184D5D8-7441-4E13-B687-D42DDFA64934}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PDFClown.Viewer.Test.UWP</RootNamespace>
-    <AssemblyName>PDFClown.Viewer.Test.UWP</AssemblyName>
+    <RootNamespace>PdfClown.Viewer.Test.UWP</RootNamespace>
+    <AssemblyName>PdfClown.Viewer.Test.UWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.17134.0</TargetPlatformVersion>
@@ -17,7 +17,7 @@
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateKeyFile>PDFClown.Viewer.Test.UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>PdfClown.Viewer.Test.UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -149,13 +149,13 @@
     <PackageReference Include="Xamarin.Essentials" Version="1.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\PDFClown.Viewer\PDFClown.Viewer.UWP\PDFClown.Viewer.UWP.csproj">
+    <ProjectReference Include="..\..\PdfClown.Viewer\PdfClown.Viewer.UWP\PdfClown.Viewer.UWP.csproj">
       <Project>{a91cecc2-1d41-46c4-8cca-05c3a938f5ed}</Project>
-      <Name>PDFClown.Viewer.UWP</Name>
+      <Name>PdfClown.Viewer.UWP</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PDFClown.Viewer.Test\PDFClown.Viewer.Test.csproj">
+    <ProjectReference Include="..\PdfClown.Viewer.Test\PdfClown.Viewer.Test.csproj">
       <Project>{72C25E0E-744B-4888-B38A-3C8765F45434}</Project>
-      <Name>PDFClown.Viewer.Test</Name>
+      <Name>PdfClown.Viewer.Test</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

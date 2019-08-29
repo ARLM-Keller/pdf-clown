@@ -5,7 +5,7 @@ using System.Linq;
 using Foundation;
 using UIKit;
 
-namespace PDFClown.Viewer.Test.iOS
+namespace PdfClown.Viewer.Test.iOS
 {
     public class Application
     {

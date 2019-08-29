@@ -9,9 +9,9 @@
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TemplateGuid>{6143fdea-f3c2-4a09-aafa-6e230626515e}</TemplateGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>PDFClown.Viewer.iOS</RootNamespace>
+    <RootNamespace>PdfClown.Viewer.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>PDFClown.Viewer.iOS</AssemblyName>
+    <AssemblyName>PdfClown.Viewer.iOS</AssemblyName>
     <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
@@ -75,9 +75,9 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\PDFClown.Viewer\PDFClown.Viewer.csproj">
+    <ProjectReference Include="..\PdfClown.Viewer\PdfClown.Viewer.csproj">
       <Project>{C7159539-9558-4688-8D80-6D7883DC0229}</Project>
-      <Name>PDFClown.Viewer</Name>
+      <Name>PdfClown.Viewer</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

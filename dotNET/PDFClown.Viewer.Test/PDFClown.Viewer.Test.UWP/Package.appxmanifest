@@ -14,7 +14,7 @@
   <mp:PhoneIdentity PhoneProductId="ec0cc741-fd3e-485c-81be-68815c480690" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>PDFClown.Viewer.Test.UWP</DisplayName>
+    <DisplayName>PdfClown.Viewer.Test.UWP</DisplayName>
     <PublisherDisplayName>de4bf137-d897-4a36-934f-2427f8f3398a</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -30,12 +30,12 @@
   <Applications>
     <Application Id="App"
       Executable="$targetnametoken$.exe"
-      EntryPoint="PDFClown.Viewer.Test.UWP.App">
+      EntryPoint="PdfClown.Viewer.Test.UWP.App">
       <uap:VisualElements
-        DisplayName="PDFClown.Viewer.Test.UWP"
+        DisplayName="PdfClown.Viewer.Test.UWP"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
-        Description="PDFClown.Viewer.Test.UWP"
+        Description="PdfClown.Viewer.Test.UWP"
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square310x310Logo="Assets\LargeTile.png" Square71x71Logo="Assets\SmallTile.png">
           <uap:ShowNameOnTiles>

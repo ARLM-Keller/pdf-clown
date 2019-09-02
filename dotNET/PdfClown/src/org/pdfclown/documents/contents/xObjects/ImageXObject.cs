@@ -57,9 +57,13 @@ namespace org.pdfclown.documents.contents.xObjects
         #endregion
 
         #region dynamic
+        private ColorSpace colorSpace;
+        private int? bitsPerComponent;
+        private ImageXObject smask;
+        private SKSize? size;
+
         #region constructors
-        public ImageXObject(Document context, PdfStream baseDataObject)
-            : base(context, baseDataObject)
+        public ImageXObject(Document context, PdfStream baseDataObject) : base(context, baseDataObject)
         {
             /*
               NOTE: It's caller responsability to adequately populate the stream
@@ -72,6 +76,7 @@ namespace org.pdfclown.documents.contents.xObjects
 
         private ImageXObject(PdfDirectObject baseObject) : base(baseObject)
         { }
+
         #endregion
 
         #region interface
@@ -81,7 +86,7 @@ namespace org.pdfclown.documents.contents.xObjects
         */
         public int BitsPerComponent
         {
-            get { return ((PdfInteger)BaseDataObject.Header[PdfName.BitsPerComponent]).RawValue; }
+            get { return (bitsPerComponent ?? (bitsPerComponent = ((PdfInteger)BaseDataObject.Header[PdfName.BitsPerComponent]).RawValue)).Value; }
         }
 
         /**
@@ -89,7 +94,17 @@ namespace org.pdfclown.documents.contents.xObjects
         */
         public ColorSpace ColorSpace
         {
-            get { return ColorSpace.Wrap(BaseDataObject.Header[PdfName.ColorSpace]); }
+            get { return colorSpace ?? (colorSpace = ColorSpace.Wrap(BaseDataObject.Header[PdfName.ColorSpace])); }
+        }
+
+        public IBuffer Data
+        {
+            get { return Stream.GetBody(false); }
+        }
+
+        public PdfDirectObject Filter
+        {
+            get { return Stream.Filter; }
         }
 
         public override SKMatrix Matrix
@@ -110,6 +125,16 @@ namespace org.pdfclown.documents.contents.xObjects
             {/* NOOP. */}
         }
 
+        public PdfDirectObject Parameters
+        {
+            get { return Stream.Parameters; }
+        }
+
+        public PdfDirectObject Header
+        {
+            get { return Stream.Header; }
+        }
+
         /**
           <summary>Gets the size of the image (in samples).</summary>
         */
@@ -117,12 +142,11 @@ namespace org.pdfclown.documents.contents.xObjects
         {
             get
             {
-                PdfDictionary header = BaseDataObject.Header;
 
-                return new SKSize(
-                  ((PdfInteger)header[PdfName.Width]).RawValue,
-                  ((PdfInteger)header[PdfName.Height]).RawValue
-                  );
+                return (size ?? (size = new SKSize(
+                  ((PdfInteger)BaseDataObject.Header[PdfName.Width]).RawValue,
+                  ((PdfInteger)BaseDataObject.Header[PdfName.Height]).RawValue
+                  ))).Value;
             }
             set { throw new NotSupportedException(); }
         }
@@ -135,10 +159,25 @@ namespace org.pdfclown.documents.contents.xObjects
             }
             var stream = BaseDataObject as PdfStream;
 
-            SKBitmap image = ImageLoader.Load(stream.GetBody(false), stream.Filter, stream.Parameters ?? stream.Header, this);
+            SKBitmap image = ImageLoader.Load(this);
             Document.Cache[(PdfReference)BaseObject] = image;
             return image;
         }
+
+        public IImageObject SMask
+        {
+            get
+            {
+                var maskData = BaseDataObject.Header[PdfName.SMask];
+                return maskData == null ? null : (smask ?? (smask = Wrap(maskData)));
+            }
+        }
+
+        public PdfStream Stream
+        {
+            get { return BaseDataObject as PdfStream; }
+        }
+
 
         #endregion
         #endregion

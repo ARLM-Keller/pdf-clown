@@ -76,6 +76,8 @@ namespace org.pdfclown.documents.contents.objects
             get { return (Operation)Objects[0]; }
         }
 
+        PdfDirectObject IImageObject.Header => null;
+
         public InlineImageHeader ImageHeader => (InlineImageHeader)Header;
 
         public InlineImageBody ImageBody => (InlineImageBody)Body;
@@ -93,6 +95,26 @@ namespace org.pdfclown.documents.contents.objects
         }
 
         public SKMatrix Matrix => SKMatrix.MakeScale(1F / ImageHeader.Width, -1F / ImageHeader.Height);
+
+        public IImageObject SMask
+        {
+            get { return null; }
+        }
+
+        public IBuffer Data
+        {
+            get => ImageBody.Value;
+        }
+
+        public PdfDirectObject Filter
+        {
+            get => ImageHeader.Filter;
+        }
+
+        public PdfDirectObject Parameters
+        {
+            get => ImageHeader.DecodeParms;
+        }
 
         public int BitsPerComponent
         {
@@ -126,7 +148,7 @@ namespace org.pdfclown.documents.contents.objects
         {
             if (image != null)
                 return image;
-            return image = ImageLoader.Load(ImageBody.Value, ImageHeader.Filter, ImageHeader.DecodeParms, this);
+            return image = ImageLoader.Load(this);
         }
 
         public override void WriteTo(IOutputStream stream, Document context)
@@ -136,6 +158,11 @@ namespace org.pdfclown.documents.contents.objects
             stream.Write(DataOperatorKeyword); stream.Write("\n");
             Body.WriteTo(stream, context); stream.Write("\n");
             stream.Write(EndOperatorKeyword);
+        }
+
+        SKBitmap IImageObject.LoadImage()
+        {
+            throw new NotImplementedException();
         }
         #endregion
         #endregion

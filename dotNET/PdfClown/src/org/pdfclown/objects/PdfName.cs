@@ -351,7 +351,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName LZWDecode = new PdfName("LZWDecode");
         public static readonly PdfName M = new PdfName("M");
         public static readonly PdfName Mac = new PdfName("Mac");
-        public static readonly PdfName MacRomanEncoding = new PdfName("MacRomanEncoding");
+        public static readonly PdfName MacRomanEncoding = new PdfName("MacRomanEncoding");        
         public static readonly PdfName Matrix = new PdfName("Matrix");
         public static readonly PdfName max = new PdfName("max");
         public static readonly PdfName MaxLen = new PdfName("MaxLen");
@@ -513,6 +513,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName SinglePage = new PdfName("SinglePage");
         public static readonly PdfName Size = new PdfName("Size");
         public static readonly PdfName Slash = new PdfName("Slash");
+        public static readonly PdfName SMask = new PdfName("SMask");
         public static readonly PdfName SoftLight = new PdfName("SoftLight");
         public static readonly PdfName Sold = new PdfName("Sold");
         public static readonly PdfName Sound = new PdfName("Sound");
@@ -615,6 +616,7 @@ namespace org.pdfclown.objects
 
         private static readonly byte[] NamePrefixChunk = tokens::Encoding.Pdf.Encode(tokens.Keyword.NamePrefix);
         
+
 
 
 

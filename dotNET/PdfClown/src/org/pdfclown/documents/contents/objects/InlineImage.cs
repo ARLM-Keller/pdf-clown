@@ -123,6 +123,8 @@ namespace org.pdfclown.documents.contents.objects
 
         public ColorSpace ColorSpace => ColorSpace.Wrap(ImageHeader.FormatColorSpace);
 
+        public PdfArray Matte => null;
+
         public override void Scan(ContentScanner.GraphicsState state)
         {
             if (state.Scanner?.RenderContext != null)
@@ -139,7 +141,7 @@ namespace org.pdfclown.documents.contents.objects
                     canvas.SetMatrix(matrix);
                     var rect = SKRect.Create(0, 0, size.Width, size.Height);
                     var test = canvas.TotalMatrix.MapRect(rect);
-                    canvas.DrawBitmap(image, 0, 0);
+                    canvas.DrawBitmap(image, 0, 0, new SKPaint { FilterQuality = SKFilterQuality.High});
                 }
             }
         }

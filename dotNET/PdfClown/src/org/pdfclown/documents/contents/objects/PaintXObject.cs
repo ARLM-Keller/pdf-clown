@@ -107,7 +107,7 @@ namespace org.pdfclown.documents.contents.objects
                     canvas.SetMatrix(matrix);
                     var rect = SKRect.Create(0, 0, imageObject.Size.Width, imageObject.Size.Height);
                     var test = canvas.TotalMatrix.MapRect(rect);
-                    canvas.DrawBitmap(image, 0, 0);
+                    canvas.DrawBitmap(image, 0, 0, new SKPaint { FilterQuality = SKFilterQuality.High});
                 }
             }
             else if (xObject is xObjects.FormXObject formObject)

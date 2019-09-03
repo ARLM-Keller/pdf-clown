@@ -15,6 +15,8 @@ namespace org.pdfclown.documents.contents
         IImageObject SMask { get; }
         PdfDirectObject Header { get; }
 
+        PdfArray Matte { get; }
+
         SKBitmap LoadImage();
     }
 }

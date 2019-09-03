@@ -46,6 +46,7 @@ namespace org.pdfclown.documents.contents
         private IImageObject image;
         private ColorSpace colorSpace;
         private int bitPerComponent;
+        private PdfArray matte;
         private SKSize size;
         private bool indexed;
         private int componentsCount;
@@ -78,6 +79,7 @@ namespace org.pdfclown.documents.contents
             this.buffer = buffer;
             colorSpace = image.ColorSpace;
             bitPerComponent = image.BitsPerComponent;
+            matte = image.Matte;
             size = image.Size;
             indexed = colorSpace is IndexedColorSpace;
             componentsCount = colorSpace.ComponentCount;
@@ -117,7 +119,7 @@ namespace org.pdfclown.documents.contents
             }
             SKImageInfo info = new SKImageInfo((int)size.Width, (int)size.Height)
             {
-                //AlphaType = SKAlphaType.Opaque,
+                AlphaType = SKAlphaType.Premul,
                 //ColorType = SKColorType.Bgra8888
             };
 
@@ -130,11 +132,20 @@ namespace org.pdfclown.documents.contents
                 {
                     var index = (y * info.Width + x);
                     var color = GetColor(index);
+                    
+                    var skColor = colorSpace.GetColor(color);
                     if (sMaskLoader != null)
                     {
-
+                        var sMaskColor = sMaskLoader.GetColor(index);
+                        skColor = skColor.WithAlpha((byte)(((IPdfNumber)sMaskColor.Components[0]).DoubleValue * 255));
+                        //for (int i = 0; i < color.Components.Count; i++)
+                        //{
+                        //    var m = sMaskLoader.matte == null ? 0D : ((IPdfNumber)sMaskLoader.matte[i]).DoubleValue;
+                        //    var a = ((IPdfNumber)sMaskColor.Components[sMaskColor.Components.Count == color.Components.Count ? i : 0]).DoubleValue;
+                        //    var c = ((IPdfNumber)color.Components[i]).DoubleValue;
+                        //    color.Components[i] = new PdfReal(m + a * (c - m));
+                        //}
                     }
-                    var skColor = colorSpace.GetColor(color);
                     raster[index] = (int)(uint)skColor;
                 }
             }

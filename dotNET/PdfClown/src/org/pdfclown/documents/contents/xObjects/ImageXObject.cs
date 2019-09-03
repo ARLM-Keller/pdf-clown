@@ -178,6 +178,11 @@ namespace org.pdfclown.documents.contents.xObjects
             get { return BaseDataObject as PdfStream; }
         }
 
+        public PdfArray Matte
+        {
+            get { return BaseDataObject.Header.Resolve(PdfName.Matte) as PdfArray; }
+        }
+
 
         #endregion
         #endregion

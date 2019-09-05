@@ -43,9 +43,7 @@ namespace org.pdfclown.documents.contents.fonts
         #endregion
 
         #region constructors
-        internal PfbParser(
-          IInputStream stream
-          )
+        internal PfbParser(IInputStream stream)
         { this.stream = stream; }
         #endregion
 
@@ -54,8 +52,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Parses the character-code-to-unicode mapping [PDF:1.6:5.9.1].</summary>
         */
-        public Dictionary<ByteArray, int> Parse(
-          )
+        public Dictionary<ByteArray, int> Parse()
         {
             Dictionary<ByteArray, int> codes = new Dictionary<ByteArray, int>();
 

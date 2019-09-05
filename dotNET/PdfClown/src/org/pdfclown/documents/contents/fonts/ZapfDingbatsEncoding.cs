@@ -28,11 +28,9 @@ namespace org.pdfclown.documents.contents.fonts
     /**
       <summary>ZapfDingbats encoding [PDF:1.7:D.5].</summary>
     */
-    internal sealed class ZapfDingbatsEncoding
-      : Encoding
+    internal sealed class ZapfDingbatsEncoding : Encoding
     {
-        public ZapfDingbatsEncoding(
-          )
+        public ZapfDingbatsEncoding()
         {
             Put(32, '\u0020');
             Put(33, '\u2701');

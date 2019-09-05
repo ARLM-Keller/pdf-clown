@@ -32,11 +32,9 @@ namespace org.pdfclown.documents.contents.fonts
     /**
       <summary>Windows ANSI encoding (Windows Code Page 1252) [PDF:1.6:D].</summary>
     */
-    internal sealed class WinAnsiEncoding
-      : Encoding
+    internal sealed class WinAnsiEncoding : Encoding
     {
-        public WinAnsiEncoding(
-          )
+        public WinAnsiEncoding()
         {
             Put(65, "A");
             Put(198, "AE");

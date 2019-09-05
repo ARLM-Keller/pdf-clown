@@ -46,8 +46,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Dictionary [CFF:1.0:4].</summary>
         */
-        private sealed class Dict
-          : IDictionary<int, IList<object>>
+        private sealed class Dict : IDictionary<int, IList<object>>
         {
             public enum OperatorEnum
             {
@@ -59,9 +58,7 @@ namespace org.pdfclown.documents.contents.fonts
 
             private const int OperatorValueEscape = 12 << 8;
 
-            public static string GetOperatorName(
-              OperatorEnum value
-              )
+            public static string GetOperatorName(OperatorEnum value)
             {
                 switch (value)
                 {
@@ -72,14 +69,10 @@ namespace org.pdfclown.documents.contents.fonts
                 }
             }
 
-            public static Dict Parse(
-              byte[] data
-              )
+            public static Dict Parse(byte[] data)
             { return Parse(new bytes.Buffer(data)); }
 
-            public static Dict Parse(
-              IInputStream stream
-              )
+            public static Dict Parse(IInputStream stream)
             {
                 IDictionary<int, IList<object>> entries = new Dictionary<int, IList<object>>();
                 IList<object> operands = null;
@@ -172,111 +165,71 @@ namespace org.pdfclown.documents.contents.fonts
 
             private readonly IDictionary<int, IList<object>> entries;
 
-            private Dict(
-              IDictionary<int, IList<object>> entries
-              )
+            private Dict(IDictionary<int, IList<object>> entries)
             { this.entries = entries; }
 
-            public void Add(
-              int key,
-              IList<object> value
-              )
+            public void Add(int key, IList<object> value)
             { throw new NotSupportedException(); }
 
-            public bool ContainsKey(
-              int key
-              )
+            public bool ContainsKey(int key)
             { return entries.ContainsKey(key); }
 
             public ICollection<int> Keys
             {
-                get
-                { return entries.Keys; }
+                get { return entries.Keys; }
             }
 
-            public bool Remove(
-              int key
-              )
+            public bool Remove(int key)
             { throw new NotSupportedException(); }
 
-            public IList<object> this[
-              int key
-              ]
+            public IList<object> this[int key]
             {
-                get
-                { IList<object> value; entries.TryGetValue(key, out value); return value; }
-                set
-                { throw new NotSupportedException(); }
+                get { IList<object> value; entries.TryGetValue(key, out value); return value; }
+                set { throw new NotSupportedException(); }
             }
 
-            public bool TryGetValue(
-              int key,
-              out IList<object> value
-              )
+            public bool TryGetValue(int key, out IList<object> value)
             { return entries.TryGetValue(key, out value); }
 
             public ICollection<IList<object>> Values
             {
-                get
-                { return entries.Values; }
+                get { return entries.Values; }
             }
 
-            void ICollection<KeyValuePair<int, IList<object>>>.Add(
-              KeyValuePair<int, IList<object>> keyValuePair
-              )
+            void ICollection<KeyValuePair<int, IList<object>>>.Add(KeyValuePair<int, IList<object>> keyValuePair)
             { throw new NotSupportedException(); }
 
-            public void Clear(
-              )
-            { throw new NotSupportedException(); }
+            public void Clear() { throw new NotSupportedException(); }
 
-            bool ICollection<KeyValuePair<int, IList<object>>>.Contains(
-              KeyValuePair<int, IList<object>> keyValuePair
-              )
+            bool ICollection<KeyValuePair<int, IList<object>>>.Contains(KeyValuePair<int, IList<object>> keyValuePair)
             { return entries.Contains(keyValuePair); }
 
-            public void CopyTo(
-              KeyValuePair<int, IList<object>>[] keyValuePairs,
-              int index
-              )
+            public void CopyTo(KeyValuePair<int, IList<object>>[] keyValuePairs, int index)
             { throw new NotImplementedException(); }
 
             public int Count
             {
-                get
-                { return entries.Count; }
+                get { return entries.Count; }
             }
 
             public bool IsReadOnly
             {
-                get
-                { return true; }
+                get { return true; }
             }
 
-            public bool Remove(
-              KeyValuePair<int, IList<object>> keyValuePair
-              )
+            public bool Remove(KeyValuePair<int, IList<object>> keyValuePair)
             { throw new NotSupportedException(); }
 
-            IEnumerator<KeyValuePair<int, IList<object>>> IEnumerable<KeyValuePair<int, IList<object>>>.GetEnumerator(
-              )
+            IEnumerator<KeyValuePair<int, IList<object>>> IEnumerable<KeyValuePair<int, IList<object>>>.GetEnumerator()
             { return entries.GetEnumerator(); }
 
-            IEnumerator IEnumerable.GetEnumerator(
-              )
+            IEnumerator IEnumerable.GetEnumerator()
             { return ((IEnumerable<KeyValuePair<int, IList<object>>>)this).GetEnumerator(); }
 
-            public object Get(
-              OperatorEnum @operator,
-              int operandIndex
-              )
+            public object Get(OperatorEnum @operator, int operandIndex)
             { return Get(@operator, operandIndex, null); }
 
-            public object Get(
-              OperatorEnum @operator,
-              int operandIndex,
-              int? defaultValue
-              )
+            public object Get(OperatorEnum @operator, int operandIndex, int? defaultValue)
             {
                 IList<object> operands = this[(int)@operator];
                 return operands != null ? operands[operandIndex] : defaultValue;
@@ -286,17 +239,12 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Array of variable-sized objects [CFF:1.0:5].</summary>
         */
-        private sealed class Index
-          : IList<byte[]>
+        private sealed class Index : IList<byte[]>
         {
-            public static Index Parse(
-              byte[] data
-              )
+            public static Index Parse(byte[] data)
             { return Parse(new bytes.Buffer(data)); }
 
-            public static Index Parse(
-              IInputStream stream
-              )
+            public static Index Parse(IInputStream stream)
             {
                 byte[][] data = new byte[stream.ReadUnsignedShort()][];
                 {
@@ -310,10 +258,7 @@ namespace org.pdfclown.documents.contents.fonts
                 return new Index(data);
             }
 
-            public static Index Parse(
-              IInputStream stream,
-              int offset
-              )
+            public static Index Parse(IInputStream stream, int offset)
             {
                 stream.Seek(offset);
                 return Parse(stream);
@@ -321,83 +266,54 @@ namespace org.pdfclown.documents.contents.fonts
 
             private readonly byte[][] data;
 
-            private Index(
-              byte[][] data
-              )
+            private Index(byte[][] data)
             { this.data = data; }
 
-            public int IndexOf(
-              byte[] item
-              )
+            public int IndexOf(byte[] item)
             { throw new NotImplementedException(); }
 
-            public void Insert(
-              int index,
-              byte[] item
-              )
+            public void Insert(int index, byte[] item)
             { throw new NotSupportedException(); }
 
-            public void RemoveAt(
-              int index
-              )
+            public void RemoveAt(int index)
             { throw new NotSupportedException(); }
 
-            public byte[] this[
-              int index
-              ]
+            public byte[] this[int index]
             {
-                get
-                { return data[index]; }
-                set
-                { throw new NotSupportedException(); }
+                get { return data[index]; }
+                set { throw new NotSupportedException(); }
             }
 
-            public void Add(
-              byte[] item
-              )
+            public void Add(byte[] item)
             { throw new NotSupportedException(); }
 
-            public void Clear(
-              )
+            public void Clear()
             { throw new NotSupportedException(); }
 
-            public bool Contains(
-              byte[] item
-              )
-            { throw new NotImplementedException(); }
+            public bool Contains(byte[] item) { throw new NotImplementedException(); }
 
-            public void CopyTo(
-              byte[][] items,
-              int index
-              )
+            public void CopyTo(byte[][] items, int index)
             { throw new NotImplementedException(); }
 
             public int Count
             {
-                get
-                { return data.Length; }
+                get { return data.Length; }
             }
 
             public bool IsReadOnly
             {
-                get
-                { return true; }
+                get { return true; }
             }
 
-            public bool Remove(
-              byte[] item
-              )
-            { throw new NotSupportedException(); }
+            public bool Remove(byte[] item) { throw new NotSupportedException(); }
 
-            public IEnumerator<byte[]> GetEnumerator(
-              )
+            public IEnumerator<byte[]> GetEnumerator()
             {
                 for (int index = 0, length = Count; index < length; index++)
                 { yield return this[index]; }
             }
 
-            IEnumerator IEnumerable.GetEnumerator(
-              )
+            IEnumerator IEnumerable.GetEnumerator()
             { return this.GetEnumerator(); }
         }
 
@@ -463,9 +379,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Gets the charset corresponding to the given value.</summary>
         */
-        private static StandardCharsetEnum? GetStandardCharset(
-          int? value
-          )
+        private static StandardCharsetEnum? GetStandardCharset(int? value)
         {
             if (!value.HasValue)
                 return StandardCharsetEnum.ISOAdobe;
@@ -564,17 +478,14 @@ namespace org.pdfclown.documents.contents.fonts
           <summary>Gets the string corresponding to the specified identifier.</summary>
           <param name="id">SID (String ID).</param>
         */
-        private string GetString(
-          int id
-          )
+        private string GetString(int id)
         {
             return id < StandardStrings.Count
               ? StandardStrings[id]
               : ToString(stringIndex[id - StandardStrings.Count]);
         }
 
-        private void ParseHeader(
-          )
+        private void ParseHeader()
         {
             fontData.Seek(2);
             int hdrSize = fontData.ReadByte();
@@ -582,9 +493,7 @@ namespace org.pdfclown.documents.contents.fonts
             fontData.Seek(hdrSize);
         }
 
-        private int ToUnicode(
-          int sid
-          )
+        private int ToUnicode(int sid)
         {
             /*
              * FIXME: avoid Unicode resolution at this stage -- names should be kept to allow subsequent

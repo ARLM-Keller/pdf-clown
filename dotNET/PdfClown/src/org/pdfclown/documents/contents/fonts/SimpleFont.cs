@@ -35,18 +35,13 @@ namespace org.pdfclown.documents.contents.fonts
       <summary>Simple font [PDF:1.6:5.5].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public abstract class SimpleFont
-      : Font
+    public abstract class SimpleFont : Font
     {
         #region constructors
-        protected SimpleFont(
-          Document context
-          ) : base(context)
+        protected SimpleFont(Document context) : base(context)
         { }
 
-        protected SimpleFont(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected SimpleFont(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -125,7 +120,7 @@ namespace org.pdfclown.documents.contents.fonts
                 //    && encodingDictionary.Values.Count>0
                 //    && encodingDictionary.Resolve(PdfName.Differences) is PdfArray differencesObject)
                 //{
-                    
+
                 //    byte[] charCodeData = new byte[1];
                 //    foreach (PdfDirectObject differenceObject in differencesObject)
                 //    {

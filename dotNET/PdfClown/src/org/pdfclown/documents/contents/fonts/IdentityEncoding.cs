@@ -28,11 +28,9 @@ namespace org.pdfclown.documents.contents.fonts
     /**
       <summary>Default encoding for symbolic fonts.</summary>
     */
-    internal sealed class IdentityEncoding
-      : Encoding
+    internal sealed class IdentityEncoding : Encoding
     {
-        public IdentityEncoding(
-          )
+        public IdentityEncoding()
         {
             for (int index = 1; index < 256; index++)
             { Put(index, index); }

@@ -46,14 +46,10 @@ namespace org.pdfclown.documents.contents.objects
 
         #region dynamic
         #region constructors
-        public ApplyExtGState(
-          PdfName name
-          ) : base(OperatorKeyword, name)
+        public ApplyExtGState(PdfName name) : base(OperatorKeyword, name)
         { }
 
-        public ApplyExtGState(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public ApplyExtGState(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
         #endregion
 

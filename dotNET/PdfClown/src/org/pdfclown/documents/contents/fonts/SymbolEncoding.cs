@@ -28,11 +28,9 @@ namespace org.pdfclown.documents.contents.fonts
     /**
       <summary>Symbol encoding [PDF:1.7:D.4].</summary>
     */
-    internal sealed class SymbolEncoding
-      : Encoding
+    internal sealed class SymbolEncoding : Encoding
     {
-        public SymbolEncoding(
-          )
+        public SymbolEncoding()
         {
             Put(32, "space");
             Put(33, "exclam");

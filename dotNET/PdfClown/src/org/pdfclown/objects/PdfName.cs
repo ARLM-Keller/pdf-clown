@@ -335,6 +335,9 @@ namespace org.pdfclown.objects
         public static readonly PdfName LE = new PdfName("LE");
         public static readonly PdfName Leading = new PdfName("Leading");
         public static readonly PdfName Length = new PdfName("Length");
+        public static readonly PdfName Length1 = new PdfName("Length1");
+        public static readonly PdfName Length2 = new PdfName("Length2");
+        public static readonly PdfName Length3 = new PdfName("Length3");
         public static readonly PdfName LI = new PdfName("LI");
         public static readonly PdfName Lighten = new PdfName("Lighten");
         public static readonly PdfName Limits = new PdfName("Limits");
@@ -353,6 +356,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName Mac = new PdfName("Mac");
         public static readonly PdfName MacRomanEncoding = new PdfName("MacRomanEncoding");        
         public static readonly PdfName Matrix = new PdfName("Matrix");
+        public static readonly PdfName Matte = new PdfName("Matte");
         public static readonly PdfName max = new PdfName("max");
         public static readonly PdfName MaxLen = new PdfName("MaxLen");
         public static readonly PdfName MCD = new PdfName("MCD");
@@ -592,6 +596,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName ViewState = new PdfName("ViewState");
         public static readonly PdfName VisiblePages = new PdfName("VisiblePages");
         public static readonly PdfName W = new PdfName("W");
+        public static readonly PdfName FontWeight = new PdfName("FontWeight");
         public static readonly PdfName WhitePoint = new PdfName("WhitePoint");
         public static readonly PdfName Widget = new PdfName("Widget");
         public static readonly PdfName Width = new PdfName("Width");
@@ -615,11 +620,6 @@ namespace org.pdfclown.objects
 #pragma warning restore 0108
 
         private static readonly byte[] NamePrefixChunk = tokens::Encoding.Pdf.Encode(tokens.Keyword.NamePrefix);
-        
-
-
-
-
 
 
 

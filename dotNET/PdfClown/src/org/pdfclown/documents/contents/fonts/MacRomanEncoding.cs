@@ -32,11 +32,9 @@ namespace org.pdfclown.documents.contents.fonts
     /**
       <summary>Mac OS standard latin encoding [PDF:1.6:D].</summary>
     */
-    internal sealed class MacRomanEncoding
-      : Encoding
+    internal sealed class MacRomanEncoding : Encoding
     {
-        public MacRomanEncoding(
-          )
+        public MacRomanEncoding()
         {
             Put(65, "A");
             Put(174, "AE");

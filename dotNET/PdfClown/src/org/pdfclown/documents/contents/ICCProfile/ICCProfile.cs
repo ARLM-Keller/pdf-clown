@@ -45,7 +45,21 @@ namespace org.pdfclown.documents.contents.colorSpaces
             { ICCMeasurementType.meas, typeof(ICCMeasurementType) },
             { ICCNamedColorType.ncol, typeof(ICCNamedColorType) },
             { ICCNamedColor2Type.ncl2, typeof(ICCNamedColor2Type)  },
-
+            { ICCProfileSequenceDescType.pseq, typeof(ICCProfileSequenceDescType)  },
+            { ICCResponseCurveSet16Type.rcs2, typeof(ICCResponseCurveSet16Type)  },
+            { ICCS15Fixed16ArrayType.sf32, typeof(ICCS15Fixed16ArrayType)  },
+            { ICCU16Fixed16ArrayType.uf32, typeof(ICCU16Fixed16ArrayType)  },
+            { ICCUInt16ArrayType.ui16, typeof(ICCUInt16ArrayType)  },
+            { ICCUInt32ArrayType.ui32, typeof(ICCUInt32ArrayType)  },
+            { ICCUInt64ArrayType.ui64, typeof(ICCUInt64ArrayType)  },
+            { ICCUInt8ArrayType.ui08, typeof(ICCUInt8ArrayType)  },
+            { ICCScreeningType.scrn, typeof(ICCScreeningType)  },
+            { ICCSignatureType.sig, typeof(ICCSignatureType)  },
+            { ICCTextDescriptionType.desc, typeof(ICCTextDescriptionType)  },
+            { ICCTextType.text, typeof(ICCTextType)  },
+            { ICCUcrbgType.bfd, typeof(ICCUcrbgType)  },
+            { ICCViewingConditionsTypee.view, typeof(ICCViewingConditionsTypee)  },
+            { ICCXYZType.XYZ, typeof(ICCXYZType)  },
 
         };
 
@@ -69,8 +83,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
             header.Flags = (ICCProfileFlags)buffer.ReadUnsignedInt();
             header.DeviceManufacturer = buffer.ReadUnsignedInt();
             header.DeviceModel = buffer.ReadUnsignedInt();
-            header.DeviceAttributes.Flags = (ICCProfileAttributeFlags)buffer.ReadUnsignedInt();
-            header.DeviceAttributes.Reserved = buffer.ReadUnsignedInt();
+            header.DeviceAttributes.Load(buffer);
             header.RenderingIntent.Intents = buffer.ReadUnsignedShort();
             header.RenderingIntent.Reserved = buffer.ReadUnsignedShort();
             header.XYZ.Load(buffer);
@@ -94,6 +107,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
                 if (Types.TryGetValue(key, out var type))
                 {
                     tagTable.Tag = (ICCTag)Activator.CreateInstance(type, tagTable);
+                    tagTable.Tag.Profile = profile;
                     tagTable.Tag.Load(buffer);
                 }
             }
@@ -118,86 +132,5 @@ namespace org.pdfclown.documents.contents.colorSpaces
         public ICCHeader Header;
 
         public List<ICCTagTable> Tags { get; set; } = new List<ICCTagTable>();
-    }
-
-    public abstract class ICCTag
-    {
-        public ICCTag(ICCTagTable table)
-        {
-            Table = table;
-        }
-
-        public ICCTagTable Table { get; set; }
-        public abstract void Load(org.pdfclown.bytes.Buffer buffer);
-    }
-
-    public class ICCNamedColorType : ICCTag
-    {
-        public ICCNamedColorType(ICCTagTable table) : base(table)
-        {
-        }
-
-        public const uint ncol = 0x6E636F6C;
-        public uint Reserved = 0x00000000;
-        public uint VendorSpecificFlag;
-        public uint Count;
-        public string Prefix;
-        public string Suffix;
-        public string FirstColor;
-
-        public override void Load(bytes.Buffer buffer)
-        {
-            buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            VendorSpecificFlag = buffer.ReadUnsignedInt();
-            Count = buffer.ReadUnsignedInt();
-            Prefix = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
-            Suffix = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
-            FirstColor = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
-            //....color coordinates. Color space of data
-        }
-    }
-
-    public class ICCNamedColor2Type : ICCTag
-    {
-        public ICCNamedColor2Type(ICCTagTable table) : base(table)
-        {
-        }
-
-        public const uint ncl2 = 0x6E636C32;
-        public uint Reserved = 0x00000000;
-        public uint VendorSpecificFlag;
-        public uint Count;
-        public uint DeviceCoordinates;
-        public string Prefix;
-        public string Suffix;
-        public string FirstColor;
-
-        public override void Load(bytes.Buffer buffer)
-        {
-            buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            VendorSpecificFlag = buffer.ReadUnsignedInt();
-            Count = buffer.ReadUnsignedInt();
-            DeviceCoordinates = buffer.ReadUnsignedInt();
-            Prefix = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes(32));
-            Suffix = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes(32));
-
-            //....color coordinates. Color space of data
-        }
-    }
-
-    public class ICCColorName
-    {
-        public string Name;
-        public ushort[] PSCCoord;
-        public ushort[] DeviceCoord;
-
-        public void Load(bytes.Buffer buffer)
-        {
-            Name = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes(32));
-        }
     }
 }

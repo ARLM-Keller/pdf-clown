@@ -23,28 +23,33 @@
   this list of conditions.
 */
 
-using System.Runtime.InteropServices;
-
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct ICCProfileAttribute
+    public class ICCCurveStructure
     {
-        public ICCProfileAttributeFlags Flags;
-        public uint Reserved;
+        public ICCCurveMeasurementEncodings MesurementUnit;
+        public uint[] Counts;
+        public ICCXYZNumber[] Measurments;
+        public ICCResponse16Number[] Responces;
 
-        public override string ToString()
+        public void Load(bytes.Buffer buffer, ushort numberOfChannels)
         {
-            return $"{Flags}";
-        }
-
-        public void Load(bytes.IBuffer buffer)
-        {
-            Flags = (ICCProfileAttributeFlags)buffer.ReadUnsignedInt();
-            Reserved = buffer.ReadUnsignedInt();
+            MesurementUnit = (ICCCurveMeasurementEncodings)buffer.ReadUnsignedInt();
+            Counts = new uint[numberOfChannels];
+            Measurments = new ICCXYZNumber[numberOfChannels];
+            Responces = new ICCResponse16Number[numberOfChannels];
+            for (int i = 0; i < numberOfChannels; i++)
+            {
+                Counts[i] = buffer.ReadUnsignedInt();
+            }
+            for (int i = 0; i < numberOfChannels; i++)
+            {
+                Measurments[i].Load(buffer);
+            }
+            for (int i = 0; i < numberOfChannels; i++)
+            {
+                Responces[i].Load(buffer);
+            }
         }
     }
-
-
-
 }

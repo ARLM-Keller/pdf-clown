@@ -41,7 +41,9 @@ namespace org.pdfclown.documents.contents.colorSpaces
     public sealed class ICCBasedColorSpace
       : ColorSpace
     {
-        private ICCProfile profile;
+        private SKColorSpace skColorSpace;
+        private SKMatrix44 xyzD50 = SKMatrix44.CreateIdentity();
+        private ICCProfile iccProfile;
         #region dynamic
         #region constructors
         //TODO:IMPL new element constructor!
@@ -79,33 +81,37 @@ namespace org.pdfclown.documents.contents.colorSpaces
 
         public override SKColor GetColor(Color color)
         {
-            if (profile == null)
-                profile = ICCProfile.Load(Profile.GetBody(true).ToByteArray());
+            GetIccProfile();
+            GetSKColorSpace();
 
             // FIXME: temporary hack
             if (color is DeviceRGBColor devRGB)
             {
+                var point = Power(xyzD50, (float)devRGB.R, (float)devRGB.G, (float)devRGB.B);
                 return new SKColor(
-                   (byte)(devRGB.R * 255),
-                   (byte)(devRGB.G * 255),
-                   (byte)(devRGB.B * 255));
+                   (byte)(point.X * 255),
+                   (byte)(point.Y * 255),
+                   (byte)(point.Z * 255));
             }
             else if (color is DeviceGrayColor devGray)
             {
+                var point = Power(xyzD50, (float)devGray.G, (float)devGray.G, (float)devGray.G);
                 return new SKColor(
-                    (byte)(devGray.G * 255),
-                    (byte)(devGray.G * 255),
-                    (byte)(devGray.G * 255));
+                    (byte)(point.X * 255),
+                    (byte)(point.Y * 255),
+                    (byte)(point.Z * 255));
             }
 
             return SKColors.Black;
         }
+
         
+
         public PdfStream Profile
         {
             get { return (PdfStream)((PdfArray)BaseDataObject).Resolve(1); }
         }
-
+        
         public PdfName Alternate
         {
             get => Profile?.Header.Resolve(PdfName.Alternate) as PdfName;
@@ -116,6 +122,35 @@ namespace org.pdfclown.documents.contents.colorSpaces
             get => ((PdfInteger)Profile?.Header.Resolve(PdfName.N))?.RawValue ?? 0;
         }
 
+
+        public SKColorSpace GetSKColorSpace()
+        {
+            if (skColorSpace == null)
+            {
+                skColorSpace = SKColorSpace.CreateIcc(Profile.GetBody(true).ToByteArray());
+                xyzD50 = skColorSpace.ToXyzD50();
+            }
+            return skColorSpace;
+        }
+
+        private void GetIccProfile()
+        {
+            if (iccProfile == null)
+            {
+                iccProfile = ICCProfile.Load(Profile.GetBody(true).ToByteArray());
+            }
+        }
+
+        private SKPoint3 Power(SKMatrix44 matrix, float x, float y, float z)
+        {
+            var array = new[] { x, y, z };//matrix.MapScalars(x, y, z, 1);//
+            return new SKPoint3
+            {
+                X = array[0],
+                Y = array[1],
+                Z = array[2]
+            };
+        }
 
         #endregion
         #endregion

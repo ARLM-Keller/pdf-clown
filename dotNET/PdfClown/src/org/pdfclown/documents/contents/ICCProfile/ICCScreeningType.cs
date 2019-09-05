@@ -23,28 +23,32 @@
   this list of conditions.
 */
 
-using System.Runtime.InteropServices;
-
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct ICCProfileAttribute
+    public class ICCScreeningType : ICCTag
     {
-        public ICCProfileAttributeFlags Flags;
-        public uint Reserved;
-
-        public override string ToString()
+        public ICCScreeningType(ICCTagTable table) : base(table)
         {
-            return $"{Flags}";
         }
 
-        public void Load(bytes.IBuffer buffer)
+        public const uint scrn = 0x7363726E;
+        public uint Reserved = 0x00000000;
+        public ICCScreeningFlag Flag;
+        public uint NumberOfChannels;
+        public ICCScreeningChannel[] Channels;
+
+        public override void Load(bytes.Buffer buffer)
         {
-            Flags = (ICCProfileAttributeFlags)buffer.ReadUnsignedInt();
-            Reserved = buffer.ReadUnsignedInt();
+            buffer.Seek(Table.Offset);
+            buffer.ReadUnsignedInt();
+            buffer.ReadUnsignedInt();
+            Flag = (ICCScreeningFlag)buffer.ReadUnsignedInt();
+            NumberOfChannels = buffer.ReadUnsignedInt();
+            Channels = new ICCScreeningChannel[NumberOfChannels];
+            for (int i = 0; i < NumberOfChannels; i++)
+            {
+                Channels[i].Load(buffer);
+            }
         }
     }
-
-
-
 }

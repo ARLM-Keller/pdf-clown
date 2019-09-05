@@ -23,28 +23,17 @@
   this list of conditions.
 */
 
-using System.Runtime.InteropServices;
-
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct ICCProfileAttribute
+    public enum ICCScreeningSpotEncodings : uint
     {
-        public ICCProfileAttributeFlags Flags;
-        public uint Reserved;
-
-        public override string ToString()
-        {
-            return $"{Flags}";
-        }
-
-        public void Load(bytes.IBuffer buffer)
-        {
-            Flags = (ICCProfileAttributeFlags)buffer.ReadUnsignedInt();
-            Reserved = buffer.ReadUnsignedInt();
-        }
+        Unknown = 0,
+        PrinterDefault = 1,
+        Round = 2,
+        Diamond = 3,
+        Ellipse = 4,
+        Line = 5,
+        Square = 6,
+        Cross = 7,
     }
-
-
-
 }

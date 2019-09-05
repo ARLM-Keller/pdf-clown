@@ -23,28 +23,43 @@
   this list of conditions.
 */
 
-using System.Runtime.InteropServices;
-
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct ICCProfileAttribute
+    public class ICCUcrbgType : ICCTag
     {
-        public ICCProfileAttributeFlags Flags;
-        public uint Reserved;
-
-        public override string ToString()
+        public ICCUcrbgType(ICCTagTable table) : base(table)
         {
-            return $"{Flags}";
         }
 
-        public void Load(bytes.IBuffer buffer)
+        public const uint bfd = 0x62666420;
+        public uint Reserved = 0x00000000;
+        public uint CountUCRCurves;
+        public ushort[] UCRCurves;
+        public uint CountBGCurves;
+        public ushort[] BGCurves;
+        public string Charactes;
+
+        public override void Load(bytes.Buffer buffer)
         {
-            Flags = (ICCProfileAttributeFlags)buffer.ReadUnsignedInt();
-            Reserved = buffer.ReadUnsignedInt();
+            buffer.Seek(Table.Offset);
+            buffer.ReadUnsignedInt();
+            buffer.ReadUnsignedInt();
+
+            CountUCRCurves = buffer.ReadUnsignedInt();
+            UCRCurves = new ushort[CountUCRCurves];
+            for (int i = 0; i < CountUCRCurves; i++)
+            {
+                UCRCurves[i] = buffer.ReadUnsignedShort();
+            }
+
+            CountBGCurves = buffer.ReadUnsignedInt();
+            BGCurves = new ushort[CountBGCurves];
+            for (int i = 0; i < CountBGCurves; i++)
+            {
+                BGCurves[i] = buffer.ReadUnsignedShort();
+            }
+
+            Charactes = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
         }
     }
-
-
-
 }

@@ -23,28 +23,42 @@
   this list of conditions.
 */
 
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct ICCProfileAttribute
+    public class ICCResponseCurveSet16Type : ICCTag
     {
-        public ICCProfileAttributeFlags Flags;
-        public uint Reserved;
-
-        public override string ToString()
+        public ICCResponseCurveSet16Type(ICCTagTable table) : base(table)
         {
-            return $"{Flags}";
         }
 
-        public void Load(bytes.IBuffer buffer)
+        public const uint rcs2 = 0x72637332;
+        public uint Reserved = 0x00000000;
+        public ushort NumberOfChannels;
+        public ushort CountTypes;
+        public uint[] Offsets;
+        public List<ICCCurveStructure> Structures;
+
+        public override void Load(bytes.Buffer buffer)
         {
-            Flags = (ICCProfileAttributeFlags)buffer.ReadUnsignedInt();
-            Reserved = buffer.ReadUnsignedInt();
+            buffer.Seek(Table.Offset);
+            buffer.ReadUnsignedInt();
+            buffer.ReadUnsignedInt();
+            NumberOfChannels = buffer.ReadUnsignedShort();
+            CountTypes = buffer.ReadUnsignedShort();
+            Offsets = new uint[CountTypes];
+            for (int i = 0; i < CountTypes; i++)
+            {
+                Offsets[i] = buffer.ReadUnsignedInt();
+            }
+            for (int i = 0; i < CountTypes; i++)
+            {
+                var structure = new ICCCurveStructure();
+                structure.Load(buffer, NumberOfChannels);
+                Structures.Add(structure);
+            }
+
         }
     }
-
-
-
 }

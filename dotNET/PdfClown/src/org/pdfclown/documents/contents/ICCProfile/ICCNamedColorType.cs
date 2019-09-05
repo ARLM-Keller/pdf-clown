@@ -23,28 +23,33 @@
   this list of conditions.
 */
 
-using System.Runtime.InteropServices;
-
 namespace org.pdfclown.documents.contents.colorSpaces
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct ICCProfileAttribute
+    public class ICCNamedColorType : ICCTag
     {
-        public ICCProfileAttributeFlags Flags;
-        public uint Reserved;
-
-        public override string ToString()
+        public ICCNamedColorType(ICCTagTable table) : base(table)
         {
-            return $"{Flags}";
         }
 
-        public void Load(bytes.IBuffer buffer)
+        public const uint ncol = 0x6E636F6C;
+        public uint Reserved = 0x00000000;
+        public uint VendorSpecificFlag;
+        public uint Count;
+        public string Prefix;
+        public string Suffix;
+        public string FirstColor;
+
+        public override void Load(bytes.Buffer buffer)
         {
-            Flags = (ICCProfileAttributeFlags)buffer.ReadUnsignedInt();
-            Reserved = buffer.ReadUnsignedInt();
+            buffer.Seek(Table.Offset);
+            buffer.ReadUnsignedInt();
+            buffer.ReadUnsignedInt();
+            VendorSpecificFlag = buffer.ReadUnsignedInt();
+            Count = buffer.ReadUnsignedInt();
+            Prefix = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
+            Suffix = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
+            FirstColor = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
+            //....color coordinates. Color space of data
         }
     }
-
-
-
 }

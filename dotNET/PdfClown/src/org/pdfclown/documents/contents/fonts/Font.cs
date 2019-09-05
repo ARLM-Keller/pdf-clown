@@ -309,10 +309,14 @@ namespace org.pdfclown.documents.contents.fonts
                     var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
                     return typeface = GetTypeface(stream3, name);
                 }
+                if (fontDescription.Resolve(PdfName.FontName) is PdfName fontName)
+                {
+                    return typeface = ParseName(fontName.StringValue, fontDescription);
+                }
             }
             else if (BaseDataObject.Resolve(PdfName.BaseFont) is PdfName baseFont)
             {
-                return typeface = ParseName(baseFont.StringValue);
+                return typeface = ParseName(baseFont.StringValue, Dictionary);
             }
 
             return null;
@@ -322,14 +326,14 @@ namespace org.pdfclown.documents.contents.fonts
         {
             if (BaseDataObject.Resolve(PdfName.FontDescriptor) is PdfDictionary fontDescription)
                 return fontDescription;
-            if (BaseDataObject.Resolve(PdfName.DescendantFonts) is PdfArray array 
+            if (BaseDataObject.Resolve(PdfName.DescendantFonts) is PdfArray array
                 && array.Resolve(0) is PdfDictionary descendant
                 && descendant.Resolve(PdfName.FontDescriptor) is PdfDictionary descendantDescription)
                 return descendantDescription;
             return null;
         }
 
-        private static SKTypeface ParseName(string name)
+        protected virtual SKTypeface ParseName(string name, PdfDictionary header)
         {
             if (cache == null)
             { cache = new Dictionary<string, SKTypeface>(StringComparer.Ordinal); }
@@ -339,29 +343,37 @@ namespace org.pdfclown.documents.contents.fonts
             }
 
             var parameters = name.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+            var weight = name.IndexOf("Bold", StringComparison.OrdinalIgnoreCase) > -1 ? 700 : 400;
+            var weightParam = (IPdfNumber)header?.Resolve(PdfName.FontWeight);
+            if (weightParam != null)
+            {
+                weight = weightParam.IntValue;
+            }
             var style = new SKFontStyle(
-                name.IndexOf("Bold", StringComparison.OrdinalIgnoreCase) > -1
-                    ? SKFontStyleWeight.Bold
-                    : SKFontStyleWeight.Normal,
-                 SKFontStyleWidth.Normal,
-                 name.IndexOf("Italic", StringComparison.OrdinalIgnoreCase) > -1
+                weight,
+                (int)SKFontStyleWidth.Normal,
+                name.IndexOf("Italic", StringComparison.OrdinalIgnoreCase) > -1
                     ? SKFontStyleSlant.Italic
                     : name.IndexOf("Oblique", StringComparison.OrdinalIgnoreCase) > -1
                         ? SKFontStyleSlant.Oblique
                         : SKFontStyleSlant.Upright);
             var fontName = parameters[0].Equals("Courier", StringComparison.OrdinalIgnoreCase)
+                || parameters[0].StartsWith("CourierNew", StringComparison.OrdinalIgnoreCase)
                 ? "Courier New"
                 : parameters[0].Equals("Times", StringComparison.OrdinalIgnoreCase)
+                || parameters[0].StartsWith("TimesNewRoman", StringComparison.OrdinalIgnoreCase)
                 ? "Times New Roman"
+                : parameters[0].Equals("Helvetica", StringComparison.OrdinalIgnoreCase)
+                ? "Helvetica"
                 : parameters[0];
-            if (fontName.IndexOf("Arial", StringComparison.Ordinal) > 1)
+            if (fontName.IndexOf("Arial", StringComparison.Ordinal) > -1)
             {
                 fontName = "Arial";
             }
             return cache[name] = SKTypeface.FromFamilyName(fontName, style);
         }
 
-        private static SKTypeface GetTypeface(PdfStream stream, string name)
+        protected virtual SKTypeface GetTypeface(PdfStream stream, string name)
         {
             var body = stream.GetBody(true).ToByteArray();
             //System.IO.File.WriteAllBytes($"export{name}.ttf", body);
@@ -375,7 +387,7 @@ namespace org.pdfclown.documents.contents.fonts
             //           var typeface = SKTypeface.FromStream(data);
             if (typeface == null)
             {
-                typeface = ParseName(name);
+                typeface = ParseName(name, stream.Header);
             }
             return typeface;
         }

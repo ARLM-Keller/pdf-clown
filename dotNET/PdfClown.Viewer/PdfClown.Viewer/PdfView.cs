@@ -18,6 +18,7 @@ namespace PdfClown.Viewer
         public static readonly BindableProperty ScaleFactorProperty = BindableProperty.Create(nameof(ScaleFactorProperty), typeof(float), typeof(PdfView), 1F,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnScaleFactorChanged((float)oldValue, (float)newValue));
 
+        
 
         private SKMatrix currentMatrix;
         private List<SKPictureDetails> pictures = new List<SKPictureDetails>();
@@ -50,7 +51,7 @@ namespace PdfClown.Viewer
         protected virtual void OnPaintContent(object sender, SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
-            canvas.Clear(SKColors.Silver);
+            canvas.Clear(BackgroundColor.ToSKColor());
             canvas.Concat(ref currentMatrix);
             var area = SKRect.Create(0, 0, (float)Width, (float)Height);
             foreach (var pictureDetails in pictures)
@@ -121,6 +122,7 @@ namespace PdfClown.Viewer
         {
             if (File != null)
             {
+                ClearPictures();
                 File.Dispose();
             }
             ScaleFactor = 1;
@@ -135,7 +137,7 @@ namespace PdfClown.Viewer
         {
             float totalWidth, totalHeight;
             Pages = Document.Pages;
-            ClearPictures();
+
             totalWidth = 0F;
             totalHeight = 0F;
             foreach (var page in Pages)
@@ -155,11 +157,11 @@ namespace PdfClown.Viewer
 
                 totalHeight += imageSize.Height;
             }
-            DocumentSize = new SKSize(totalWidth, totalHeight);
+            DocumentSize = new SKSize(totalWidth + indent * 2, totalHeight);
 
             Device.BeginInvokeOnMainThread(() =>
             {
-                ScaleFactor = (float)(DocumentSize.Width / Width);
+                ScaleFactor = (float)(Width / (DocumentSize.Width));
                 UpdateMaximums();
 
             });

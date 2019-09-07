@@ -94,16 +94,17 @@ namespace org.pdfclown.documents.contents.objects
             var encoding = font.GetEnoding();
             var context = state.Scanner.RenderContext;
             var fill = context != null && state.RenderModeFill ? state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha) : null;
+            var typeface = font.GetTypeface();
             if (fill != null)
             {
-                fill.Typeface = font.GetTypeface();
+                fill.Typeface = typeface;
                 fill.TextSize = (float)state.FontSize;
                 fill.TextScaleX = (float)state.Scale;
             }
             var stroke = context != null && state.RenderModeStroke ? state.StrokeColorSpace?.GetPaint(state.StrokeColor, state.StrokeAlpha) : null;
             if (stroke != null)
             {
-                stroke.Typeface = font.GetTypeface();
+                stroke.Typeface = typeface;
                 stroke.TextSize = (float)state.FontSize;
                 stroke.TextScaleX = (float)state.Scale;
                 stroke.Style = SKPaintStyle.Stroke;
@@ -149,7 +150,11 @@ namespace org.pdfclown.documents.contents.objects
                             || textString[0] == '\r'
                             || textString[0] == '\n')))
                         {
-                            var text = font is Type2Font || font is Type1Font
+                            var text = font is Type1Font
+                                ? System.Text.Encoding.UTF8.GetBytes(new[] { textChar })
+                                //: font is Type1Font && typeface != null
+                                //? BitConverter.GetBytes(font.GetGlyph(textChar))
+                                : font is Type2Font
                                 ? System.Text.Encoding.UTF8.GetBytes(new[] { textChar })
                                 : font.Encode(textChar.ToString());
                             SKMatrix trm = ctm;

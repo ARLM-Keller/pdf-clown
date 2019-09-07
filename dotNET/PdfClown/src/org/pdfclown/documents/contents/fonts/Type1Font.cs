@@ -35,6 +35,7 @@ using System.IO;
 using System.Reflection;
 using text = System.Text;
 using System.Text.RegularExpressions;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.fonts
 {
@@ -62,6 +63,43 @@ namespace org.pdfclown.documents.contents.fonts
         internal Type1Font(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
+
+        protected override SKTypeface GetTypeface(PdfStream stream, string name)
+        {
+            var buffer = stream.GetBody(true);
+
+            //var lenght1 = stream.Header[PdfName.Length1] as PdfInteger;
+            //var lenght2 = stream.Header[PdfName.Length2] as PdfInteger;
+            //var lenght3 = stream.Header[PdfName.Length3] as PdfInteger;
+            //var bytes = buffer.GetByteArray(lenght1.IntValue, lenght2.IntValue + lenght3.IntValue);
+            //System.IO.File.WriteAllBytes($"export{name}_part2.psc", bytes);
+            var bytes = buffer.ToByteArray();
+            var typeface = (SKTypeface)null;
+            using (var data = new SKMemoryStream(bytes))
+            {
+                typeface = SKFontManager.Default.CreateTypeface(data);
+            }
+#if DEBUG
+            System.IO.File.WriteAllBytes($"export_{name}.psc", bytes);
+            if (typeface == null)
+            {
+                using (var manifestStream = typeof(Type1Font).Assembly.GetManifestResourceStream(name + ".otf"))
+                {
+                    if (manifestStream != null)
+                    {
+                        typeface = SKFontManager.Default.CreateTypeface(manifestStream);
+                    }
+                }
+            }
+#endif            
+
+            if (typeface == null)
+            {
+                typeface = ParseName(name, stream.Header);
+            }
+            return typeface;
+        }
+
         #endregion
     }
 }

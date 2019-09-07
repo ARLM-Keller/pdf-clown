@@ -136,13 +136,13 @@ namespace org.pdfclown.bytes
             return (ushort)ConvertUtils.ByteArrayToNumber(data, 0, data.Length, byteOrder);
         }
 
-        public float ReadFloat()
+        public float ReadFixed32()
         {
             return ReadShort() // Fixed-point mantissa (16 bits).
                + ReadUnsignedShort() / 16384f; // Fixed-point fraction (16 bits).
         }
 
-        public float ReadUnsignedFloat()
+        public float ReadUnsignedFixed32()
         {
             return ReadUnsignedShort() // Fixed-point mantissa (16 bits).
                + ReadUnsignedShort() / 16384f; // Fixed-point fraction (16 bits).

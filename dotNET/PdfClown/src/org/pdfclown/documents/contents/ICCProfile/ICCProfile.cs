@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using org.pdfclown.bytes;
+using SkiaSharp;
 
 namespace org.pdfclown.documents.contents.colorSpaces
 {
@@ -98,9 +99,9 @@ namespace org.pdfclown.documents.contents.colorSpaces
                 tag.Signature = (ICCTagTypes)buffer.ReadUnsignedInt();
                 tag.Offset = buffer.ReadUnsignedInt();
                 tag.ElementSize = buffer.ReadUnsignedInt();
-                profile.Tags.Add(tag);
+                profile.Tags[tag.Signature] = tag;
             }
-            foreach (var tagTable in profile.Tags)
+            foreach (var tagTable in profile.Tags.Values)
             {
                 buffer.Seek(tagTable.Offset);
                 var key = buffer.ReadUnsignedInt();
@@ -112,6 +113,32 @@ namespace org.pdfclown.documents.contents.colorSpaces
                 }
             }
             return profile;
+        }
+
+        public float MapGrayDisplay(float g)
+        {
+            var trc = Tags[ICCTagTypes.grayTRCTag].Tag as ICCCurveType;
+            if (trc.Values.Length > 1)
+            {
+                return LinearCurve(g, trc);
+            }
+            return g;
+        }
+
+        public float LinearCurve(float x, ICCCurveType curveType)
+        {
+            var gIndex = (int)Linear(x, 0, 1, 0, curveType.Values.Length);
+            var value = curveType.Values[gIndex];
+            return (float)Linear(value, curveType.Values[0], curveType.Values[curveType.Values.Length - 1], 0, 1);
+        }
+
+        static public double Linear(double x, double x0, double x1, double y0, double y1)
+        {
+            if ((x1 - x0) == 0)
+            {
+                return (y0 + y1) / 2;
+            }
+            return y0 + (x - x0) * ((y1 - y0) / (x1 - x0));
         }
 
         //https://stackoverflow.com/a/2887/4682355
@@ -131,6 +158,6 @@ namespace org.pdfclown.documents.contents.colorSpaces
 
         public ICCHeader Header;
 
-        public List<ICCTagTable> Tags { get; set; } = new List<ICCTagTable>();
+        public Dictionary<ICCTagTypes, ICCTagTable> Tags { get; set; } = new Dictionary<ICCTagTypes, ICCTagTable>();
     }
 }

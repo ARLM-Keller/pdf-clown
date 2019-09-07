@@ -101,13 +101,13 @@ namespace org.pdfclown.bytes
           <summary>Reads a float.</summary>
           <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
         */
-        float ReadFloat();
+        float ReadFixed32();
 
         /**
           <summary>Reads a float.</summary>
           <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
         */
-        float ReadUnsignedFloat();
+        float ReadUnsignedFixed32();
 
         /**
           <summary>Reads a short integer.</summary>

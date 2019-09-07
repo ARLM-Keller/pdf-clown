@@ -44,7 +44,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
             Value = new float[count];
             for (int i = 0; i < count; i++)
             {
-                Value[i] = buffer.ReadFloat();
+                Value[i] = buffer.ReadFixed32();
             }
         }
     }

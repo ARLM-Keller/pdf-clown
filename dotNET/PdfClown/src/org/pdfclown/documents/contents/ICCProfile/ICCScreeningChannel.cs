@@ -33,8 +33,8 @@ namespace org.pdfclown.documents.contents.colorSpaces
 
         public void Load(bytes.Buffer buffer)
         {
-            Frequency = buffer.ReadFloat();
-            ScreenAngle = buffer.ReadFloat();
+            Frequency = buffer.ReadFixed32();
+            ScreenAngle = buffer.ReadFixed32();
             SpotShape = (ICCScreeningSpotEncodings)buffer.ReadUnsignedInt();
         }
     }

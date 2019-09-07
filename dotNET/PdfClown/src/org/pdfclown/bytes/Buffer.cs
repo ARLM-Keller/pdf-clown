@@ -396,17 +396,29 @@ namespace org.pdfclown.bytes
             return value;
         }
 
-        public float ReadFloat()
+        public float ReadFixed32()
         {
-            return ReadShort() // Fixed-point mantissa (16 bits).
+            return ReadShort() // Signed Fixed-point mantissa (16 bits).
                + ReadUnsignedShort() / 16384f; // Fixed-point fraction (16 bits).
         }
 
-        public float ReadUnsignedFloat()
+        public float ReadUnsignedFixed32()
         {
             return ReadUnsignedShort() // Fixed-point mantissa (16 bits).
                + ReadUnsignedShort() / 16384f; // Fixed-point fraction (16 bits).
         }
+
+        public float ReadFixed16()
+        {
+            return ReadSignedByte() // Fixed-point mantissa (8 bits).
+               + ReadByte() / 64f; // Fixed-point fraction (8 bits).
+        }
+
+        public float ReadUnsignedFixed16()
+        {
+            return (byte)ReadByte() // Fixed-point mantissa (8 bits).
+               + ReadByte() / 64f; // Fixed-point fraction (8 bits).
+        }        
 
         public void Seek(long position)
         {

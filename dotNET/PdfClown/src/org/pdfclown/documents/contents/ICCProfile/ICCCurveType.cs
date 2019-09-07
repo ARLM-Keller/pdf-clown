@@ -35,6 +35,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
         public uint Reserved = 0x00000000;
         public uint Count;
         public ushort[] Values;
+        public float Gamma;
 
         public override void Load(org.pdfclown.bytes.Buffer buffer)
         {
@@ -43,10 +44,18 @@ namespace org.pdfclown.documents.contents.colorSpaces
             buffer.ReadUnsignedInt();
             Count = buffer.ReadUnsignedInt();
             Values = new ushort[Count];
-            for (int i = 0; i < Count; i++)
+            if (Count > 1)
             {
-                Values[i] = buffer.ReadUnsignedShort();
+                for (int i = 0; i < Count; i++)
+                {
+                    Values[i] = buffer.ReadUnsignedShort();
+                }
             }
+            else if (Count == 1)
+            {
+                Gamma = buffer.ReadFixed16(); 
+            }
+
         }
     }
 }

@@ -43,9 +43,9 @@ namespace org.pdfclown.documents.contents.colorSpaces
 
         public void Load(bytes.Buffer buffer)
         {
-            X = buffer.ReadFloat();
-            Y = buffer.ReadFloat();
-            Z = buffer.ReadFloat();
+            X = buffer.ReadFixed32();
+            Y = buffer.ReadFixed32();
+            Z = buffer.ReadFixed32();
         }
     }
 

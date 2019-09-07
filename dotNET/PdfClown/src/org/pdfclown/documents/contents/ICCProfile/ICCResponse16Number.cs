@@ -35,7 +35,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
         {
             Interval = buffer.ReadUnsignedShort();
             Reserved = buffer.ReadUnsignedShort();
-            Value = buffer.ReadFloat();
+            Value = buffer.ReadFixed32();
         }
     }
 }

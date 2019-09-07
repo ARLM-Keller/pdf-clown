@@ -59,15 +59,15 @@ namespace org.pdfclown.documents.contents.colorSpaces
             NumberOfOutputChannels = (byte)buffer.ReadByte();
             NumberOfCLUTGridPoints = (byte)buffer.ReadByte();
             buffer.ReadByte();
-            Encoded00 = buffer.ReadFloat();
-            Encoded01 = buffer.ReadFloat();
-            Encoded02 = buffer.ReadFloat();
-            Encoded10 = buffer.ReadFloat();
-            Encoded11 = buffer.ReadFloat();
-            Encoded12 = buffer.ReadFloat();
-            Encoded20 = buffer.ReadFloat();
-            Encoded21 = buffer.ReadFloat();
-            Encoded22 = buffer.ReadFloat();
+            Encoded00 = buffer.ReadFixed32();
+            Encoded01 = buffer.ReadFixed32();
+            Encoded02 = buffer.ReadFixed32();
+            Encoded10 = buffer.ReadFixed32();
+            Encoded11 = buffer.ReadFixed32();
+            Encoded12 = buffer.ReadFixed32();
+            Encoded20 = buffer.ReadFixed32();
+            Encoded21 = buffer.ReadFixed32();
+            Encoded22 = buffer.ReadFixed32();
             InputTables = new byte[NumberOfInputChannels];
             for (int i = 0; i < NumberOfInputChannels; i++)
             {

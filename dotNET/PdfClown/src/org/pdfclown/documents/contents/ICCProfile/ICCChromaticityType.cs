@@ -46,12 +46,12 @@ namespace org.pdfclown.documents.contents.colorSpaces
             buffer.ReadUnsignedInt();
             NumberOfDeviceChannels = buffer.ReadUnsignedShort();
             PhosphorOrColorantType = (ICCPhosphorOrColorantTypes)buffer.ReadUnsignedShort();
-            Channel1.X = buffer.ReadFloat();
-            Channel1.Y = buffer.ReadFloat();
-            Channel2.X = buffer.ReadFloat();
-            Channel2.Y = buffer.ReadFloat();
-            Channel3.X = buffer.ReadFloat();
-            Channel3.Y = buffer.ReadFloat();
+            Channel1.X = buffer.ReadFixed32();
+            Channel1.Y = buffer.ReadFixed32();
+            Channel2.X = buffer.ReadFixed32();
+            Channel2.Y = buffer.ReadFixed32();
+            Channel3.X = buffer.ReadFixed32();
+            Channel3.Y = buffer.ReadFixed32();
 
         }
     }

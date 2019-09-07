@@ -18,6 +18,7 @@ namespace PdfClown.Viewer
         public static readonly BindableProperty ScaleFactorProperty = BindableProperty.Create(nameof(ScaleFactorProperty), typeof(float), typeof(PdfView), 1F,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnScaleFactorChanged((float)oldValue, (float)newValue));
 
+
         private SKMatrix currentMatrix;
         private List<SKPictureDetails> pictures = new List<SKPictureDetails>();
         private float scale = 1;
@@ -76,9 +77,9 @@ namespace PdfClown.Viewer
             base.OnScrolled(delta, keyModifiers);
             if (keyModifiers == KeyModifiers.Ctrl)
             {
-                var scaleStep = 0.03F * Math.Sign(delta);
+                var scaleStep = 0.06F * Math.Sign(delta);
                 var newSclae = scale + scaleStep;
-                if (newSclae > 0.03 && newSclae < 4)
+                if (newSclae > 0.03F && newSclae < 5F)
                 {
                     currentMatrix.TryInvert(out var oldMatrix);
                     var oldPointer = oldMatrix.MapPoint(pointerLocation);
@@ -108,12 +109,25 @@ namespace PdfClown.Viewer
             return Task.Run(() => Load(stream));
         }
 
+        public void Load(string filePath)
+        {
+            using (var fileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Open,
+                                                             System.IO.FileAccess.ReadWrite,
+                                                             System.IO.FileShare.ReadWrite))
+            {
+                Load(fileStream);
+            }
+        }
+
         public void Load(System.IO.Stream stream)
         {
             if (File != null)
             {
                 File.Dispose();
             }
+            ScaleFactor = 1;
+            HorizontalValue = 0;
+            VerticalValue = 0;
             File = new File(stream);
             Document = File.Document;
             LoadPages();
@@ -145,7 +159,11 @@ namespace PdfClown.Viewer
             }
             DocumentSize = new SKSize(totalWidth, totalHeight);
 
-            Device.BeginInvokeOnMainThread(() => UpdateMaximums());
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                UpdateMaximums();
+
+            });
 
             return DocumentSize;
         }

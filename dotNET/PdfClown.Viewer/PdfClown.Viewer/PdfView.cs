@@ -111,12 +111,10 @@ namespace PdfClown.Viewer
 
         public void Load(string filePath)
         {
-            using (var fileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Open,
+            var fileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Open,
                                                              System.IO.FileAccess.ReadWrite,
-                                                             System.IO.FileShare.ReadWrite))
-            {
-                Load(fileStream);
-            }
+                                                             System.IO.FileShare.ReadWrite);
+            Load(fileStream);
         }
 
         public void Load(System.IO.Stream stream)
@@ -161,6 +159,7 @@ namespace PdfClown.Viewer
 
             Device.BeginInvokeOnMainThread(() =>
             {
+                ScaleFactor = (float)(DocumentSize.Width / Width);
                 UpdateMaximums();
 
             });

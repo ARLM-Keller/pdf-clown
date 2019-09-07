@@ -95,23 +95,28 @@ namespace org.pdfclown.documents.contents.colorSpaces
             }
             else if (color is DeviceGrayColor devGray)
             {
-                var point = Power(xyzD50, (float)devGray.G, (float)devGray.G, (float)devGray.G);
+                var g = (float)devGray.G;
+                if (iccProfile != null)
+                {
+                    g = iccProfile.MapGrayDisplay(g);
+                }
+
                 return new SKColor(
-                    (byte)(point.X * 255),
-                    (byte)(point.Y * 255),
-                    (byte)(point.Z * 255));
+                    (byte)(g * 255),
+                    (byte)(g * 255),
+                    (byte)(g * 255));
             }
 
             return SKColors.Black;
         }
 
-        
+
 
         public PdfStream Profile
         {
             get { return (PdfStream)((PdfArray)BaseDataObject).Resolve(1); }
         }
-        
+
         public PdfName Alternate
         {
             get => Profile?.Header.Resolve(PdfName.Alternate) as PdfName;

@@ -45,6 +45,7 @@ namespace org.pdfclown.documents.contents
 
         private IImageObject image;
         private ColorSpace colorSpace;
+        private ICCBasedColorSpace iccColorSpace;
         private int bitPerComponent;
         private PdfArray matte;
         private SKSize size;
@@ -54,6 +55,8 @@ namespace org.pdfclown.documents.contents
         private double min;
         private double max;
         private byte[] buffer;
+        private IImageObject sMask;
+        private ImageLoader sMaskLoader;
 
         public ImageLoader(IImageObject image)
         {
@@ -78,14 +81,24 @@ namespace org.pdfclown.documents.contents
             this.image = image;
             this.buffer = buffer;
             colorSpace = image.ColorSpace;
+            iccColorSpace = colorSpace as ICCBasedColorSpace;
+            if (colorSpace is IndexedColorSpace indexedColorSpace)
+            {
+                indexed = true;
+                iccColorSpace = indexedColorSpace.BaseSpace as ICCBasedColorSpace;
+            }
             bitPerComponent = image.BitsPerComponent;
             matte = image.Matte;
             size = image.Size;
-            indexed = colorSpace is IndexedColorSpace;
             componentsCount = colorSpace.ComponentCount;
             maximum = Math.Pow(2, bitPerComponent) - 1;
             min = 0D;
             max = indexed ? maximum : 1D;
+            sMask = image.SMask;
+            if (sMask != null)
+            {
+                sMaskLoader = new ImageLoader(sMask);
+            }
         }
 
         public Color GetColor(int x, int y)
@@ -111,20 +124,17 @@ namespace org.pdfclown.documents.contents
 
         public SKBitmap Load()
         {
-            var sMask = image.SMask;
-            var sMaskLoader = (ImageLoader)null;
-            if (sMask != null)
-            {
-                sMaskLoader = new ImageLoader(sMask);
-            }
-            SKImageInfo info = new SKImageInfo((int)size.Width, (int)size.Height)
+            var info = new SKImageInfo((int)size.Width, (int)size.Height)
             {
                 AlphaType = SKAlphaType.Premul,
-                //ColorType = SKColorType.Bgra8888
             };
+            if (iccColorSpace != null)
+            {
+                info.ColorSpace = iccColorSpace.GetSKColorSpace();
+            }
 
             // create the buffer that will hold the pixels
-            var raster = new int[info.Width * info.Height];
+            var raster = new int[info.Width * info.Height];//var bitmap = new SKBitmap();
 
             for (int y = 0; y < info.Height; y++)
             {
@@ -132,12 +142,14 @@ namespace org.pdfclown.documents.contents
                 {
                     var index = (y * info.Width + x);
                     var color = GetColor(index);
-                    
+
                     var skColor = colorSpace.GetColor(color);
                     if (sMaskLoader != null)
                     {
                         var sMaskColor = sMaskLoader.GetColor(index);
+                        //alfa
                         skColor = skColor.WithAlpha((byte)(((IPdfNumber)sMaskColor.Components[0]).DoubleValue * 255));
+                        //shaping
                         //for (int i = 0; i < color.Components.Count; i++)
                         //{
                         //    var m = sMaskLoader.matte == null ? 0D : ((IPdfNumber)sMaskLoader.matte[i]).DoubleValue;
@@ -146,7 +158,7 @@ namespace org.pdfclown.documents.contents
                         //    color.Components[i] = new PdfReal(m + a * (c - m));
                         //}
                     }
-                    raster[index] = (int)(uint)skColor;
+                    raster[index] = (int)(uint)skColor;//bitmap.SetPixel(x, y, skColor);
                 }
             }
 

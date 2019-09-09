@@ -80,6 +80,7 @@ namespace org.pdfclown.documents.contents.fonts
                 typeface = SKFontManager.Default.CreateTypeface(data);
             }
 #if DEBUG
+            name = Regex.Replace(name, @"[\/?:*""><|]+", "", RegexOptions.Compiled);
             System.IO.File.WriteAllBytes($"export_{name}.psc", bytes);
             if (typeface == null)
             {

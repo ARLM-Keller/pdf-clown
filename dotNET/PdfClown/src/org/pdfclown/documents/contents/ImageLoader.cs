@@ -21,12 +21,27 @@ namespace org.pdfclown.documents.contents
             if (image == null)
             {
                 var filter = imageObject.Filter;
-                if (filter != null)
+                if (filter is PdfArray filterArray)
+                {
+                    var parameterArray = imageObject.Parameters as PdfArray;
+                    for (int i = 0; i < filterArray.Count; i++)
+                    {
+                        var filterItem = filterArray[i];
+                        var parameterItem = parameterArray?[i];
+                        bytes.Buffer.Decode(buffer, filterItem, parameterItem ?? imageObject.Header);
+                        data = buffer.ToByteArray();
+                        image = SKBitmap.Decode(data);
+                        if (image != null)
+                            break;
+                    }
+                }
+                else if (filter != null)
                 {
                     bytes.Buffer.Decode(buffer, filter, imageObject.Parameters ?? imageObject.Header);
                     data = buffer.ToByteArray();
+                    image = SKBitmap.Decode(data);
                 }
-                image = SKBitmap.Decode(data);
+
             }
             if (image == null)
             {

@@ -42,7 +42,7 @@ namespace org.pdfclown
         #region static
         #region fields
         private static readonly Regex versionPattern = new Regex("^(\\d+)\\.(\\d+)$");
-        private static readonly IDictionary<string, Version> versions = new Dictionary<string, Version>();
+        private static readonly IDictionary<string, Version> versions = new Dictionary<string, Version>(StringComparer.Ordinal);
         #endregion
 
         #region interface

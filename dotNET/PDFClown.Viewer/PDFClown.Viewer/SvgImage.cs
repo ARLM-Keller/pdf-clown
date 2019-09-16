@@ -15,7 +15,8 @@ namespace PdfClown.Viewer
     //http://www.pshul.com/2018/01/25/xamarin-forms-using-svg-images-with-skiasharp/
     public static class SvgImage
     {
-        public static readonly Dictionary<string, SkiaSharp.Extended.Svg.SKSvg> SvgCache = new Dictionary<string, SkiaSharp.Extended.Svg.SKSvg>();
+        public static readonly Dictionary<string, SkiaSharp.Extended.Svg.SKSvg> SvgCache 
+            = new Dictionary<string, SkiaSharp.Extended.Svg.SKSvg>(StringComparer.Ordinal);
         public static SkiaSharp.Extended.Svg.SKSvg GetCache(string imageName)
         {
             if (string.IsNullOrEmpty(imageName))

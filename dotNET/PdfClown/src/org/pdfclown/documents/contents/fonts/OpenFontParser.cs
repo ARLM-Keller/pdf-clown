@@ -618,7 +618,7 @@ namespace org.pdfclown.documents.contents.fonts
             // Skip to the beginning of the table directory!
             FontData.Skip(6);
             // Collecting the table offsets...
-            tableOffsets = new Dictionary<string, int>(tableCount);
+            tableOffsets = new Dictionary<string, int>(tableCount, StringComparer.Ordinal);
             for (int index = 0; index < tableCount; index++)
             {
                 // Get the table tag!

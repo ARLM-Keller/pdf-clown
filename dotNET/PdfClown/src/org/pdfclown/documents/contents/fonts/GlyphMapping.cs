@@ -43,7 +43,7 @@ namespace org.pdfclown.documents.contents.fonts
     */
     internal class GlyphMapping
     {
-        private static Dictionary<string, int> codes = new Dictionary<string, int>();
+        private static Dictionary<string, int> codes = new Dictionary<string, int>(StringComparer.Ordinal);
 
         static GlyphMapping()
         { Load(); }

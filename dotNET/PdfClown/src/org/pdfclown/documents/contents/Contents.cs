@@ -223,9 +223,8 @@ namespace org.pdfclown.documents.contents
                           : null);
                     }
                 }
-                else // Multiple streams.
+                else if (baseDataObject is PdfArray streams) // Multiple streams.
                 {
-                    PdfArray streams = (PdfArray)baseDataObject;
                     if (streamIndex < streams.Count)
                     {
                         streamIndex++;

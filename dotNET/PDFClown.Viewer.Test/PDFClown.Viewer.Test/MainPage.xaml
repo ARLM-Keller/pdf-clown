@@ -5,8 +5,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:pdf="clr-namespace:PdfClown.Viewer;assembly=PdfClown.Viewer"
              mc:Ignorable="d"
-             x:Class="PdfClown.Viewer.Test.MainPage">
-
+             x:Class="PdfClown.Viewer.Test.MainPage" 
+             Title="PDF Viewer!">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -16,7 +16,7 @@
             <Label x:Name="label" Text="Welcome to PDF Viewer!" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" />
             <Button Text="Open File..." HorizontalOptions="End" VerticalOptions="CenterAndExpand" Clicked="OnOpenFileClicked"/>
         </StackLayout>
-        <pdf:PdfView x:Name="viewer" Grid.Row="1" />
+        <pdf:PdfView x:Name="viewer" Grid.Row="1" BackgroundColor="DimGray" />
 
     </Grid>
 </ContentPage>

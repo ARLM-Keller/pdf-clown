@@ -140,6 +140,7 @@ namespace PdfClown.Viewer
 
             totalWidth = 0F;
             totalHeight = 0F;
+            var pictures = new List<SKPictureDetails>();
             foreach (var page in Pages)
             {
                 totalHeight += indent;
@@ -165,6 +166,7 @@ namespace PdfClown.Viewer
                     details.Matrix.TransX += (DocumentSize.Width - details.Size.Width + indent * 2) / 2;
                 }
             }
+            this.pictures.AddRange(pictures);
             Device.BeginInvokeOnMainThread(() =>
             {
                 ScaleFactor = (float)(Width / (DocumentSize.Width));
@@ -230,13 +232,13 @@ namespace PdfClown.Viewer
         }
 
         public SKMatrix Matrix = SKMatrix.MakeIdentity();
-        private Task task;
+        private static Task task;
 
         public SKPicture GetPicture(SKCanvasView canvasView)
         {
             if (picture == null)
             {
-                if (task == null)
+                if (task == null || task.IsCompleted)
                 {
                     task = new Task(() => Paint(canvasView));
                     task.Start();

@@ -158,7 +158,13 @@ namespace PdfClown.Viewer
                 totalHeight += imageSize.Height;
             }
             DocumentSize = new SKSize(totalWidth + indent * 2, totalHeight);
-
+            foreach (var details in pictures)
+            {
+                if ((details.Size.Width + indent * 2) < DocumentSize.Width)
+                {
+                    details.Matrix.TransX += (DocumentSize.Width - details.Size.Width + indent * 2) / 2;
+                }
+            }
             Device.BeginInvokeOnMainThread(() =>
             {
                 ScaleFactor = (float)(Width / (DocumentSize.Width));

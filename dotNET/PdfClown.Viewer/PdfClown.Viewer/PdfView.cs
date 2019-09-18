@@ -18,7 +18,7 @@ namespace PdfClown.Viewer
         public static readonly BindableProperty ScaleFactorProperty = BindableProperty.Create(nameof(ScaleFactorProperty), typeof(float), typeof(PdfView), 1F,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnScaleFactorChanged((float)oldValue, (float)newValue));
 
-        
+
 
         private SKMatrix currentMatrix;
         private List<SKPictureDetails> pictures = new List<SKPictureDetails>();
@@ -58,7 +58,7 @@ namespace PdfClown.Viewer
             {
                 if (currentMatrix.MapRect(pictureDetails.Bounds).IntersectsWith(area))
                 {
-                    var picture = pictureDetails.GetPicture();
+                    var picture = pictureDetails.GetPicture(this);
                     if (picture != null)
                     {
                         canvas.DrawPicture(picture, ref pictureDetails.Matrix);
@@ -224,38 +224,48 @@ namespace PdfClown.Viewer
         }
 
         public SKMatrix Matrix = SKMatrix.MakeIdentity();
+        private Task task;
 
-        public SKPicture GetPicture()
+        public SKPicture GetPicture(SKCanvasView canvasView)
         {
             if (picture == null)
             {
-                using (var recorder = new SKPictureRecorder())
-                using (var canvas = recorder.BeginRecording(SKRect.Create(SKPoint.Empty, Size)))
+                if (task == null)
                 {
-                    try
-                    {
-                        Page.Render(canvas, Size);
-
-                    }
-                    catch (Exception ex)
-                    {
-                        using (var paint = new SKPaint { Color = SKColors.DarkRed })
-                        {
-                            canvas.Save();
-                            if (canvas.TotalMatrix.ScaleY < 0)
-                            {
-                                var matrix = SKMatrix.MakeScale(1, -1);
-                                canvas.Concat(ref matrix);
-                            }
-                            canvas.DrawText(ex.Message, 0, 0, paint);
-                            canvas.Restore();
-                        }
-                    }
-                    picture = recorder.EndRecording();
+                    task = new Task(() => Paint(canvasView));
+                    task.Start();
                 }
-
             }
             return picture;
+        }
+
+        private void Paint(SKCanvasView canvasView)
+        {
+            using (var recorder = new SKPictureRecorder())
+            using (var canvas = recorder.BeginRecording(SKRect.Create(SKPoint.Empty, Size)))
+            {
+                try
+                {
+                    Page.Render(canvas, Size);
+
+                }
+                catch (Exception ex)
+                {
+                    using (var paint = new SKPaint { Color = SKColors.DarkRed })
+                    {
+                        canvas.Save();
+                        if (canvas.TotalMatrix.ScaleY < 0)
+                        {
+                            var matrix = SKMatrix.MakeScale(1, -1);
+                            canvas.Concat(ref matrix);
+                        }
+                        canvas.DrawText(ex.Message, 0, 0, paint);
+                        canvas.Restore();
+                    }
+                }
+                picture = recorder.EndRecording();
+                Device.BeginInvokeOnMainThread(() => canvasView.InvalidateSurface());
+            }
         }
 
         public org.pdfclown.documents.Page Page { get; set; }

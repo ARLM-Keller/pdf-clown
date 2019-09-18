@@ -250,7 +250,7 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Maximum character code byte size.</summary>
         */
-        private int charCodeMaxLength = 0;
+        private int charCodeMaxLength = 1;
         /**
           <summary>Default Unicode for missing characters.</summary>
         */

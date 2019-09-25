@@ -10,15 +10,21 @@
     <RootNamespace>org.pdfclown.samples.cli</RootNamespace>
     <StartupObject>org.pdfclown.samples.cli.SampleLoader</StartupObject>
     <AssemblyName>PdfClownCLISamples</AssemblyName>
-  </PropertyGroup>  
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\org\pdfclown\samples\cli\" />
     <Folder Include="src\org\pdfclown\samples\" />
-  </ItemGroup>  
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
-  </ItemGroup>  
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PdfClown\PdfClown.csproj" />
-  </ItemGroup>  
+  </ItemGroup>
 </Project>

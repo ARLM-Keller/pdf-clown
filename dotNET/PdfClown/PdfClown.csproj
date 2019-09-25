@@ -2,7 +2,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platforms>AnyCPU</Platforms>
     <OutputType>Library</OutputType>
     <AssemblyName>PdfClown</AssemblyName>
     <RootNamespace>org.pdfclown</RootNamespace>
@@ -10,14 +9,17 @@
     <ProjectGuid>{DBED0809-EE4C-45B0-92FA-E4789ECC2AEC}</ProjectGuid>
     <Version>0.2.1.0</Version>
     <Company>Stefano Chizzolini</Company>
-    <Product>PDF Clown for .NET</Product>
-    <PackageId>PDF Clown for .NET</PackageId>
+    <Product>PDF Clown for .NET Core</Product>
+    <PackageId>PDFClownFor.NETCore</PackageId>
     <Authors>Stefano Chizzolini</Authors>
     <Description>PDF engine</Description>
     <Copyright>Copyright 2006-2015 Stefano Chizzolini</Copyright>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\main\res\pkg\fonts\AGL20.scsv">
@@ -104,10 +106,19 @@
       <Link>res\fonts\cff\StandardStrings</Link>
       <LogicalName>fonts.cff.StandardStrings</LogicalName>
     </EmbeddedResource>
-  </ItemGroup>    
+  </ItemGroup>
+  <PropertyGroup>
+    <RestoreSources>../FreeImage.NETCore/Package;$(RestoreSources);</RestoreSources>    
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.633" />
     <PackageReference Include="SkiaSharp" Version="1.68.0" />
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="1.68.0" />
+    <PackageReference Include="FreeImage.NETCore" Version="4.3.6" />
   </ItemGroup>
+  <!--<ItemGroup>
+    <ProjectReference Include="..\FreeImage.NETCore\FreeImage.NETCore.csproj" />
+  </ItemGroup>-->
+  
+
 </Project>

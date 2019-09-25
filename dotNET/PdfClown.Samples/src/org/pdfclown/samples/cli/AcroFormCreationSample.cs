@@ -18,11 +18,9 @@ namespace org.pdfclown.samples.cli
     /**
       <summary>This sample demonstrates how to insert AcroForm fields into a PDF document.</summary>
     */
-    public class AcroFormCreationSample
-      : Sample
+    public class AcroFormCreationSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. PDF file instantiation.
             File file = new File();
@@ -112,54 +110,21 @@ namespace org.pdfclown.samples.cli
 
             // 4.b. Check box.
             {
-                composer.ShowText(
-                  "CheckBox:",
-                  new SKPoint(140, 118),
-                  XAlignmentEnum.Right,
-                  YAlignmentEnum.Middle,
-                  0
-                  );
-                CheckBox field = new CheckBox(
-                  "myCheck",
-                  new Widget(
-                    page,
-                    SKRect.Create(150, 100, 36, 36)
-                    ),
-                  true // Current value.
-                  ); // 4.1. Field instantiation.
+                composer.ShowText("CheckBox:", new SKPoint(140, 118), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
+                CheckBox field = new CheckBox("myCheck", new Widget(page, SKRect.Create(150, 100, 36, 36)), true); // 4.1. Field instantiation.
                 fieldStyle.Apply(field);
                 fields.Add(field);
-                field = new CheckBox(
-                  "myCheck2",
-                  new Widget(
-                    page,
-                    SKRect.Create(200, 100, 36, 36)
-                    ),
-                  true // Current value.
-                  ); // 4.1. Field instantiation.
+                field = new CheckBox("myCheck2", new Widget(page, SKRect.Create(200, 100, 36, 36)), true); // 4.1. Field instantiation.
                 fieldStyle.Apply(field);
                 fields.Add(field);
-                field = new CheckBox(
-                  "myCheck3",
-                  new Widget(
-                    page,
-                    SKRect.Create(250, 100, 36, 36)
-                    ),
-                  false // Current value.
-                  ); // 4.1. Field instantiation.
+                field = new CheckBox("myCheck3", new Widget(page, SKRect.Create(250, 100, 36, 36)), false); // 4.1. Field instantiation.
                 fields.Add(field); // 4.2. Field insertion into the fields collection.
                 fieldStyle.Apply(field); // 4.3. Appearance style applied.
             }
 
             // 4.c. Radio button.
             {
-                composer.ShowText(
-                  "RadioButton:",
-                  new SKPoint(140, 168),
-                  XAlignmentEnum.Right,
-                  YAlignmentEnum.Middle,
-                  0
-                  );
+                composer.ShowText("RadioButton:", new SKPoint(140, 168), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
                 RadioButton field = new RadioButton(
                   "myRadio",
                   /*
@@ -167,21 +132,9 @@ namespace org.pdfclown.samples.cli
                   */
                   new Widget[]
                   {
-            new Widget(
-              page,
-              SKRect.Create(150, 150, 36, 36),
-              "first"
-              ),
-            new Widget(
-              page,
-              SKRect.Create(200, 150, 36, 36),
-              "second"
-              ),
-            new Widget(
-              page,
-              SKRect.Create(250, 150, 36, 36),
-              "third"
-              )
+                      new Widget( page, SKRect.Create(150, 150, 36, 36), "first" ),
+                      new Widget( page, SKRect.Create(200, 150, 36, 36), "second" ),
+                      new Widget( page, SKRect.Create(250, 150, 36, 36), "third" )
                   },
                   "second" // Selected item (it MUST correspond to one of the available widgets' names).
                   ); // 4.1. Field instantiation.
@@ -191,21 +144,9 @@ namespace org.pdfclown.samples.cli
 
             // 4.d. Text field.
             {
-                composer.ShowText(
-                  "TextField:",
-                  new SKPoint(140, 218),
-                  XAlignmentEnum.Right,
-                  YAlignmentEnum.Middle,
-                  0
-                  );
-                TextField field = new TextField(
-                  "myText",
-                  new Widget(
-                    page,
-                    SKRect.Create(150, 200, 200, 36)
-                    ),
-                  "Carmen Consoli" // Current value.
-                  ); // 4.1. Field instantiation.
+                composer.ShowText("TextField:", new SKPoint(140, 218), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
+                TextField field = new TextField("myText", new Widget(page, SKRect.Create(150, 200, 200, 36)), "Carmen Consoli"); // 4.1. Field instantiation. // Current value.
+
                 field.SpellChecked = false; // Avoids text spell check.
                 FieldActions fieldActions = new FieldActions(document);
                 field.Actions = fieldActions;
@@ -269,20 +210,8 @@ namespace org.pdfclown.samples.cli
 
                 // 4.e1. List box.
                 {
-                    composer.ShowText(
-                      "ListBox:",
-                      new SKPoint(140, 268),
-                      XAlignmentEnum.Right,
-                      YAlignmentEnum.Middle,
-                      0
-                      );
-                    ListBox field = new ListBox(
-                      "myList",
-                      new Widget(
-                        page,
-                        SKRect.Create(150, 250, 200, 70)
-                        )
-                      ); // 4.1. Field instantiation.
+                    composer.ShowText("ListBox:", new SKPoint(140, 268), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
+                    ListBox field = new ListBox("myList", new Widget(page, SKRect.Create(150, 250, 200, 70))); // 4.1. Field instantiation.
                     field.Items = items; // List items assignment.
                     field.MultiSelect = false; // Multiple items may not be selected simultaneously.
                     field.Value = "Carmen Consoli"; // Selected item.
@@ -292,20 +221,8 @@ namespace org.pdfclown.samples.cli
 
                 // 4.e2. Combo box.
                 {
-                    composer.ShowText(
-                      "ComboBox:",
-                      new SKPoint(140, 350),
-                      XAlignmentEnum.Right,
-                      YAlignmentEnum.Middle,
-                      0
-                      );
-                    ComboBox field = new ComboBox(
-                      "myCombo",
-                      new Widget(
-                        page,
-                        SKRect.Create(150, 334, 200, 36)
-                        )
-                      ); // 4.1. Field instantiation.
+                    composer.ShowText("ComboBox:", new SKPoint(140, 350), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
+                    ComboBox field = new ComboBox("myCombo", new Widget(page, SKRect.Create(150, 334, 200, 36))); // 4.1. Field instantiation.
                     field.Items = items; // Combo items assignment.
                     field.Editable = true; // Text may be edited.
                     field.SpellChecked = false; // Avoids text spell check.

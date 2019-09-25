@@ -69,11 +69,7 @@ namespace org.pdfclown.bytes.filters
 
         #region interface
         #region private
-        private static void AppendChar(
-          StringBuilder buffer,
-          char data,
-          ref int linePos
-          )
+        private static void AppendChar(StringBuilder buffer, char data, ref int linePos)
         {
             buffer.Append(data);
             linePos++;
@@ -85,14 +81,9 @@ namespace org.pdfclown.bytes.filters
             }
         }
 
-        private static void AppendString(
-          StringBuilder buffer,
-          string data,
-          ref int linePos
-          )
+        private static void AppendString(StringBuilder buffer, string data, ref int linePos)
         {
-            if (LineLength > 0
-              && linePos + data.Length > LineLength)
+            if (LineLength > 0 && linePos + data.Length > LineLength)
             {
                 linePos = 0;
                 buffer.Append('\n');
@@ -102,37 +93,19 @@ namespace org.pdfclown.bytes.filters
             buffer.Append(data);
         }
 
-        private static void DecodeBlock(
-          byte[] decodedBlock,
-          ref uint tuple
-          )
+        private static void DecodeBlock(byte[] decodedBlock, ref uint tuple)
         { DecodeBlock(decodedBlock, decodedBlock.Length, ref tuple); }
 
-        private static void DecodeBlock(
-          byte[] decodedBlock,
-          int count,
-          ref uint tuple
-          )
+        private static void DecodeBlock(byte[] decodedBlock, int count, ref uint tuple)
         {
             for (int i = 0; i < count; i++)
             { decodedBlock[i] = (byte)(tuple >> 24 - (i * 8)); }
         }
 
-        private static void EncodeBlock(
-          byte[] encodedBlock,
-          StringBuilder buffer,
-          ref uint tuple,
-          ref int linePos
-          )
+        private static void EncodeBlock(byte[] encodedBlock, StringBuilder buffer, ref uint tuple, ref int linePos)
         { EncodeBlock(encodedBlock, encodedBlock.Length, buffer, ref tuple, ref linePos); }
 
-        private static void EncodeBlock(
-          byte[] encodedBlock,
-          int count,
-          StringBuilder buffer,
-          ref uint tuple,
-          ref int linePos
-          )
+        private static void EncodeBlock(byte[] encodedBlock, int count, StringBuilder buffer, ref uint tuple, ref int linePos)
         {
             for (int i = encodedBlock.Length - 1; i >= 0; i--)
             {
@@ -149,19 +122,13 @@ namespace org.pdfclown.bytes.filters
 
         #region dynamic
         #region constructors
-        internal ASCII85Filter(
-          )
+        internal ASCII85Filter()
         { }
         #endregion
 
         #region interface
         #region public
-        public override byte[] Decode(
-          byte[] data,
-          int offset,
-          int length,
-          PdfDictionary parameters
-          )
+        public override byte[] Decode(byte[] data, int offset, int length, PdfDictionary parameters)
         {
             byte[] decodedBlock = new byte[4];
             byte[] encodedBlock = new byte[5];
@@ -239,12 +206,7 @@ namespace org.pdfclown.bytes.filters
             return stream.ToArray();
         }
 
-        public override byte[] Encode(
-          byte[] data,
-          int offset,
-          int length,
-          PdfDictionary parameters
-          )
+        public override byte[] Encode(byte[] data, int offset, int length, PdfDictionary parameters)
         {
             byte[] decodedBlock = new byte[4];
             byte[] encodedBlock = new byte[5];

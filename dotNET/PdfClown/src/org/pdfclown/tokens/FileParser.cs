@@ -39,8 +39,7 @@ namespace org.pdfclown.tokens
     /**
       <summary>PDF file parser [PDF:1.7:3.2,3.4].</summary>
     */
-    public sealed class FileParser
-      : BaseParser
+    public sealed class FileParser : BaseParser
     {
         #region types
         public struct Reference
@@ -48,10 +47,7 @@ namespace org.pdfclown.tokens
             public readonly int GenerationNumber;
             public readonly int ObjectNumber;
 
-            internal Reference(
-              int objectNumber,
-              int generationNumber
-              )
+            internal Reference(int objectNumber, int generationNumber)
             {
                 this.ObjectNumber = objectNumber;
                 this.GenerationNumber = generationNumber;
@@ -71,17 +67,14 @@ namespace org.pdfclown.tokens
         #endregion
 
         #region constructors
-        internal FileParser(
-          IInputStream stream,
-          files.File file
-          ) : base(stream)
+        internal FileParser(IInputStream stream, files.File file)
+            : base(stream)
         { this.file = file; }
         #endregion
 
         #region interface
         #region public
-        public override bool MoveNext(
-          )
+        public override bool MoveNext()
         {
             bool moved = base.MoveNext();
             if (moved)
@@ -124,8 +117,7 @@ namespace org.pdfclown.tokens
             return moved;
         }
 
-        public override PdfDataObject ParsePdfObject(
-          )
+        public override PdfDataObject ParsePdfObject()
         {
             switch (TokenType)
             {
@@ -169,20 +161,11 @@ namespace org.pdfclown.tokens
 
                     Object streamType = streamHeader[PdfName.Type];
                     if (PdfName.ObjStm.Equals(streamType)) // Object stream [PDF:1.6:3.4.6].
-                        return new ObjectStream(
-                          streamHeader,
-                          new bytes.Buffer(data)
-                          );
+                        return new ObjectStream(streamHeader, new bytes.Buffer(data));
                     else if (PdfName.XRef.Equals(streamType)) // Cross-reference stream [PDF:1.6:3.4.7].
-                        return new XRefStream(
-                          streamHeader,
-                          new bytes.Buffer(data)
-                          );
+                        return new XRefStream(streamHeader, new bytes.Buffer(data));
                     else // Generic stream.
-                        return new PdfStream(
-                          streamHeader,
-                          new bytes.Buffer(data)
-                          );
+                        return new PdfStream(streamHeader, new bytes.Buffer(data));
                 }
                 else // Stand-alone dictionary.
                 { stream.Seek(oldOffset); } // Restores postcondition (last token should be the dictionary end).
@@ -194,9 +177,7 @@ namespace org.pdfclown.tokens
           <summary>Parses the specified PDF indirect object [PDF:1.6:3.2.9].</summary>
           <param name="xrefEntry">Cross-reference entry of the indirect object to parse.</param>
         */
-        public PdfDataObject ParsePdfObject(
-          XRefEntry xrefEntry
-          )
+        public PdfDataObject ParsePdfObject(XRefEntry xrefEntry)
         {
             // Go to the beginning of the indirect object!
             Seek(xrefEntry.Offset);
@@ -215,8 +196,7 @@ namespace org.pdfclown.tokens
         /**
           <summary>Retrieves the PDF version of the file [PDF:1.6:3.4.1].</summary>
         */
-        public string RetrieveVersion(
-          )
+        public string RetrieveVersion()
         {
             IInputStream stream = Stream;
             stream.Seek(0);
@@ -230,8 +210,7 @@ namespace org.pdfclown.tokens
         /**
           <summary>Retrieves the starting position of the last xref-table section [PDF:1.6:3.4.4].</summary>
         */
-        public long RetrieveXRefOffset(
-          )
+        public long RetrieveXRefOffset()
         {
             // [FIX:69] 'startxref' keyword not found (file was corrupted by alien data in the tail).
             IInputStream stream = Stream;
@@ -252,7 +231,7 @@ namespace org.pdfclown.tokens
                 stream.Seek(position);
 
                 // Get 'startxref' keyword position!
-                index = stream.ReadString(chunkSize).LastIndexOf(Keyword.StartXRef);
+                index = stream.ReadString(chunkSize).LastIndexOf(Keyword.StartXRef, StringComparison.Ordinal);
             }
             if (index < 0)
                 throw new PostScriptParseException("'" + Keyword.StartXRef + "' keyword not found.", this);

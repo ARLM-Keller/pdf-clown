@@ -38,10 +38,10 @@ namespace PdfClown.Viewer
         private double hsWidth;
         private double kWidth;
         private double kHeight;
-        private SkiaSharp.Extended.Svg.SKSvg upSvg = SvgImage.GetCache("caret-up");
-        private SkiaSharp.Extended.Svg.SKSvg downSvg = SvgImage.GetCache("caret-down");
-        private SkiaSharp.Extended.Svg.SKSvg leftSvg = SvgImage.GetCache("caret-left");
-        private SkiaSharp.Extended.Svg.SKSvg rightSvg = SvgImage.GetCache("caret-right");
+        private readonly SkiaSharp.Extended.Svg.SKSvg upSvg = SvgImage.GetCache("caret-up");
+        private readonly SkiaSharp.Extended.Svg.SKSvg downSvg = SvgImage.GetCache("caret-down");
+        private readonly SkiaSharp.Extended.Svg.SKSvg leftSvg = SvgImage.GetCache("caret-left");
+        private readonly SkiaSharp.Extended.Svg.SKSvg rightSvg = SvgImage.GetCache("caret-right");
         private bool verticalHovered;
         private bool нorizontalHovered;
         private Thickness verticalPadding = new Thickness(0, 0, 0, step);

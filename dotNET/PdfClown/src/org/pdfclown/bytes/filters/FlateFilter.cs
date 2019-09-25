@@ -51,7 +51,7 @@ namespace org.pdfclown.bytes.filters
         #region interface
         #region public
         public override byte[] Decode(byte[] data, int offset, int length, PdfDictionary parameters)
-        {
+        {            
             using (MemoryStream outputStream = new MemoryStream())
             using (MemoryStream inputStream = new MemoryStream(data, offset, length))
             using (DeflateStream inputFilter = new DeflateStream(inputStream, CompressionMode.Decompress))

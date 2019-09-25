@@ -53,9 +53,7 @@ namespace org.pdfclown.documents
         #endregion
 
         #region constructors
-        internal DocumentConfiguration(
-          Document document
-          )
+        internal DocumentConfiguration(Document document)
         { this.document = document; }
         #endregion
 
@@ -66,10 +64,8 @@ namespace org.pdfclown.documents
         */
         public CompatibilityModeEnum CompatibilityMode
         {
-            get
-            { return compatibilityMode; }
-            set
-            { compatibilityMode = value; }
+            get { return compatibilityMode; }
+            set { compatibilityMode = value; }
         }
 
         /**
@@ -77,8 +73,7 @@ namespace org.pdfclown.documents
         */
         public Document Document
         {
-            get
-            { return document; }
+            get { return document; }
         }
 
         /**
@@ -86,10 +81,8 @@ namespace org.pdfclown.documents
         */
         public EncodingFallbackEnum EncodingFallback
         {
-            get
-            { return encodingFallback; }
-            set
-            { encodingFallback = value; }
+            get { return encodingFallback; }
+            set { encodingFallback = value; }
         }
 
         /**
@@ -98,9 +91,7 @@ namespace org.pdfclown.documents
           path</see> and embedded in the document.</remarks>
           <param name="type">Predefined stamp type whose appearance has to be retrieved.</param>
         */
-        public FormXObject GetStamp(
-          Stamp.StandardTypeEnum? type
-          )
+        public FormXObject GetStamp(Stamp.StandardTypeEnum? type)
         {
             if (!type.HasValue
               || stampPath == null)
@@ -191,8 +182,7 @@ namespace org.pdfclown.documents
         */
         public string StampPath
         {
-            get
-            { return stampPath; }
+            get { return stampPath; }
             set
             {
                 if (!IOUtils.Exists(value))

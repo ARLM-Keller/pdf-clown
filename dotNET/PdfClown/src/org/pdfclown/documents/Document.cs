@@ -49,16 +49,12 @@ namespace org.pdfclown.documents
       <summary>PDF document [PDF:1.6::3.6.1].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class Document
-      : PdfObjectWrapper<PdfDictionary>,
-        IAppDataHolder
+    public sealed class Document : PdfObjectWrapper<PdfDictionary>, IAppDataHolder
     {
         #region static
         #region interface
         #region public
-        public static T Resolve<T>(
-          PdfDirectObject baseObject
-          ) where T : PdfObjectWrapper
+        public static T Resolve<T>(PdfDirectObject baseObject) where T : PdfObjectWrapper
         {
             if (typeof(Destination).IsAssignableFrom(typeof(T)))
                 return Destination.Wrap(baseObject) as T;
@@ -77,15 +73,8 @@ namespace org.pdfclown.documents
         #endregion
 
         #region constructors
-        internal Document(
-          File context
-          ) : base(
-            context,
-            new PdfDictionary(
-              new PdfName[1] { PdfName.Type },
-              new PdfDirectObject[1] { PdfName.Catalog }
-              )
-            )
+        internal Document(File context) :
+            base(context, new PdfDictionary(new PdfName[1] { PdfName.Type }, new PdfDirectObject[1] { PdfName.Catalog }))
         {
             configuration = new DocumentConfiguration(this);
 
@@ -102,9 +91,8 @@ namespace org.pdfclown.documents
             Resources = new Resources(this);
         }
 
-        internal Document(
-          PdfDirectObject baseObject // Catalog.
-          ) : base(baseObject)
+        internal Document(PdfDirectObject baseObject)// Catalog.
+            : base(baseObject)
         { configuration = new DocumentConfiguration(this); }
         #endregion
 
@@ -206,9 +194,7 @@ namespace org.pdfclown.documents
         /**
           <summary>Clones the object within this document context.</summary>
         */
-        public PdfObjectWrapper Include(
-          PdfObjectWrapper obj
-          )
+        public PdfObjectWrapper Include(PdfObjectWrapper obj)
         {
             if (obj.File == File)
                 return obj;
@@ -219,9 +205,7 @@ namespace org.pdfclown.documents
         /**
           <summary>Clones the collection objects within this document context.</summary>
         */
-        public ICollection<T> Include<T>(
-          ICollection<T> objs
-          ) where T : PdfObjectWrapper
+        public ICollection<T> Include<T>(ICollection<T> objs) where T : PdfObjectWrapper
         {
             List<T> includedObjects = new List<T>(objs.Count);
             foreach (T obj in objs)
@@ -235,10 +219,8 @@ namespace org.pdfclown.documents
         */
         public Information Information
         {
-            get
-            { return Information.Wrap(File.Trailer.Get<PdfDictionary>(PdfName.Info, false)); }
-            set
-            { File.Trailer[PdfName.Info] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return Information.Wrap(File.Trailer.Get<PdfDictionary>(PdfName.Info, false)); }
+            set { File.Trailer[PdfName.Info] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         /**
@@ -247,8 +229,7 @@ namespace org.pdfclown.documents
         [PDF(VersionEnum.PDF15)]
         public LayerDefinition Layer
         {
-            get
-            { return LayerDefinition.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.OCProperties)); }
+            get { return LayerDefinition.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.OCProperties)); }
             set
             {
                 CheckCompatibility("Layer");
@@ -262,10 +243,8 @@ namespace org.pdfclown.documents
         [PDF(VersionEnum.PDF12)]
         public Names Names
         {
-            get
-            { return new Names(BaseDataObject.Get<PdfDictionary>(PdfName.Names)); }
-            set
-            { BaseDataObject[PdfName.Names] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return new Names(BaseDataObject.Get<PdfDictionary>(PdfName.Names)); }
+            set { BaseDataObject[PdfName.Names] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         /**
@@ -274,8 +253,7 @@ namespace org.pdfclown.documents
         [PDF(VersionEnum.PDF13)]
         public PageLabels PageLabels
         {
-            get
-            { return new PageLabels(BaseDataObject.Get<PdfDictionary>(PdfName.PageLabels)); }
+            get { return new PageLabels(BaseDataObject.Get<PdfDictionary>(PdfName.PageLabels)); }
             set
             {
                 CheckCompatibility("PageLabels");
@@ -328,10 +306,7 @@ namespace org.pdfclown.documents
           <param name="object">Named object.</param>
           <returns>Registered named object.</returns>
         */
-        public T Register<T>(
-          PdfString name,
-          T @object
-          ) where T : PdfObjectWrapper
+        public T Register<T>(PdfString name, T @object) where T : PdfObjectWrapper
         {
             PdfObjectWrapper namedObjects = Names.Get(@object.GetType());
             namedObjects.GetType().GetMethod("set_Item", BindingFlags.Public | BindingFlags.Instance).Invoke(namedObjects, new object[] { name, @object });
@@ -342,9 +317,7 @@ namespace org.pdfclown.documents
           <summary>Forces a named base object to be expressed as its corresponding high-level
           representation.</summary>
         */
-        public T ResolveName<T>(
-          PdfDirectObject namedBaseObject
-          ) where T : PdfObjectWrapper
+        public T ResolveName<T>(PdfDirectObject namedBaseObject) where T : PdfObjectWrapper
         {
             if (namedBaseObject is PdfString) // Named object.
                 return Names.Get<T>((PdfString)namedBaseObject);
@@ -359,10 +332,8 @@ namespace org.pdfclown.documents
         */
         public Resources Resources
         {
-            get
-            { return Resources.Wrap(((PdfDictionary)BaseDataObject.Resolve(PdfName.Pages)).Get<PdfDictionary>(PdfName.Resources)); }
-            set
-            { ((PdfDictionary)BaseDataObject.Resolve(PdfName.Pages))[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return Resources.Wrap(((PdfDictionary)BaseDataObject.Resolve(PdfName.Pages)).Get<PdfDictionary>(PdfName.Resources)); }
+            set { ((PdfDictionary)BaseDataObject.Resolve(PdfName.Pages))[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         /**
@@ -398,39 +369,28 @@ namespace org.pdfclown.documents
         */
         public ViewerPreferences ViewerPreferences
         {
-            get
-            { return ViewerPreferences.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.ViewerPreferences)); }
-            set
-            { BaseDataObject[PdfName.ViewerPreferences] = PdfObjectWrapper.GetBaseObject(value); }
+            get { return ViewerPreferences.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.ViewerPreferences)); }
+            set { BaseDataObject[PdfName.ViewerPreferences] = PdfObjectWrapper.GetBaseObject(value); }
         }
 
         #region IAppDataHolder
         public AppDataCollection AppData
         {
-            get
-            { return AppDataCollection.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PieceInfo), this); }
+            get { return AppDataCollection.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PieceInfo), this); }
         }
 
-        public AppData GetAppData(
-          PdfName appName
-          )
+        public AppData GetAppData(PdfName appName)
         { return AppData.Ensure(appName); }
 
         public DateTime? ModificationDate
         {
-            get
-            { return Information.ModificationDate; }
+            get { return Information.ModificationDate; }
         }
 
-        public void Touch(
-          PdfName appName
-          )
+        public void Touch(PdfName appName)
         { Touch(appName, DateTime.Now); }
 
-        public void Touch(
-          PdfName appName,
-          DateTime modificationDate
-          )
+        public void Touch(PdfName appName, DateTime modificationDate)
         {
             GetAppData(appName).ModificationDate = modificationDate;
             Information.ModificationDate = modificationDate;

@@ -21,9 +21,9 @@ namespace PdfClown.Viewer
 
 
         private SKMatrix currentMatrix;
-        private List<SKPictureDetails> pictures = new List<SKPictureDetails>();
+        private readonly List<SKPictureDetails> pictures = new List<SKPictureDetails>();
         private float scale = 1;
-        private float indent = 10;
+        private readonly float indent = 10;
         private SKPoint pointerLocation;
 
         public PdfView()

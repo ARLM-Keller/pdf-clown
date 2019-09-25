@@ -47,14 +47,10 @@ namespace org.pdfclown
 
         #region interface
         #region public
-        public static Version Get(
-          PdfName version
-          )
+        public static Version Get(PdfName version)
         { return Get(version.RawValue); }
 
-        public static Version Get(
-          string version
-          )
+        public static Version Get(string version)
         {
             if (!versions.ContainsKey(version))
             {
@@ -78,10 +74,7 @@ namespace org.pdfclown
         #endregion
 
         #region constructors
-        private Version(
-          int major,
-          int minor
-          )
+        private Version(int major, int minor)
         {
             this.major = major;
             this.minor = minor;
@@ -92,31 +85,25 @@ namespace org.pdfclown
         #region public
         public int Major
         {
-            get
-            { return major; }
+            get { return major; }
         }
 
         public int Minor
         {
-            get
-            { return minor; }
+            get { return minor; }
         }
 
-        public override string ToString(
-          )
+        public override string ToString()
         { return VersionUtils.ToString(this); }
 
         #region IVersion
         public IList<int> Numbers
         {
-            get
-            { return new List<int> { major, minor }; }
+            get { return new List<int> { major, minor }; }
         }
 
         #region IComparable
-        public int CompareTo(
-          IVersion value
-          )
+        public int CompareTo(IVersion value)
         { return VersionUtils.CompareTo(this, value); }
         #endregion
         #endregion

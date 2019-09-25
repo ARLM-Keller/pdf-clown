@@ -595,11 +595,7 @@ namespace org.pdfclown.documents.contents.fonts
             // Go to the glyph horizontal-metrics entries!
             FontData.Seek(tableOffset);
             GlyphWidths = new Dictionary<int, int>(Metrics.NumberOfHMetrics);
-            for (
-              int index = 0;
-              index < Metrics.NumberOfHMetrics;
-              index++
-              )
+            for (int index = 0; index < Metrics.NumberOfHMetrics; index++)
             {
                 // Get the glyph advance width!
                 GlyphWidths[index] = (int)(FontData.ReadUnsignedShort() * Metrics.UnitNorm);
@@ -711,7 +707,7 @@ namespace org.pdfclown.documents.contents.fonts
 
             // Go to the italic angle!
             FontData.Seek(tableOffset + 4);
-            Metrics.ItalicAngle = FontData.ReadFixed32();              
+            Metrics.ItalicAngle = FontData.ReadFixed32();
             Metrics.UnderlinePosition = FontData.ReadShort();
             Metrics.UnderlineThickness = FontData.ReadShort();
             Metrics.IsFixedPitch = (FontData.ReadInt() != 0);

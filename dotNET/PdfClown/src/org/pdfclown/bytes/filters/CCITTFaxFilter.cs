@@ -2,12 +2,6 @@
   Copyright 2006-2013 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
-    * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it):
-      - porting and adaptation (extension to any bit depth other than 8) of [JT]
-        predictor-decoding implementation.
-    * Joshua Tauberer (code contributor, http://razor.occams.info):
-      - predictor-decoding contributor on .NET implementation.
-    * Jean-Claude Truy (bugfix contributor): [FIX:0.0.8:JCT].
 
   This file should be part of the source code distribution of "PDF Clown library" (the
   Program): see the accompanying README files for more info.

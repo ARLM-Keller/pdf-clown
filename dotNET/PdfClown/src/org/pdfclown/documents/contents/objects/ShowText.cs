@@ -148,7 +148,9 @@ namespace org.pdfclown.documents.contents.objects
                             && !(textString.Length == 1
                             && (textString[0] == ' '
                             || textString[0] == '\r'
-                            || textString[0] == '\n')))
+                            || textString[0] == '\n'
+                            || char.IsControl(textString[0])
+                            )))
                         {
                             var text = font is Type1Font
                                 ? System.Text.Encoding.UTF8.GetBytes(new[] { textChar })
@@ -164,8 +166,16 @@ namespace org.pdfclown.documents.contents.objects
                             context.SetMatrix(trm);
                             if (fill != null)
                             {
-                                context.DrawText(text, 0, 0, fill);
+                                if (fill.ContainsGlyphs(text))
+                                {
+                                    context.DrawText(text, 0, 0, fill);
+                                }
+                                else
+                                {
+                                    context.DrawText(font.Encode(textChar.ToString()), 0, 0, fill);
+                                }
                             }
+
                             if (stroke != null)
                             {
                                 context.DrawText(text, 0, 0, stroke);
@@ -240,10 +250,8 @@ namespace org.pdfclown.documents.contents.objects
         */
         public virtual IList<object> Value
         {
-            get
-            { return new List<object>() { Text }; }
-            set
-            { Text = (byte[])value[0]; }
+            get { return new List<object>() { Text }; }
+            set { Text = (byte[])value[0]; }
         }
         #endregion
         #endregion

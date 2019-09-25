@@ -64,8 +64,9 @@ namespace org.pdfclown.documents.contents.fonts
         { }
         #endregion
 
-        protected override SKTypeface GetTypeface(PdfStream stream, string name)
+        protected override SKTypeface GetTypeface(PdfDictionary fontDescription, PdfStream stream)
         {
+            var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
             var buffer = stream.GetBody(true);
 
             //var lenght1 = stream.Header[PdfName.Length1] as PdfInteger;

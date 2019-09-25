@@ -296,18 +296,15 @@ namespace org.pdfclown.documents.contents.fonts
             {
                 if (fontDescription.Resolve(PdfName.FontFile) is PdfStream stream)
                 {
-                    var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
-                    return typeface = GetTypeface(stream, name);
+                    return typeface = GetTypeface(fontDescription, stream);
                 }
                 if (fontDescription.Resolve(PdfName.FontFile2) is PdfStream stream2)
                 {
-                    var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
-                    return typeface = GetTypeface(stream2, name);
+                    return typeface = GetTypeface(fontDescription, stream2);
                 }
                 if (fontDescription.Resolve(PdfName.FontFile3) is PdfStream stream3)
-                {
-                    var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
-                    return typeface = GetTypeface(stream3, name);
+                {                    
+                    return typeface = GetTypeface(fontDescription, stream3);
                 }
                 if (fontDescription.Resolve(PdfName.FontName) is PdfName fontName)
                 {
@@ -343,20 +340,9 @@ namespace org.pdfclown.documents.contents.fonts
             }
 
             var parameters = name.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
-            var weight = name.IndexOf("Bold", StringComparison.OrdinalIgnoreCase) > -1 ? 700 : 400;
-            var weightParam = (IPdfNumber)header?.Resolve(PdfName.FontWeight);
-            if (weightParam != null)
-            {
-                weight = weightParam.IntValue;
-            }
-            var style = new SKFontStyle(
-                weight,
-                (int)SKFontStyleWidth.Normal,
-                name.IndexOf("Italic", StringComparison.OrdinalIgnoreCase) > -1
-                    ? SKFontStyleSlant.Italic
-                    : name.IndexOf("Oblique", StringComparison.OrdinalIgnoreCase) > -1
-                        ? SKFontStyleSlant.Oblique
-                        : SKFontStyleSlant.Upright);
+
+            var style = GetStyle(header);
+
             var fontName = parameters[0].Equals("Courier", StringComparison.OrdinalIgnoreCase)
                 || parameters[0].StartsWith("CourierNew", StringComparison.OrdinalIgnoreCase)
                 ? "Courier New"
@@ -373,8 +359,29 @@ namespace org.pdfclown.documents.contents.fonts
             return cache[name] = SKTypeface.FromFamilyName(fontName, style);
         }
 
-        protected virtual SKTypeface GetTypeface(PdfStream stream, string name)
+        protected virtual SKFontStyle GetStyle(PdfDictionary fontDescription)
         {
+            var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
+            var weight = name.IndexOf("Bold", StringComparison.OrdinalIgnoreCase) > -1 ? 700 : 400;
+            var weightParam = (IPdfNumber)fontDescription?.Resolve(PdfName.FontWeight);
+            if (weightParam != null)
+            {
+                weight = weightParam.IntValue;
+            }
+            return new SKFontStyle(
+                weight,
+                (int)SKFontStyleWidth.Normal,
+                name.IndexOf("Italic", StringComparison.OrdinalIgnoreCase) > -1
+                    ? SKFontStyleSlant.Italic
+                    : name.IndexOf("Oblique", StringComparison.OrdinalIgnoreCase) > -1
+                        ? SKFontStyleSlant.Oblique
+                        : SKFontStyleSlant.Upright);
+        }
+
+        protected virtual SKTypeface GetTypeface(PdfDictionary fontDescription, PdfStream stream)
+        {
+            var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
+
             var body = stream.GetBody(true).ToByteArray();
             //System.IO.File.WriteAllBytes($"export{name}.ttf", body);
 

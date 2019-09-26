@@ -253,6 +253,7 @@ namespace org.pdfclown.objects
         public static readonly PdfName FontFile2 = new PdfName("FontFile2");
         public static readonly PdfName FontFile3 = new PdfName("FontFile3");
         public static readonly PdfName FontName = new PdfName("FontName");
+        public static readonly PdfName FontFamily = new PdfName("FontFamily");
         public static readonly PdfName ForComment = new PdfName("ForComment");
         public static readonly PdfName Form = new PdfName("Form");
         public static readonly PdfName ForPublicRelease = new PdfName("ForPublicRelease");

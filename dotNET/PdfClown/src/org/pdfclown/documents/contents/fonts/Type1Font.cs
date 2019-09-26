@@ -97,7 +97,7 @@ namespace org.pdfclown.documents.contents.fonts
 
             if (typeface == null)
             {
-                typeface = ParseName(name, stream.Header);
+                typeface = ParseName(name, fontDescription);
             }
             return typeface;
         }

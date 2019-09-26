@@ -95,12 +95,14 @@ namespace org.pdfclown.documents.contents.objects
             var context = state.Scanner.RenderContext;
             var fill = context != null && state.RenderModeFill ? state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha) : null;
             var typeface = font.GetTypeface();
+            var nameTypeface = font.GetTypefaceByName();
+
             if (fill != null)
-            {
-                fill.Typeface = typeface;
+            {                
                 fill.TextSize = (float)state.FontSize;
                 fill.TextScaleX = (float)state.Scale;
             }
+            
             var stroke = context != null && state.RenderModeStroke ? state.StrokeColorSpace?.GetPaint(state.StrokeColor, state.StrokeAlpha) : null;
             if (stroke != null)
             {
@@ -166,13 +168,15 @@ namespace org.pdfclown.documents.contents.objects
                             context.SetMatrix(trm);
                             if (fill != null)
                             {
+                                fill.Typeface = typeface;
                                 if (fill.ContainsGlyphs(text))
                                 {
                                     context.DrawText(text, 0, 0, fill);
                                 }
-                                else
+                                else if (typeface != nameTypeface)
                                 {
-                                    context.DrawText(font.Encode(textChar.ToString()), 0, 0, fill);
+                                    fill.Typeface = nameTypeface;
+                                    context.DrawText(text, 0, 0, fill);
                                 }
                             }
 

@@ -52,32 +52,22 @@ namespace org.pdfclown.documents.contents.fonts
 
         protected override SKTypeface GetTypeface(PdfDictionary fontDescription, PdfStream stream)
         {
-            var name = fontDescription.Resolve(PdfName.FontName)?.ToString();
-            var fontFamily = ((PdfString)fontDescription.Resolve(PdfName.FontFamily))?.StringValue;
-
-            var style = GetStyle(fontDescription);
-            var typeface = SKTypeface.FromFamilyName(fontFamily, style);
-            if (typeface.FamilyName == fontFamily)
-                return typeface;
             var buffer = stream.GetBody(true);
-
             var lenght1 = stream.Header[PdfName.Length1] as PdfInteger;
-
             var bytes = buffer.ToByteArray();
-            
+
             using (var data = new SKMemoryStream(bytes))
             {
-
                 typeface = SKFontManager.Default.CreateTypeface(data);
             }
 
             if (typeface == null)
             {
-                typeface = ParseName(name, stream.Header);
+                typeface = ParseName(fontDescription.Resolve(PdfName.FontName)?.ToString(), stream.Header);
             }
             return typeface;
         }
 
-       
+
     }
 }

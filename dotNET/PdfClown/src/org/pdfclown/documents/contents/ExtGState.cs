@@ -52,9 +52,7 @@ namespace org.pdfclown.documents.contents
           <param name="baseObject">Base object of a graphics state parameter dictionary object.</param>
           <returns>Graphics state parameter dictionary object corresponding to the base object.</returns>
         */
-        public static ExtGState Wrap(
-          PdfDirectObject baseObject
-          )
+        public static ExtGState Wrap(PdfDirectObject baseObject)
         { return baseObject != null ? new ExtGState(baseObject) : null; }
         #endregion
         #endregion
@@ -62,14 +60,10 @@ namespace org.pdfclown.documents.contents
 
         #region dynamic
         #region constructors
-        public ExtGState(
-          Document context
-          ) : base(context, new PdfDictionary())
+        public ExtGState(Document context) : base(context, new PdfDictionary())
         { }
 
-        internal ExtGState(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal ExtGState(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -82,15 +76,11 @@ namespace org.pdfclown.documents.contents
         [PDF(VersionEnum.PDF14)]
         public bool AlphaShape
         {
-            get
-            { return (bool)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.AIS], false); }
-            set
-            { BaseDataObject[PdfName.AIS] = PdfBoolean.Get(value); }
+            get { return (bool)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.AIS], false); }
+            set { BaseDataObject[PdfName.AIS] = PdfBoolean.Get(value); }
         }
 
-        public void ApplyTo(
-          ContentScanner.GraphicsState state
-          )
+        public void ApplyTo(ContentScanner.GraphicsState state)
         {
             foreach (PdfName parameterName in BaseDataObject.Keys)
             {

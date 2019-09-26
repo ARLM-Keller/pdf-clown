@@ -35,8 +35,7 @@ namespace org.pdfclown.documents.contents.fonts
       <summary>Type 3 font [PDF:1.6:5.5.4].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class Type3Font
-      : SimpleFont
+    public sealed class Type3Font : SimpleFont
     {
         #region dynamic
         #region constructors

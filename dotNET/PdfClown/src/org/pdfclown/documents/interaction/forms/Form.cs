@@ -37,15 +37,12 @@ namespace org.pdfclown.documents.interaction.forms
       <summary>Interactive form (AcroForm) [PDF:1.6:8.6.1].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class Form
-      : PdfObjectWrapper<PdfDictionary>
+    public sealed class Form : PdfObjectWrapper<PdfDictionary>
     {
         #region static
         #region interface
         #region public
-        public static Form Wrap(
-          PdfDirectObject baseObject
-          )
+        public static Form Wrap(PdfDirectObject baseObject)
         { return baseObject != null ? new Form(baseObject) : null; }
         #endregion
         #endregion
@@ -53,22 +50,11 @@ namespace org.pdfclown.documents.interaction.forms
 
         #region dynamic
         #region constructors
-        public Form(
-          Document context
-          ) : base(
-            context,
-            new PdfDictionary(
-              new PdfName[]
-              {PdfName.Fields},
-              new PdfDirectObject[]
-              {new PdfArray()}
-              )
-            )
+        public Form(Document context)
+            : base(context, new PdfDictionary(new PdfName[] { PdfName.Fields }, new PdfDirectObject[] { new PdfArray() }))
         { }
 
-        private Form(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        private Form(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -79,10 +65,8 @@ namespace org.pdfclown.documents.interaction.forms
         */
         public Fields Fields
         {
-            get
-            { return new Fields(BaseDataObject.Get<PdfArray>(PdfName.Fields)); }
-            set
-            { BaseDataObject[PdfName.Fields] = value.BaseObject; }
+            get { return new Fields(BaseDataObject.Get<PdfArray>(PdfName.Fields)); }
+            set { BaseDataObject[PdfName.Fields] = value.BaseObject; }
         }
 
         /**
@@ -90,10 +74,8 @@ namespace org.pdfclown.documents.interaction.forms
         */
         public Resources Resources
         {
-            get
-            { return Resources.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.DR)); }
-            set
-            { BaseDataObject[PdfName.DR] = value.BaseObject; }
+            get { return Resources.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.DR)); }
+            set { BaseDataObject[PdfName.DR] = value.BaseObject; }
         }
         #endregion
         #endregion

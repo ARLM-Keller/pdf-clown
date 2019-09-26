@@ -72,7 +72,7 @@ namespace org.pdfclown.documents.contents.objects
           <param name="textScanner">Scanner to be notified about text contents.
           In case it's null, the operation is applied to the graphics state context.</param>
         */
-        public void Scan(ContentScanner.GraphicsState state, IScanner textScanner)
+        public virtual void Scan(ContentScanner.GraphicsState state, IScanner textScanner)
         {
             /*
               TODO: I really dislike this solution -- it's a temporary hack until the event-driven
@@ -83,7 +83,9 @@ namespace org.pdfclown.documents.contents.objects
             */
 
             double contextHeight = state.Scanner.ContextSize.Height;
-            Font font = state.Font;
+            Font font = state.Font ?? Font.LatestFont;
+            if (font == null)
+                return;
             double fontSize = state.FontSize;
             double scaledFactor = Font.GetScalingFactor(fontSize) * state.Scale;
             bool wordSpaceSupported = !(font is CompositeFont);
@@ -91,11 +93,11 @@ namespace org.pdfclown.documents.contents.objects
             double charSpace = state.CharSpace * state.Scale;
             SKMatrix ctm = state.Ctm;
             SKMatrix tm = state.Tm;
-            var encoding = font.GetEnoding();
+            //var encoding = font.GetEnoding();
             var context = state.Scanner.RenderContext;
             var fill = context != null && state.RenderModeFill ? state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha) : null;
-            var typeface = font.GetTypeface();
-            var nameTypeface = font.GetTypefaceByName();
+            var typeface = font?.GetTypeface();
+            var nameTypeface = font?.GetTypefaceByName();
 
             if (fill != null)
             {                
@@ -205,8 +207,6 @@ namespace org.pdfclown.documents.contents.objects
                               );
                             textScanner.ScanChar(textChar, charBox);
                         }
-
-
                         /*
                           NOTE: After the glyph is painted, the text matrix is updated
                           according to the glyph displacement and any applicable spacing parameter.

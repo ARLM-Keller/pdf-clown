@@ -25,7 +25,6 @@
 
 using org.pdfclown.bytes;
 using org.pdfclown.objects;
-
 using System.Collections.Generic;
 
 namespace org.pdfclown.documents.contents.objects
@@ -34,8 +33,7 @@ namespace org.pdfclown.documents.contents.objects
       <summary>'Show a text string' operation [PDF:1.6:5.3.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class ShowSimpleText
-      : ShowText
+    public sealed class ShowSimpleText : ShowText
     {
         #region static
         #region fields

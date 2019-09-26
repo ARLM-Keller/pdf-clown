@@ -96,6 +96,7 @@ namespace org.pdfclown.documents.contents.fonts
 
         #region static
         #region fields
+        public static Font LatestFont { get; private set; }
         private const int UndefinedDefaultCode = int.MinValue;
         private const int UndefinedWidth = int.MinValue;
         #endregion
@@ -265,13 +266,8 @@ namespace org.pdfclown.documents.contents.fonts
         /**
           <summary>Creates a new font structure within the given document context.</summary>
         */
-        protected Font(Document context) : base(
-            context,
-            new PdfDictionary(
-              new PdfName[1] { PdfName.Type },
-              new PdfDirectObject[1] { PdfName.Font }
-              )
-            )
+        protected Font(Document context)
+            : base(context, new PdfDictionary(new PdfName[1] { PdfName.Type }, new PdfDirectObject[1] { PdfName.Font }))
         { Initialize(); }
 
         /**
@@ -281,6 +277,7 @@ namespace org.pdfclown.documents.contents.fonts
         {
             Initialize();
             Load();
+            LatestFont = this;
         }
         #endregion
 
@@ -441,7 +438,7 @@ namespace org.pdfclown.documents.contents.fonts
         */
         public string Decode(byte[] code)
         {
-            StringBuilder textBuilder = new StringBuilder();
+            var textBuilder = new StringBuilder();
             {
                 byte[][] codeBuffers = new byte[charCodeMaxLength + 1][];
                 for (int codeBufferIndex = 0; codeBufferIndex <= charCodeMaxLength; codeBufferIndex++)
@@ -692,10 +689,7 @@ namespace org.pdfclown.documents.contents.fonts
             int kerning = 0;
             for (int index = 0, length = text.Length - 1; index < length; index++)
             {
-                kerning += GetKerning(
-                  text[index],
-                  text[index + 1]
-                  );
+                kerning += GetKerning(text[index], text[index + 1]);
             }
             return kerning;
         }
@@ -840,6 +834,7 @@ namespace org.pdfclown.documents.contents.fonts
             set
             { defaultWidth = value; }
         }
+
 
         /**
           <summary>Gets the specified font descriptor entry value.</summary>

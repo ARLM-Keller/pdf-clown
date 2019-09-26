@@ -39,8 +39,7 @@ namespace org.pdfclown.documents.contents.fonts
       <summary>TrueType font [PDF:1.6:5;OFF:2009].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class TrueTypeFont
-      : SimpleFont
+    public sealed class TrueTypeFont : SimpleFont
     {
         #region dynamic
         #region constructors

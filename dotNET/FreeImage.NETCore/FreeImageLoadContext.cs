@@ -35,38 +35,38 @@
 
 using System;
 using System.Runtime.InteropServices;
-using System.Runtime.Loader;
+//using System.Runtime.Loader;
 using System.Reflection;
 using System.IO;
 
 namespace FreeImageAPI
 {
-    public class FreeImageLoadContext : AssemblyLoadContext
-    {
-        protected override Assembly Load(AssemblyName assemblyName)
-        {
-            // Return null to fallback on default load context
-            return null;
-        }
-        protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
-        {
-            if (unmanagedDllName == "libFreeImage")
-            {
-                string rootDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                // Environment.OSVersion.Platform returns "Unix" for Unix or OSX, so use RuntimeInformation here
-                var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-                var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-                var isOsx = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-                var prefix = isWindows ? "" : isLinux ? "lib" : "lib";
-                var ext = isWindows ? "dll" : isLinux ? "so" : "dylib";
-                var os = isWindows ? "win" : isLinux ? "linux" : "osx";
-                var fileName = Path.Combine(assemblyDirectory, $"/runtimes/{os}-{RuntimeInformation.OSArchitecture}/native/{prefix}FreeImage.{ext}");
-                if (File.Exists(fileName))
-                    return LoadUnmanagedDllFromPath(fileName);
+    //public class FreeImageLoadContext : AssemblyLoadContext
+    //{
+    //    protected override Assembly Load(AssemblyName assemblyName)
+    //    {
+    //        // Return null to fallback on default load context
+    //        return null;
+    //    }
+    //    protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+    //    {
+    //        if (unmanagedDllName == "libFreeImage")
+    //        {
+    //            string rootDirectory = AppDomain.CurrentDomain.BaseDirectory;
+    //            string assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+    //            // Environment.OSVersion.Platform returns "Unix" for Unix or OSX, so use RuntimeInformation here
+    //            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    //            var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+    //            var isOsx = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+    //            var prefix = isWindows ? "" : isLinux ? "lib" : "lib";
+    //            var ext = isWindows ? "dll" : isLinux ? "so" : "dylib";
+    //            var os = isWindows ? "win" : isLinux ? "linux" : "osx";
+    //            var fileName = Path.Combine(assemblyDirectory, $"/runtimes/{os}-{RuntimeInformation.OSArchitecture}/native/{prefix}FreeImage.{ext}");
+    //            if (File.Exists(fileName))
+    //                return LoadUnmanagedDllFromPath(fileName);
 
-            }
-            return IntPtr.Zero;
-        }
-    }
+    //        }
+    //        return IntPtr.Zero;
+    //    }
+    //}
 }

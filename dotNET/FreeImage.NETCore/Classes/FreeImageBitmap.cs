@@ -1792,38 +1792,37 @@ namespace FreeImageAPI
 
 #endif
 
-		/// <summary>
-		/// Returns a thumbnail for this <see cref="FreeImageBitmap"/>.
-		/// </summary>
-		/// <param name="thumbWidth">The width, in pixels, of the requested thumbnail image.</param>
-		/// <param name="thumbHeight">The height, in pixels, of the requested thumbnail image.</param>
-		/// <param name="callback">Ignored.</param>
-		/// <param name="callBackData">Ignored.</param>
-		/// <returns>A <see cref="FreeImageBitmap"/> that represents the thumbnail.</returns>
-		public FreeImageBitmap GetThumbnailImage(int thumbWidth, int thumbHeight,
-			Image.GetThumbnailImageAbort callback, IntPtr callBackData)
-		{
-			EnsureNotDisposed();
-			FreeImageBitmap result = null;
-			FIBITMAP newDib = FreeImage.Rescale(
-				dib, thumbWidth, thumbHeight, FREE_IMAGE_FILTER.FILTER_BICUBIC);
-			if (!newDib.IsNull)
-			{
-				result = new FreeImageBitmap(newDib);
-			}
-			return result;
-		}
+        /// <summary>
+        /// Returns a thumbnail for this <see cref="FreeImageBitmap"/>.
+        /// </summary>
+        /// <param name="thumbWidth">The width, in pixels, of the requested thumbnail image.</param>
+        /// <param name="thumbHeight">The height, in pixels, of the requested thumbnail image.</param>
+        /// <param name="callback">Ignored.</param>
+        /// <param name="callBackData">Ignored.</param>
+        /// <returns>A <see cref="FreeImageBitmap"/> that represents the thumbnail.</returns>
+        public FreeImageBitmap GetThumbnailImage(int thumbWidth, int thumbHeight, IntPtr callBackData)
+        {
+            EnsureNotDisposed();
+            FreeImageBitmap result = null;
+            FIBITMAP newDib = FreeImage.Rescale(
+                dib, thumbWidth, thumbHeight, FREE_IMAGE_FILTER.FILTER_BICUBIC);
+            if (!newDib.IsNull)
+            {
+                result = new FreeImageBitmap(newDib);
+            }
+            return result;
+        }
 
-		/// <summary>
-		/// Returns a thumbnail for this <see cref="FreeImageBitmap"/>, keeping aspect ratio.
-		/// <paramref name="maxPixelSize"/> defines the maximum width or height
-		/// of the thumbnail.
-		/// </summary>
-		/// <param name="maxPixelSize">Thumbnail square size.</param>
-		/// <param name="convert">When true HDR images are transperantly
-		/// converted to standard images.</param>
-		/// <returns>The thumbnail in a new instance.</returns>
-		public FreeImageBitmap GetThumbnailImage(int maxPixelSize, bool convert)
+        /// <summary>
+        /// Returns a thumbnail for this <see cref="FreeImageBitmap"/>, keeping aspect ratio.
+        /// <paramref name="maxPixelSize"/> defines the maximum width or height
+        /// of the thumbnail.
+        /// </summary>
+        /// <param name="maxPixelSize">Thumbnail square size.</param>
+        /// <param name="convert">When true HDR images are transperantly
+        /// converted to standard images.</param>
+        /// <returns>The thumbnail in a new instance.</returns>
+        public FreeImageBitmap GetThumbnailImage(int maxPixelSize, bool convert)
 		{
 			EnsureNotDisposed();
 			FreeImageBitmap result = null;
@@ -4215,10 +4214,10 @@ namespace FreeImageAPI
 		/// has no public accessible constructor.
 		/// </summary>
 		/// <returns>A new instace of <see cref="PropertyItem"/>.</returns>
-		public static PropertyItem CreateNewPropertyItem()
-		{
-			return FreeImage.CreatePropertyItem();
-		}
+		//public static PropertyItem CreateNewPropertyItem()
+		//{
+		//	return FreeImage.CreatePropertyItem();
+		//}
 
 #endregion
 

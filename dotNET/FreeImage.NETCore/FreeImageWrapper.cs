@@ -4711,10 +4711,10 @@ namespace FreeImageAPI
             return result;
         }
 
-        internal static PropertyItem CreatePropertyItem()
-        {
-            return (PropertyItem)Activator.CreateInstance(typeof(PropertyItem), true);
-        }
+        //internal static PropertyItem CreatePropertyItem()
+        //{
+        //    return (PropertyItem)Activator.CreateInstance(typeof(PropertyItem), true);
+        //}
 
         private static unsafe void CopyPalette(FIBITMAP src, FIBITMAP dst)
         {

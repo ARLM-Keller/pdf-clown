@@ -1,5 +1,6 @@
 ﻿
 using BitMiracle.LibTiff.Classic;
+using FreeImageAPI;
 using org.pdfclown.documents.contents.colorSpaces;
 using org.pdfclown.objects;
 using SkiaSharp;
@@ -48,6 +49,10 @@ namespace org.pdfclown.documents.contents
                 if (IsTiff(data))
                 {
                     image = LoadTiff(data);
+                }
+                else if (IsJPEG(data))
+                {
+                    image = LoadJPEG(data);
                 }
                 else
                 {
@@ -185,6 +190,20 @@ namespace org.pdfclown.documents.contents
             return bitmap;
         }
 
+        public static SKBitmap LoadJPEG(byte[] jpegStream)
+        {
+            using (var output = new MemoryStream())
+            using (var input = new MemoryStream(jpegStream))
+            {
+                var bmp = FreeImage.LoadFromStream(input);
+
+                FreeImage.SaveToStream(bmp, output, FREE_IMAGE_FORMAT.FIF_JPEG, FREE_IMAGE_SAVE_FLAGS.JPEG_OPTIMIZE);
+                FreeImage.Unload(bmp);
+
+                return SKBitmap.Decode(output.ToArray());
+            }
+        }
+
         //https://stackoverflow.com/a/50370515/4682355
         public static SKBitmap LoadTiff(byte[] tiffStream)
         {
@@ -197,7 +216,6 @@ namespace org.pdfclown.documents.contents
                 var height = tifImg.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
 
                 // create the bitmap
-
                 var info = new SKImageInfo(width, height)
                 {
                     ColorType = SKColorType.Rgba8888

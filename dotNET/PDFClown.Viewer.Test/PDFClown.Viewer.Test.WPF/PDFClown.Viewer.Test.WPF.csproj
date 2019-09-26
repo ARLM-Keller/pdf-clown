@@ -39,6 +39,10 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\PdfClown.Viewer\PdfClown.Viewer.WPF\PdfClown.Viewer.WPF.csproj" />
+    <ProjectReference Include="..\PdfClown.Viewer.Test\PdfClown.Viewer.Test.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
     <Compile Update="Properties\Resources.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="Resources.resx" />
     <Compile Update="Properties\Settings.Designer.cs">
@@ -75,9 +79,6 @@
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\PdfClown.Viewer\PdfClown.Viewer.WPF\PdfClown.Viewer.WPF.csproj" />
-    <ProjectReference Include="..\PdfClown.Viewer.Test\PdfClown.Viewer.Test.csproj" />
-  </ItemGroup>
+
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 </Project>

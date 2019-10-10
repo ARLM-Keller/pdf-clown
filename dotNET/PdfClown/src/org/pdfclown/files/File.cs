@@ -41,8 +41,7 @@ namespace org.pdfclown.files
     /**
       <summary>PDF file representation.</summary>
     */
-    public sealed class File
-      : IDisposable
+    public sealed class File : IDisposable
     {
         #region types
         private sealed class ImplicitContainer : PdfIndirectObject
@@ -103,15 +102,17 @@ namespace org.pdfclown.files
             {
                 Reader.FileInfo info = reader.ReadInfo();
                 version = info.Version;
-                trailer = PrepareTrailer(info.Trailer);
-                //if (trailer.ContainsKey(PdfName.Encrypt)) // Encrypted file.
-                //     throw new NotImplementedException("Encrypted files are currently not supported.");
-
+                trailer = PrepareTrailer(info.Trailer);                
                 indirectObjects = new IndirectObjects(this, info.XrefEntries);
                 document = new Document(trailer[PdfName.Root]);
                 Configuration.XRefMode = (PdfName.XRef.Equals(trailer[PdfName.Type])
                   ? XRefModeEnum.Compressed
                   : XRefModeEnum.Plain);
+                if (trailer.ContainsKey(PdfName.Encrypt)) // Encrypted file.
+                {
+                    throw new NotImplementedException("Encrypted files are currently not supported.");
+                    var encript = trailer.Resolve(PdfName.Encrypt);
+                }
             }
             catch (Exception)
             {

@@ -18,8 +18,6 @@ namespace PdfClown.Viewer
         public static readonly BindableProperty ScaleFactorProperty = BindableProperty.Create(nameof(ScaleFactorProperty), typeof(float), typeof(PdfView), 1F,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnScaleFactorChanged((float)oldValue, (float)newValue));
 
-
-
         private SKMatrix currentMatrix;
         private readonly List<SKPictureDetails> pictures = new List<SKPictureDetails>();
         private float scale = 1;
@@ -79,8 +77,9 @@ namespace PdfClown.Viewer
             if (keyModifiers == KeyModifiers.Ctrl)
             {
                 var scaleStep = 0.06F * Math.Sign(delta);
-                var newSclae = scale + scaleStep;
-                if (newSclae > 0.03F && newSclae < 5F)
+
+                var newSclae = scale + scaleStep + scaleStep * scale;
+                if (newSclae > 0.01F && newSclae < 60F)
                 {
                     currentMatrix.TryInvert(out var oldMatrix);
                     var oldPointer = oldMatrix.MapPoint(pointerLocation);

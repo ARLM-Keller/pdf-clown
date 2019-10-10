@@ -97,7 +97,7 @@ namespace org.pdfclown.documents.contents.objects
             var xObject = GetXObject(scanner.ContentContext);
             if (xObject is xObjects.ImageXObject imageObject)
             {
-                var image = imageObject.LoadImage();
+                var image = imageObject.LoadImage(state);
                 if (image != null)
                 {
                     var matrix = canvas.TotalMatrix;
@@ -107,7 +107,13 @@ namespace org.pdfclown.documents.contents.objects
                     canvas.SetMatrix(matrix);
                     var rect = SKRect.Create(0, 0, imageObject.Size.Width, imageObject.Size.Height);
                     var test = canvas.TotalMatrix.MapRect(rect);
-                    canvas.DrawBitmap(image, 0, 0, new SKPaint { FilterQuality = SKFilterQuality.Medium});
+                    //using (var surf = SKSurface.Create(canvas.GRContext, true, new SKImageInfo(image.Width, image.Height)))
+                    //{
+                    //    surf.Canvas.DrawBitmap(original, 0, 0);
+                    //    surf.Canvas.Flush();
+                    //    intermediates[i] = surf.Snapshot();
+                    //}
+                    canvas.DrawBitmap(image, 0, 0, new SKPaint { FilterQuality = SKFilterQuality.Low});
                 }
             }
             else if (xObject is xObjects.FormXObject formObject)

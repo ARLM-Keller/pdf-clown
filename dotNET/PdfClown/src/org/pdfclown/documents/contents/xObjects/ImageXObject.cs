@@ -151,7 +151,7 @@ namespace org.pdfclown.documents.contents.xObjects
             set { throw new NotSupportedException(); }
         }
 
-        public SKBitmap LoadImage()
+        public SKBitmap LoadImage(ContentScanner.GraphicsState state)
         {
             if (Document.Cache.TryGetValue((PdfReference)BaseObject, out var existingBitmap))
             {
@@ -159,7 +159,7 @@ namespace org.pdfclown.documents.contents.xObjects
             }
             var stream = BaseDataObject as PdfStream;
 
-            SKBitmap image = ImageLoader.Load(this);
+            SKBitmap image = ImageLoader.Load(this, state);
             Document.Cache[(PdfReference)BaseObject] = image;
             return image;
         }
@@ -183,6 +183,15 @@ namespace org.pdfclown.documents.contents.xObjects
             get { return BaseDataObject.Header.Resolve(PdfName.Matte) as PdfArray; }
         }
 
+        public PdfArray Decode
+        {
+            get { return BaseDataObject.Header.Resolve(PdfName.Decode) as PdfArray; }
+        }
+
+        public bool ImageMask
+        {
+            get { return (BaseDataObject.Header.Resolve(PdfName.ImageMask) as PdfBoolean)?.BooleanValue ?? false; }
+        }
 
         #endregion
         #endregion

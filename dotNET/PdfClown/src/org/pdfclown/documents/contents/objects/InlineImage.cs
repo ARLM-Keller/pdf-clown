@@ -101,9 +101,19 @@ namespace org.pdfclown.documents.contents.objects
             get { return null; }
         }
 
+        public bool ImageMask
+        {
+            get { return false; }
+        }
+
         public IBuffer Data
         {
             get => ImageBody.Value;
+        }
+
+        public PdfArray Decode
+        {
+            get => ImageHeader.Decode;
         }
 
         public PdfDirectObject Filter
@@ -130,7 +140,7 @@ namespace org.pdfclown.documents.contents.objects
             if (state.Scanner?.RenderContext != null)
             {
                 var canvas = state.Scanner.RenderContext;
-                var image = LoadImage();
+                var image = LoadImage(state);
                 if (image != null)
                 {
                     var size = Size;
@@ -146,11 +156,11 @@ namespace org.pdfclown.documents.contents.objects
             }
         }
 
-        public SKBitmap LoadImage()
+        public SKBitmap LoadImage(ContentScanner.GraphicsState state)
         {
             if (image != null)
                 return image;
-            return image = ImageLoader.Load(this);
+            return image = ImageLoader.Load(this, state);
         }
 
         public override void WriteTo(IOutputStream stream, Document context)
@@ -162,10 +172,6 @@ namespace org.pdfclown.documents.contents.objects
             stream.Write(EndOperatorKeyword);
         }
 
-        SKBitmap IImageObject.LoadImage()
-        {
-            throw new NotImplementedException();
-        }
         #endregion
         #endregion
         #endregion

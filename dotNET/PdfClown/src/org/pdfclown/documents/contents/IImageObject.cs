@@ -13,10 +13,10 @@ namespace org.pdfclown.documents.contents
         bytes.IBuffer Data { get; }
         SKSize Size { get; }
         IImageObject SMask { get; }
-        PdfDirectObject Header { get; }
-
+        bool ImageMask { get; }
         PdfArray Matte { get; }
-
-        SKBitmap LoadImage();
+        PdfDirectObject Header { get; }
+        PdfArray Decode { get; }
+        SKBitmap LoadImage(ContentScanner.GraphicsState state);
     }
 }

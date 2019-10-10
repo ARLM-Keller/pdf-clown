@@ -82,10 +82,10 @@ namespace org.pdfclown.documents.contents.objects
             }
         }
 
-        public string Decode
+        public PdfArray Decode
         {
-            get => (((PdfName)this[PdfName.D]) ?? ((PdfName)this[PdfName.Decode]))?.StringValue;
-            set => this[PdfName.D] = new PdfName(value);
+            get => ((PdfArray)this[PdfName.D]) ?? ((PdfArray)this[PdfName.Decode]);
+            set => this[PdfName.D] = value;
         }
 
         public PdfDirectObject DecodeParms

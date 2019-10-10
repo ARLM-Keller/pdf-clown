@@ -51,9 +51,7 @@ namespace org.pdfclown.documents.contents.colorSpaces
           <summary>Gets the color corresponding to the specified components.</summary>
           <param name="components">Color components to convert.</param>
          */
-        public static new DeviceGrayColor Get(
-          PdfArray components
-          )
+        public static new DeviceGrayColor Get(PdfArray components)
         {
             return (components != null
               ? new DeviceGrayColor(components)
@@ -66,32 +64,18 @@ namespace org.pdfclown.documents.contents.colorSpaces
 
         #region dynamic
         #region constructors
-        public DeviceGrayColor(
-          double g
-          ) : this(
-            new List<PdfDirectObject>(
-              new PdfDirectObject[]
-              {
-            PdfReal.Get(NormalizeComponent(g))
-              }
-            )
-          )
+        public DeviceGrayColor(double g)
+            : this(new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(NormalizeComponent(g)) }))
         { }
 
-        internal DeviceGrayColor(
-          IList<PdfDirectObject> components
-          ) : base(
-            DeviceGrayColorSpace.Default,
-            new PdfArray(components)
-            )
+        internal DeviceGrayColor(IList<PdfDirectObject> components)
+            : base(DeviceGrayColorSpace.Default, new PdfArray(components))
         { }
         #endregion
 
         #region interface
         #region public
-        public override object Clone(
-          Document context
-          )
+        public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
         /**
@@ -99,10 +83,8 @@ namespace org.pdfclown.documents.contents.colorSpaces
         */
         public double G
         {
-            get
-            { return GetComponentValue(0); }
-            set
-            { SetComponentValue(0, value); }
+            get { return GetComponentValue(0); }
+            set { SetComponentValue(0, value); }
         }
         #endregion
         #endregion

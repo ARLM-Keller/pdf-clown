@@ -29,8 +29,8 @@
     <PackageReference Include="OpenTK.GLControl" Version="3.1.0" />
     <PackageReference Include="SkiaSharp.Views" Version="1.68.0" />
     <PackageReference Include="SkiaSharp.Views.Forms" Version="1.68.0" />
-    <PackageReference Include="Xamarin.Forms" Version="4.2.0.778463" />
-    <PackageReference Include="Xamarin.Forms.Platform.WPF" Version="4.2.0.778463" />
+    <PackageReference Include="Xamarin.Forms" Version="4.2.0.848062" />
+    <PackageReference Include="Xamarin.Forms.Platform.WPF" Version="4.2.0.848062" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Xaml" />
@@ -45,40 +45,16 @@
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
     <Compile Update="Properties\Resources.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="Resources.resx" />
-    <Compile Update="Properties\Settings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-    <Compile Update="Settings.Designer.cs" AutoGen="True" DependentUpon="Settings.settings" />
-    <None Update="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <None Update="Settings.settings" LastGenOutput="Settings.Designer.cs" Generator="SettingsSingleFileGenerator" />
+    <None Update="Properties\Settings.settings" Generator="SettingsSingleFileGenerator" LastGenOutput="Settings.Designer.cs" />
+    <Compile Update="Properties\Settings.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="Settings.settings" />
 
-    <Page Include="**\*.xaml" SubType="Designer" Generator="MSBuild:Compile" />
-
-    <EmbeddedResource Remove="App.xaml" />
-
-    <EmbeddedResource Remove="MainWindow.xaml" />
-
+    <ApplicationDefinition Include="App.xaml" Generator="MSBuild:Compile" />
+    <Page Include="**\*.xaml" Exclude="App.xaml" SubType="Designer" Generator="MSBuild:Compile" />
     <Compile Update="**\*.xaml.cs" SubType="Designer" DependentUpon="%(Filename)" />
+
+    <EmbeddedResource Remove="**\*.xaml" />
   </ItemGroup>
-  <ItemGroup>
-    <Page Remove="App.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </ApplicationDefinition>
-  </ItemGroup>
+  
 
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 </Project>

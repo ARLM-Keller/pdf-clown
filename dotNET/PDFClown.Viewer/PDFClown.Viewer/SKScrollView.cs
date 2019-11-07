@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using PdfClown.Tools;
+using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
 using System.Collections.Concurrent;
@@ -28,6 +29,31 @@ namespace PdfClown.Viewer
         public static readonly BindableProperty TargetProperty = BindableProperty.Create(nameof(Target), typeof(SKScrollView), typeof(SKScrollView), null,
             propertyChanged: (bidable, oldValue, newValue) => ((SKScrollView)bidable).OnTargetChanged((SKScrollView)oldValue, (SKScrollView)newValue));
 
+        public static SkiaSharp.Extended.Svg.SKSvg GetCache(string imageName)
+        {
+            if (string.IsNullOrEmpty(imageName))
+                return null;
+            if (!SvgImage.SvgCache.TryGetValue(imageName, out var svg))
+            {
+                var assemply = typeof(SKScrollView).Assembly;
+                var keyName = $"{assemply.GetName().Name}.Assets.{imageName}.svg";
+                using (var stream = assemply.GetManifestResourceStream(keyName))
+                {
+                    if (stream != null)
+                    {
+                        svg = new SkiaSharp.Extended.Svg.SKSvg();
+                        svg.Load(stream);
+                        SvgImage.SvgCache[imageName] = svg;
+                    }
+                    else
+                    {
+                        SvgImage.SvgCache[imageName] = null;
+                    }
+                }
+            }
+            return svg;
+        }
+
         public const int step = 16;
         private const string ahScroll = "VerticalScrollAnimation";
         private SKPoint nullLocation;
@@ -38,10 +64,10 @@ namespace PdfClown.Viewer
         private double hsWidth;
         private double kWidth;
         private double kHeight;
-        private readonly SkiaSharp.Extended.Svg.SKSvg upSvg = SvgImage.GetCache("caret-up");
-        private readonly SkiaSharp.Extended.Svg.SKSvg downSvg = SvgImage.GetCache("caret-down");
-        private readonly SkiaSharp.Extended.Svg.SKSvg leftSvg = SvgImage.GetCache("caret-left");
-        private readonly SkiaSharp.Extended.Svg.SKSvg rightSvg = SvgImage.GetCache("caret-right");
+        private readonly SkiaSharp.Extended.Svg.SKSvg upSvg = GetCache("caret-up");
+        private readonly SkiaSharp.Extended.Svg.SKSvg downSvg = GetCache("caret-down");
+        private readonly SkiaSharp.Extended.Svg.SKSvg leftSvg = GetCache("caret-left");
+        private readonly SkiaSharp.Extended.Svg.SKSvg rightSvg = GetCache("caret-right");
         private bool verticalHovered;
         private bool нorizontalHovered;
         private Thickness verticalPadding = new Thickness(0, 0, 0, step);
@@ -51,6 +77,8 @@ namespace PdfClown.Viewer
         protected EventHandler<ScrollEventArgs> нorizontalScrolledHandler;
         public float XScaleFactor = 1F;
         public float YScaleFactor = 1F;
+
+
 
         private readonly SKPaint bottonPaint = new SKPaint
         {
@@ -556,6 +584,7 @@ namespace PdfClown.Viewer
         }
 
         public Func<double, double, bool> CheckCaptureBox;
+
     }
 
     public enum CursorType

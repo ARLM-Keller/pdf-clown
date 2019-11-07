@@ -4,7 +4,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <OutputType>Library</OutputType>
     <AssemblyName>PdfClown</AssemblyName>
-    <RootNamespace>org.pdfclown</RootNamespace>
+    <RootNamespace>PdfClown</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <ProjectGuid>{DBED0809-EE4C-45B0-92FA-E4789ECC2AEC}</ProjectGuid>
     <Version>0.2.1.0</Version>
@@ -113,8 +113,12 @@
   <ItemGroup>
     <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.633" />
     <PackageReference Include="SkiaSharp" Version="1.68.0" />
+    <PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="1.68.0" />
     <PackageReference Include="FreeImage.NETCore" Version="4.3.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets\" />
   </ItemGroup>
   <!--<ItemGroup>
     <ProjectReference Include="..\FreeImage.NETCore\FreeImage.NETCore.csproj" />

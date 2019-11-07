@@ -1,6 +1,7 @@
-﻿using org.pdfclown.documents;
-using org.pdfclown.files;
-using org.pdfclown.tools;
+﻿using PdfClown.Documents;
+using PdfClown.Documents.Interaction.Annotations;
+using PdfClown.Files;
+using PdfClown.Tools;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
@@ -17,9 +18,11 @@ namespace PdfClown.Viewer
     {
         public static readonly BindableProperty ScaleFactorProperty = BindableProperty.Create(nameof(ScaleFactorProperty), typeof(float), typeof(PdfView), 1F,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnScaleFactorChanged((float)oldValue, (float)newValue));
+        public static readonly BindableProperty ShowMarkupProperty = BindableProperty.Create(nameof(ShowMarkup), typeof(bool), typeof(PdfView), true,
+            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).ShowMarkupChanged((bool)oldValue, (bool)newValue));
 
         private SKMatrix currentMatrix;
-        private readonly List<SKPictureDetails> pictures = new List<SKPictureDetails>();
+        private readonly List<PdfPicture> pictures = new List<PdfPicture>();
         private float scale = 1;
         private readonly float indent = 10;
         private SKPoint pointerLocation;
@@ -35,6 +38,12 @@ namespace PdfClown.Viewer
             set => SetValue(ScaleFactorProperty, value);
         }
 
+        public bool ShowMarkup
+        {
+            get => (bool)GetValue(ShowMarkupProperty);
+            set => SetValue(ShowMarkupProperty, value);
+        }
+
         public File File { get; private set; }
         public Document Document { get; private set; }
         public SKSize DocumentSize { get; private set; }
@@ -44,6 +53,11 @@ namespace PdfClown.Viewer
         {
             scale = newValue;
             UpdateMaximums();
+        }
+
+        private void ShowMarkupChanged(bool oldValue, bool newValue)
+        {
+            throw new NotImplementedException();
         }
 
         protected virtual void OnPaintContent(object sender, SKPaintSurfaceEventArgs e)
@@ -60,6 +74,13 @@ namespace PdfClown.Viewer
                     if (picture != null)
                     {
                         canvas.DrawPicture(picture, ref pictureDetails.Matrix);
+                    }
+                    if (ShowMarkup && pictureDetails.Annotations != null)
+                    {
+                        foreach (var annotation in pictureDetails.Annotations)
+                        {
+                            annotation.Draw(canvas);
+                        }
                     }
                 }
             }
@@ -139,13 +160,13 @@ namespace PdfClown.Viewer
 
             totalWidth = 0F;
             totalHeight = 0F;
-            var pictures = new List<SKPictureDetails>();
+            var pictures = new List<PdfPicture>();
             foreach (var page in Pages)
             {
                 totalHeight += indent;
                 var box = page.RotatedBox;
                 var imageSize = new SKSize(box.Width, box.Height);
-                var details = new SKPictureDetails()
+                var details = new PdfPicture()
                 {
                     Page = page,
                     Size = imageSize
@@ -220,72 +241,6 @@ namespace PdfClown.Viewer
                 picture.Dispose();
             }
             pictures.Clear();
-        }
-    }
-
-    public class SKPictureDetails : IDisposable
-    {
-        SKPicture picture;
-        public SKPictureDetails()
-        {
-        }
-
-        public SKMatrix Matrix = SKMatrix.MakeIdentity();
-        private static Task task;
-
-        public SKPicture GetPicture(SKCanvasView canvasView)
-        {
-            if (picture == null)
-            {
-                if (task == null || task.IsCompleted)
-                {
-                    task = new Task(() => Paint(canvasView));
-                    task.Start();
-                }
-            }
-            return picture;
-        }
-
-        private void Paint(SKCanvasView canvasView)
-        {
-            using (var recorder = new SKPictureRecorder())
-            using (var canvas = recorder.BeginRecording(SKRect.Create(SKPoint.Empty, Size)))
-            {
-                try
-                {
-                    Page.Render(canvas, Size);
-
-                }
-                catch (Exception ex)
-                {
-                    using (var paint = new SKPaint { Color = SKColors.DarkRed })
-                    {
-                        canvas.Save();
-                        if (canvas.TotalMatrix.ScaleY < 0)
-                        {
-                            var matrix = SKMatrix.MakeScale(1, -1);
-                            canvas.Concat(ref matrix);
-                        }
-                        canvas.DrawText(ex.Message, 0, 0, paint);
-                        canvas.Restore();
-                    }
-                }
-                picture = recorder.EndRecording();
-                Device.BeginInvokeOnMainThread(() => canvasView.InvalidateSurface());
-            }
-        }
-
-        public org.pdfclown.documents.Page Page { get; set; }
-        public SKSize Size { get; set; }
-        public SKRect Bounds => SKRect.Create(
-            Matrix.TransX,
-            Matrix.TransY,
-            Size.Width * Matrix.ScaleX,
-            Size.Height * Matrix.ScaleY);
-
-        public void Dispose()
-        {
-            picture?.Dispose();
         }
     }
 }

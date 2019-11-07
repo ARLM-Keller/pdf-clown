@@ -7,8 +7,8 @@
     <ProjectGuid>{BDBDC0A1-6937-4BB6-964D-DDC62CE2832F}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <RootNamespace>org.pdfclown.samples.cli</RootNamespace>
-    <StartupObject>org.pdfclown.samples.cli.SampleLoader</StartupObject>
+    <RootNamespace>PdfClown.Samples.CLI</RootNamespace>
+    <StartupObject>PdfClown.Samples.CLI.SampleLoader</StartupObject>
     <AssemblyName>PdfClownCLISamples</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -17,10 +17,6 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
-  <ItemGroup>
-    <Folder Include="src\org\pdfclown\samples\cli\" />
-    <Folder Include="src\org\pdfclown\samples\" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0" />
   </ItemGroup>

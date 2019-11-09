@@ -159,6 +159,11 @@ namespace PdfClown.Documents.Interaction.Annotations
                 ModificationDate = DateTime.Now;
             }
         }
+
+        public override SKRect GetBounds(SKMatrix pageMatrix)
+        {
+            return base.GetBounds(pageMatrix);
+        }
         #endregion
 
         #region protected

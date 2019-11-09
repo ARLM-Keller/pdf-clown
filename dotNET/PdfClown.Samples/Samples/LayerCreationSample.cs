@@ -23,11 +23,9 @@ namespace PdfClown.Samples.CLI
     /**
       <summary>This sample demonstrates how to define layers to control content visibility.</summary>
     */
-    public class LayerCreationSample
-      : Sample
+    public class LayerCreationSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. PDF file instantiation.
             files::File file = new files::File();

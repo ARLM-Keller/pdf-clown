@@ -16,26 +16,37 @@ namespace PdfClown.Viewer
 {
     public class PdfView : SKScrollView
     {
-        public static readonly BindableProperty ScaleFactorProperty = BindableProperty.Create(nameof(ScaleFactorProperty), typeof(float), typeof(PdfView), 1F,
+        public static readonly BindableProperty ScaleContentProperty = BindableProperty.Create(nameof(ScaleContent), typeof(float), typeof(PdfView), 1F,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnScaleFactorChanged((float)oldValue, (float)newValue));
         public static readonly BindableProperty ShowMarkupProperty = BindableProperty.Create(nameof(ShowMarkup), typeof(bool), typeof(PdfView), true,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).ShowMarkupChanged((bool)oldValue, (bool)newValue));
 
-        private SKMatrix currentMatrix;
         private readonly List<PdfPicture> pictures = new List<PdfPicture>();
+        private readonly SKPaint paintText = new SKPaint { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 14 };
+        private float oldScale = 1;
         private float scale = 1;
         private readonly float indent = 10;
-        private SKPoint pointerLocation;
+        private SKMatrix CurrentWindowScaleMatrix;
+        private SKMatrix CurrentNavigationMatrix;
+        private SKMatrix CurrentPictureMatrix;
+        private SKPoint CurrentLocation;
+        private SKMatrix CurrentViewMatrix;
+        private SKRect CurrentArea;
+        private PdfPicture CurrentPicture;
+        private Annotation CurrentAnnotation;
+        private SKRect CurrentAnnotationBounds;
+        private string currentAnnotationText;
+        private SKRect currentAnnotationTextBounds;
 
         public PdfView()
         {
             PaintContent += OnPaintContent;
         }
 
-        public float ScaleFactor
+        public float ScaleContent
         {
-            get => (float)GetValue(ScaleFactorProperty);
-            set => SetValue(ScaleFactorProperty, value);
+            get => (float)GetValue(ScaleContentProperty);
+            set => SetValue(ScaleContentProperty, value);
         }
 
         public bool ShowMarkup
@@ -44,6 +55,30 @@ namespace PdfClown.Viewer
             set => SetValue(ShowMarkupProperty, value);
         }
 
+        private string CurrentAnnotationText
+        {
+            get => currentAnnotationText;
+            set
+            {
+                if (currentAnnotationText != value)
+                {
+                    currentAnnotationText = value;
+                    if (currentAnnotationText != null)
+                    {
+                        var temp = new SKRect();
+                        paintText.MeasureText(currentAnnotationText, ref temp);
+                        temp.Inflate(10, 5);
+                        currentAnnotationTextBounds = SKRect.Create(
+                            CurrentAnnotationBounds.Left / XScaleFactor,
+                            CurrentAnnotationBounds.Bottom / YScaleFactor,
+                            temp.Width, temp.Height);
+                    }
+                    InvalidateSurface();
+                }
+            }
+        }
+
+
         public File File { get; private set; }
         public Document Document { get; private set; }
         public SKSize DocumentSize { get; private set; }
@@ -51,50 +86,138 @@ namespace PdfClown.Viewer
 
         private void OnScaleFactorChanged(float oldValue, float newValue)
         {
+            oldScale = oldValue;
             scale = newValue;
             UpdateMaximums();
         }
 
         private void ShowMarkupChanged(bool oldValue, bool newValue)
         {
-            throw new NotImplementedException();
+            InvalidateSurface();
+        }
+
+        protected override void OnVerticalValueChanged(double oldValue, double newValue)
+        {
+            UpdateCurrentMatrix();
+            base.OnVerticalValueChanged(oldValue, newValue);
+        }
+
+        protected override void OnHorizontalValueChanged(double oldValue, double newValue)
+        {
+            UpdateCurrentMatrix();
+            base.OnHorizontalValueChanged(oldValue, newValue);
+        }
+
+        protected override void OnWindowScaleChanged()
+        {
+            base.OnWindowScaleChanged();
+            CurrentWindowScaleMatrix = SKMatrix.MakeScale(XScaleFactor, YScaleFactor);
         }
 
         protected virtual void OnPaintContent(object sender, SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
             canvas.Clear(BackgroundColor.ToSKColor());
-            canvas.Concat(ref currentMatrix);
-            var area = SKRect.Create(0, 0, (float)Width, (float)Height);
-            foreach (var pictureDetails in pictures)
+            canvas.SetMatrix(CurrentViewMatrix);
+            foreach (var pdfPicture in pictures)
             {
-                if (currentMatrix.MapRect(pictureDetails.Bounds).IntersectsWith(area))
+                if (CurrentViewMatrix.MapRect(pdfPicture.Bounds).IntersectsWith(CurrentArea))
                 {
-                    var picture = pictureDetails.GetPicture(this);
+                    var picture = pdfPicture.GetPicture(this);
                     if (picture != null)
                     {
-                        canvas.DrawPicture(picture, ref pictureDetails.Matrix);
-                    }
-                    if (ShowMarkup && pictureDetails.Annotations != null)
-                    {
-                        foreach (var annotation in pictureDetails.Annotations)
+                        canvas.DrawPicture(picture, ref pdfPicture.Matrix);
+
+                        if (ShowMarkup && pdfPicture.Annotations != null && pdfPicture.Annotations.Count > 0)
                         {
-                            annotation.Draw(canvas);
+                            canvas.Save();
+                            var drawPictureMatrix = CurrentViewMatrix;
+                            SKMatrix.PreConcat(ref drawPictureMatrix, pdfPicture.Matrix);
+                            //SKMatrix.PreConcat(ref drawPictureMatrix, CurrentPicture.InitialMatrix);
+
+                            canvas.SetMatrix(drawPictureMatrix);
+                            foreach (var annotation in pdfPicture.Annotations)
+                            {
+                                if (annotation.Visible)
+                                {
+                                    annotation.Draw(canvas);
+                                }
+                            }
+
+                            canvas.SetMatrix(CurrentWindowScaleMatrix);
+                            if (!string.IsNullOrEmpty(CurrentAnnotationText))
+                            {
+                                using (var color = new SKPaint() { Color = SKColors.Silver, Style = SKPaintStyle.Fill })
+                                {
+                                    canvas.DrawRect(currentAnnotationTextBounds, color);
+                                    canvas.DrawText(CurrentAnnotationText,
+                                        currentAnnotationTextBounds.Left + 5,
+                                        currentAnnotationTextBounds.MidY + paintText.FontMetrics.Bottom,
+                                        paintText);
+                                }
+                            }
+                            canvas.Restore();
                         }
                     }
                 }
             }
         }
 
-        protected override void OnTouch(object sender, SKTouchEventArgs e)
+        protected override void OnTouch(SKTouchEventArgs e)
         {
-            base.OnTouch(sender, e);
-            pointerLocation = e.Location;
+            base.OnTouch(e);
+            CurrentLocation = e.Location;
+            foreach (var picture in pictures)
+            {
+                if (CurrentViewMatrix.MapRect(picture.Bounds).Contains(CurrentLocation))
+                {
+                    OnTouchPage(picture, e);
+                    return;
+                }
+            }
+            CurrentPicture = null;
+        }
+
+        private void OnTouchPage(PdfPicture picture, SKTouchEventArgs e)
+        {
+            CurrentPicture = picture;
+            CurrentPictureMatrix = CurrentViewMatrix;
+            SKMatrix.PreConcat(ref CurrentPictureMatrix, CurrentPicture.Matrix);
+            //SKMatrix.PreConcat(ref CurrentPictureMatrix, CurrentPicture.InitialMatrix);
+            if (CurrentPicture.Annotations != null)
+            {
+                foreach (var annotation in CurrentPicture.Annotations)
+                {
+                    if (!annotation.Visible)
+                        continue;
+                    var bounds = annotation.GetBounds(CurrentPictureMatrix);
+                    if (bounds.Contains(CurrentLocation))
+                    {
+                        CurrentAnnotationBounds = bounds;
+                        OnTouchAnnotation(annotation, e);
+                        return;
+                    }
+                }
+            }
+            CurrentAnnotation = null;
+            CurrentAnnotationText = null;
+        }
+
+        private void OnTouchAnnotation(Annotation annotation, SKTouchEventArgs e)
+        {
+            CurrentAnnotation = annotation;
+            if (e.ActionType == SKTouchAction.Moved)
+            {
+                CurrentAnnotationText = CurrentAnnotation.Text;
+            }
         }
 
         public override void OnScrolled(int delta, KeyModifiers keyModifiers)
         {
-            base.OnScrolled(delta, keyModifiers);
+            if (keyModifiers == KeyModifiers.None)
+            {
+                base.OnScrolled(delta, keyModifiers);
+            }
             if (keyModifiers == KeyModifiers.Ctrl)
             {
                 var scaleStep = 0.06F * Math.Sign(delta);
@@ -102,17 +225,20 @@ namespace PdfClown.Viewer
                 var newSclae = scale + scaleStep + scaleStep * scale;
                 if (newSclae > 0.01F && newSclae < 60F)
                 {
-                    currentMatrix.TryInvert(out var oldMatrix);
-                    var oldPointer = oldMatrix.MapPoint(pointerLocation);
-                    ScaleFactor = newSclae;
-                    var newPointerLocation = currentMatrix.MapPoint(oldPointer);
+                    CurrentNavigationMatrix.TryInvert(out var invertMatrix);
+                    var oldSpacePoint = invertMatrix.MapPoint(CurrentLocation);
+
+                    ScaleContent = newSclae;
+
+                    var newPointer = CurrentNavigationMatrix.MapPoint(oldSpacePoint);
+
                     if (HorizontalScrollBarVisible)
                     {
-                        HorizontalValue += newPointerLocation.X - pointerLocation.X;
+                        HorizontalValue += newPointer.X - CurrentLocation.X;
                     }
                     if (VerticalScrollBarVisible)
                     {
-                        VerticalValue += newPointerLocation.Y - pointerLocation.Y;
+                        VerticalValue += newPointer.Y - CurrentLocation.Y;
                     }
 
                 }
@@ -145,7 +271,7 @@ namespace PdfClown.Viewer
                 ClearPictures();
                 File.Dispose();
             }
-            ScaleFactor = 1;
+            ScaleContent = 1;
             HorizontalValue = 0;
             VerticalValue = 0;
             File = new File(stream);
@@ -189,7 +315,7 @@ namespace PdfClown.Viewer
             this.pictures.AddRange(pictures);
             Device.BeginInvokeOnMainThread(() =>
             {
-                ScaleFactor = (float)(Width / (DocumentSize.Width));
+                ScaleContent = (float)(Width / (DocumentSize.Width));
                 UpdateMaximums();
 
             });
@@ -207,6 +333,8 @@ namespace PdfClown.Viewer
 
         private void UpdateCurrentMatrix()
         {
+            CurrentArea = SKRect.Create(0, 0, (float)Width * XScaleFactor, (float)Height * YScaleFactor);
+
             var maximumWidth = DocumentSize.Width * scale;
             var maximumHeight = DocumentSize.Height * scale;
             var dx = 0F; var dy = 0F;
@@ -219,19 +347,10 @@ namespace PdfClown.Viewer
             {
                 dy = (float)(Height - maximumHeight) / 2;
             }
-            currentMatrix.SetScaleTranslate(scale, scale, ((float)-HorizontalValue) + dx, ((float)-VerticalValue) + dy);
-        }
+            CurrentNavigationMatrix.SetScaleTranslate(scale, scale, ((float)-HorizontalValue) + dx, ((float)-VerticalValue) + dy);
 
-        protected override void OnVerticalValueChanged(double oldValue, double newValue)
-        {
-            UpdateCurrentMatrix();
-            base.OnVerticalValueChanged(oldValue, newValue);
-        }
-
-        protected override void OnHorizontalValueChanged(double oldValue, double newValue)
-        {
-            UpdateCurrentMatrix();
-            base.OnHorizontalValueChanged(oldValue, newValue);
+            CurrentViewMatrix = CurrentWindowScaleMatrix;
+            SKMatrix.PreConcat(ref CurrentViewMatrix, CurrentNavigationMatrix);
         }
 
         private void ClearPictures()

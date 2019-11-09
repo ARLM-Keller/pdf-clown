@@ -140,7 +140,7 @@ namespace PdfClown.Viewer.WPF
         {
             var view = sender as FrameworkElement;
             var pointerPoint = e.MouseDevice.GetPosition(view);
-            var skPoint = SKCanvasHelper.GetScaledCoord(Control, pointerPoint.X, pointerPoint.Y);
+            var skPoint = GetScaledCoord(pointerPoint.X, pointerPoint.Y);
             var args = new SKTouchEventArgs(e.Timestamp, action, SKMouseButton.Left, SKTouchDeviceType.Mouse, skPoint, true);
             ((ISKCanvasViewController)Element).OnTouch(args);
         }

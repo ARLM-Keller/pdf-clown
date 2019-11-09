@@ -30,6 +30,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Tools;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -75,6 +76,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             */
             Paragraph
         };
+
+        private const int size = 32;
         #endregion
 
         #region static
@@ -161,8 +164,19 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override void Draw(SKCanvas canvas)
         {
-            
+            var box = Box;
+            var bounds = SKRect.Create(box.Left, box.Top, size / canvas.TotalMatrix.ScaleX, size / canvas.TotalMatrix.ScaleY);
+            using (var color = Color.ColorSpace.GetPaint(Color, Alpha))
+            {
+                canvas.DrawRect(bounds, color);
+            }
+            SvgImage.DrawImage(canvas, IconType.ToString(), SKColors.White, bounds, 3 / canvas.TotalMatrix.ScaleX);
+        }
 
+        public override SKRect GetBounds(SKMatrix pageMatrix)
+        {
+            var baseBounds = base.GetBounds(pageMatrix);
+            return SKRect.Create(baseBounds.Left, baseBounds.Top, size, size);
         }
         //TODO:State and StateModel!!!
         #endregion

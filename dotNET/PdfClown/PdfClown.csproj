@@ -22,6 +22,14 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\Comment.svg" />
+    <None Remove="Assets\comments.svg" />
+    <None Remove="Assets\Help.svg" />
+    <None Remove="Assets\Key.svg" />
+    <None Remove="Assets\Note.svg" />
+    <None Remove="Assets\Paragraph.svg" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="..\..\main\res\pkg\fonts\AGL20.scsv">
       <Link>res\fonts\AGL20.scsv</Link>
       <LogicalName>fonts.AGL20</LogicalName>
@@ -106,6 +114,12 @@
       <Link>res\fonts\cff\StandardStrings</Link>
       <LogicalName>fonts.cff.StandardStrings</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="Assets\Comment.svg" />
+    <EmbeddedResource Include="Assets\Key.svg" />
+    <EmbeddedResource Include="Assets\Note.svg" />
+    <EmbeddedResource Include="Assets\comments.svg" />
+    <EmbeddedResource Include="Assets\Help.svg" />
+    <EmbeddedResource Include="Assets\Paragraph.svg" />
   </ItemGroup>
   <PropertyGroup>
     <RestoreSources>../FreeImage.NETCore/Package;$(RestoreSources);</RestoreSources>    
@@ -116,9 +130,6 @@
     <PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="1.68.0" />
     <PackageReference Include="FreeImage.NETCore" Version="4.3.7" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Assets\" />
   </ItemGroup>
   <!--<ItemGroup>
     <ProjectReference Include="..\FreeImage.NETCore\FreeImage.NETCore.csproj" />

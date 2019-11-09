@@ -109,7 +109,9 @@ namespace PdfClown.Viewer.UWP
         {
             var pointerPoint = e.GetCurrentPoint(Control);
             //var windowsPoint = view.PointToScreen(pointerPoint);
-            var skPoint = new SKPoint((float)(pointerPoint.Position.X * Control.Dpi), (float)(pointerPoint.Position.Y * Control.Dpi));
+            var skPoint = Element.IgnorePixelScaling
+                ? new SKPoint((float)pointerPoint.Position.X, (float)pointerPoint.Position.Y)
+                : new SKPoint((float)(pointerPoint.Position.X * Control.Dpi), (float)(pointerPoint.Position.Y * Control.Dpi));
             var args = new SKTouchEventArgs(e.Pointer.PointerId, action, SKMouseButton.Left, SKTouchDeviceType.Mouse, skPoint, true);
 
             ((ISKCanvasViewController)Element).OnTouch(args);

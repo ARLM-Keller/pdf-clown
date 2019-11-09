@@ -36,8 +36,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       ambiguities.</remarks>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceCMYKColor
-      : DeviceColor
+    public sealed class DeviceCMYKColor : DeviceColor
     {
         #region static
         #region fields
@@ -53,14 +52,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets the color corresponding to the specified components.</summary>
           <param name="components">Color components to convert.</param>
         */
-        public static new DeviceCMYKColor Get(
-          PdfArray components
-          )
+        public static new DeviceCMYKColor Get(PdfArray components)
         {
-            return (components != null
-              ? new DeviceCMYKColor(components)
-              : Default
-              );
+            return (components != null ? new DeviceCMYKColor(components) : Default);
         }
         #endregion
         #endregion
@@ -68,30 +62,21 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         #region dynamic
         #region constructors
-        public DeviceCMYKColor(
-          double c,
-          double m,
-          double y,
-          double k
-          ) : this(
+        public DeviceCMYKColor(double c, double m, double y, double k) : this(
             new List<PdfDirectObject>(
               new PdfDirectObject[]
               {
-            PdfReal.Get(NormalizeComponent(c)),
-            PdfReal.Get(NormalizeComponent(m)),
-            PdfReal.Get(NormalizeComponent(y)),
-            PdfReal.Get(NormalizeComponent(k))
+                  PdfReal.Get(NormalizeComponent(c)),
+                  PdfReal.Get(NormalizeComponent(m)),
+                  PdfReal.Get(NormalizeComponent(y)),
+                  PdfReal.Get(NormalizeComponent(k))
               }
             )
           )
         { }
 
-        internal DeviceCMYKColor(
-          IList<PdfDirectObject> components
-          ) : base(
-            DeviceCMYKColorSpace.Default,
-            new PdfArray(components)
-            )
+        internal DeviceCMYKColor(IList<PdfDirectObject> components)
+            : base(DeviceCMYKColorSpace.Default, new PdfArray(components))
         { }
         #endregion
 
@@ -106,9 +91,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             set => SetComponentValue(0, value);
         }
 
-        public override object Clone(
-          Document context
-          )
+        public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
         /**

@@ -17,11 +17,14 @@ namespace PdfClown.Viewer
     public class PdfView : SKScrollView
     {
         public static readonly BindableProperty ScaleContentProperty = BindableProperty.Create(nameof(ScaleContent), typeof(float), typeof(PdfView), 1F,
-            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnScaleFactorChanged((float)oldValue, (float)newValue));
+            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnScaleContentChanged((float)oldValue, (float)newValue));
         public static readonly BindableProperty ShowMarkupProperty = BindableProperty.Create(nameof(ShowMarkup), typeof(bool), typeof(PdfView), true,
-            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).ShowMarkupChanged((bool)oldValue, (bool)newValue));
+            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnShowMarkupChanged((bool)oldValue, (bool)newValue));
+        public static readonly BindableProperty SelectedAnnotationProperty = BindableProperty.Create(nameof(SelectedAnnotation), typeof(Annotation), typeof(PdfView), null,
+            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnSelectedAnnotationChanged((Annotation)oldValue, (Annotation)newValue));
 
-        private readonly List<PdfPicture> pictures = new List<PdfPicture>();
+
+        private readonly List<PdfPagePicture> pictures = new List<PdfPagePicture>();
         private readonly SKPaint paintText = new SKPaint { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 14 };
         private float oldScale = 1;
         private float scale = 1;
@@ -32,11 +35,12 @@ namespace PdfClown.Viewer
         private SKPoint CurrentLocation;
         private SKMatrix CurrentViewMatrix;
         private SKRect CurrentArea;
-        private PdfPicture CurrentPicture;
+        private PdfPagePicture CurrentPicture;
         private Annotation CurrentAnnotation;
         private SKRect CurrentAnnotationBounds;
         private string currentAnnotationText;
         private SKRect currentAnnotationTextBounds;
+        private SKPoint CurrentMoveLocation;
 
         public PdfView()
         {
@@ -53,6 +57,12 @@ namespace PdfClown.Viewer
         {
             get => (bool)GetValue(ShowMarkupProperty);
             set => SetValue(ShowMarkupProperty, value);
+        }
+
+        public Annotation SelectedAnnotation
+        {
+            get => (Annotation)GetValue(SelectedAnnotationProperty);
+            set => SetValue(SelectedAnnotationProperty, value);
         }
 
         private string CurrentAnnotationText
@@ -84,14 +94,33 @@ namespace PdfClown.Viewer
         public SKSize DocumentSize { get; private set; }
         public Pages Pages { get; private set; }
 
-        private void OnScaleFactorChanged(float oldValue, float newValue)
+        public IEnumerable<Annotation> GetAllAnnotations()
+        {
+            foreach (var picture in pictures)
+            {
+                if (picture.Annotations != null && picture.Annotations.Count > 0)
+                {
+                    foreach (var annotation in picture.Annotations)
+                    {
+                        yield return annotation;
+                    }
+                }
+            }
+        }
+
+        private void OnScaleContentChanged(float oldValue, float newValue)
         {
             oldScale = oldValue;
             scale = newValue;
             UpdateMaximums();
         }
 
-        private void ShowMarkupChanged(bool oldValue, bool newValue)
+        private void OnShowMarkupChanged(bool oldValue, bool newValue)
+        {
+            InvalidateSurface();
+        }
+
+        private void OnSelectedAnnotationChanged(Annotation oldValue, Annotation newValue)
         {
             InvalidateSurface();
         }
@@ -130,35 +159,44 @@ namespace PdfClown.Viewer
 
                         if (ShowMarkup && pdfPicture.Annotations != null && pdfPicture.Annotations.Count > 0)
                         {
-                            canvas.Save();
-                            var drawPictureMatrix = CurrentViewMatrix;
-                            SKMatrix.PreConcat(ref drawPictureMatrix, pdfPicture.Matrix);
-                            //SKMatrix.PreConcat(ref drawPictureMatrix, CurrentPicture.InitialMatrix);
-
-                            canvas.SetMatrix(drawPictureMatrix);
-                            foreach (var annotation in pdfPicture.Annotations)
-                            {
-                                if (annotation.Visible)
-                                {
-                                    annotation.Draw(canvas);
-                                }
-                            }
-
-                            canvas.SetMatrix(CurrentWindowScaleMatrix);
-                            if (!string.IsNullOrEmpty(CurrentAnnotationText))
-                            {
-                                using (var color = new SKPaint() { Color = SKColors.Silver, Style = SKPaintStyle.Fill })
-                                {
-                                    canvas.DrawRect(currentAnnotationTextBounds, color);
-                                    canvas.DrawText(CurrentAnnotationText,
-                                        currentAnnotationTextBounds.Left + 5,
-                                        currentAnnotationTextBounds.MidY + paintText.FontMetrics.Bottom,
-                                        paintText);
-                                }
-                            }
-                            canvas.Restore();
+                            OnPaintAnnotations(canvas, pdfPicture);
                         }
                     }
+                }
+            }
+        }
+
+        private void OnPaintAnnotations(SKCanvas canvas, PdfPagePicture pdfPicture)
+        {
+            canvas.Save();
+            var drawPictureMatrix = CurrentViewMatrix;
+            SKMatrix.PreConcat(ref drawPictureMatrix, pdfPicture.Matrix);
+
+            canvas.SetMatrix(drawPictureMatrix);
+            foreach (var annotation in pdfPicture.Annotations)
+            {
+                if (annotation.Visible)
+                {
+                    annotation.Draw(canvas);
+                }
+            }
+
+            OnPaintAnnotationToolTip(canvas);
+            canvas.Restore();
+        }
+
+        private void OnPaintAnnotationToolTip(SKCanvas canvas)
+        {
+            if (!string.IsNullOrEmpty(CurrentAnnotationText))
+            {
+                canvas.SetMatrix(CurrentWindowScaleMatrix);
+                using (var color = new SKPaint() { Color = SKColors.Silver, Style = SKPaintStyle.Fill })
+                {
+                    canvas.DrawRect(currentAnnotationTextBounds, color);
+                    canvas.DrawText(CurrentAnnotationText,
+                        currentAnnotationTextBounds.Left + 5,
+                        currentAnnotationTextBounds.MidY + paintText.FontMetrics.Bottom,
+                        paintText);
                 }
             }
         }
@@ -167,6 +205,23 @@ namespace PdfClown.Viewer
         {
             base.OnTouch(e);
             CurrentLocation = e.Location;
+            if (e.MouseButton == SKMouseButton.Middle)
+            {
+                if (e.ActionType == SKTouchAction.Pressed)
+                {
+                    CurrentMoveLocation = CurrentLocation;
+                    Cursor = CursorType.ScrollAll;
+                    return;
+                }
+                else if (e.ActionType == SKTouchAction.Moved)
+                {
+                    var vector = CurrentLocation - CurrentMoveLocation;
+                    HorizontalValue -= vector.X;
+                    VerticalValue -= vector.Y;
+                    CurrentMoveLocation = CurrentLocation;
+                    return;
+                }
+            }
             foreach (var picture in pictures)
             {
                 if (CurrentViewMatrix.MapRect(picture.Bounds).Contains(CurrentLocation))
@@ -175,10 +230,11 @@ namespace PdfClown.Viewer
                     return;
                 }
             }
+            Cursor = CursorType.Arrow;
             CurrentPicture = null;
         }
 
-        private void OnTouchPage(PdfPicture picture, SKTouchEventArgs e)
+        private void OnTouchPage(PdfPagePicture picture, SKTouchEventArgs e)
         {
             CurrentPicture = picture;
             CurrentPictureMatrix = CurrentViewMatrix;
@@ -199,6 +255,7 @@ namespace PdfClown.Viewer
                     }
                 }
             }
+            Cursor = CursorType.Arrow;
             CurrentAnnotation = null;
             CurrentAnnotationText = null;
         }
@@ -206,6 +263,7 @@ namespace PdfClown.Viewer
         private void OnTouchAnnotation(Annotation annotation, SKTouchEventArgs e)
         {
             CurrentAnnotation = annotation;
+            Cursor = CursorType.Hand;
             if (e.ActionType == SKTouchAction.Moved)
             {
                 CurrentAnnotationText = CurrentAnnotation.Text;
@@ -223,22 +281,28 @@ namespace PdfClown.Viewer
                 var scaleStep = 0.06F * Math.Sign(delta);
 
                 var newSclae = scale + scaleStep + scaleStep * scale;
-                if (newSclae > 0.01F && newSclae < 60F)
+                if (newSclae < 0.01F)
+                    newSclae = 0.01F;
+                if (newSclae > 60F)
+                    newSclae = 60F;
+                if (newSclae != scale)
                 {
-                    CurrentNavigationMatrix.TryInvert(out var invertMatrix);
-                    var oldSpacePoint = invertMatrix.MapPoint(CurrentLocation);
+                    var unscaleLocations = new SKPoint(CurrentLocation.X / XScaleFactor, CurrentLocation.Y / YScaleFactor);
+                    CurrentNavigationMatrix.TryInvert(out var oldInvertMatrix);
+                    var oldSpacePoint = oldInvertMatrix.MapPoint(unscaleLocations);
 
                     ScaleContent = newSclae;
 
-                    var newPointer = CurrentNavigationMatrix.MapPoint(oldSpacePoint);
+                    var newCurrentLocation = CurrentNavigationMatrix.MapPoint(oldSpacePoint);
 
+                    var vector = newCurrentLocation - unscaleLocations;
                     if (HorizontalScrollBarVisible)
                     {
-                        HorizontalValue += newPointer.X - CurrentLocation.X;
+                        HorizontalValue += vector.X;
                     }
                     if (VerticalScrollBarVisible)
                     {
-                        VerticalValue += newPointer.Y - CurrentLocation.Y;
+                        VerticalValue += vector.Y;
                     }
 
                 }
@@ -286,13 +350,13 @@ namespace PdfClown.Viewer
 
             totalWidth = 0F;
             totalHeight = 0F;
-            var pictures = new List<PdfPicture>();
+            var pictures = new List<PdfPagePicture>();
             foreach (var page in Pages)
             {
                 totalHeight += indent;
                 var box = page.RotatedBox;
                 var imageSize = new SKSize(box.Width, box.Height);
-                var details = new PdfPicture()
+                var details = new PdfPagePicture()
                 {
                     Page = page,
                     Size = imageSize
@@ -305,19 +369,19 @@ namespace PdfClown.Viewer
                 totalHeight += imageSize.Height;
             }
             DocumentSize = new SKSize(totalWidth + indent * 2, totalHeight);
-            foreach (var details in pictures)
+            foreach (var picture in pictures)
             {
-                if ((details.Size.Width + indent * 2) < DocumentSize.Width)
+                if ((picture.Size.Width + indent * 2) < DocumentSize.Width)
                 {
-                    details.Matrix.TransX += (DocumentSize.Width - details.Size.Width + indent * 2) / 2;
+                    picture.Matrix.TransX += (DocumentSize.Width - picture.Size.Width + indent * 2) / 2;
                 }
+
             }
             this.pictures.AddRange(pictures);
             Device.BeginInvokeOnMainThread(() =>
             {
                 ScaleContent = (float)(Width / (DocumentSize.Width));
                 UpdateMaximums();
-
             });
 
             return DocumentSize;

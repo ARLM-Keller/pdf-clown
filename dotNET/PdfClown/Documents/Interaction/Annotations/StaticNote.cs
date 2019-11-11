@@ -41,8 +41,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       is always visible.</remarks>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class StaticNote
-      : Markup
+    public sealed class StaticNote : Markup
     {
         #region types
         /**
@@ -150,16 +149,11 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region dynamic
         #region constructors
-        public StaticNote(
-          Page page,
-          SKRect box,
-          string text
-          ) : base(page, PdfName.FreeText, box, text)
+        public StaticNote(Page page, SKRect box, string text)
+            : base(page, PdfName.FreeText, box, text)
         { }
 
-        internal StaticNote(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal StaticNote(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -172,7 +166,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         public BorderEffect BorderEffect
         {
             get => BorderEffect.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
-            set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
+            set
+            {
+                BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
+                OnPropertyChanged();
+            }
         }
 
         /**
@@ -181,7 +179,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         public JustificationEnum Justification
         {
             get => JustificationEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.Q]);
-            set => BaseDataObject[PdfName.Q] = value != DefaultJustification ? value.GetCode() : null;
+            set
+            {
+                BaseDataObject[PdfName.Q] = value != DefaultJustification ? value.GetCode() : null;
+                OnPropertyChanged();
+            }
         }
 
         /**
@@ -205,6 +207,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     */
                     Type = TypeEnum.Callout;
                 }
+                OnPropertyChanged();
             }
         }
 
@@ -218,7 +221,11 @@ namespace PdfClown.Documents.Interaction.Annotations
                 PdfArray endstylesObject = (PdfArray)BaseDataObject[PdfName.LE];
                 return endstylesObject != null ? LineEndStyleEnumExtension.Get((PdfName)endstylesObject[1]) : DefaultLineEndStyle;
             }
-            set => EnsureLineEndStylesObject()[1] = value.GetName();
+            set
+            {
+                EnsureLineEndStylesObject()[1] = value.GetName();
+                OnPropertyChanged();
+            }
         }
 
         /**
@@ -231,7 +238,11 @@ namespace PdfClown.Documents.Interaction.Annotations
                 PdfArray endstylesObject = (PdfArray)BaseDataObject[PdfName.LE];
                 return endstylesObject != null ? LineEndStyleEnumExtension.Get((PdfName)endstylesObject[0]) : DefaultLineEndStyle;
             }
-            set => EnsureLineEndStylesObject()[0] = value.GetName();
+            set
+            {
+                EnsureLineEndStylesObject()[0] = value.GetName();
+                OnPropertyChanged();
+            }
         }
 
         /**
@@ -250,11 +261,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (endStylesObject == null)
             {
                 BaseDataObject[PdfName.LE] = endStylesObject = new PdfArray(
-                  new PdfDirectObject[]
-                  {
-            DefaultLineEndStyle.GetName(),
-            DefaultLineEndStyle.GetName()
-                  }
+                  new PdfDirectObject[] { DefaultLineEndStyle.GetName(), DefaultLineEndStyle.GetName() }
                   );
             }
             return endStylesObject;

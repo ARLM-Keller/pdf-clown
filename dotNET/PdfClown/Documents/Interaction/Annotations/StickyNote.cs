@@ -146,7 +146,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         public IconTypeEnum IconType
         {
             get => ToIconTypeEnum((PdfName)BaseDataObject[PdfName.Name]);
-            set => BaseDataObject[PdfName.Name] = (value != DefaultIconType ? ToCode(value) : null);
+            set
+            {
+                BaseDataObject[PdfName.Name] = (value != DefaultIconType ? ToCode(value) : null);
+                OnPropertyChanged();
+            }
         }
 
         /**
@@ -159,7 +163,11 @@ namespace PdfClown.Documents.Interaction.Annotations
                 PdfBoolean openObject = (PdfBoolean)BaseDataObject[PdfName.Open];
                 return openObject != null ? openObject.BooleanValue : DefaultOpen;
             }
-            set => BaseDataObject[PdfName.Open] = (value != DefaultOpen ? PdfBoolean.Get(value) : null);
+            set
+            {
+                BaseDataObject[PdfName.Open] = (value != DefaultOpen ? PdfBoolean.Get(value) : null);
+                OnPropertyChanged();
+            }
         }
 
         public override void Draw(SKCanvas canvas)

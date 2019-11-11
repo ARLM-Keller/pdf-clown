@@ -1,25 +1,27 @@
 ﻿using PdfClown.Documents;
 using PdfClown.Documents.Contents;
+using PdfClown.Documents.Interaction.Annotations;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xamarin.Forms;
 
 namespace PdfClown.Viewer
 {
-    public class PdfPicture : IDisposable
+    public class PdfPagePicture : IDisposable
     {
         private static Task task;
         private SKPicture picture;
         public SKMatrix Matrix = SKMatrix.MakeIdentity();
         public SKMatrix InitialMatrix;
+        private Page page;
 
-        public PdfPicture()
+        public PdfPagePicture()
         {
         }
 
-        public PageAnnotations Annotations { get; private set; }
+        public List<Annotation> Annotations { get; private set; }
 
         public SKPicture GetPicture(SKCanvasView canvasView)
         {
@@ -58,14 +60,27 @@ namespace PdfClown.Viewer
                     }
                 }
                 picture = recorder.EndRecording();
-                Device.BeginInvokeOnMainThread(() => canvasView.InvalidateSurface());
+                Xamarin.Forms.Device.BeginInvokeOnMainThread(() => canvasView.InvalidateSurface());
             }
             InitialMatrix = ContentScanner.GraphicsState.GetInitialMatrix(Size, Page);
-            Annotations = Page.Annotations;
         }
 
-        public PdfClown.Documents.Page Page { get; set; }
+        public Page Page
+        {
+            get => page;
+            set
+            {
+                page = value;
+                Annotations = new List<Annotation>();
+                foreach (var annotation in Page.Annotations)
+                {
+                    Annotations.Add(annotation);
+                }
+            }
+        }
+
         public SKSize Size { get; set; }
+
         public SKRect Bounds => SKRect.Create(
             Matrix.TransX,
             Matrix.TransY,

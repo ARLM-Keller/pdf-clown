@@ -62,6 +62,10 @@ namespace PdfClown.Viewer.WPF
                     case CursorType.Wait:
                         Control.Cursor = Cursors.Wait;
                         break;
+                    case CursorType.ScrollAll:
+                        Control.Cursor = Cursors.ScrollAll;
+                        break;
+
                 }
             }
         }

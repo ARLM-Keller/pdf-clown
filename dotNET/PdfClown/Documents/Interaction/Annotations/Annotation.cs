@@ -195,6 +195,18 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region interface
         #region public
+        public virtual string Author
+        {
+            get => string.Empty;
+            set { }
+        }
+
+        public virtual DateTime? CreationDate
+        {
+            get => null;
+            set { }
+        }
+
         /**
           <summary>Gets/Sets action to be performed when the annotation is activated.</summary>
         */
@@ -202,7 +214,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         public virtual Actions.Action Action
         {
             get => Interaction.Actions.Action.Wrap(BaseDataObject[PdfName.A]);
-            set => BaseDataObject[PdfName.A] = PdfObjectWrapper.GetBaseObject(value);
+            set
+            {
+                BaseDataObject[PdfName.A] = PdfObjectWrapper.GetBaseObject(value);
+                OnPropertyChanged();
+            }
         }
 
         /**
@@ -212,7 +228,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         public virtual AnnotationActions Actions
         {
             get => CommonAnnotationActions.Wrap(this, BaseDataObject.Get<PdfDictionary>(PdfName.AA));
-            set => BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value);
+            set
+            {
+                BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value);
+                OnPropertyChanged();
+            }
         }
 
         /**
@@ -241,6 +261,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 BaseDataObject[PdfName.BS] = PdfObjectWrapper.GetBaseObject(value);
                 if (value != null)
                 { BaseDataObject.Remove(PdfName.Border); }
+                OnPropertyChanged();
             }
         }
 

@@ -618,7 +618,8 @@ namespace PdfClown.Viewer
         SizeWE,
         SizeNS,
         Hand,
-        Wait
+        Wait,
+        ScrollAll
     }
 
     [Flags]

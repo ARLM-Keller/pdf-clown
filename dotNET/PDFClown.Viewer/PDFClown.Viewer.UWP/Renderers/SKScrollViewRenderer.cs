@@ -59,6 +59,9 @@ namespace PdfClown.Viewer.UWP
                     case CursorType.Wait:
                         Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Wait, 0);
                         break;
+                    case CursorType.ScrollAll:
+                        Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
+                        break;
                 }
             }
         }

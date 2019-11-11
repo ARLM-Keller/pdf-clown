@@ -40,8 +40,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       its parent annotation, and is used for editing the parent's text.</remarks>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class Popup
-      : Annotation
+    public sealed class Popup : Annotation
     {
         #region dynamic
         #region fields

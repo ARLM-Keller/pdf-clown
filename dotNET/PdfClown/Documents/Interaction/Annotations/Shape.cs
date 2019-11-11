@@ -37,8 +37,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       <summary>Abstract shape annotation.</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public abstract class Shape
-      : Markup
+    public abstract class Shape : Markup
     {
         #region dynamic
         #region constructors

@@ -42,7 +42,7 @@ namespace PdfClown.Documents.Contents.Objects
         #region static
         #region fields
         public static readonly string OperatorKeyword = "Do";
-        public static readonly new SKPaint ImagePaint = new SKPaint { FilterQuality = SKFilterQuality.Low };
+        public static readonly SKPaint ImagePaint = new SKPaint { FilterQuality = SKFilterQuality.Low };
         #endregion
         #endregion
 

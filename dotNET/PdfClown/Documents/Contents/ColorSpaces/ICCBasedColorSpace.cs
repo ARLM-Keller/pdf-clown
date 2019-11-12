@@ -73,16 +73,17 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return null;
         }
 
-        public override SKColor GetColor(Color color)
+        public override SKColor GetColor(Color color, double? alpha = null)
         {
             GetIccProfile();
             GetSKColorSpace();
 
+            var skColor = SKColors.Black;
             // FIXME: temporary hack
             if (color is DeviceRGBColor devRGB)
             {
                 var point = Power(xyzD50, (float)devRGB.R, (float)devRGB.G, (float)devRGB.B);
-                return new SKColor(
+                skColor = new SKColor(
                    (byte)(point.X * 255),
                    (byte)(point.Y * 255),
                    (byte)(point.Z * 255));
@@ -95,13 +96,17 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     g = iccProfile.MapGrayDisplay(g);
                 }
 
-                return new SKColor(
+                skColor = new SKColor(
                     (byte)(g * 255),
                     (byte)(g * 255),
                     (byte)(g * 255));
             }
 
-            return SKColors.Black;
+            if (alpha != null)
+            {
+                skColor = skColor.WithAlpha((byte)(alpha.Value * 255));
+            }
+            return skColor;
         }
 
 

@@ -179,7 +179,7 @@ namespace PdfClown.Documents.Contents
                     var index = (y * info.Width + x);
                     var color = GetColor(index);
 
-                    var skColor = colorSpace.GetColor(color);
+                    var skColor = colorSpace.GetColor(color, null);
                     if (sMaskLoader != null)
                     {
                         var sMaskColor = sMaskLoader.GetColor(index);

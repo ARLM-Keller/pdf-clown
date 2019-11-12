@@ -103,7 +103,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         { return new CalRGBColor(components); }
 
-        public override SKColor GetColor(Color color)
+        public override SKColor GetColor(Color color, double? alpha = null)
         {
 
             // FIXME: temporary hack

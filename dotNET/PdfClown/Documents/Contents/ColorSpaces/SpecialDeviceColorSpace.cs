@@ -75,11 +75,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             get;
         }
 
-        public override SKColor GetColor(Color color)
+        public override SKColor GetColor(Color color, double? alfa)
         {
             IList<PdfDirectObject> alternateColorComponents = TintFunction.Calculate(color.Components);
             ColorSpace alternateSpace = AlternateSpace;
-            return alternateSpace.GetColor(alternateSpace.GetColor(alternateColorComponents, null));
+            return alternateSpace.GetColor(alternateSpace.GetColor(alternateColorComponents, null), alfa);
         }
 
         /**

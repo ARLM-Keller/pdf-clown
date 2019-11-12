@@ -69,7 +69,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         { return new DeviceCMYKColor(components); }
 
-        public override SKColor GetColor(Color color)
+        public override SKColor GetColor(Color color, double? alpha = null)
         {
             DeviceCMYKColor spaceColor = (DeviceCMYKColor)color;
             /*
@@ -83,7 +83,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             var r = (int)(255 * (1 - spaceColor.C) * (1 - spaceColor.K));
             var g = (int)(255 * (1 - spaceColor.M) * (1 - spaceColor.K));
             var b = (int)(255 * (1 - spaceColor.Y) * (1 - spaceColor.K));
-            return new SKColor((byte)r, (byte)g, (byte)b);
+            var skColor = new SKColor((byte)r, (byte)g, (byte)b);
+            if (alpha != null)
+            {
+                skColor = skColor.WithAlpha((byte)(alpha.Value * 255));
+            }
+            return skColor;
         }
 
         #endregion

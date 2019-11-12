@@ -69,11 +69,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         { return new DeviceGrayColor(components); }
 
-        public override SKColor GetColor(Color color)
+        public override SKColor GetColor(Color color, double? alpha = null)
         {
             var spaceColor = (DeviceGrayColor)color;
             var g = (byte)Math.Round(spaceColor.G * 255);
-            return new SKColor(g, g, g);
+            var skColor = new SKColor(g, g, g);
+            if (alpha != null)
+            {
+                skColor = skColor.WithAlpha((byte)(alpha.Value * 255));
+            }
+            return skColor;
         }
 
         #endregion

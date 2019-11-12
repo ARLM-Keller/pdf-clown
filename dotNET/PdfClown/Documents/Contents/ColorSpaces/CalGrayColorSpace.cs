@@ -37,8 +37,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       achromatic single-component color value [PDF:1.6:4.5.4].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class CalGrayColorSpace
-      : CalColorSpace
+    public sealed class CalGrayColorSpace : CalColorSpace
     {
         #region dynamic
         #region constructors
@@ -72,13 +71,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         { return new CalGrayColor(components); }
 
-        public override SKColor GetColor(Color color)
+        public override SKColor GetColor(Color color, double? alpha = null)
         {
             // FIXME: temporary hack
             return SKColors.Black;
         }
 
-        
+
         #endregion
         #endregion
         #endregion

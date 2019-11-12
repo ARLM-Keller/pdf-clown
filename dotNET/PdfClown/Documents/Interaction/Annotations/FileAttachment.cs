@@ -31,6 +31,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Tools;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -40,9 +41,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       </remarks>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class FileAttachment
-      : Markup,
-        IFileResource
+    public sealed class FileAttachment : Markup, IFileResource
     {
         #region types
         /**
@@ -79,11 +78,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         #region constructors
         static FileAttachment()
         {
-            IconTypeEnumCodes = new Dictionary<IconTypeEnum, PdfName>();
-            IconTypeEnumCodes[IconTypeEnum.Graph] = PdfName.Graph;
-            IconTypeEnumCodes[IconTypeEnum.PaperClip] = PdfName.Paperclip;
-            IconTypeEnumCodes[IconTypeEnum.PushPin] = PdfName.PushPin;
-            IconTypeEnumCodes[IconTypeEnum.Tag] = PdfName.Tag;
+            IconTypeEnumCodes = new Dictionary<IconTypeEnum, PdfName>
+            {
+                [IconTypeEnum.Graph] = PdfName.Graph,
+                [IconTypeEnum.PaperClip] = PdfName.Paperclip,
+                [IconTypeEnum.PushPin] = PdfName.PushPin,
+                [IconTypeEnum.Tag] = PdfName.Tag
+            };
         }
         #endregion
 
@@ -129,15 +130,31 @@ namespace PdfClown.Documents.Interaction.Annotations
         public IconTypeEnum IconType
         {
             get => ToIconTypeEnum((PdfName)BaseDataObject[PdfName.Name]);
-            set => BaseDataObject[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;
+            set
+            {
+                BaseDataObject[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;
+                OnPropertyChanged();
+            }
         }
 
         #region IFileResource
         public FileSpecification DataFile
         {
             get => FileSpecification.Wrap(BaseDataObject[PdfName.FS]);
-            set => BaseDataObject[PdfName.FS] = value.BaseObject;
+            set
+            {
+                BaseDataObject[PdfName.FS] = value.BaseObject;
+                OnPropertyChanged();
+            }
         }
+
+        public override void Draw(SKCanvas canvas)
+        {
+            var bounds = Box;
+            var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
+            SvgImage.DrawImage(canvas, IconType.ToString(), color, bounds, 1);
+        }
+
         #endregion
         #endregion
         #endregion

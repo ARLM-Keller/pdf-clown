@@ -91,13 +91,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         }
 
-        public override SKColor GetColor(Color color)
+        public override SKColor GetColor(Color color, double? alpha = null)
         {
             // FIXME: Auto-generated method stub
             return SKColors.Black;
         }
 
-        public override SKPaint GetPaint(Color color, double? alpha)
+        public override SKPaint GetPaint(Color color, double? alpha = null)
         {
             // FIXME: Auto-generated method stub
             if (color is TilingPattern pattern)

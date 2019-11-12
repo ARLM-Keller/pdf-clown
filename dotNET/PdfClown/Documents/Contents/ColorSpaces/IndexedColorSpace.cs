@@ -109,12 +109,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         { return new IndexedColor(components); }
 
-        public override SKColor GetColor(Color color)
+        public override SKColor GetColor(Color color, double? alfa = null)
         {
-            return BaseSpace.GetColor(GetBaseColor((IndexedColor)color));
+            return BaseSpace.GetColor(GetBaseColor((IndexedColor)color), alfa);
         }
 
-        public override SKPaint GetPaint(Color color, double? alpha)
+        public override SKPaint GetPaint(Color color, double? alpha = null)
         {
             return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color), alpha);
         }

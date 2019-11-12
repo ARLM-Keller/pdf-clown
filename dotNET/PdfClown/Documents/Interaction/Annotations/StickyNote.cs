@@ -174,9 +174,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             var box = Box;
             var bounds = SKRect.Create(box.Left, box.Top, size / canvas.TotalMatrix.ScaleX, size / canvas.TotalMatrix.ScaleY);
-            using (var color = Color.ColorSpace.GetPaint(Color, Alpha))
+            var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
+            using (var paint = new SKPaint { Color = color, Style = SKPaintStyle.Fill })
             {
-                canvas.DrawRect(bounds, color);
+                canvas.DrawRect(bounds, paint);
             }
             SvgImage.DrawImage(canvas, IconType.ToString(), SKColors.White, bounds, 3 / canvas.TotalMatrix.ScaleX);
         }

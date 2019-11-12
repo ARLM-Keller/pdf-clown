@@ -47,11 +47,7 @@ namespace PdfClown.Samples.CLI
 
             // Sticky note.
             composer.ShowText("Sticky note annotation:", new SKPoint(35, 35));
-            new StickyNote(
-              page,
-              new SKPoint(50, 50),
-              "Text of the Sticky note annotation"
-              )
+            new StickyNote(page, new SKPoint(50, 50), "Text of the Sticky note annotation")
             {
                 IconType = StickyNote.IconTypeEnum.Note,
                 Color = DeviceRGBColor.Get(SKColors.Yellow),
@@ -64,11 +60,7 @@ namespace PdfClown.Samples.CLI
                 Subject = "Sticky note",
                 IsOpen = true
             };
-            new StickyNote(
-              page,
-              new SKPoint(80, 50),
-              "Text of the Help sticky note annotation"
-              )
+            new StickyNote(page, new SKPoint(80, 50), "Text of the Help sticky note annotation")
             {
                 IconType = StickyNote.IconTypeEnum.Help,
                 Color = DeviceRGBColor.Get(SKColors.Pink),
@@ -80,22 +72,14 @@ namespace PdfClown.Samples.CLI
                 "Text of the Popup annotation (this text won't be visible as associating popups to markup annotations overrides the former's properties with the latter's)"
                 )
             };
-            new StickyNote(
-              page,
-              new SKPoint(110, 50),
-              "Text of the Comment sticky note annotation"
-              )
+            new StickyNote(page, new SKPoint(110, 50), "Text of the Comment sticky note annotation")
             {
                 IconType = StickyNote.IconTypeEnum.Comment,
                 Color = DeviceRGBColor.Get(SKColors.Green),
                 Author = "Stefano",
                 Subject = "Sticky note"
             };
-            new StickyNote(
-              page,
-              new SKPoint(140, 50),
-              "Text of the Key sticky note annotation"
-              )
+            new StickyNote(page, new SKPoint(140, 50), "Text of the Key sticky note annotation")
             {
                 IconType = StickyNote.IconTypeEnum.Key,
                 Color = DeviceRGBColor.Get(SKColors.Blue),
@@ -105,11 +89,7 @@ namespace PdfClown.Samples.CLI
 
             // Callout.
             composer.ShowText("Callout note annotation:", new SKPoint(35, 85));
-            new StaticNote(
-              page,
-              SKRect.Create(250, 90, 150, 70),
-              "Text of the Callout note annotation"
-              )
+            new StaticNote(page, SKRect.Create(250, 90, 150, 70), "Text of the Callout note annotation")
             {
                 Line = new StaticNote.CalloutLine(
                 page,

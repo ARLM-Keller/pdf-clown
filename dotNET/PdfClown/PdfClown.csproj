@@ -24,10 +24,14 @@
   <ItemGroup>
     <None Remove="Assets\Comment.svg" />
     <None Remove="Assets\comments.svg" />
+    <None Remove="Assets\Graph.svg" />
     <None Remove="Assets\Help.svg" />
     <None Remove="Assets\Key.svg" />
     <None Remove="Assets\Note.svg" />
+    <None Remove="Assets\PaperClip.svg" />
     <None Remove="Assets\Paragraph.svg" />
+    <None Remove="Assets\PushPin.svg" />
+    <None Remove="Assets\Tag.svg" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\main\res\pkg\fonts\AGL20.scsv">
@@ -115,11 +119,15 @@
       <LogicalName>fonts.cff.StandardStrings</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="Assets\Comment.svg" />
+    <EmbeddedResource Include="Assets\Graph.svg" />
     <EmbeddedResource Include="Assets\Key.svg" />
     <EmbeddedResource Include="Assets\Note.svg" />
     <EmbeddedResource Include="Assets\comments.svg" />
     <EmbeddedResource Include="Assets\Help.svg" />
+    <EmbeddedResource Include="Assets\PaperClip.svg" />
     <EmbeddedResource Include="Assets\Paragraph.svg" />
+    <EmbeddedResource Include="Assets\PushPin.svg" />
+    <EmbeddedResource Include="Assets\Tag.svg" />
   </ItemGroup>
   <PropertyGroup>
     <RestoreSources>../FreeImage.NETCore/Package;$(RestoreSources);</RestoreSources>    

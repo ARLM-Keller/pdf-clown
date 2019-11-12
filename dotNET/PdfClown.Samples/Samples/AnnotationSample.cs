@@ -89,14 +89,15 @@ namespace PdfClown.Samples.CLI
 
             // Callout.
             composer.ShowText("Callout note annotation:", new SKPoint(35, 85));
-            new StaticNote(page, SKRect.Create(250, 90, 150, 70), "Text of the Callout note annotation")
+            new FreeText(page, SKRect.Create(250, 90, 150, 70), "Text of the Callout note annotation")
             {
-                Line = new StaticNote.CalloutLine(
+                Line = new FreeText.CalloutLine(
                 page,
                 new SKPoint(250, 125),
                 new SKPoint(150, 125),
                 new SKPoint(100, 100)
                 ),
+                Type = FreeText.TypeEnum.Callout,
                 LineEndStyle = LineEndStyleEnum.OpenArrow,
                 Border = new Border(1),
                 Color = DeviceRGBColor.Get(SKColors.Yellow)

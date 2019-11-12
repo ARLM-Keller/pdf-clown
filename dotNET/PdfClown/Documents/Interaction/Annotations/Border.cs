@@ -37,8 +37,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       <summary>Border characteristics [PDF:1.6:8.4.3].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class Border
-      : PdfObjectWrapper<PdfDictionary>
+    public sealed class Border : PdfObjectWrapper<PdfDictionary>
     {
         #region types
         /**
@@ -218,11 +217,14 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => BaseDataObject[PdfName.W] = PdfReal.Get(value);
         }
 
-        public SKPaint GetPaint()
+        public void Apply(SKPaint paint, BorderEffect borderEffect)
         {
-            var paint = new SKPaint();
             paint.Style = SKPaintStyle.Stroke;
-            return paint;
+            paint.StrokeWidth = (float)Width;
+            if (Style == StyleEnum.Dashed)
+            {
+                Pattern.Apply(paint);
+            }
         }
         #endregion
         #endregion

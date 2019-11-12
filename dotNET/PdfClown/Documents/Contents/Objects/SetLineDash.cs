@@ -34,8 +34,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Set the line dash pattern' operation [PDF:1.6:4.3.3].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetLineDash
-      : Operation
+    public sealed class SetLineDash : Operation
     {
         #region static
         #region fields

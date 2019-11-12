@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       is always visible.</remarks>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class StaticNote : Markup
+    public sealed class FreeText : Markup
     {
         #region types
         /**
@@ -130,6 +130,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         public enum TypeEnum
         {
             /**
+              Default.
+            */
+            Default,
+            /**
               Callout.
             */
             Callout,
@@ -144,16 +148,17 @@ namespace PdfClown.Documents.Interaction.Annotations
         #region fields
         private static readonly JustificationEnum DefaultJustification = JustificationEnum.Left;
         private static readonly LineEndStyleEnum DefaultLineEndStyle = LineEndStyleEnum.None;
+        private SKPath linePath;
         #endregion
         #endregion
 
         #region dynamic
         #region constructors
-        public StaticNote(Page page, SKRect box, string text)
+        public FreeText(Page page, SKRect box, string text)
             : base(page, PdfName.FreeText, box, text)
         { }
 
-        internal StaticNote(PdfDirectObject baseObject) : base(baseObject)
+        internal FreeText(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -165,7 +170,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF16)]
         public BorderEffect BorderEffect
         {
-            get => BorderEffect.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
+            get => Wrap<BorderEffect>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
             set
             {
                 BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
@@ -193,8 +198,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get
             {
-                PdfArray calloutCalloutLine = (PdfArray)BaseDataObject[PdfName.CL];
-                return calloutCalloutLine != null ? new CalloutLine(calloutCalloutLine) : null;
+                var calloutCalloutLine = (PdfArray)BaseDataObject[PdfName.CL];
+                return Wrap<CalloutLine>(calloutCalloutLine);
             }
             set
             {
@@ -250,6 +255,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public override Popup Popup
         {
+            get => null;
             set => throw new NotSupportedException();
         }
         #endregion
@@ -267,42 +273,156 @@ namespace PdfClown.Documents.Interaction.Annotations
             return endStylesObject;
         }
 
-        private TypeEnum? Type
+        public TypeEnum? Type
         {
-            get => StaticNoteTypeEnumExtension.Get(TypeBase);
+            get => FreeTextTypeEnumExtension.Get(TypeBase);
             set => TypeBase = value.HasValue ? value.Value.GetName() : null;
         }
+
+        public SKRect TextBox
+        {
+            get
+            {
+                var bounds = Box;
+                var box = Wrap<Objects.Rectangle>(BaseDataObject[PdfName.RD]) ?? new Objects.Rectangle(SKRect.Empty);
+                return new SKRect(
+                  (float)box.Left + bounds.Left,
+                  (float)box.Top + bounds.Top,
+                  bounds.Right - (float)box.Right,
+                  bounds.Bottom - (float)box.Bottom
+                  );
+            }
+            set
+            {
+                var bounds = Box;
+                BaseDataObject[PdfName.RD] = new Objects.Rectangle(value.Left, GetPageHeight() - value.Top, value.Width, value.Height)
+                    .BaseDataObject;
+                OnPropertyChanged();
+            }
+        }
+
+        public override void Draw(SKCanvas canvas)
+        {
+            var bounds = Box;
+            var textBounds = TextBox;
+            var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
+
+            using (var paint = new SKPaint { Color = color, Style = SKPaintStyle.Fill })
+            {
+                canvas.DrawRect(bounds, paint);
+            }
+
+
+            using (var paint = new SKPaint())
+            {
+                Border?.Apply(paint, BorderEffect);
+                canvas.DrawRect(bounds, paint);
+            }
+
+            using (var paint = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.StrokeAndFill })
+            {
+                var temp = SKRect.Create(0, 0, bounds.Width, 0);
+                var left = textBounds.Left + 5;
+                var top = textBounds.Top + paint.FontSpacing;
+                foreach (var line in GetLines(Text.Trim(), textBounds, paint))
+                {
+                    canvas.DrawText(line, left, top, paint);
+                    top += paint.FontSpacing;
+                }
+            }
+            if (Type == TypeEnum.Callout && Line != null)
+            {
+                var line = Line;
+                using (var linePath = new SKPath())
+                using (var paint = new SKPaint { Style = SKPaintStyle.Stroke })
+                {
+                    Border?.Apply(paint, BorderEffect);
+
+                    linePath.MoveTo(Line.Start);
+                    if (line.Knee != null)
+                        linePath.LineTo(Line.Knee.Value);
+                    linePath.LineTo(Line.End);
+
+                    //if (LineStartStyle == LineEndStyleEnum.Square)
+                    //{
+                    //    var normal = linePath[0] - linePath[1];
+                    //    normal = SKPoint.Normalize(normal);
+                    //    var half = new SKPoint(normal.X * 2.5F, normal.Y * 2.5F);
+                    //    var temp = normal.X;
+                    //    normal.X = 0 - normal.Y;
+                    //    normal.Y = temp;
+                    //    var p1 = new SKPoint(half.X + normal.X * 5, half.Y + normal.Y * 5);
+                    //    var p2 = new SKPoint(half.X - normal.X * 5, half.Y - normal.Y * 5);
+                    //}
+                    canvas.DrawPath(linePath, paint);
+
+                }
+            }
+        }
+
+        private IEnumerable<string> GetLines(string text, SKRect textBounds, SKPaint paint)
+        {
+            //var builder = new SKTextBlobBuilder();
+            foreach (var line in text.Split('\r', '\n'))
+            {
+                var count = (int)paint.BreakText(line, textBounds.Width);
+                if (count == line.Length)
+                    yield return line;
+                else
+                {
+                    var index = 0;
+                    while (true)
+                    {
+                        for (int i = (index + count) - 1; i > index; i--)
+                        {
+                            if (line[i] == ' ')
+                            {
+                                count = (i + 1) - index;
+                                break;
+                            }
+                        }
+                        yield return line.Substring(index, count);
+                        index += count;
+                        if (index >= line.Length)
+                            break;
+                        count = (int)paint.BreakText(line.Substring(index), textBounds.Width);
+                    }
+                }
+            }
+        }
+
         #endregion
         #endregion
         #endregion
     }
 
-    internal static class StaticNoteTypeEnumExtension
+    internal static class FreeTextTypeEnumExtension
     {
-        private static readonly BiDictionary<StaticNote.TypeEnum, PdfName> codes;
+        private static readonly BiDictionary<FreeText.TypeEnum, PdfName> codes;
 
-        static StaticNoteTypeEnumExtension()
+        static FreeTextTypeEnumExtension()
         {
-            codes = new BiDictionary<StaticNote.TypeEnum, PdfName>
+            codes = new BiDictionary<FreeText.TypeEnum, PdfName>
             {
-                [StaticNote.TypeEnum.Callout] = PdfName.FreeTextCallout,
-                [StaticNote.TypeEnum.TypeWriter] = PdfName.FreeTextTypeWriter
+                [FreeText.TypeEnum.Default] = PdfName.FreeText,
+                [FreeText.TypeEnum.Callout] = PdfName.FreeTextCallout,
+                [FreeText.TypeEnum.TypeWriter] = PdfName.FreeTextTypeWriter
             };
         }
 
-        public static StaticNote.TypeEnum? Get(PdfName name)
+        public static FreeText.TypeEnum? Get(PdfName name)
         {
             if (name == null)
                 return null;
 
-            StaticNote.TypeEnum? type = codes.GetKey(name);
+            FreeText.TypeEnum? type = codes.GetKey(name);
             if (!type.HasValue)
                 throw new NotSupportedException("Type unknown: " + name);
 
             return type.Value;
         }
 
-        public static PdfName GetName(this StaticNote.TypeEnum type)
+        public static PdfName GetName(this FreeText.TypeEnum type)
         { return codes[type]; }
     }
 }

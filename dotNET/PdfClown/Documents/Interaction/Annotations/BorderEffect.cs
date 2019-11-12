@@ -37,8 +37,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       <summary>Border effect [PDF:1.6:8.4.3].</summary>
     */
     [PDF(VersionEnum.PDF15)]
-    public sealed class BorderEffect
-      : PdfObjectWrapper<PdfDictionary>
+    public sealed class BorderEffect : PdfObjectWrapper<PdfDictionary>
     {
         #region types
         /**
@@ -64,8 +63,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         private static readonly TypeEnum DefaultType = TypeEnum.None;
 
         private static readonly Dictionary<TypeEnum, PdfName> TypeEnumCodes;
-        public BorderEffect Wrap(PdfDirectObject baseObject)
-        { return baseObject?.Wrapper as BorderEffect ?? new BorderEffect(baseObject); }
+
         #endregion
 
         #region constructors

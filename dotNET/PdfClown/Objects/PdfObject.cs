@@ -57,7 +57,7 @@ namespace PdfClown.Objects
         */
         public static PdfDataObject Resolve(PdfObject @object)
         {
-            return @object == null ? null : @object.Resolve();
+            return @object?.Resolve();
         }
 
         /**
@@ -68,7 +68,7 @@ namespace PdfClown.Objects
         */
         public static PdfDirectObject Unresolve(PdfDataObject @object)
         {
-            return @object == null ? null : @object.Unresolve();
+            return @object?.Unresolve();
         }
         #endregion
         #endregion

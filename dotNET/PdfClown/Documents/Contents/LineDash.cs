@@ -23,7 +23,10 @@
   this list of conditions.
 */
 
+using System;
 using PdfClown.Objects;
+using PdfClown.Util;
+using SkiaSharp;
 
 namespace PdfClown.Documents.Contents
 {
@@ -81,6 +84,23 @@ namespace PdfClown.Documents.Contents
         public double[] DashArray => dashArray;
 
         public double DashPhase => dashPhase;
+
+        public void Apply(SKPaint stroke)
+        {
+            double[] dashArray = DashArray;
+            if (dashArray.Length > 0)
+            {
+                if (dashArray.Length % 2 != 0)
+                {
+                    var list = new double[dashArray.Length + 1];
+                    System.Array.Copy(dashArray, 0, list, 0, dashArray.Length);
+                    list[dashArray.Length] = dashArray[dashArray.Length - 1];
+                    dashArray = list;
+                }
+                stroke.PathEffect = SKPathEffect.CreateDash(ConvertUtils.ToFloatArray(dashArray), (float)DashPhase);
+            }
+
+        }
         #endregion
         #endregion
         #endregion

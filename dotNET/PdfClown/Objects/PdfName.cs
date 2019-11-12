@@ -474,6 +474,7 @@ namespace PdfClown.Objects
         public static readonly PdfName RBGroups = new PdfName("RBGroups");
         public static readonly PdfName RC = new PdfName("RC");
         public static readonly PdfName RClosedArrow = new PdfName("RClosedArrow");
+        public static readonly PdfName RD = new PdfName("RD");
         public static readonly PdfName Rect = new PdfName("Rect");
         public static readonly PdfName Registry = new PdfName("Registry");
         public static readonly PdfName Rendition = new PdfName("Rendition");

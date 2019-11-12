@@ -62,7 +62,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                 PdfArray verticesObject = (PdfArray)BaseDataObject[PdfName.Vertices];
                 IList<SKPoint> vertices = new List<SKPoint>();
                 float pageHeight = Page.Box.Height;
-                for (int index = 0, length = verticesObject.Count; index < length; index += 2)
+                var length = verticesObject.Count;
+                for (int index = 0; index < length; index += 2)
                 {
                     vertices.Add(
                       new SKPoint(

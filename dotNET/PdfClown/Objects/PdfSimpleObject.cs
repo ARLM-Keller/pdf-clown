@@ -92,7 +92,7 @@ namespace PdfClown.Objects
                 if (valueProperty != null)
                 { value = valueProperty.GetGetMethod().Invoke(obj, null); }
             }
-            return (value != null ? value : defaultValue);
+            return value ?? defaultValue;
         }
         #endregion
         #endregion

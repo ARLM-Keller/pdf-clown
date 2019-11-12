@@ -36,8 +36,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>Path-painting operation [PDF:1.6:4.4.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class PaintPath
-      : Operation
+    public sealed class PaintPath : Operation
     {
         #region static
         #region fields
@@ -105,18 +104,7 @@ namespace PdfClown.Documents.Contents.Objects
             stroke.StrokeMiter = (float)state.MiterLimit;
 
             LineDash lineDash = state.LineDash;
-            double[] dashArray = lineDash.DashArray;
-            if (dashArray.Length > 0)
-            {
-                if (dashArray.Length % 2 != 0)
-                {
-                    var list = new double[dashArray.Length + 1];
-                    System.Array.Copy(dashArray, 0, list, 0, dashArray.Length);
-                    list[dashArray.Length] = dashArray[dashArray.Length - 1];
-                    dashArray = list;
-                }
-                stroke.PathEffect = SKPathEffect.CreateDash(ConvertUtils.ToFloatArray(dashArray), (float)lineDash.DashPhase);
-            }
+            lineDash.Apply(stroke);
             return stroke;
         }
 

@@ -40,8 +40,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       When opened, it displays a pop-up window containing the text of the associated note.</remarks>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class Line
-      : Markup
+    public sealed class Line : Markup
     {
         #region static
         #region fields
@@ -54,14 +53,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         #region dynamic
         #region constructors
         public Line(Page page, SKPoint startPoint, SKPoint endPoint, string text, DeviceRGBColor color)
-            : base(page, PdfName.Line, SKRect.Create(
-              startPoint.X,
-              startPoint.Y,
-              endPoint.X - startPoint.X,
-              endPoint.Y - startPoint.Y
-              ),
-            text
-            )
+            : base(page, PdfName.Line, SKRect.Create(startPoint.X, startPoint.Y, endPoint.X - startPoint.X, endPoint.Y - startPoint.Y), text)
         {
             BaseDataObject[PdfName.L] = new PdfArray(new PdfDirectObject[] { PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0) });
             StartPoint = startPoint;
@@ -69,9 +61,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             Color = color;
         }
 
-        internal Line(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Line(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -229,18 +219,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
 
         #region private
-        private PdfArray EnsureLineEndStylesObject(
-          )
+        private PdfArray EnsureLineEndStylesObject()
         {
             PdfArray endStylesObject = (PdfArray)BaseDataObject[PdfName.LE];
             if (endStylesObject == null)
             {
                 BaseDataObject[PdfName.LE] = endStylesObject = new PdfArray(
-                  new PdfDirectObject[]
-                  {
-            DefaultLineEndStyle.GetName(),
-            DefaultLineEndStyle.GetName()
-                  }
+                  new PdfDirectObject[] {
+                      DefaultLineEndStyle.GetName(),
+                      DefaultLineEndStyle.GetName() }
                   );
             }
             return endStylesObject;

@@ -119,7 +119,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             else if (annotationType.Equals(PdfName.Link))
                 return new Link(baseObject);
             else if (annotationType.Equals(PdfName.FreeText))
-                return new StaticNote(baseObject);
+                return new FreeText(baseObject);
             else if (annotationType.Equals(PdfName.Line))
                 return new Line(baseObject);
             else if (annotationType.Equals(PdfName.Square))
@@ -437,12 +437,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
 
         #region private
-        private float GetPageHeight()
+        protected float GetPageHeight()
         {
             Page page = Page;
-            return (page != null
-                ? page.Box.Height
-                : Document.GetSize().Height);
+            return page?.Box.Height ?? Document.GetSize().Height;
         }
 
         public virtual void Draw(SKCanvas canvas)

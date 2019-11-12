@@ -55,21 +55,20 @@ namespace PdfClown.Documents.Interaction
     {
         private static readonly BiDictionary<JustificationEnum, PdfInteger> codes;
 
-        static JustificationEnumExtension(
-          )
+        static JustificationEnumExtension()
         {
-            codes = new BiDictionary<JustificationEnum, PdfInteger>();
-            codes[JustificationEnum.Left] = PdfInteger.Get(0);
-            codes[JustificationEnum.Center] = PdfInteger.Get(1);
-            codes[JustificationEnum.Right] = PdfInteger.Get(2);
+            codes = new BiDictionary<JustificationEnum, PdfInteger>
+            {
+                [JustificationEnum.Left] = PdfInteger.Get(0),
+                [JustificationEnum.Center] = PdfInteger.Get(1),
+                [JustificationEnum.Right] = PdfInteger.Get(2)
+            };
         }
 
         /**
           <summary>Gets the justification corresponding to the given value.</summary>
         */
-        public static JustificationEnum Get(
-          PdfInteger value
-          )
+        public static JustificationEnum Get(PdfInteger value)
         {
             if (value == null)
                 return JustificationEnum.Left;
@@ -84,14 +83,10 @@ namespace PdfClown.Documents.Interaction
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
-        public static PdfInteger GetCode(
-          this JustificationEnum value
-          )
+        public static PdfInteger GetCode(this JustificationEnum value)
         { return codes[value]; }
 
-        public static XAlignmentEnum ToXAlignment(
-          this JustificationEnum value
-          )
+        public static XAlignmentEnum ToXAlignment(this JustificationEnum value)
         {
             switch (value)
             {

@@ -58,7 +58,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public BorderEffect BorderEffect
         {
-            get => BorderEffect.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
+            get => Wrap<BorderEffect>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
             set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
         }
 

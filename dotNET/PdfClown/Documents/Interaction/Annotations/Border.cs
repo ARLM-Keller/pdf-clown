@@ -90,10 +90,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             };
         }
 
-        public static Border Wrap(PdfDirectObject baseObject)
-        {
-            return baseObject?.Wrapper as Border ?? new Border(baseObject);
-        }
+        //public static Border Wrap(PdfDirectObject baseObject)
+        //{
+        //    return baseObject?.Wrapper as Border ?? new Border(baseObject);
+        //}
         #endregion
 
         #region interface
@@ -221,10 +221,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             paint.Style = SKPaintStyle.Stroke;
             paint.StrokeWidth = (float)Width;
+            paint.IsAntialias = true;
             if (Style == StyleEnum.Dashed)
             {
-                Pattern.Apply(paint);
+                Pattern?.Apply(paint);
             }
+            borderEffect?.Apply(paint);
         }
         #endregion
         #endregion

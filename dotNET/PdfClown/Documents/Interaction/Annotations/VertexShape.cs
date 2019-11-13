@@ -30,6 +30,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using System.Linq;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -86,6 +87,16 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
 
                 BaseDataObject[PdfName.Vertices] = verticesObject;
+            }
+        }
+
+        public override void Draw(SKCanvas canvas)
+        {
+            using (var path = new SKPath())
+            {
+                path.AddPoly(Vertices.ToArray());
+                path.Close();
+                Draw(canvas, path);
             }
         }
         #endregion

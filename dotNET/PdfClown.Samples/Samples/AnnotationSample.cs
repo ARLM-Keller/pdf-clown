@@ -128,12 +128,11 @@ namespace PdfClown.Samples.CLI
                 // Arrow line.
                 composer.ShowText("Arrow:", new SKPoint(50, 200));
                 new Line(
-                  page,
-                  new SKPoint(50, 260),
-                  new SKPoint(200, 210),
-                  "Text of the Arrow line annotation",
-                  DeviceRGBColor.Get(SKColors.Black)
-                  )
+                    page,
+                    new SKPoint(50, 260),
+                    new SKPoint(200, 210),
+                    "Text of the Arrow line annotation",
+                    DeviceRGBColor.Get(SKColors.Black))
                 {
                     StartStyle = LineEndStyleEnum.Circle,
                     EndStyle = LineEndStyleEnum.ClosedArrow,
@@ -166,30 +165,21 @@ namespace PdfClown.Samples.CLI
                 composer.End();
             }
 
+            var path = new SKPath();
+            path.MoveTo(new SKPoint(50, 320));
+            path.LineTo(new SKPoint(70, 305));
+            path.LineTo(new SKPoint(110, 335));
+            path.LineTo(new SKPoint(130, 320));
+            path.LineTo(new SKPoint(110, 305));
+            path.LineTo(new SKPoint(70, 335));
+            path.LineTo(new SKPoint(50, 320));
             // Scribble.
             composer.ShowText("Scribble annotation:", new SKPoint(35, 285));
             new Scribble(
               page,
-              new List<IList<SKPoint>>(
-                new List<SKPoint>[]
-                {
-            new List<SKPoint>(
-              new SKPoint[]
-              {
-                new SKPoint(50,320),
-                new SKPoint(70,305),
-                new SKPoint(110,335),
-                new SKPoint(130,320),
-                new SKPoint(110,305),
-                new SKPoint(70,335),
-                new SKPoint(50,320)
-              }
-            )
-                }
-                ),
+              new List<SKPath> { path },
               "Text of the Scribble annotation",
-              DeviceRGBColor.Get(SKColors.Orange)
-              )
+              DeviceRGBColor.Get(SKColors.Orange))
             {
                 Border = new Border(1, new LineDash(new double[] { 5, 2, 2, 2 })),
                 Author = "Stefano",
@@ -201,8 +191,7 @@ namespace PdfClown.Samples.CLI
             new PdfClown.Documents.Interaction.Annotations.Rectangle(
               page,
               SKRect.Create(50, 370, 100, 30),
-              "Text of the Rectangle annotation"
-              )
+              "Text of the Rectangle annotation")
             {
                 Color = DeviceRGBColor.Get(SKColors.Red),
                 Border = new Border(1, new LineDash(new double[] { 5 })),
@@ -220,8 +209,7 @@ namespace PdfClown.Samples.CLI
             new Ellipse(
               page,
               SKRect.Create(50, 440, 100, 30),
-              "Text of the Ellipse annotation"
-              )
+              "Text of the Ellipse annotation")
             {
                 BorderEffect = new BorderEffect(BorderEffect.TypeEnum.Cloudy, 1),
                 FillColor = DeviceRGBColor.Get(SKColors.Cyan),

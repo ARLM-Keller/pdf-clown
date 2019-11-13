@@ -92,7 +92,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 PdfArray coordinatesObject = (PdfArray)BaseDataObject[PdfName.L];
                 return new SKPoint(
                   (float)((IPdfNumber)coordinatesObject[2]).RawValue,
-                  (float)((IPdfNumber)coordinatesObject[3]).RawValue
+                  (float)(Page.Box.Height - ((IPdfNumber)coordinatesObject[3]).RawValue)
                   );
             }
             set
@@ -191,7 +191,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 PdfArray coordinatesObject = (PdfArray)BaseDataObject[PdfName.L];
                 return new SKPoint(
                   (float)((IPdfNumber)coordinatesObject[0]).RawValue,
-                  (float)((IPdfNumber)coordinatesObject[1]).RawValue
+                  (float)(Page.Box.Height - ((IPdfNumber)coordinatesObject[1]).RawValue)
                   );
             }
             set
@@ -216,6 +216,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             set => EnsureLineEndStylesObject()[0] = value.GetName();
         }
+
+        public override bool ShowToolTip => !CaptionVisible;
         #endregion
 
         #region private
@@ -231,6 +233,27 @@ namespace PdfClown.Documents.Interaction.Annotations
                   );
             }
             return endStylesObject;
+        }
+
+        public override void Draw(SKCanvas canvas)
+        {
+            base.Draw(canvas);
+            var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
+            using (var paint = new SKPaint { Color = color })
+            {
+                Border?.Apply(paint, null);
+                canvas.DrawLine(StartPoint, EndPoint, paint);
+            }
+            if (CaptionVisible && !string.IsNullOrEmpty(Text))
+            {
+                using (var path = new SKPath())
+                using (var paint = new SKPaint { Color = color, TextSize = 10, IsAntialias = true })
+                {
+                    path.MoveTo(StartPoint);
+                    path.LineTo(EndPoint);
+                    canvas.DrawTextOnPath(Text, path, new SKPoint(10, -2), paint);
+                }
+            }
         }
         #endregion
         #endregion

@@ -81,6 +81,30 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             set => BaseDataObject[PdfName.IC] = PdfObjectWrapper.GetBaseObject(value);
         }
+
+        public void Draw(SKCanvas canvas, SKPath path)
+        {
+            if (FillColor != null)
+            {
+                var fillColor = FillColor.ColorSpace.GetColor(FillColor, Alpha);
+                using (var paint = new SKPaint { Color = fillColor, Style = SKPaintStyle.Fill })
+                {
+                    var cloudPath = BorderEffect?.Apply(paint, path) ?? path;
+                    canvas.DrawPath(cloudPath, paint);
+                    if (cloudPath != path)
+                        cloudPath.Dispose();
+                }
+            }
+            if (Border != null)
+            {
+                var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
+                using (var paint = new SKPaint { Color = color })
+                {
+                    Border?.Apply(paint, BorderEffect);
+                    canvas.DrawPath(path, paint);
+                }
+            }
+        }
         #endregion
         #endregion
         #endregion

@@ -12,11 +12,9 @@ namespace PdfClown.Samples.CLI
       <remarks>Note: printing is currently in pre-alpha stage; therefore this sample is
       nothing but an initial stub (no assumption to work!).</remarks>
     */
-    public class PrintingSample
-      : Sample
+    public class PrintingSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");

@@ -39,26 +39,22 @@ namespace PdfClown.Documents.Interaction.Annotations
       <summary>Freehand "scribble" composed of one or more disjoint paths [PDF:1.6:8.4.5].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class Scribble
-      : Markup
+    public sealed class Scribble : Markup
     {
+        private IList<SKPath> paths;
         #region dynamic
         #region constructors
-        public Scribble(
-          Page page,
-          IList<IList<SKPoint>> paths,
-          string text,
-          DeviceColor color
-          ) : base(page, PdfName.Ink, new SKRect(), text)
+        public Scribble(Page page, IList<SKPath> paths, string text, DeviceColor color)
+            : base(page, PdfName.Ink, new SKRect(), text)
         {
             Paths = paths;
             Color = color;
         }
 
-        internal Scribble(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
-        { }
+        internal Scribble(PdfDirectObject baseObject) : base(baseObject)
+        {
+            paths = new List<SKPath>();
+        }
         #endregion
 
         #region interface
@@ -66,35 +62,37 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets/Sets the coordinates of each path.</summary>
         */
-        public IList<IList<SKPoint>> Paths
+        public IList<SKPath> Paths
         {
             get
             {
+                if (paths.Count > 0)
+                    return paths;
                 PdfArray pathsObject = (PdfArray)BaseDataObject[PdfName.InkList];
-                IList<IList<SKPoint>> paths = new List<IList<SKPoint>>();
                 double pageHeight = Page.Box.Height;
-                for (
-                  int pathIndex = 0,
-                    pathLength = pathsObject.Count;
-                  pathIndex < pathLength;
-                  pathIndex++
-                  )
+                for (int pathIndex = 0, pathLength = pathsObject.Count; pathIndex < pathLength; pathIndex++)
                 {
-                    PdfArray pathObject = (PdfArray)pathsObject[pathIndex];
-                    IList<SKPoint> path = new List<SKPoint>();
-                    for (
-                      int pointIndex = 0,
-                        pointLength = pathObject.Count;
-                      pointIndex < pointLength;
-                      pointIndex += 2
-                      )
+                    var pathObject = (PdfArray)pathsObject[pathIndex];
+                    var path = new SKPath();
+                    var pointLength = pathObject.Count;
+                    for (int pointIndex = 0; pointIndex < pointLength; pointIndex += 2)
                     {
-                        path.Add(
-                          new SKPoint(
-                            (float)((IPdfNumber)pathObject[pointIndex]).RawValue,
-                            (float)(pageHeight - ((IPdfNumber)pathObject[pointIndex + 1]).RawValue)
-                            )
-                          );
+                        var point = GetPoint(pageHeight, pathObject, pointIndex);
+                        if (path.IsEmpty)
+                        {
+                            path.MoveTo(point);
+                        }
+                        else
+                        {
+                            if (pointIndex + 2 < pointLength)
+                            {
+                                path.CubicTo(path[path.PointCount - 1], GetPoint(pageHeight, pathObject, pointIndex + 2), point);
+                            }
+                            else
+                            {
+                                path.LineTo(point);
+                            }
+                        }
                     }
                     paths.Add(path);
                 }
@@ -103,13 +101,14 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             set
             {
+                paths = value;
                 PdfArray pathsObject = new PdfArray();
                 double pageHeight = Page.Box.Height;
                 SKRect? box = null;
-                foreach (IList<SKPoint> path in value)
+                foreach (var path in value)
                 {
                     PdfArray pathObject = new PdfArray();
-                    foreach (SKPoint point in path)
+                    foreach (SKPoint point in path.Points)
                     {
                         if (!box.HasValue)
                         { box = SKRect.Create(point.X, point.Y, 0, 0); }
@@ -122,6 +121,27 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
                 Box = box.Value;
                 BaseDataObject[PdfName.InkList] = pathsObject;
+
+            }
+        }
+
+        private static SKPoint GetPoint(double pageHeight, PdfArray pathObject, int pointIndex)
+        {
+            return new SKPoint((float)((IPdfNumber)pathObject[pointIndex]).RawValue,
+                                        (float)(pageHeight - ((IPdfNumber)pathObject[pointIndex + 1]).RawValue));
+        }
+
+        public override void Draw(SKCanvas canvas)
+        {
+            base.Draw(canvas);
+            var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
+            using (var paint = new SKPaint { Color = color })
+            {
+                Border?.Apply(paint, null);
+                foreach (var pathData in Paths)
+                {
+                    canvas.DrawPath(pathData, paint);
+                }
             }
         }
         #endregion

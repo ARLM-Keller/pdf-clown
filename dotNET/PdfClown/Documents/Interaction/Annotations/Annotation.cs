@@ -255,7 +255,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF11)]
         public virtual Border Border
         {
-            get => Border.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.BS));
+            get => Wrap<Border>(BaseDataObject.Get<PdfDictionary>(PdfName.BS));
             set
             {
                 BaseDataObject[PdfName.BS] = PdfObjectWrapper.GetBaseObject(value);
@@ -433,6 +433,9 @@ namespace PdfClown.Documents.Interaction.Annotations
                 OnPropertyChanged();
             }
         }
+
+        public virtual bool ShowToolTip => true;
+
         #endregion
         #endregion
 

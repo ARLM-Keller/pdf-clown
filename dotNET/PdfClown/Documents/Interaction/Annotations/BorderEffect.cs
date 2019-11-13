@@ -27,7 +27,7 @@ using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Objects;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 
@@ -75,7 +75,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 [TypeEnum.Cloudy] = PdfName.C
             };
         }
-        #endregion        
+        #endregion
 
         #region interface
         #region private
@@ -157,6 +157,50 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => ToTypeEnum((PdfName)BaseDataObject[PdfName.S]);
             set => BaseDataObject[PdfName.S] = value != DefaultType ? ToCode(value) : null;
         }
+
+        public SKPath Apply(SKPaint paint, SKPath targetPath = null)
+        {
+            if (Type == TypeEnum.Cloudy)
+            {
+                var intensity = (float)Intensity;
+                const int r = 5;
+                var clode = new SKRect(-r * intensity, -r * intensity, (r * 1.4F) * intensity, (r * 1.4F) * intensity);
+
+                if (paint.IsStroke)
+                {
+                    using (var path = new SKPath())
+                    {
+                        var clode2 = clode;
+                        clode2.Inflate(-1, -1);
+                        path.AddArc(clode, 30, -175);
+                        path.ArcTo(clode2, -155, 175, false);
+                        path.Close();
+
+                        paint.PathEffect = SKPathEffect.Create1DPath(path, intensity * (r * 1.4F), intensity, SKPath1DPathEffectStyle.Rotate);
+                    }
+                }
+                else 
+                {
+                    using (var path = new SKPath())
+                    {
+                        path.AddOval(clode);
+                        paint.PathEffect = SKPathEffect.Create1DPath(path, intensity * (r * 1.4F), intensity, SKPath1DPathEffectStyle.Rotate);
+                    }
+
+                    if (targetPath != null)
+                    {
+                        var dest = paint.GetFillPath(targetPath, 1);
+                        paint.PathEffect = null;
+                        
+                        dest.FillType = SKPathFillType.Winding;
+                        dest = dest.Op(targetPath, SKPathOp.Union);
+                        return dest;
+                    }
+                }
+            }
+            return targetPath;
+        }
+
         #endregion
         #endregion
         #endregion

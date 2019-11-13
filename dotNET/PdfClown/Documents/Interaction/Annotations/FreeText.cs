@@ -49,7 +49,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public class CalloutLine : PdfObjectWrapper<PdfArray>
         {
-            private Page page;
+            internal Page page;
 
             public CalloutLine(Page page, SKPoint start, SKPoint end)
                 : this(page, start, null, end)
@@ -148,7 +148,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         #region fields
         private static readonly JustificationEnum DefaultJustification = JustificationEnum.Left;
         private static readonly LineEndStyleEnum DefaultLineEndStyle = LineEndStyleEnum.None;
-        private SKPath linePath;
         #endregion
         #endregion
 
@@ -286,11 +285,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var bounds = Box;
                 var box = Wrap<Objects.Rectangle>(BaseDataObject[PdfName.RD]) ?? new Objects.Rectangle(SKRect.Empty);
                 return new SKRect(
-                  (float)box.Left + bounds.Left,
-                  (float)box.Top + bounds.Top,
-                  bounds.Right - (float)box.Right,
-                  bounds.Bottom - (float)box.Bottom
-                  );
+                  (float)box.Right + bounds.Left,
+                  (float)box.Bottom + bounds.Top,
+                  bounds.Right - (float)box.Left,
+                  bounds.Bottom - (float)box.Top);
             }
             set
             {
@@ -301,6 +299,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public override bool ShowToolTip => false;
+
         public override void Draw(SKCanvas canvas)
         {
             var bounds = Box;
@@ -309,19 +309,18 @@ namespace PdfClown.Documents.Interaction.Annotations
 
             using (var paint = new SKPaint { Color = color, Style = SKPaintStyle.Fill })
             {
-                canvas.DrawRect(bounds, paint);
+                canvas.DrawRect(textBounds, paint);
             }
-
 
             using (var paint = new SKPaint())
             {
                 Border?.Apply(paint, BorderEffect);
-                canvas.DrawRect(bounds, paint);
+                canvas.DrawRect(textBounds, paint);
             }
 
             using (var paint = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.StrokeAndFill })
             {
-                var temp = SKRect.Create(0, 0, bounds.Width, 0);
+                var temp = SKRect.Create(0, 0, textBounds.Width, 0);
                 var left = textBounds.Left + 5;
                 var top = textBounds.Top + paint.FontSpacing;
                 foreach (var line in GetLines(Text.Trim(), textBounds, paint))
@@ -333,6 +332,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (Type == TypeEnum.Callout && Line != null)
             {
                 var line = Line;
+                line.page = Page;
                 using (var linePath = new SKPath())
                 using (var paint = new SKPaint { Style = SKPaintStyle.Stroke })
                 {

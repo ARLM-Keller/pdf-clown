@@ -37,8 +37,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       <remarks>It represents an ellipse to display on a page.</remarks>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class Ellipse
-      : Shape
+    public sealed class Ellipse : Shape
     {
         #region dynamic
         #region constructors
@@ -50,6 +49,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
 
         #region interface
+        public override void Draw(SKCanvas canvas)
+        {
+            using (var path = new SKPath())
+            {
+                path.AddOval(Box);
+                Draw(canvas, path);
+            }
+            
+        }
         #endregion
         #endregion
     }

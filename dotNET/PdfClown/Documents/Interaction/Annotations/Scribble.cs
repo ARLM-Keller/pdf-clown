@@ -84,14 +84,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         }
                         else
                         {
-                            if (pointIndex + 2 < pointLength)
-                            {
-                                path.CubicTo(path[path.PointCount - 1], GetPoint(pageHeight, pathObject, pointIndex + 2), point);
-                            }
-                            else
-                            {
-                                path.LineTo(point);
-                            }
+                            path.LineTo(point);
                         }
                     }
                     paths.Add(path);

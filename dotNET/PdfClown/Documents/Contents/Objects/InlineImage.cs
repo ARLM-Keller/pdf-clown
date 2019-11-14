@@ -108,7 +108,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public PdfArray Matte => null;
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             if (state.Scanner?.RenderContext != null)
             {
@@ -129,7 +129,7 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        public SKBitmap LoadImage(ContentScanner.GraphicsState state)
+        public SKBitmap LoadImage(GraphicsState state)
         {
             if (image != null)
                 return image;

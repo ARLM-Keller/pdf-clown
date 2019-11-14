@@ -1,5 +1,6 @@
 ﻿using PdfClown.Documents;
 using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Interaction.Annotations;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
@@ -62,7 +63,7 @@ namespace PdfClown.Viewer
                 picture = recorder.EndRecording();
                 Xamarin.Forms.Device.BeginInvokeOnMainThread(() => canvasView.InvalidateSurface());
             }
-            InitialMatrix = ContentScanner.GraphicsState.GetInitialMatrix(Size, Page);
+            InitialMatrix = GraphicsState.GetInitialMatrix(Size, Page);
         }
 
         public Page Page

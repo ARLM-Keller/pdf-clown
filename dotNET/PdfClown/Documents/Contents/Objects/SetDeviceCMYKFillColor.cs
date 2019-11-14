@@ -36,8 +36,7 @@ namespace PdfClown.Documents.Contents.Objects
       operation [PDF:1.6:4.5.7].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetDeviceCMYKFillColor
-      : SetFillColor
+    public sealed class SetDeviceCMYKFillColor : SetFillColor
     {
         #region static
         #region fields
@@ -47,22 +46,18 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region dynamic
         #region constructors
-        public SetDeviceCMYKFillColor(
-          DeviceCMYKColor value
-          ) : base(OperatorKeyword, value)
+        public SetDeviceCMYKFillColor(DeviceCMYKColor value)
+            : base(OperatorKeyword, value)
         { }
 
-        public SetDeviceCMYKFillColor(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetDeviceCMYKFillColor(IList<PdfDirectObject> operands)
+            : base(OperatorKeyword, operands)
         { }
         #endregion
 
         #region interface
         #region public
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(GraphicsState state)
         {
             state.FillColorSpace = DeviceCMYKColorSpace.Default;
             base.Scan(state);

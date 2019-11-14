@@ -42,6 +42,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Contents.Scanner;
 
 namespace PdfClown.Documents.Contents.Composition
 {
@@ -531,7 +532,7 @@ namespace PdfClown.Documents.Contents.Composition
         /**
           <summary>Gets the current graphics state [PDF:1.6:4.3].</summary>
         */
-        public ContentScanner.GraphicsState State => scanner.State;
+        public GraphicsState State => scanner.State;
 
         /**
           <summary>Applies a rotation to the coordinate system from user space to device space
@@ -801,7 +802,7 @@ namespace PdfClown.Documents.Contents.Composition
 
                 string[] textLines = value.Split('\n');
 
-                ContentScanner.GraphicsState state = State;
+                GraphicsState state = State;
                 fonts::Font font = state.Font;
                 double fontSize = state.FontSize;
                 double lineHeight = font.GetLineHeight(fontSize);

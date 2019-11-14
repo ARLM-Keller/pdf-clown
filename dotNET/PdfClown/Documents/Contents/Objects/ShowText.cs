@@ -30,6 +30,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Contents.Scanner;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -64,7 +65,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region interface
         #region public
-        public override void Scan(ContentScanner.GraphicsState state) { Scan(state, null); }
+        public override void Scan(GraphicsState state) { Scan(state, null); }
 
         /**
           <summary>Executes scanning on this operation.</summary>
@@ -72,7 +73,7 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="textScanner">Scanner to be notified about text contents.
           In case it's null, the operation is applied to the graphics state context.</param>
         */
-        public virtual void Scan(ContentScanner.GraphicsState state, IScanner textScanner)
+        public virtual void Scan(GraphicsState state, IScanner textScanner)
         {
             /*
               TODO: I really dislike this solution -- it's a temporary hack until the event-driven
@@ -100,11 +101,11 @@ namespace PdfClown.Documents.Contents.Objects
             var nameTypeface = font?.GetTypefaceByName();
 
             if (fill != null)
-            {                
+            {
                 fill.TextSize = (float)state.FontSize;
                 fill.TextScaleX = (float)state.Scale;
             }
-            
+
             var stroke = context != null && state.RenderModeStroke ? state.StrokeColorSpace?.GetPaint(state.StrokeColor, state.StrokeAlpha) : null;
             if (stroke != null)
             {

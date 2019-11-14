@@ -8,6 +8,7 @@ using PdfClown.Tools;
 
 using System;
 using SkiaSharp;
+using PdfClown.Documents.Contents.Scanner;
 
 namespace PdfClown.Samples.CLI
 {
@@ -65,10 +66,7 @@ namespace PdfClown.Samples.CLI
           NOTE: Page contents are represented by a sequence of content objects,
           possibly nested into multiple levels.
         */
-        private void Extract(
-          ContentScanner level,
-          PrimitiveComposer composer
-          )
+        private void Extract(ContentScanner level, PrimitiveComposer composer)
         {
             if (level == null)
                 return;
@@ -78,9 +76,9 @@ namespace PdfClown.Samples.CLI
                 ContentObject content = level.Current;
                 if (content is Text)
                 {
-                    ContentScanner.TextWrapper text = (ContentScanner.TextWrapper)level.CurrentWrapper;
+                    TextWrapper text = (TextWrapper)level.CurrentWrapper;
                     int colorIndex = 0;
-                    foreach (ContentScanner.TextStringWrapper textString in text.TextStrings)
+                    foreach (TextStringWrapper textString in text.TextStrings)
                     {
                         SKRect textStringBox = textString.Box.Value;
                         Console.WriteLine(

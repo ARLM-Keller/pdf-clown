@@ -55,7 +55,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region interface
         #region public
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             var tlm = state.Tlm;
             SKMatrix.PreConcat(ref tlm, new SKMatrix { Values = new[] { 1, 0, 0, 0, 1, (float)-state.Lead, 0, 0, 1 } });

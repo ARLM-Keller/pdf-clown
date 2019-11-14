@@ -62,7 +62,7 @@ namespace PdfClown.Documents.Contents.Objects
             set => Operation.Name = value;
         }
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             var shading = GetResource(state.Scanner.ContentContext);
             base.Scan(state);

@@ -34,9 +34,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Set the specified graphics state parameters' operation [PDF:1.6:4.3.3].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class ApplyExtGState
-      : Operation,
-        IResourceReference<ExtGState>
+    public sealed class ApplyExtGState : Operation, IResourceReference<ExtGState>
     {
         #region static
         #region fields
@@ -63,7 +61,7 @@ namespace PdfClown.Documents.Contents.Objects
         public ExtGState GetExtGState(IContentContext context)
         { return GetResource(context); }
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             ExtGState extGState = GetExtGState(state.Scanner.ContentContext);
             extGState.ApplyTo(state);

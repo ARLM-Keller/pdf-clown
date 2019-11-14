@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Contents.Objects
             set => operands[3] = PdfReal.Get(value);
         }
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             var pathObject = state.Scanner.RenderObject;
             if (pathObject != null)

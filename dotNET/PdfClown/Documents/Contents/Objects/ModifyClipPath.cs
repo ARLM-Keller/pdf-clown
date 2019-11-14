@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
@@ -74,7 +73,7 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public WindModeEnum ClipMode => clipMode;
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
             var pathObject = scanner.RenderObject;

@@ -83,7 +83,7 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public IList<ContentObject> Objects => objects;
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             ContentScanner childLevel = state.Scanner.ChildLevel;
 
@@ -119,7 +119,7 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="state">Graphics state.</param>
           <returns>Whether the rendering has been executed.</returns>
          */
-        protected bool Render(ContentScanner.GraphicsState state)
+        protected bool Render(GraphicsState state)
         {
             var scanner = state.Scanner;
             var context = scanner.RenderContext;

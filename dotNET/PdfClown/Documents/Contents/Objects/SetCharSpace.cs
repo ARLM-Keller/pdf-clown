@@ -34,8 +34,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Set the character spacing' operation [PDF:1.6:5.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetCharSpace
-      : Operation
+    public sealed class SetCharSpace : Operation
     {
         #region static
         #region fields
@@ -45,9 +44,8 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region dynamic
         #region constructors
-        public SetCharSpace(
-          double value
-          ) : base(
+        public SetCharSpace(double value)
+            : base(
             OperatorKeyword,
             new List<PdfDirectObject>(
               new PdfDirectObject[] { PdfReal.Get(value) }
@@ -55,17 +53,14 @@ namespace PdfClown.Documents.Contents.Objects
             )
         { }
 
-        public SetCharSpace(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetCharSpace(IList<PdfDirectObject> operands)
+            : base(OperatorKeyword, operands)
         { }
         #endregion
 
         #region interface
         #region public
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(GraphicsState state)
         { state.CharSpace = Value; }
 
         public double Value

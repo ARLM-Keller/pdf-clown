@@ -34,8 +34,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Set the line width' operation [PDF:1.6:4.3.3].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetLineWidth
-      : Operation
+    public sealed class SetLineWidth : Operation
     {
         #region static
         #region fields
@@ -54,7 +53,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region interface
         #region public
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         { state.LineWidth = Value; }
 
         public double Value

@@ -1,4 +1,5 @@
 ﻿using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
 using SkiaSharp;
 
@@ -17,6 +18,6 @@ namespace PdfClown.Documents.Contents
         PdfArray Matte { get; }
         PdfDirectObject Header { get; }
         PdfArray Decode { get; }
-        SKBitmap LoadImage(ContentScanner.GraphicsState state);
+        SKBitmap LoadImage(GraphicsState state);
     }
 }

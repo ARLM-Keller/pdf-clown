@@ -170,7 +170,7 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public void Render(SKCanvas context, SKSize size)
         {
-            ContentScanner scanner = new ContentScanner(Contents);
+            ContentScanner scanner = new ContentScanner(this, context, size);
             scanner.Render(context, size);
         }
 

@@ -36,8 +36,7 @@ namespace PdfClown.Documents.Contents.Objects
       operation [PDF:1.6:4.5.7].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetDeviceRGBFillColor
-      : SetFillColor
+    public sealed class SetDeviceRGBFillColor : SetFillColor
     {
         #region static
         #region fields
@@ -60,9 +59,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region interface
         #region public
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(GraphicsState state)
         {
             state.FillColorSpace = DeviceRGBColorSpace.Default;
             base.Scan(state);

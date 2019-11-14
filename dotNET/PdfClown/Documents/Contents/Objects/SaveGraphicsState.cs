@@ -50,7 +50,7 @@ namespace PdfClown.Documents.Contents.Objects
         private SaveGraphicsState() : base(OperatorKeyword)
         { }
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             state?.Scanner?.RenderContext?.Save();
         }

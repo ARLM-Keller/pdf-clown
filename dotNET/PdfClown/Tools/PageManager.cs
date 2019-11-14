@@ -100,11 +100,7 @@ namespace PdfClown.Tools
             During the operation, this set is populated with references to visited data objects.</param>
           <param name="isRoot">Whether this data object represents the page root.</param>
         */
-        private static long GetSize(
-          PdfDirectObject obj,
-          HashSet<PdfReference> visitedReferences,
-          bool isRoot
-          )
+        private static long GetSize(PdfDirectObject obj, HashSet<PdfReference> visitedReferences, bool isRoot)
         {
             long dataSize = 0;
             {
@@ -171,7 +167,7 @@ namespace PdfClown.Tools
                 }
                 else
                 {
-                    ContentScanner.GraphicsObjectWrapper contentWrapper = level.CurrentWrapper;
+                    var contentWrapper = level.CurrentWrapper;
                     if (contentWrapper == null)
                         continue;
 

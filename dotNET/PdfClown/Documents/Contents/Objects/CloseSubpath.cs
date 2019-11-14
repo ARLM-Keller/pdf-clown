@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
@@ -53,7 +52,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region interface
         #region public
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             var pathObject = state.Scanner.RenderObject;
             if (pathObject != null)

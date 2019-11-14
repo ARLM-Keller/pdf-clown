@@ -34,8 +34,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Set the line cap style' operation [PDF:1.6:4.3.3].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetLineCap
-      : Operation
+    public sealed class SetLineCap : Operation
     {
         #region static
         #region fields
@@ -45,22 +44,18 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region dynamic
         #region constructors
-        public SetLineCap(
-          LineCapEnum value
-          ) : base(OperatorKeyword, PdfInteger.Get((int)value))
+        public SetLineCap(LineCapEnum value)
+            : base(OperatorKeyword, PdfInteger.Get((int)value))
         { }
 
-        public SetLineCap(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetLineCap(IList<PdfDirectObject> operands)
+            : base(OperatorKeyword, operands)
         { }
         #endregion
 
         #region interface
         #region public
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(GraphicsState state)
         { state.LineCap = Value; }
 
         public LineCapEnum Value

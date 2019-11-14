@@ -92,7 +92,7 @@ namespace PdfClown.Samples.CLI
                 {
                     float[] initialCtmValues, finalCtmValues;
                     {
-                        ContentScanner.GraphicsState state = composer.Scanner.State;
+                        var state = composer.Scanner.State;
                         initialCtmValues = state.GetInitialCtm().Values;
                         finalCtmValues = state.Ctm.Values;
                     }

@@ -89,7 +89,7 @@ namespace PdfClown.Documents.Contents.Objects
             set => operands[1] = PdfReal.Get(value);
         }
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             var tlm = state.Tlm;
             SKMatrix.PreConcat(ref tlm, new SKMatrix { Values = new float[] { 1, 0, (float)OffsetX, 0, 1, (float)OffsetY, 0, 0, 1 } });

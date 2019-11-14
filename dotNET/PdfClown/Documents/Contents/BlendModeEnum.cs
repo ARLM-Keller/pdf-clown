@@ -69,6 +69,10 @@ namespace PdfClown.Documents.Contents
         */
         ColorBurn,
         /**
+          <summary>Shuld Not be used.</summary>
+        */
+        Compatible,
+        /**
           <summary>Multiply or screen the colors, depending on the source color value.</summary>
         */
         HardLight,
@@ -112,33 +116,32 @@ namespace PdfClown.Documents.Contents
 
         static BlendModeEnumExtension()
         {
-            codes = new BiDictionary<BlendModeEnum?, PdfName>();
-            codes[BlendModeEnum.Normal] = PdfName.Normal;
-            codes[BlendModeEnum.Multiply] = PdfName.Multiply;
-            codes[BlendModeEnum.Screen] = PdfName.Screen;
-            codes[BlendModeEnum.Overlay] = PdfName.Overlay;
-            codes[BlendModeEnum.Darken] = PdfName.Darken;
-            codes[BlendModeEnum.Lighten] = PdfName.Lighten;
-            codes[BlendModeEnum.ColorDodge] = PdfName.ColorDodge;
-            codes[BlendModeEnum.ColorBurn] = PdfName.ColorBurn;
-            codes[BlendModeEnum.HardLight] = PdfName.HardLight;
-            codes[BlendModeEnum.SoftLight] = PdfName.SoftLight;
-            codes[BlendModeEnum.Difference] = PdfName.Difference;
-            codes[BlendModeEnum.Exclusion] = PdfName.Exclusion;
-            codes[BlendModeEnum.Hue] = PdfName.Hue;
-            codes[BlendModeEnum.Saturation] = PdfName.Saturation;
-            codes[BlendModeEnum.Color] = PdfName.Color;
-            codes[BlendModeEnum.Luminosity] = PdfName.Luminosity;
+            codes = new BiDictionary<BlendModeEnum?, PdfName>
+            {
+                [BlendModeEnum.Normal] = PdfName.Normal,
+                [BlendModeEnum.Multiply] = PdfName.Multiply,
+                [BlendModeEnum.Screen] = PdfName.Screen,
+                [BlendModeEnum.Overlay] = PdfName.Overlay,
+                [BlendModeEnum.Darken] = PdfName.Darken,
+                [BlendModeEnum.Lighten] = PdfName.Lighten,
+                [BlendModeEnum.ColorDodge] = PdfName.ColorDodge,
+                [BlendModeEnum.ColorBurn] = PdfName.ColorBurn,
+                [BlendModeEnum.Compatible] = PdfName.Compatible,
+                [BlendModeEnum.HardLight] = PdfName.HardLight,
+                [BlendModeEnum.SoftLight] = PdfName.SoftLight,
+                [BlendModeEnum.Difference] = PdfName.Difference,
+                [BlendModeEnum.Exclusion] = PdfName.Exclusion,
+                [BlendModeEnum.Hue] = PdfName.Hue,
+                [BlendModeEnum.Saturation] = PdfName.Saturation,
+                [BlendModeEnum.Color] = PdfName.Color,
+                [BlendModeEnum.Luminosity] = PdfName.Luminosity
+            };
         }
 
-        public static BlendModeEnum? Get(
-          PdfName name
-          )
+        public static BlendModeEnum? Get(PdfName name)
         { return codes.GetKey(name); }
 
-        public static PdfName GetName(
-          this BlendModeEnum blendMode
-          )
+        public static PdfName GetName(this BlendModeEnum blendMode)
         { return codes[blendMode]; }
     }
 }

@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Contents.Objects
           graphics state.</summary>
           <param name="state">Graphics state.</param>
         */
-        public virtual void Scan(ContentScanner.GraphicsState state)
+        public virtual void Scan(GraphicsState state)
         {/* Do nothing by default. */}
 
         /**

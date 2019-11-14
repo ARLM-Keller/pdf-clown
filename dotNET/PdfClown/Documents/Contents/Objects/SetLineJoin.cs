@@ -34,8 +34,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Set the line join style' operation [PDF:1.6:4.3.3].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetLineJoin
-      : Operation
+    public sealed class SetLineJoin : Operation
     {
         #region static
         #region fields
@@ -58,9 +57,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region interface
         #region public
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(GraphicsState state)
         { state.LineJoin = Value; }
 
         public LineJoinEnum Value

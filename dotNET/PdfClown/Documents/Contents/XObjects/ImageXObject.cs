@@ -118,7 +118,7 @@ namespace PdfClown.Documents.Contents.XObjects
             set => throw new NotSupportedException();
         }
 
-        public SKBitmap LoadImage(ContentScanner.GraphicsState state)
+        public SKBitmap LoadImage(GraphicsState state)
         {
             if (Document.Cache.TryGetValue((PdfReference)BaseObject, out var existingBitmap))
             {

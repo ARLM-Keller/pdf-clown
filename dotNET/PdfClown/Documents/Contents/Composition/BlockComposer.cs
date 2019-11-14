@@ -371,14 +371,14 @@ namespace PdfClown.Documents.Contents.Composition
             if (text == null || !EnsureRow(true))
                 return 0;
 
-            ContentScanner.GraphicsState state = baseComposer.State;
-            fonts::Font font = state.Font;
+            var state = baseComposer.State;
+            var font = state.Font;
             double fontSize = state.FontSize;
             double lineHeight = font.GetLineHeight(fontSize);
             double baseLine = font.GetAscent(fontSize);
             lineAlignment = ResolveLineAlignment(lineAlignment);
 
-            TextFitter textFitter = new TextFitter(text, 0, font, fontSize, hyphenation, hyphenationCharacter);
+            var textFitter = new TextFitter(text, 0, font, fontSize, hyphenation, hyphenationCharacter);
             int textLength = text.Length;
             int index = 0;
 
@@ -595,7 +595,7 @@ namespace PdfClown.Documents.Contents.Composition
         {
             rowEnded = false;
 
-            ContentScanner.GraphicsState state = baseComposer.State;
+            GraphicsState state = baseComposer.State;
 
             double rowY = boundBox.Height;
             if (rowY > 0)

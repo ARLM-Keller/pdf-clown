@@ -25,6 +25,7 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
 
 using System.Collections.Generic;
@@ -36,8 +37,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Set the color to use for stroking operations' operation [PDF:1.6:4.5.7].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public class SetStrokeColor
-      : Operation
+    public class SetStrokeColor : Operation
     {
         #region static
         #region fields
@@ -57,36 +57,28 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region dynamic
         #region constructors
-        public SetStrokeColor(
-          Color value
-          ) : this(ExtendedOperatorKeyword, value)
+        public SetStrokeColor(Color value)
+            : this(ExtendedOperatorKeyword, value)
         { }
 
-        public SetStrokeColor(
-          IList<PdfDirectObject> operands
-          ) : this(ExtendedOperatorKeyword, operands)
+        public SetStrokeColor(IList<PdfDirectObject> operands)
+            : this(ExtendedOperatorKeyword, operands)
         { }
 
-        public SetStrokeColor(
-          string @operator,
-          IList<PdfDirectObject> operands
-          ) : base(@operator, operands)
+        public SetStrokeColor(string @operator, IList<PdfDirectObject> operands)
+            : base(@operator, operands)
         { }
 
-        protected SetStrokeColor(
-          string @operator,
-          Color value
-          ) : base(@operator, new List<PdfDirectObject>(value.Components))
+        protected SetStrokeColor(string @operator, Color value)
+            : base(@operator, new List<PdfDirectObject>(value.Components))
         { }
 
         /**
           <param name="operator">Graphics operator.</param>
           <param name="name">Name of the color resource entry (see <see cref="Pattern"/>).</param>
          */
-        protected SetStrokeColor(
-          string @operator,
-          PdfName name
-          ) : this(@operator, name, null)
+        protected SetStrokeColor(string @operator, PdfName name)
+            : this(@operator, name, null)
         { }
 
         /**
@@ -94,11 +86,8 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="name">Name of the color resource entry (see <see cref="Pattern"/>).</param>
           <param name="underlyingColor">Color used to colorize the pattern.</param>
          */
-        protected SetStrokeColor(
-          string @operator,
-          PdfName name,
-          Color underlyingColor
-          ) : base(@operator, new List<PdfDirectObject>())
+        protected SetStrokeColor(string @operator, PdfName name, Color underlyingColor)
+            : base(@operator, new List<PdfDirectObject>())
         {
             if (underlyingColor != null)
             {
@@ -113,7 +102,7 @@ namespace PdfClown.Documents.Contents.Objects
         #region public
         public IList<PdfDirectObject> Components => operands;
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             state.StrokeColor = state.StrokeColorSpace.GetColor(operands, state.Scanner.ContentContext);
         }

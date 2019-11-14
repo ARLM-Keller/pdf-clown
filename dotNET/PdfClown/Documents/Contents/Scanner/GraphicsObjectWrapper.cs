@@ -1,5 +1,5 @@
-/*
-  Copyright 2007-2012 Stefano Chizzolini. http://www.pdfclown.org
+﻿/*
+  Copyright 2007-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,49 +23,42 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Objects;
+using PdfClown.Documents.Contents.Objects;
+using SkiaSharp;
 
-using System.Collections.Generic;
-
-namespace PdfClown.Documents.Contents.Objects
+namespace PdfClown.Documents.Contents.Scanner
 {
-    /**
-      <summary>'Set the miter limit' operation [PDF:1.6:4.3.3].</summary>
-    */
-    [PDF(VersionEnum.PDF10)]
-    public sealed class SetMiterLimit
-      : Operation
+
+    public abstract class GraphicsObjectWrapper
     {
         #region static
-        #region fields
-        public static readonly string OperatorKeyword = "M";
-        #endregion
+        internal static GraphicsObjectWrapper Get(ContentScanner scanner)
+        {
+            var obj = scanner.Current;
+            if (obj is ShowText)
+                return new TextStringWrapper(scanner);
+            else if (obj is Text)
+                return new TextWrapper(scanner);
+            else if (obj is XObject)
+                return new XObjectWrapper(scanner);
+            else if (obj is InlineImage)
+                return new InlineImageWrapper(scanner);
+            else
+                return null;
+        }
         #endregion
 
         #region dynamic
-        #region constructors
-        public SetMiterLimit(
-          double value
-          ) : base(OperatorKeyword, PdfReal.Get(value))
-        { }
-
-        public SetMiterLimit(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
-        { }
+        #region fields
+        protected SKRect? box;
         #endregion
 
         #region interface
         #region public
-        public override void Scan(GraphicsState state)
-        { state.MiterLimit = Value; }
-
-        public double Value
-        {
-            get => ((IPdfNumber)operands[0]).RawValue;
-            set => operands[0] = PdfReal.Get(value);
-        }
+        /**
+          <summary>Gets the object's bounding box.</summary>
+        */
+        public virtual SKRect? Box => box;
         #endregion
         #endregion
         #endregion

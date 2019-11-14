@@ -74,7 +74,7 @@ namespace PdfClown.Documents.Contents.Objects
             set => operands[0] = value;
         }
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
 

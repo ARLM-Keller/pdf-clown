@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Contents.Objects
         public ColorSpace GetColorSpace(IContentContext context)
         { return GetResource(context); }
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             // 1. Color space.
             state.FillColorSpace = GetColorSpace(state.Scanner.ContentContext);

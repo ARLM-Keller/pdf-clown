@@ -88,7 +88,7 @@ namespace PdfClown.Documents.Contents.Objects
             set => operands[0] = value;
         }
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
             var canvas = scanner.RenderContext;
@@ -105,20 +105,21 @@ namespace PdfClown.Documents.Contents.Objects
                     imageMatrix.ScaleY *= -1;
                     SKMatrix.PreConcat(ref imageMatrix, SKMatrix.MakeTranslation(0, -size.Height));
                     canvas.Concat(ref imageMatrix);
+                    canvas.DrawBitmap(image, 0, 0, ImagePaint);
                     //using (var surf = SKSurface.Create(canvas.GRContext, true, new SKImageInfo(image.Width, image.Height)))
                     //{
                     //    surf.Canvas.DrawBitmap(original, 0, 0);
                     //    surf.Canvas.Flush();
                     //    intermediates[i] = surf.Snapshot();
                     //}
-                    canvas.DrawBitmap(image, 0, 0, ImagePaint);
+
                 }
             }
             else if (xObject is xObjects.FormXObject formObject)
             {
                 // Scan the external level!
                 var xScanner = new ContentScanner(formObject, scanner);
-                xScanner.RenderContext = scanner.RenderContext;
+
                 while (xScanner.MoveNext()) ;
             }
         }

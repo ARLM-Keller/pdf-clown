@@ -25,6 +25,7 @@
 
 using PdfClown.Documents;
 using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
 
 using System;
@@ -67,7 +68,7 @@ namespace PdfClown.Documents.Contents
             set => BaseDataObject[PdfName.AIS] = PdfBoolean.Get(value);
         }
 
-        public void ApplyTo(ContentScanner.GraphicsState state)
+        public void ApplyTo(GraphicsState state)
         {
             foreach (PdfName parameterName in BaseDataObject.Keys)
             {
@@ -118,8 +119,8 @@ namespace PdfClown.Documents.Contents
                     return DefaultBlendMode;
 
                 IList<BlendModeEnum> blendMode = new List<BlendModeEnum>();
-                if (blendModeObject is PdfName)
-                { blendMode.Add(BlendModeEnumExtension.Get((PdfName)blendModeObject).Value); }
+                if (blendModeObject is PdfName name)
+                { blendMode.Add(BlendModeEnumExtension.Get(name).Value); }
                 else // MUST be an array.
                 {
                     foreach (PdfDirectObject alternateBlendModeObject in (PdfArray)blendModeObject)

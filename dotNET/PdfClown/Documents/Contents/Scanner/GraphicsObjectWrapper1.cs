@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright 2007-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
@@ -23,56 +23,38 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents.Contents.Scanner;
-using PdfClown.Objects;
+using PdfClown.Documents.Contents.Objects;
 
-using System.Collections.Generic;
-
-namespace PdfClown.Documents.Contents.Objects
+namespace PdfClown.Documents.Contents.Scanner
 {
+
     /**
-      <summary>'Set the line dash pattern' operation [PDF:1.6:4.3.3].</summary>
+      <summary>Object information.</summary>
+      <remarks>
+        <para>This class provides derivative (higher-level) information
+        about the currently scanned object.</para>
+      </remarks>
     */
-    [PDF(VersionEnum.PDF10)]
-    public sealed class SetLineDash : Operation
+    public abstract class GraphicsObjectWrapper<TDataObject> : GraphicsObjectWrapper where TDataObject : ContentObject
     {
-        #region static
-        #region fields
-        public static readonly string OperatorKeyword = "d";
-        #endregion
-        #endregion
-
         #region dynamic
-        #region constructors
-        public SetLineDash(LineDash lineDash) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
-        { Value = lineDash; }
+        #region fields
+        private TDataObject baseDataObject;
+        #endregion
 
-        public SetLineDash(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
-        { }
+        #region constructors
+        protected GraphicsObjectWrapper(TDataObject baseDataObject)
+        {
+            this.baseDataObject = baseDataObject;
+        }
         #endregion
 
         #region interface
         #region public
-        public override void Scan(GraphicsState state)
-        { state.LineDash = Value; }
-
-        public LineDash Value
-        {
-            get => LineDash.Get((PdfArray)operands[0], (IPdfNumber)operands[1]);
-            set
-            {
-                operands.Clear();
-                // 1. Dash array.
-                double[] dashArray = value.DashArray;
-                PdfArray baseDashArray = new PdfArray(dashArray.Length);
-                foreach (double dashItem in dashArray)
-                { baseDashArray.Add(PdfReal.Get(dashItem)); }
-                operands.Add(baseDashArray);
-                // 2. Dash phase.
-                operands.Add(PdfReal.Get(value.DashPhase));
-            }
-        }
+        /**
+          <summary>Gets the underlying data object.</summary>
+        */
+        public TDataObject BaseDataObject => baseDataObject;
         #endregion
         #endregion
         #endregion

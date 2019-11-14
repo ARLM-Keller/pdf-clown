@@ -94,7 +94,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region interface
         #region private
-        private static SKPaint GetStroke(ContentScanner.GraphicsState state)
+        private static SKPaint GetStroke(GraphicsState state)
         {
             var stroke = state.StrokeColorSpace.GetPaint(state.StrokeColor, state.StrokeAlpha);
             stroke.Style = SKPaintStyle.Stroke;
@@ -147,7 +147,7 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public bool Filled => filled;
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
             var pathObject = scanner.RenderObject;

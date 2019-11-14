@@ -36,8 +36,7 @@ namespace PdfClown.Documents.Contents.Objects
       operation [PDF:1.6:4.3.3].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class ModifyCTM
-      : Operation
+    public sealed class ModifyCTM : Operation
     {
         #region static
         #region fields
@@ -46,7 +45,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region interface
         #region public
-        public static ModifyCTM GetResetCTM(ContentScanner.GraphicsState state)
+        public static ModifyCTM GetResetCTM(GraphicsState state)
         {
             state.Ctm.TryInvert(out var inverseCtm);
             return new ModifyCTM(
@@ -95,7 +94,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region interface
         #region public
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             var ctm = state.Ctm;
             SKMatrix.PreConcat(ref ctm, Value);
@@ -105,7 +104,7 @@ namespace PdfClown.Documents.Contents.Objects
             {
                 //var matrix = context.TotalMatrix;
                 //SKMatrix.PreConcat(ref matrix, ctm);
-                context.SetMatrix( state.Ctm);
+                context.SetMatrix(state.Ctm);
             }
         }
 

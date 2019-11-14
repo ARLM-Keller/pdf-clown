@@ -32,6 +32,7 @@ using System.Collections;
 using System.Collections.Generic;
 using SkiaSharp;
 using System.Text;
+using PdfClown.Documents.Contents.Scanner;
 
 namespace PdfClown.Tools
 {
@@ -314,7 +315,7 @@ namespace PdfClown.Tools
                 List<ITextString> textStrings = new List<ITextString>();
                 {
                     // 1. Extract the source text strings!
-                    List<ContentScanner.TextStringWrapper> rawTextStrings = new List<ContentScanner.TextStringWrapper>();
+                    List<TextStringWrapper> rawTextStrings = new List<TextStringWrapper>();
                     Extract(new ContentScanner(contentContext), rawTextStrings);
 
                     // 2. Sort the target text strings!
@@ -322,7 +323,7 @@ namespace PdfClown.Tools
                     { Sort(rawTextStrings, textStrings); }
                     else
                     {
-                        foreach (ContentScanner.TextStringWrapper rawTextString in rawTextStrings)
+                        foreach (TextStringWrapper rawTextString in rawTextStrings)
                         { textStrings.Add(rawTextString); }
                     }
                 }
@@ -515,7 +516,7 @@ namespace PdfClown.Tools
         /**
           <summary>Scans a content level looking for text.</summary>
 */
-        private void Extract(ContentScanner level, IList<ContentScanner.TextStringWrapper> extractedTextStrings)
+        private void Extract(ContentScanner level, IList<TextStringWrapper> extractedTextStrings)
         {
             if (level == null)
                 return;
@@ -526,7 +527,7 @@ namespace PdfClown.Tools
                 if (content is Text)
                 {
                     // Collect the text strings!
-                    foreach (ContentScanner.TextStringWrapper textString in ((ContentScanner.TextWrapper)level.CurrentWrapper).TextStrings)
+                    foreach (TextStringWrapper textString in ((TextWrapper)level.CurrentWrapper).TextStrings)
                     {
                         if (textString.TextChars.Count > 0)
                         { extractedTextStrings.Add(textString); }
@@ -557,11 +558,11 @@ namespace PdfClown.Tools
           <param name="rawTextStrings">Source (lower-level) text strings.</param>
           <param name="textStrings">Target (higher-level) text strings.</param>
 */
-        private void Sort(List<ContentScanner.TextStringWrapper> rawTextStrings, List<ITextString> textStrings)
+        private void Sort(List<TextStringWrapper> rawTextStrings, List<ITextString> textStrings)
         {
             // Sorting the source text strings...
             {
-                TextStringPositionComparer<ContentScanner.TextStringWrapper> positionComparator = new TextStringPositionComparer<ContentScanner.TextStringWrapper>();
+                TextStringPositionComparer<TextStringWrapper> positionComparator = new TextStringPositionComparer<TextStringWrapper>();
                 rawTextStrings.Sort(positionComparator);
             }
 
@@ -570,7 +571,7 @@ namespace PdfClown.Tools
             TextStyle textStyle = null;
             TextChar previousTextChar = null;
             bool dehyphenating = false;
-            foreach (ContentScanner.TextStringWrapper rawTextString in rawTextStrings)
+            foreach (TextStringWrapper rawTextString in rawTextStrings)
             {
                 /*
                   NOTE: Contents on the same line are grouped together within the same text string.

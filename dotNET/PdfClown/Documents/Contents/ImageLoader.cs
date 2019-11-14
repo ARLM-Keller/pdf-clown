@@ -2,6 +2,7 @@
 using BitMiracle.LibTiff.Classic;
 using FreeImageAPI;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
@@ -14,7 +15,7 @@ namespace PdfClown.Documents.Contents
 {
     public class ImageLoader
     {
-        public static SKBitmap Load(IImageObject imageObject, ContentScanner.GraphicsState state)
+        public static SKBitmap Load(IImageObject imageObject, GraphicsState state)
         {
             var buffer = imageObject.Data;
             var data = buffer.ToByteArray();
@@ -63,7 +64,7 @@ namespace PdfClown.Documents.Contents
             return image;
         }
 
-        private ContentScanner.GraphicsState state;
+        private GraphicsState state;
         private IImageObject image;
         private ColorSpace colorSpace;
         private ICCBasedColorSpace iccColorSpace;
@@ -81,7 +82,7 @@ namespace PdfClown.Documents.Contents
         private IImageObject sMask;
         private ImageLoader sMaskLoader;
 
-        public ImageLoader(IImageObject image, ContentScanner.GraphicsState state)
+        public ImageLoader(IImageObject image, GraphicsState state)
         {
             var buffer = image.Data;
             var data = buffer.ToByteArray();
@@ -94,12 +95,12 @@ namespace PdfClown.Documents.Contents
             Init(image, data, state);
         }
 
-        public ImageLoader(IImageObject image, byte[] buffer, ContentScanner.GraphicsState state)
+        public ImageLoader(IImageObject image, byte[] buffer, GraphicsState state)
         {
             Init(image, buffer, state);
         }
 
-        private void Init(IImageObject image, byte[] buffer, ContentScanner.GraphicsState state)
+        private void Init(IImageObject image, byte[] buffer, GraphicsState state)
         {
             this.state = state;
             this.image = image;

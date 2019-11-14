@@ -9,6 +9,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Contents.Scanner;
 
 namespace PdfClown.Samples.CLI
 {
@@ -60,14 +61,11 @@ namespace PdfClown.Samples.CLI
                 if (current is ContainerObject)
                 {
                     // Scan the inner level!
-                    Scan(
-                      level.ChildLevel,
-                      page
-                      );
+                    Scan(level.ChildLevel, page);
                 }
                 else
                 {
-                    ContentScanner.GraphicsObjectWrapper objectWrapper = level.CurrentWrapper;
+                    GraphicsObjectWrapper objectWrapper = level.CurrentWrapper;
                     if (objectWrapper == null)
                         continue;
 
@@ -76,9 +74,9 @@ namespace PdfClown.Samples.CLI
                       external objects (XObject) or inline objects.
                     */
                     SKSize? imageSize = null; // Image native size.
-                    if (objectWrapper is ContentScanner.XObjectWrapper)
+                    if (objectWrapper is XObjectWrapper)
                     {
-                        ContentScanner.XObjectWrapper xObjectWrapper = (ContentScanner.XObjectWrapper)objectWrapper;
+                        XObjectWrapper xObjectWrapper = (XObjectWrapper)objectWrapper;
                         xObjects::XObject xObject = xObjectWrapper.XObject;
                         // Is the external object an image?
                         if (xObject is xObjects::ImageXObject)
@@ -89,10 +87,10 @@ namespace PdfClown.Samples.CLI
                             imageSize = xObject.Size; // Image native size.
                         }
                     }
-                    else if (objectWrapper is ContentScanner.InlineImageWrapper)
+                    else if (objectWrapper is InlineImageWrapper)
                     {
                         Console.Write("Inline Image");
-                        InlineImage inlineImage = ((ContentScanner.InlineImageWrapper)objectWrapper).InlineImage;
+                        InlineImage inlineImage = ((InlineImageWrapper)objectWrapper).InlineImage;
                         imageSize = inlineImage.Size; // Image native size.
                     }
 

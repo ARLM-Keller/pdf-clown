@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
 
 using System.Collections.Generic;
@@ -44,16 +45,18 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region dynamic
         #region constructors
-        public SetTextScale(double value) : base(OperatorKeyword, PdfReal.Get(value))
+        public SetTextScale(double value)
+            : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
-        public SetTextScale(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public SetTextScale(IList<PdfDirectObject> operands)
+            : base(OperatorKeyword, operands)
         { }
         #endregion
 
         #region interface
         #region public
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         { state.Scale = Value / 100; }
 
         /**
@@ -68,5 +71,5 @@ namespace PdfClown.Documents.Contents.Objects
         #endregion
         #endregion
         #endregion
-    }   
+    }
 }

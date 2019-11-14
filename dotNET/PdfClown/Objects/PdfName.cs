@@ -149,6 +149,7 @@ namespace PdfClown.Objects
         public static readonly PdfName Colors = new PdfName("Colors");
         public static readonly PdfName ColorSpace = new PdfName("ColorSpace");
         public static readonly PdfName Columns = new PdfName("Columns");
+        public static readonly PdfName Compatible = new PdfName("Compatible");
         public static readonly PdfName Comment = new PdfName("Comment");
         public static readonly PdfName Confidential = new PdfName("Confidential");
         public static readonly PdfName Configs = new PdfName("Configs");

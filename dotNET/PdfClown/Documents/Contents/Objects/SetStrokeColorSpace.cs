@@ -25,6 +25,7 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
 
 using System.Collections.Generic;
@@ -36,9 +37,7 @@ namespace PdfClown.Documents.Contents.Objects
       </summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class SetStrokeColorSpace
-      : Operation,
-        IResourceReference<ColorSpace>
+    public sealed class SetStrokeColorSpace : Operation, IResourceReference<ColorSpace>
     {
         #region static
         #region fields
@@ -48,14 +47,12 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region dynamic
         #region constructors
-        public SetStrokeColorSpace(
-          PdfName name
-          ) : base(OperatorKeyword, name)
+        public SetStrokeColorSpace(PdfName name)
+            : base(OperatorKeyword, name)
         { }
 
-        public SetStrokeColorSpace(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetStrokeColorSpace(IList<PdfDirectObject> operands)
+            : base(OperatorKeyword, operands)
         { }
         #endregion
 
@@ -65,14 +62,10 @@ namespace PdfClown.Documents.Contents.Objects
           <summary>Gets the <see cref="ColorSpace">color space</see> resource to be set.</summary>
           <param name="context">Content context.</param>
         */
-        public ColorSpace GetColorSpace(
-          IContentContext context
-          )
+        public ColorSpace GetColorSpace(IContentContext context)
         { return GetResource(context); }
 
-        public override void Scan(
-          ContentScanner.GraphicsState state
-          )
+        public override void Scan(GraphicsState state)
         {
             // 1. Color space.
             state.StrokeColorSpace = GetColorSpace(state.Scanner.ContentContext);
@@ -86,9 +79,7 @@ namespace PdfClown.Documents.Contents.Objects
         }
 
         #region IResourceReference
-        public ColorSpace GetResource(
-          IContentContext context
-          )
+        public ColorSpace GetResource(IContentContext context)
         {
             /*
               NOTE: The names DeviceGray, DeviceRGB, DeviceCMYK, and Pattern always identify

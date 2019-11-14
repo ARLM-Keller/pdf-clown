@@ -1,5 +1,5 @@
-/*
-  Copyright 2007-2012 Stefano Chizzolini. http://www.pdfclown.org
+﻿/*
+  Copyright 2007-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,51 +23,44 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
+using PdfClown.Documents.Contents.Objects;
+using xObjects = PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 
-using System.Collections.Generic;
+using System;
+using SkiaSharp;
 
-namespace PdfClown.Documents.Contents.Objects
+namespace PdfClown.Documents.Contents.Scanner
 {
     /**
-      <summary>'Set the miter limit' operation [PDF:1.6:4.3.3].</summary>
+      <summary>External object information.</summary>
     */
-    [PDF(VersionEnum.PDF10)]
-    public sealed class SetMiterLimit
-      : Operation
+    public sealed class XObjectWrapper : GraphicsObjectWrapper<XObject>
     {
-        #region static
-        #region fields
-        public static readonly string OperatorKeyword = "M";
-        #endregion
-        #endregion
+        private PdfName name;
+        private xObjects::XObject xObject;
 
-        #region dynamic
-        #region constructors
-        public SetMiterLimit(
-          double value
-          ) : base(OperatorKeyword, PdfReal.Get(value))
-        { }
-
-        public SetMiterLimit(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
-        { }
-        #endregion
-
-        #region interface
-        #region public
-        public override void Scan(GraphicsState state)
-        { state.MiterLimit = Value; }
-
-        public double Value
+        internal XObjectWrapper(ContentScanner scanner) : base((XObject)scanner.Current)
         {
-            get => ((IPdfNumber)operands[0]).RawValue;
-            set => operands[0] = PdfReal.Get(value);
+            SKMatrix ctm = scanner.State.Ctm;
+            this.box = SKRect.Create(
+              ctm.TransX,
+              scanner.ContextSize.Height - ctm.TransY,
+              ctm.ScaleX,
+              Math.Abs(ctm.ScaleY)
+              );
+            this.name = BaseDataObject.Name;
+            this.xObject = BaseDataObject.GetResource(scanner.ContentContext);
         }
-        #endregion
-        #endregion
-        #endregion
+
+        /**
+          <summary>Gets the corresponding resource key.</summary>
+        */
+        public PdfName Name => name;
+
+        /**
+          <summary>Gets the external object.</summary>
+        */
+        public xObjects::XObject XObject => xObject;
     }
 }

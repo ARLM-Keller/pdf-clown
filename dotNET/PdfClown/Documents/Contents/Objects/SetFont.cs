@@ -61,7 +61,7 @@ namespace PdfClown.Documents.Contents.Objects
         public Font GetFont(IContentContext context)
         { return GetResource(context); }
 
-        public override void Scan(ContentScanner.GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
             state.Font = GetFont(state.Scanner.ContentContext);
             state.FontSize = Size;

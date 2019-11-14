@@ -52,12 +52,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region interface
         public override void Draw(SKCanvas canvas)
-        {
+        {            
             using (var path = new SKPath())
             {
                 path.AddRect(Box);
                 Draw(canvas, path);
             }
+            base.Draw(canvas);
         }
         #endregion
         #endregion

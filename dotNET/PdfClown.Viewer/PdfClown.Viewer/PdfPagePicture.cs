@@ -13,6 +13,8 @@ namespace PdfClown.Viewer
     public class PdfPagePicture : IDisposable
     {
         private static Task task;
+        public static bool IsPaintComplete => (task?.IsCompleted ?? true);
+
         private SKPicture picture;
         public SKMatrix Matrix = SKMatrix.MakeIdentity();
         public SKMatrix InitialMatrix;

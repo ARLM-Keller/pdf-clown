@@ -98,6 +98,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 path.Close();
                 Draw(canvas, path);
             }
+            base.Draw(canvas);
         }
         #endregion
         #endregion

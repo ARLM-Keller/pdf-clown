@@ -105,6 +105,12 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
         }
+
+        public override void Draw(SKCanvas canvas)
+        {
+            base.DrawAppearance(canvas);            
+        }
+
         #endregion
         #endregion
         #endregion

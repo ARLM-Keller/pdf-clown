@@ -73,7 +73,7 @@ namespace PdfClown.Viewer
                 if (currentAnnotationText != value)
                 {
                     currentAnnotationText = value;
-                    if (currentAnnotationText != null)
+                    if (!string.IsNullOrEmpty(currentAnnotationText))
                     {
                         var temp = new SKRect();
                         paintText.MeasureText(currentAnnotationText, ref temp);
@@ -221,6 +221,10 @@ namespace PdfClown.Viewer
                     CurrentMoveLocation = CurrentLocation;
                     return;
                 }
+            }
+            if (!PdfPagePicture.IsPaintComplete)
+            {
+                return;
             }
             foreach (var picture in pictures)
             {

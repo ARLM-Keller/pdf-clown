@@ -197,6 +197,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        protected virtual void DrawAppearance(SKCanvas canvas)
+        {
+            DrawAppearance(canvas, Appearance.Normal[null]);
+        }
+
         protected virtual void DrawAppearance(SKCanvas canvas, FormXObject appearance)
         {
             if (appearance != null)
@@ -207,7 +212,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                 SKMatrix initialCtm = SKMatrix.MakeIdentity();
                 initialCtm.SetScaleTranslate(bounds.Width / appearanceBounds.Width, -bounds.Height / appearanceBounds.Height, bounds.Left, (bounds.Top + bounds.Height));
                 SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-appearanceBounds.Left, -appearanceBounds.Top));
-
 
                 var picture = appearance.Render();
                 canvas.DrawPicture(picture, ref initialCtm);

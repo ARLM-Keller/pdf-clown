@@ -63,7 +63,7 @@ namespace PdfClown.Objects
                 int length = value.Length;
                 // Year (YYYY).
                 dateBuilder.Append(value.Substring(2, 4)); // NOTE: Skips the "D:" prefix; Year is mandatory.
-                                                           // Month (MM).
+                // Month (MM).
                 dateBuilder.Append(length < 8 ? "01" : value.Substring(6, 2));
                 // Day (DD).
                 dateBuilder.Append(length < 10 ? "01" : value.Substring(8, 2));
@@ -84,16 +84,13 @@ namespace PdfClown.Objects
             { throw new ParseException("Failed to normalize the date string.", exception); }
 
             // 2. Parsing.
-            try
-            {
-                return DateTime.ParseExact(
-                  dateBuilder.ToString(),
-                  FormatString,
-                  new CultureInfo("en-US")
-                  );
-            }
-            catch (Exception exception)
-            { throw new ParseException("Failed to parse the date string.", exception); }
+            return DateTime.TryParseExact(
+                dateBuilder.ToString(),
+                FormatString,
+                CultureInfo.InvariantCulture,//("en-US")
+                DateTimeStyles.None,
+                out var date) ? date : DateTime.MinValue;
+            //{ throw new ParseException("Failed to parse the date string.", exception); }
         }
         #endregion
 

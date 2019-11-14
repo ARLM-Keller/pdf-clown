@@ -32,6 +32,7 @@ using PdfClown.Util;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -193,6 +194,23 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 BaseDataObject[PdfName.IT] = value;
                 OnPropertyChanged();
+            }
+        }
+
+        protected virtual void DrawAppearance(SKCanvas canvas, FormXObject appearance)
+        {
+            if (appearance != null)
+            {
+                var bounds = Box;
+                var appearanceBounds = appearance.Matrix.MapRect(appearance.Box);
+
+                SKMatrix initialCtm = SKMatrix.MakeIdentity();
+                initialCtm.SetScaleTranslate(bounds.Width / appearanceBounds.Width, -bounds.Height / appearanceBounds.Height, bounds.Left, (bounds.Top + bounds.Height));
+                SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-appearanceBounds.Left, -appearanceBounds.Top));
+
+
+                var picture = appearance.Render();
+                canvas.DrawPicture(picture, ref initialCtm);
             }
         }
         #endregion

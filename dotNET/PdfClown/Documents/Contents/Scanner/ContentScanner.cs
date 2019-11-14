@@ -163,8 +163,8 @@ Parent level.
             canvasSize =
                 contextSize = parentLevel.contextSize;
 
-            MoveStart();
             renderContext = parentLevel.RenderContext;
+            MoveStart();
         }
 
         public ContentScanner(xObjects::FormXObject formXObject, SKCanvas canvas, SKSize size)
@@ -177,7 +177,6 @@ Parent level.
                 contextSize = size;
 
             renderContext = canvas;
-
             MoveStart();
         }
 
@@ -355,13 +354,6 @@ Parent level.
         */
         public void MoveStart()
         {
-            if (FormXObject != null && parentLevel == null && renderContext != null)
-            {
-                var ctm = renderContext.TotalMatrix;
-                SKMatrix.PreConcat(ref ctm, FormXObject.Matrix);
-                renderContext.SetMatrix(ctm);
-            }
-
             index = StartIndex;
             if (state == null)
             {
@@ -376,13 +368,6 @@ Parent level.
                 { state.Initialize(); }
                 else
                 { parentLevel.state.CopyTo(state); }
-            }
-
-            if (FormXObject != null && parentLevel != null)
-            {
-                var ctm = State.Ctm;
-                SKMatrix.PreConcat(ref ctm, FormXObject.Matrix);
-                State.Ctm = ctm;
             }
 
             NotifyStart();
@@ -429,7 +414,7 @@ Parent level.
         */
         public void Render(SKCanvas renderContext, SKSize renderSize, SKPath renderObject)
         {
-            if (IsRootLevel() && renderContext != null && FormXObject == null)
+            if (IsRootLevel() && ClearContext)
             {
                 renderContext.ClipRect(SKRect.Create(renderSize));
                 renderContext.Clear(SKColors.White);
@@ -492,6 +477,8 @@ Parent level.
           <summary>Gets the current graphics state applied to the current content object.</summary>
         */
         public GraphicsState State => state;
+
+        public bool ClearContext { get; set; } = true;
         #endregion
 
         #region protected

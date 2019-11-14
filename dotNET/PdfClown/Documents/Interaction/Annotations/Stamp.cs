@@ -213,21 +213,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override void Draw(SKCanvas canvas)
         {
             base.Draw(canvas);
+
             var appearance = Appearance.Normal[null];
-            if (appearance != null)
-            {
-                SKRect bounds = Box;
-                canvas.Save();
-                var translate = SKMatrix.MakeTranslation(bounds.Left, bounds.Top);
-                canvas.Concat(ref translate);                
-
-                var xScanner = new ContentScanner(appearance, canvas, bounds.Size);
-
-                while (xScanner.MoveNext()) ;
-
-                canvas.Restore();
-            }
+            DrawAppearance(canvas, appearance);
         }
+
+        
 
         #endregion
         #endregion

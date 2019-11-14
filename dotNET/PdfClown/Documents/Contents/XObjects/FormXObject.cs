@@ -42,6 +42,7 @@ namespace PdfClown.Documents.Contents.XObjects
     [PDF(VersionEnum.PDF10)]
     public sealed class FormXObject : XObject, IContentContext
     {
+        private SKPicture picture;
         #region static
         #region interface
         #region public
@@ -168,9 +169,23 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public ContentWrapper Contents => ContentWrapper.Wrap(BaseObject, this);
 
+        public SKPicture Render()
+        {
+            if (picture != null)
+                return picture;
+            var box = Box;
+            using (var recorder = new SKPictureRecorder())
+            using (var canvas = recorder.BeginRecording(Box))
+            {
+                Render(canvas, box.Size);
+                return picture = recorder.EndRecording();
+            }
+        }
+
         public void Render(SKCanvas context, SKSize size)
         {
-            ContentScanner scanner = new ContentScanner(this, context, size);
+            var scanner = new ContentScanner(this, context, size);
+            scanner.ClearContext = false;
             scanner.Render(context, size);
         }
 

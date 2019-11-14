@@ -505,11 +505,11 @@ namespace PdfClown.Documents
                 {
                     IBuffer formBody = form.BaseDataObject.Body;
                     PdfDataObject contentsDataObject = BaseDataObject.Resolve(PdfName.Contents);
-                    if (contentsDataObject is PdfStream)
-                    { formBody.Append(((PdfStream)contentsDataObject).Body); }
-                    else
+                    if (contentsDataObject is PdfStream stream)
+                    { formBody.Append(stream.Body); }
+                    else if (contentsDataObject is PdfArray array)
                     {
-                        foreach (PdfDirectObject contentStreamObject in (PdfArray)contentsDataObject)
+                        foreach (PdfDirectObject contentStreamObject in array)
                         { formBody.Append(((PdfStream)contentStreamObject.Resolve()).Body); }
                     }
                 }

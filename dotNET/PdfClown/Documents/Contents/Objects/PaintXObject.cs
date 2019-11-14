@@ -117,10 +117,8 @@ namespace PdfClown.Documents.Contents.Objects
             }
             else if (xObject is xObjects.FormXObject formObject)
             {
-                // Scan the external level!
-                var xScanner = new ContentScanner(formObject, scanner);
-
-                while (xScanner.MoveNext()) ;
+                var picture = formObject.Render();
+                canvas.DrawPicture(picture);
             }
         }
 

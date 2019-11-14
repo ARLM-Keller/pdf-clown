@@ -30,6 +30,7 @@ using PdfClown.Documents.Contents.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Contents
 {
@@ -203,6 +204,10 @@ namespace PdfClown.Documents.Contents
         */
         public SKMatrix GetInitialCtm()
         {
+            if (Scanner.ContentContext is FormXObject formObject)
+            {
+                return formObject.Matrix;
+            }
             SKMatrix initialCtm;
             if (Scanner.RenderContext == null) // Device-independent.
             {
@@ -210,12 +215,17 @@ namespace PdfClown.Documents.Contents
             }
             else // Device-dependent.
             {
-                initialCtm = GetInitialMatrix(Scanner.CanvasSize, Scanner.ContentContext);
+                initialCtm = GetInitialMatrix(Scanner.ContentContext, Scanner.CanvasSize);
             }
             return initialCtm;
         }
 
-        public static SKMatrix GetInitialMatrix(SKSize canvasSize, IContentContext contentContext)
+        public static SKMatrix GetInitialMatrix(IContentContext contentContext, SKSize canvasSize)
+        {
+            return GetInitialMatrix(contentContext, canvasSize, contentContext.Box);
+        }
+
+        public static SKMatrix GetInitialMatrix(IContentContext contentContext, SKSize canvasSize, SKRect contentBox)
         {
             SKMatrix initialCtm;
             var rotation = contentContext.Rotation;
@@ -246,7 +256,6 @@ namespace PdfClown.Documents.Contents
             }
 
             // Scaling.
-            SKRect contentBox = contentContext.Box;
             SKSize rotatedCanvasSize = rotation.Transform(canvasSize);
             SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeScale(
                rotatedCanvasSize.Width / contentBox.Width,
@@ -475,16 +484,7 @@ namespace PdfClown.Documents.Contents
             wordSpace = 0;
 
             // Rendering context initialization.
-            if (Scanner.RenderContext != null)
-            {
-                if (Scanner.ParentLevel == null)
-                {
-                    var matrix = Scanner.RenderContext.TotalMatrix;
-                    SKMatrix.PreConcat(ref matrix, ctm);
-                    ctm = matrix;
-                }
-                Scanner.RenderContext.SetMatrix(ctm);
-            }
+            Scanner.RenderContext?.SetMatrix(ctm);
         }
         #endregion
         #endregion

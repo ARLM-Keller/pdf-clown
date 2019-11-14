@@ -15,11 +15,9 @@ namespace PdfClown.Samples.CLI
       <remarks>Form XObjects are a convenient way to represent contents multiple times on multiple pages
       as templates.</remarks>
     */
-    public class PageToFormSample
-      : Sample
+    public class PageToFormSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the form source file...
             string filePath = PromptFileChoice("Please select a PDF file to use as form");
@@ -43,10 +41,7 @@ namespace PdfClown.Samples.CLI
         /**
           <summary>Populates a PDF file with contents.</summary>
         */
-        private void Populate(
-          Document document,
-          XObject form
-          )
+        private void Populate(Document document, XObject form)
         {
             // 1. Add a page to the document!
             Page page = new Page(document); // Instantiates the page inside the document context.

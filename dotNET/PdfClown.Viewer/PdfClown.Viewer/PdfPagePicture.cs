@@ -63,7 +63,7 @@ namespace PdfClown.Viewer
                 picture = recorder.EndRecording();
                 Xamarin.Forms.Device.BeginInvokeOnMainThread(() => canvasView.InvalidateSurface());
             }
-            InitialMatrix = GraphicsState.GetInitialMatrix(Size, Page);
+            InitialMatrix = GraphicsState.GetInitialMatrix(Page, Size);
         }
 
         public Page Page

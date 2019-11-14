@@ -116,18 +116,12 @@ namespace PdfClown.Samples.CLI
                 else if (content is XObject)
                 {
                     // Scan the external level!
-                    Extract(
-                      ((XObject)content).GetScanner(level),
-                      composer
-                      );
+                    Extract(((XObject)content).GetScanner(level), composer);
                 }
                 else if (content is ContainerObject)
                 {
                     // Scan the inner level!
-                    Extract(
-                      level.ChildLevel,
-                      composer
-                      );
+                    Extract(level.ChildLevel, composer);
                 }
             }
         }

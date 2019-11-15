@@ -79,8 +79,8 @@ namespace PdfClown.Documents.Contents.Objects
         #region public
         public override void Scan(GraphicsState state)
         {
-            state.Tlm = Value;
-            state.Tm = state.Tlm;
+            state.TextState.Tm =
+                state.TextState.Tlm = Value;
         }
 
         public SKMatrix Value => new SKMatrix

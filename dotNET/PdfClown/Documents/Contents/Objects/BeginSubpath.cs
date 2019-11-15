@@ -35,8 +35,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Begin a new subpath by moving the current point' operation [PDF:1.6:4.4.1].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class BeginSubpath
-      : Operation
+    public sealed class BeginSubpath : Operation
     {
         #region static
         #region fields

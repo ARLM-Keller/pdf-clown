@@ -175,7 +175,7 @@ namespace PdfClown.Documents.Contents.XObjects
                 return picture;
             var box = Box;
             using (var recorder = new SKPictureRecorder())
-            using (var canvas = recorder.BeginRecording(Box))
+            using (var canvas = recorder.BeginRecording(box))//new SKRect(0, 0, box.Size.Width, box.Size.Height)
             {
                 Render(canvas, box.Size);
                 return picture = recorder.EndRecording();

@@ -31,8 +31,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'End marked-content sequence' operation [PDF:1.6:10.5].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class EndMarkedContent
-      : Operation
+    public sealed class EndMarkedContent : Operation
     {
         #region static
         #region fields
@@ -44,9 +43,13 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region dynamic
         #region constructors
-        private EndMarkedContent(
-          ) : base(OperatorKeyword)
+        private EndMarkedContent() : base(OperatorKeyword)
         { }
+
+        public override void Scan(GraphicsState state)
+        {
+            base.Scan(state);
+        }
         #endregion
         #endregion
     }

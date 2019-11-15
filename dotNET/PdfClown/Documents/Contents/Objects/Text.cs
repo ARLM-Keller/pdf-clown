@@ -64,6 +64,14 @@ namespace PdfClown.Documents.Contents.Objects
             base.WriteTo(stream, context);
             stream.Write(EndChunk);
         }
+
+        public override void Scan(GraphicsState state)
+        {
+            var temp = state.TextState;
+            state.TextState = new TextGraphicsState();
+            base.Scan(state);
+            state.TextState = temp;
+        }
         #endregion
         #endregion
         #endregion

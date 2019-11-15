@@ -35,8 +35,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>Marked-content sequence [PDF:1.6:10.5].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class MarkedContent
-      : ContainerObject
+    public sealed class MarkedContent : ContainerObject
     {
         #region static
         #region fields
@@ -72,11 +71,18 @@ namespace PdfClown.Documents.Contents.Objects
             set => header = (BeginMarkedContent)value;
         }
 
+        public string Type => header?.Operands.Count > 0 ? ((header.Operands[0] as PdfName)?.RawValue) : null;
+
         public override void WriteTo(IOutputStream stream, Document context)
         {
             header.WriteTo(stream, context);
             base.WriteTo(stream, context);
             stream.Write(EndChunk);
+        }
+
+        public override void Scan(GraphicsState state)
+        {
+            base.Scan(state);
         }
         #endregion
         #endregion

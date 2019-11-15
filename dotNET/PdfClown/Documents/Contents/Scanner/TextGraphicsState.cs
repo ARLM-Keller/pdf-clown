@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright 2007-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
@@ -23,45 +23,31 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Objects;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
 
-namespace PdfClown.Documents.Contents.Objects
+namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>'Move to the start of the next line' operation [PDF:1.6:5.3.1].</summary>
-    */
-    [PDF(VersionEnum.PDF10)]
-    public sealed class TranslateTextToNextLine : Operation
+    public class TextGraphicsState
     {
-        #region static
-        #region fields
-        public static readonly string OperatorKeyword = "T*";
+        private SKMatrix tlm = SKMatrix.MakeIdentity();
+        private SKMatrix tm = SKMatrix.MakeIdentity();
 
-        public static readonly TranslateTextToNextLine Value = new TranslateTextToNextLine();
-        #endregion
-        #endregion
-
-        #region dynamic
-        #region constructors
-        private TranslateTextToNextLine() : base(OperatorKeyword)
-        { }
-        #endregion
-
-        #region interface
-        #region public
-        public override void Scan(GraphicsState state)
+        /**
+          <summary>Gets/Sets the current text line matrix [PDF:1.6:5.3].</summary>
+        */
+        public SKMatrix Tlm
         {
-            var tlm = state.TextState.Tlm;
-            SKMatrix.PreConcat(ref tlm, new SKMatrix { Values = new[] { 1, 0, 0, 0, 1, (float)-state.Lead, 0, 0, 1 } });
-            state.TextState.Tlm =
-                state.TextState.Tm = tlm;
+            get => tlm;
+            set => tlm = value;
         }
-        #endregion
-        #endregion
-        #endregion
+
+        /**
+          <summary>Gets/Sets the current text matrix [PDF:1.6:5.3].</summary>
+        */
+        public SKMatrix Tm
+        {
+            get => tm;
+            set => tm = value;
+        }
     }
 }

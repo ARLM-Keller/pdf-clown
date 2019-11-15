@@ -93,7 +93,7 @@ namespace PdfClown.Documents.Contents.Objects
             double wordSpace = wordSpaceSupported ? state.WordSpace * state.Scale : 0;
             double charSpace = state.CharSpace * state.Scale;
             SKMatrix ctm = state.Ctm;
-            SKMatrix tm = state.Tm;
+            SKMatrix tm = state.TextState.Tm;
             //var encoding = font.GetEnoding();
             var context = state.Scanner.RenderContext;
             var fill = context != null && state.RenderModeFill ? state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha) : null;
@@ -135,11 +135,11 @@ namespace PdfClown.Documents.Contents.Objects
                     { state.CharSpace = newCharSpace.Value; }
                     charSpace = newCharSpace.Value * state.Scale;
                 }
-                tm = state.Tlm;
+                tm = state.TextState.Tlm;
                 SKMatrix.PreConcat(ref tm, new SKMatrix { Values = new float[] { 1, 0, 0, 0, 1, (float)-state.Lead, 0, 0, 1 } });
             }
             else
-            { tm = state.Tm; }
+            { tm = state.TextState.Tm; }
 
             foreach (object textElement in Value)
             {
@@ -223,10 +223,10 @@ namespace PdfClown.Documents.Contents.Objects
 
             if (textScanner == null)
             {
-                state.Tm = tm;
+                state.TextState.Tm = tm;
 
                 if (this is ShowTextToNextLine)
-                { state.Tlm = tm; }
+                { state.TextState.Tlm = tm; }
             }
         }
 

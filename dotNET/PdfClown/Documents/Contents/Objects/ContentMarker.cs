@@ -35,21 +35,14 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>Abstract content marker [PDF:1.6:10.5].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public abstract class ContentMarker
-      : Operation,
-        IResourceReference<PropertyList>
+    public abstract class ContentMarker : Operation, IResourceReference<PropertyList>
     {
         #region dynamic
         #region constructors
-        protected ContentMarker(
-          PdfName tag
-          ) : this(tag, null)
+        protected ContentMarker(PdfName tag) : this(tag, null)
         { }
 
-        protected ContentMarker(
-          PdfName tag,
-          PdfDirectObject properties
-          ) : base(null, tag)
+        protected ContentMarker(PdfName tag, PdfDirectObject properties) : base(null, tag)
         {
             if (properties != null)
             {
@@ -60,10 +53,7 @@ namespace PdfClown.Documents.Contents.Objects
             { @operator = SimpleOperator; }
         }
 
-        protected ContentMarker(
-          string @operator,
-          IList<PdfDirectObject> operands
-          ) : base(@operator, operands)
+        protected ContentMarker(string @operator, IList<PdfDirectObject> operands) : base(@operator, operands)
         { }
         #endregion
 
@@ -74,9 +64,7 @@ namespace PdfClown.Documents.Contents.Objects
           creating the marked content.</summary>
           <param name="context">Content context.</param>
         */
-        public PropertyList GetProperties(
-          IContentContext context
-          )
+        public PropertyList GetProperties(IContentContext context)
         {
             object properties = Properties;
             return properties is PdfName
@@ -140,9 +128,7 @@ namespace PdfClown.Documents.Contents.Objects
         }
 
         #region IResourceReference
-        public PropertyList GetResource(
-          IContentContext context
-          )
+        public PropertyList GetResource(IContentContext context)
         { return GetProperties(context); }
 
         public PdfName Name

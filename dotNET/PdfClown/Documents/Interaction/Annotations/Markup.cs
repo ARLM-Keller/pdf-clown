@@ -207,12 +207,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (appearance != null)
             {
                 var bounds = Box;
-                var appearanceBounds = appearance.Matrix.MapRect(appearance.Box);
+                var appearanceBounds = appearance.Box;
+                var mapedAppearanceBounds = appearance.Matrix.MapRect(appearance.Box);
 
                 SKMatrix initialCtm = SKMatrix.MakeIdentity();
-                initialCtm.SetScaleTranslate(bounds.Width / appearanceBounds.Width, -bounds.Height / appearanceBounds.Height, bounds.Left, (bounds.Top + bounds.Height));
-                SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-appearanceBounds.Left, -appearanceBounds.Top));
+                initialCtm.SetScaleTranslate(bounds.Width / mapedAppearanceBounds.Width, -bounds.Height / mapedAppearanceBounds.Height, bounds.Left, bounds.Top + bounds.Height);
+                SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-mapedAppearanceBounds.Left, -mapedAppearanceBounds.Top));
 
+                var targetBounds = initialCtm.MapRect(appearanceBounds);
+                System.Diagnostics.Debug.WriteLine($"Draw Clip:{canvas.LocalClipBounds} {this.Text} {targetBounds}");
+                
                 var picture = appearance.Render();
                 canvas.DrawPicture(picture, ref initialCtm);
             }

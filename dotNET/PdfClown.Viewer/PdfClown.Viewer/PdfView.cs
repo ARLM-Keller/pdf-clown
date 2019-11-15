@@ -157,7 +157,7 @@ namespace PdfClown.Viewer
                     {
                         canvas.DrawPicture(picture, ref pdfPicture.Matrix);
 
-                        if (ShowMarkup && pdfPicture.Annotations != null && pdfPicture.Annotations.Count > 0)
+                        if (ShowMarkup && pdfPicture.Annotations.Count > 0)
                         {
                             OnPaintAnnotations(canvas, pdfPicture);
                         }

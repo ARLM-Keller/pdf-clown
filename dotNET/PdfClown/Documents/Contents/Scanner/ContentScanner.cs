@@ -255,6 +255,16 @@ Parent level.
         public int Index => index;
 
         /**
+         <summary>Gets the current parent object.</summary>
+       */
+        public CompositeObject Parent => parentLevel?.Current as CompositeObject;
+
+        /**
+          <summary>Gets the parent scan level.</summary>
+        */
+        public ContentScanner ParentLevel => parentLevel;
+
+        /**
           <summary>Inserts a content object at the current position.</summary>
         */
         public void Insert(ContentObject obj)
@@ -375,19 +385,9 @@ Parent level.
         }
 
         /**
-          <summary>Gets the current parent object.</summary>
-        */
-        public CompositeObject Parent => parentLevel?.Current as CompositeObject;
-
-        /**
-          <summary>Gets the parent scan level.</summary>
-        */
-        public ContentScanner ParentLevel => parentLevel;
-
-        /**
-          <summary>Removes the content object at the current position.</summary>
-          <returns>Removed object.</returns>
-        */
+           <summary>Removes the content object at the current position.</summary>
+           <returns>Removed object.</returns>
+         */
         public ContentObject Remove()
         {
             ContentObject removedObject = Current; objects.RemoveAt(index);
@@ -416,8 +416,12 @@ Parent level.
         {
             if (IsRootLevel() && ClearContext)
             {
-                renderContext.ClipRect(SKRect.Create(renderSize));
-                renderContext.Clear(SKColors.White);
+                //renderContext.ClipRect(SKRect.Create(renderSize));
+                using (var paint = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill })
+                {
+                    renderContext.DrawRect(SKRect.Create(renderSize), paint);
+                }
+
             }
 
             try

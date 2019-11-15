@@ -67,14 +67,14 @@ namespace PdfClown.Documents.Contents.Scanner
                 GraphicsState state = scanner.State;
                 style = new TextStyle(
                   state.Font,
-                  state.FontSize * state.Tm.ScaleY,
+                  state.FontSize * state.TextState.Tm.ScaleY,
                   state.RenderMode,
                   state.StrokeColor,
                   state.StrokeColorSpace,
                   state.FillColor,
                   state.FillColorSpace,
-                  state.Scale * state.Tm.ScaleX,
-                  state.Tm.ScaleY
+                  state.Scale * state.TextState.Tm.ScaleX,
+                  state.TextState.Tm.ScaleY
                   );
                 BaseDataObject.Scan(
                   state,

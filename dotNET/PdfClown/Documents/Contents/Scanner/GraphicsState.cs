@@ -59,10 +59,8 @@ namespace PdfClown.Documents.Contents
         private double scale;
         private colors::Color strokeColor;
         private colors::ColorSpace strokeColorSpace;
-        private SKMatrix tlm;
-        private SKMatrix tm;
         private double wordSpace;
-
+        private TextGraphicsState textState;
         private ContentScanner scanner;
         #endregion
 
@@ -76,61 +74,12 @@ namespace PdfClown.Documents.Contents
 
         #region interface
         #region public
-        /**
-          <summary>Gets a deep copy of the graphics state object.</summary>
-        */
-        public object Clone()
-        {
-            GraphicsState clone;
-            {
-                // Shallow copy.
-                clone = (GraphicsState)MemberwiseClone();
+        
 
-                // Deep copy.
-                /* NOTE: Mutable objects are to be cloned. */
-                clone.ctm = ctm;
-                clone.tlm = tlm;
-                clone.tm = tm;
-            }
-            return clone;
-        }
-
-        /**
-          <summary>Copies this graphics state into the specified one.</summary>
-          <param name="state">Target graphics state object.</param>
-        */
-        public void CopyTo(GraphicsState state)
+        public TextGraphicsState TextState
         {
-            state.blendMode = blendMode;
-            state.charSpace = charSpace;
-            state.ctm = ctm;
-            state.fillColor = fillColor;
-            state.fillColorSpace = fillColorSpace;
-            state.font = font;
-            state.fontSize = fontSize;
-            state.lead = lead;
-            state.lineCap = lineCap;
-            state.lineDash = lineDash;
-            state.lineJoin = lineJoin;
-            state.lineWidth = lineWidth;
-            state.miterLimit = miterLimit;
-            state.renderMode = renderMode;
-            state.rise = rise;
-            state.scale = scale;
-            state.strokeColor = strokeColor;
-            state.strokeColorSpace = strokeColorSpace;
-            //TODO:temporary hack (define TextState for textual parameters!)...
-            if (state.scanner.Parent is Text)
-            {
-                state.tlm = tlm;
-                state.tm = tm;
-            }
-            else
-            {
-                state.tlm = SKMatrix.MakeIdentity();
-                state.tm = SKMatrix.MakeIdentity();
-            }
-            state.wordSpace = wordSpace;
+            get => textState;
+            set => textState = value;
         }
 
         /**
@@ -279,7 +228,7 @@ namespace PdfClown.Documents.Contents
               transformation matrix (ctm) and the text matrix (tm).
             */
             SKMatrix matrix = GetUserToDeviceMatrix(topDown);
-            SKMatrix.PreConcat(ref matrix, tm);
+            SKMatrix.PreConcat(ref matrix, textState.Tm);
             return matrix;
         }
 
@@ -406,23 +355,7 @@ namespace PdfClown.Documents.Contents
             set => strokeColorSpace = value;
         }
 
-        /**
-          <summary>Gets/Sets the current text line matrix [PDF:1.6:5.3].</summary>
-        */
-        public SKMatrix Tlm
-        {
-            get => tlm;
-            set => tlm = value;
-        }
 
-        /**
-          <summary>Gets/Sets the current text matrix [PDF:1.6:5.3].</summary>
-        */
-        public SKMatrix Tm
-        {
-            get => tm;
-            set => tm = value;
-        }
 
         /**
           <summary>Gets/Sets the current word spacing [PDF:1.6:5.2.2].</summary>
@@ -463,7 +396,7 @@ namespace PdfClown.Documents.Contents
             // State parameters initialization.
             blendMode = ExtGState.DefaultBlendMode;
             charSpace = 0;
-            ctm = GetInitialCtm();
+            Ctm = GetInitialCtm();
             fillColor = colors::DeviceGrayColor.Default;
             fillColorSpace = colors::DeviceGrayColorSpace.Default;
             font = null;
@@ -479,12 +412,54 @@ namespace PdfClown.Documents.Contents
             scale = 1;
             strokeColor = colors::DeviceGrayColor.Default;
             strokeColorSpace = colors::DeviceGrayColorSpace.Default;
-            tlm = SKMatrix.MakeIdentity();
-            tm = SKMatrix.MakeIdentity();
+            TextState = new TextGraphicsState();
             wordSpace = 0;
 
             // Rendering context initialization.
             Scanner.RenderContext?.SetMatrix(ctm);
+        }
+
+        /**
+          <summary>Gets a deep copy of the graphics state object.</summary>
+        */
+        public object Clone()
+        {
+            GraphicsState clone;
+            {
+                // Shallow copy.
+                clone = (GraphicsState)MemberwiseClone();
+
+                //clone.TextState = textState;
+            }
+            return clone;
+        }
+
+        /**
+          <summary>Copies this graphics state into the specified one.</summary>
+          <param name="state">Target graphics state object.</param>
+        */
+        public void CopyTo(GraphicsState state)
+        {
+            state.blendMode = blendMode;
+            state.charSpace = charSpace;
+            state.Ctm = ctm;
+            state.fillColor = fillColor;
+            state.fillColorSpace = fillColorSpace;
+            state.font = font;
+            state.fontSize = fontSize;
+            state.lead = lead;
+            state.lineCap = lineCap;
+            state.lineDash = lineDash;
+            state.lineJoin = lineJoin;
+            state.lineWidth = lineWidth;
+            state.miterLimit = miterLimit;
+            state.renderMode = renderMode;
+            state.rise = rise;
+            state.scale = scale;
+            state.strokeColor = strokeColor;
+            state.strokeColorSpace = strokeColorSpace;
+            state.TextState = textState;
+            state.wordSpace = wordSpace;
         }
         #endregion
         #endregion

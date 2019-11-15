@@ -34,8 +34,7 @@ namespace PdfClown.Documents.Contents.Objects
       Practically, it begins a local graphics state.</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SaveGraphicsState
-      : Operation
+    public sealed class SaveGraphicsState : Operation
     {
         #region static
         #region fields

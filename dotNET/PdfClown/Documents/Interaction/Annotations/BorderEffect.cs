@@ -164,7 +164,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 var intensity = (float)Intensity;
                 const int r = 5;
-                var clode = new SKRect(-r * intensity, -r * intensity, (r * 1.4F) * intensity, (r * 1.4F) * intensity);
+                var clode = new SKRect(-r * intensity, -r * intensity, r * intensity, r * intensity);
 
                 if (paint.IsStroke)
                 {
@@ -176,22 +176,22 @@ namespace PdfClown.Documents.Interaction.Annotations
                         path.ArcTo(clode2, -155, 175, false);
                         path.Close();
 
-                        paint.PathEffect = SKPathEffect.Create1DPath(path, intensity * (r * 1.4F), intensity, SKPath1DPathEffectStyle.Rotate);
+                        paint.PathEffect = SKPathEffect.Create1DPath(path, intensity * (r * 1.45F), intensity, SKPath1DPathEffectStyle.Rotate);
                     }
                 }
-                else 
+                else
                 {
                     using (var path = new SKPath())
                     {
                         path.AddOval(clode);
-                        paint.PathEffect = SKPathEffect.Create1DPath(path, intensity * (r * 1.4F), intensity, SKPath1DPathEffectStyle.Rotate);
+                        paint.PathEffect = SKPathEffect.Create1DPath(path, intensity * (r * 1.45F), intensity, SKPath1DPathEffectStyle.Rotate);
                     }
 
                     if (targetPath != null)
                     {
                         var dest = paint.GetFillPath(targetPath, 1);
                         paint.PathEffect = null;
-                        
+
                         dest.FillType = SKPathFillType.Winding;
                         dest = dest.Op(targetPath, SKPathOp.Union);
                         return dest;

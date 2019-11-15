@@ -119,7 +119,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override string Text
         {
-            get => Markup != null ? markup.Text : base.Text;
+            get => Markup?.Text ?? base.Text;
             set
             {
                 if (Markup != null)

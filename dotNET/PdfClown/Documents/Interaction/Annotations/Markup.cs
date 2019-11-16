@@ -215,7 +215,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-mapedAppearanceBounds.Left, -mapedAppearanceBounds.Top));
 
                 var targetBounds = initialCtm.MapRect(appearanceBounds);
-                System.Diagnostics.Debug.WriteLine($"Draw Clip:{canvas.LocalClipBounds} {this.Text} {targetBounds}");
+                //System.Diagnostics.Debug.WriteLine($"Draw Clip:{canvas.LocalClipBounds} {this.Text} {targetBounds}");
                 
                 var picture = appearance.Render();
                 canvas.DrawPicture(picture, ref initialCtm);

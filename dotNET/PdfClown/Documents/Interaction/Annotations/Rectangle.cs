@@ -55,6 +55,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {            
             using (var path = new SKPath())
             {
+                System.Diagnostics.Debug.WriteLine($"Draw Bounds: {Box}");
                 path.AddRect(Box);
                 Draw(canvas, path);
             }

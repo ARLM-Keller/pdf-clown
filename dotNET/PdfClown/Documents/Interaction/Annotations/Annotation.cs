@@ -278,13 +278,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                   (float)box.Left,
                   (float)(GetPageHeight() - box.Top),
                   (float)box.Width,
-                  (float)box.Height
-                  );
+                  (float)box.Height);
             }
             set
             {
+                System.Diagnostics.Debug.WriteLine($"Old Bounds: {Box}");
                 BaseDataObject[PdfName.Rect] = new Objects.Rectangle(value.Left, GetPageHeight() - value.Top, value.Width, value.Height)
                     .BaseDataObject;
+                System.Diagnostics.Debug.WriteLine($"New Bounds: {Box}");
                 OnPropertyChanged();
             }
         }
@@ -449,10 +450,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         public virtual void Draw(SKCanvas canvas)
         { }
 
-        public virtual SKRect GetBounds(SKMatrix pageMatrix)
+        public virtual SKRect GetBounds(SKMatrix matrix)
         {
             var box = Box;
-            return pageMatrix.MapRect(box);
+            return matrix.MapRect(box);
         }
 
         protected void OnPropertyChanged([CallerMemberName]string propertyName = "")

@@ -22,6 +22,11 @@ namespace PdfClown.Viewer
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnShowMarkupChanged((bool)oldValue, (bool)newValue));
         public static readonly BindableProperty SelectedAnnotationProperty = BindableProperty.Create(nameof(SelectedAnnotation), typeof(Annotation), typeof(PdfView), null,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnSelectedAnnotationChanged((Annotation)oldValue, (Annotation)newValue));
+        public static readonly BindableProperty SelectedMarkupProperty = BindableProperty.Create(nameof(SelectedMarkup), typeof(Markup), typeof(PdfView), null,
+            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnSelectedMarkupChanged((Markup)oldValue, (Markup)newValue));
+
+        public static readonly BindableProperty DraggedAnnotationProperty = BindableProperty.Create(nameof(DraggedAnnotation), typeof(Annotation), typeof(PdfView), null,
+            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnSelectedAnnotationChanged((Annotation)oldValue, (Annotation)newValue));
 
 
         private readonly List<PdfPagePicture> pictures = new List<PdfPagePicture>();
@@ -41,6 +46,7 @@ namespace PdfClown.Viewer
         private string currentAnnotationText;
         private SKRect currentAnnotationTextBounds;
         private SKPoint CurrentMoveLocation;
+        private SKPoint PressedCursorLocation;
 
         public PdfView()
         {
@@ -63,6 +69,18 @@ namespace PdfClown.Viewer
         {
             get => (Annotation)GetValue(SelectedAnnotationProperty);
             set => SetValue(SelectedAnnotationProperty, value);
+        }
+
+        public Markup SelectedMarkup
+        {
+            get => (Markup)GetValue(SelectedMarkupProperty);
+            set => SetValue(SelectedMarkupProperty, value);
+        }
+
+        public Annotation DraggedAnnotation
+        {
+            get => (Annotation)GetValue(DraggedAnnotationProperty);
+            set => SetValue(DraggedAnnotationProperty, value);
         }
 
         private string CurrentAnnotationText
@@ -122,7 +140,16 @@ namespace PdfClown.Viewer
 
         private void OnSelectedAnnotationChanged(Annotation oldValue, Annotation newValue)
         {
+            if (newValue == null)
+                SelectedMarkup = null;
+            else if (newValue is Markup markup)
+                SelectedMarkup = markup;
             InvalidateSurface();
+        }
+
+        private void OnSelectedMarkupChanged(Markup oldValue, Markup newValue)
+        {
+            SelectedAnnotation = newValue;
         }
 
         protected override void OnVerticalValueChanged(double oldValue, double newValue)
@@ -178,6 +205,15 @@ namespace PdfClown.Viewer
                 if (annotation.Visible)
                 {
                     annotation.Draw(canvas);
+                    if (annotation == SelectedAnnotation)
+                    {
+                        using (var paint = new SKPaint { Color = SKColors.OrangeRed, Style = SKPaintStyle.Stroke, StrokeWidth = 2 })
+                        {
+                            var bounds = annotation.Box;
+                            bounds.Inflate(3, 3);
+                            canvas.DrawRect(bounds, paint);
+                        }
+                    }
                 }
             }
 
@@ -271,6 +307,54 @@ namespace PdfClown.Viewer
             if (e.ActionType == SKTouchAction.Moved)
             {
                 CurrentAnnotationText = CurrentAnnotation.Text;
+                if (e.MouseButton == SKMouseButton.Left)
+                {
+                    if (DraggedAnnotation != null)
+                    {
+                        var bound = DraggedAnnotation.GetBounds(CurrentPictureMatrix);
+                        bound.Location += e.Location - PressedCursorLocation;
+                        CurrentPictureMatrix.TryInvert(out var invert);
+                        DraggedAnnotation.Box = invert.MapRect(bound);
+                        PressedCursorLocation = e.Location;
+                        InvalidateSurface();
+                    }
+                    else if (SelectedAnnotation != null)
+                    {
+                        if (DraggedAnnotation == null)
+                        {
+                            var dif = SKPoint.Distance(e.Location, PressedCursorLocation);
+                            if (Math.Abs(dif) > 5)
+                            {
+                                DraggedAnnotation = SelectedAnnotation;
+                            }
+                        }
+
+                    }
+                }
+            }
+            else if (e.ActionType == SKTouchAction.Pressed)
+            {
+                PressedCursorLocation = e.Location;
+                if (e.MouseButton == SKMouseButton.Left)
+                {
+                    SelectedAnnotation = CurrentAnnotation;
+                }
+            }
+            else if (e.ActionType == SKTouchAction.Released)
+            {
+                if (DraggedAnnotation != null)
+                {
+                    CheckAnnotation();
+                }
+                DraggedAnnotation = null;
+            }
+        }
+
+        private void CheckAnnotation()
+        {
+            if (!DraggedAnnotation.Page.Annotations.Contains(DraggedAnnotation))
+            {
+                DraggedAnnotation.Page.Annotations.Add(DraggedAnnotation);
             }
         }
 

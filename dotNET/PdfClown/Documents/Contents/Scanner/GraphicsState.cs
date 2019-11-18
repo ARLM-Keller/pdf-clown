@@ -74,7 +74,7 @@ namespace PdfClown.Documents.Contents
 
         #region interface
         #region public
-        
+
 
         public TextGraphicsState TextState
         {
@@ -429,7 +429,11 @@ namespace PdfClown.Documents.Contents
                 // Shallow copy.
                 clone = (GraphicsState)MemberwiseClone();
 
-                //clone.TextState = textState;
+                clone.TextState = new TextGraphicsState
+                {
+                    Tm = textState.Tm,
+                    Tlm = textState.Tlm
+                };
             }
             return clone;
         }

@@ -24,7 +24,8 @@
 */
 
 using PdfClown.Objects;
-
+using SkiaSharp;
+using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
@@ -59,6 +60,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets a shading object defining the shading pattern's gradient fill.</summary>
         */
         public Shading Shading => Shading.Wrap(((PdfDictionary)BaseDataObject)[PdfName.Shading]);
+
+        public SKShader GetShader()
+        {
+            return Shading.GetShader();
+        }
         #endregion
         #endregion
         #endregion

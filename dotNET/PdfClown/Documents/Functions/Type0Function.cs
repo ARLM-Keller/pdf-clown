@@ -38,8 +38,7 @@ namespace PdfClown.Documents.Functions
       </remarks>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class Type0Function
-      : Function
+    public sealed class Type0Function : Function
     {
         #region types
         public enum InterpolationOrderEnum
@@ -177,7 +176,7 @@ namespace PdfClown.Documents.Functions
                 }
 
             }
-            
+
             return samples;
         }
 

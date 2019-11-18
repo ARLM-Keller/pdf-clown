@@ -162,7 +162,68 @@ namespace PdfClown.Documents.Contents.Objects
                 if (filled)
                 {
                     pathObject.FillType = fillMode.ToSkia();
-                    context.DrawPath(pathObject, state.FillColorSpace.GetPaint(state.FillColor, state.FillAlpha));
+                    var paint = state.FillColorSpace.GetPaint(state.FillColor, state.FillAlpha);
+                    if ((state.BlendMode?.Count ?? 0) > 0)
+                    {
+                        foreach (var mode in state.BlendMode)
+                        {
+                            switch (mode)
+                            {
+                                case BlendModeEnum.Multiply:
+                                    paint.BlendMode = SKBlendMode.Multiply;
+                                    break;
+                                case BlendModeEnum.Lighten:
+                                    paint.BlendMode = SKBlendMode.Lighten;
+                                    break;
+                                case BlendModeEnum.Luminosity:
+                                    paint.BlendMode = SKBlendMode.Luminosity;
+                                    break;
+                                case BlendModeEnum.Overlay:
+                                    paint.BlendMode = SKBlendMode.Overlay;
+                                    break;
+                                case BlendModeEnum.Normal:
+                                    paint.BlendMode = SKBlendMode.SrcOver;
+                                    break;
+                                case BlendModeEnum.ColorBurn:
+                                    paint.BlendMode = SKBlendMode.ColorBurn;
+                                    break;
+                                case BlendModeEnum.Screen:
+                                    paint.BlendMode = SKBlendMode.Screen;
+                                    break;
+                                case BlendModeEnum.Darken:
+                                    paint.BlendMode = SKBlendMode.Darken;
+                                    break;
+                                case BlendModeEnum.ColorDodge:
+                                    paint.BlendMode = SKBlendMode.ColorDodge;
+                                    break;
+                                case BlendModeEnum.Compatible:
+                                    paint.BlendMode = SKBlendMode.SrcOver;
+                                    break;
+                                case BlendModeEnum.HardLight:
+                                    paint.BlendMode = SKBlendMode.HardLight;
+                                    break;
+                                case BlendModeEnum.SoftLight:
+                                    paint.BlendMode = SKBlendMode.SoftLight;
+                                    break;
+                                case BlendModeEnum.Difference:
+                                    paint.BlendMode = SKBlendMode.Difference;
+                                    break;
+                                case BlendModeEnum.Exclusion:
+                                    paint.BlendMode = SKBlendMode.Exclusion;
+                                    break;
+                                case BlendModeEnum.Hue:
+                                    paint.BlendMode = SKBlendMode.Hue;
+                                    break;
+                                case BlendModeEnum.Saturation:
+                                    paint.BlendMode = SKBlendMode.Saturation;
+                                    break;
+                                case BlendModeEnum.Color:
+                                    paint.BlendMode = SKBlendMode.Color;
+                                    break;
+                            }
+                        }
+                    }
+                    context.DrawPath(pathObject, paint);
                 }
                 if (stroked)
                 {

@@ -36,8 +36,7 @@ namespace PdfClown.Documents.Functions
       subdomains of <see cref="Functions">several 1-input functions</see> [PDF:1.6:3.9.3].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class Type3Function
-      : Function
+    public sealed class Type3Function : Function
     {
         #region dynamic
         #region constructors
@@ -52,7 +51,8 @@ namespace PdfClown.Documents.Functions
         public override double[] Calculate(double[] inputs)
         {
             // FIXME: Auto-generated method stub
-            return new double[] { inputs[0], inputs[0], inputs[0], inputs[0] };
+
+            return Functions[0].Calculate(inputs);
         }
 
         /**

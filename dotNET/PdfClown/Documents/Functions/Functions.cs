@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Functions
     [PDF(VersionEnum.PDF13)]
     public sealed class Functions : PdfObjectWrapper<PdfArray>, IList<Function>
     {
-        public Functions Wrap(PdfDirectObject baseObject, Type3Function parent)
+        public static Functions Wrap(PdfDirectObject baseObject, Type3Function parent)
         {
             if (baseObject.Wrapper is Functions functions && functions.Parent == parent)
                 return functions;
@@ -58,8 +58,7 @@ namespace PdfClown.Documents.Functions
 
         #region interface
         #region public
-        public override Object Clone(Document context
-          )
+        public override Object Clone(Document context)
         { return new NotImplementedException(); }
 
         /**

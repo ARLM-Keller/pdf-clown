@@ -109,6 +109,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     IsAntialias = true
                 };
             }
+            if (color is ShadingPattern shading)
+            {
+                return new SKPaint
+                {
+                    Shader = shading.GetShader(),
+                    Style = SKPaintStyle.Fill,
+                    IsAntialias = true
+                };
+            }
             return new SKPaint
             {
                 Color = GetColor(color),

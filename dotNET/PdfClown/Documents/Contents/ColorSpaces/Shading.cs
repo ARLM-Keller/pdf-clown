@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Functions;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
@@ -260,23 +261,27 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override SKShader GetShader()
         {
             var colorSpace = ColorSpace;
-            //var indexed = colorSpace is IndexedColorSpace;
-            //var compCount = colorSpace.ComponentCount;
-            //var count = Background.Count / compCount;
-            //var colors = new SKColor[count];
+
+            var compCount = colorSpace.ComponentCount;
+
+            var colors = new SKColor[2];
             //var background = Background;
-            //for (int i = 0; i < count; i++)
-            //{
-            //    var components = new PdfDirectObject[compCount];
-            //    for (int j = 0; j < compCount; j++)
-            //    {
-            //        components[j] = background[i * j];
-            //    }
-            //    var pdfColor = colorSpace.GetColor(components, null);
-            //    colors[i] = colorSpace.GetColor(pdfColor);
-            //}
-            // Function.Calculate()
-            return null;// SKShader.CreateLinearGradient(Coords[0], Coords[1], colors, Domain, SKShaderTileMode.Clamp);
+            var domain = Domain;
+            for (int i = 0; i < domain.Length; i++)
+            {
+                var components = new double[1];
+                components[0] = domain[i];
+                var result = Function.Calculate(components);
+                var typeResult = new PdfDirectObject[compCount];
+                for (int j = 0; j < compCount; j++)
+                {
+                    typeResult[j] = PdfReal.Get(result[j]);
+                }
+                var pdfColor = colorSpace.GetColor(typeResult, null);
+                colors[i] = colorSpace.GetColor(pdfColor);
+            }
+
+            return SKShader.CreateLinearGradient(Coords[0], Coords[1], colors, Domain, SKShaderTileMode.Clamp);
 
         }
 

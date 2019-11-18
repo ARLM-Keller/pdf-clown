@@ -185,7 +185,7 @@ namespace PdfClown.Documents.Functions
         {
             IList<Interval<T>> intervals;
             {
-                PdfArray intervalsObject = (PdfArray)Dictionary[key];
+                PdfArray intervalsObject = (PdfArray)Dictionary.Resolve(key);
                 if (intervalsObject == null)
                 {
                     intervals = (defaultIntervalsCallback == null

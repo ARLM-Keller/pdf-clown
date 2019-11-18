@@ -65,16 +65,17 @@ namespace PdfClown.Documents.Functions
                 var domain = domains[i];
                 inputs[i] = Math.Min(Math.Max(inputs[i], domain.Low), domain.High);
             }
-            var result = new double[ranges.Count];
+            var outCount = ranges?.Count ?? c0.Length;
+            var result = new double[outCount];
             var x = inputs[0];
             var inputN = Math.Pow(x, Exponent);
-            for (int i = 0; i < ranges.Count; i++)
+            for (int i = 0; i < outCount; i++)
             {
-                var range = ranges[i];
+                var range = ranges?[i] ?? null;
                 var exponenta = n == 1
                     ? linear(x, domains[0].Low, domains[0].High, c0[i], c1[i])
                     : exponential(x, c0[i], c1[i], inputN);
-                result[i] = Math.Min(Math.Max(exponenta, range.Low), range.High);
+                result[i] = Math.Min(Math.Max(exponenta, range?.Low ?? 0D), range?.High ?? 1D);
             }
             return result;// new double[] { inputs[0], inputs[0], inputs[0], inputs[0] };
         }
@@ -157,7 +158,7 @@ namespace PdfClown.Documents.Functions
             }
         }
 
-        
+
         #endregion
         #endregion
         #endregion

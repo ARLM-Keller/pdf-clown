@@ -95,4 +95,60 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
     }
+
+
+    internal class CADCyrillicMapping
+    {
+        private static Dictionary<string, int> codes = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        static CADCyrillicMapping()
+        { Load(); }
+
+        public static int? NameToCode(string name)
+        { int code; return codes.TryGetValue(name, out code) ? code : (int?)null; }
+
+        /**
+          <summary>Loads the glyph list mapping character names to character codes (unicode
+          encoding).</summary>
+        */
+        private static void Load()
+        {
+            StreamReader glyphListStream = null;
+            try
+            {
+                // Open the glyph list!
+                /*
+                  NOTE: The Adobe Glyph List [AGL:2.0] represents the reference name-to-unicode map
+                  for consumer applications.
+                */
+                glyphListStream = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("fonts.G500"));
+
+                // Parsing the glyph list...
+                string line;
+                Regex linePattern = new Regex("^(\\w+);([A-F0-9]+)$");
+                while ((line = glyphListStream.ReadLine()) != null)
+                {
+                    MatchCollection lineMatches = linePattern.Matches(line);
+                    if (lineMatches.Count < 1)
+                        continue;
+
+                    Match lineMatch = lineMatches[0];
+
+                    string name = lineMatch.Groups[1].Value;
+                    int code = Int32.Parse(
+                      lineMatch.Groups[2].Value,
+                      NumberStyles.HexNumber
+                      );
+
+                    // Associate the character name with its corresponding character code!
+                    codes[name] = code;
+                }
+            }
+            finally
+            {
+                if (glyphListStream != null)
+                { glyphListStream.Close(); }
+            }
+        }
+    }
 }

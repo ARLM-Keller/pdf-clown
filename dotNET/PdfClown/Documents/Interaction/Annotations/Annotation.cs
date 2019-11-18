@@ -282,7 +282,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             set
             {
-                System.Diagnostics.Debug.WriteLine($"Old Bounds: {Box}");
                 BaseDataObject[PdfName.Rect] = new Objects.Rectangle(value.Left, GetPageHeight() - value.Top, value.Width, value.Height)
                     .BaseDataObject;
                 System.Diagnostics.Debug.WriteLine($"New Bounds: {Box}");
@@ -302,19 +301,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                 BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value);
                 OnPropertyChanged();
             }
-        }
-
-        /**
-          <summary>Deletes this annotation removing also its reference on the page.</summary>
-        */
-        public override bool Delete()
-        {
-            // Shallow removal (references):
-            // * reference on page
-            Page.Annotations.Remove(this);
-
-            // Deep removal (indirect object).
-            return base.Delete();
         }
 
         /**
@@ -422,6 +408,24 @@ namespace PdfClown.Documents.Interaction.Annotations
                 OnPropertyChanged();
             }
         }
+
+        public virtual void MoveTo(SKRect newBox)
+        {
+            Box = newBox;
+        }
+        /**
+          <summary>Deletes this annotation removing also its reference on the page.</summary>
+        */
+        public override bool Delete()
+        {
+            // Shallow removal (references):
+            // * reference on page
+            Page.Annotations.Remove(this);
+
+            // Deep removal (indirect object).
+            return base.Delete();
+        }
+
 
         #region ILayerable
         [PDF(VersionEnum.PDF15)]

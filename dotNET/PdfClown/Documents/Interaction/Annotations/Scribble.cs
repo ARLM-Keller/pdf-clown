@@ -97,22 +97,22 @@ namespace PdfClown.Documents.Interaction.Annotations
                 paths = value;
                 PdfArray pathsObject = new PdfArray();
                 double pageHeight = Page.Box.Height;
-                SKRect? box = null;
+                SKRect box = SKRect.Empty;
                 foreach (var path in value)
                 {
                     PdfArray pathObject = new PdfArray();
                     foreach (SKPoint point in path.Points)
                     {
-                        if (!box.HasValue)
+                        if (box == SKRect.Empty)
                         { box = SKRect.Create(point.X, point.Y, 0, 0); }
                         else
-                        { box.Value.Add(point); }
+                        { box.Add(point); }
                         pathObject.Add(PdfReal.Get(point.X)); // x.
                         pathObject.Add(PdfReal.Get(pageHeight - point.Y)); // y.
                     }
                     pathsObject.Add(pathObject);
                 }
-                Box = box.Value;
+                Box = box;
                 BaseDataObject[PdfName.InkList] = pathsObject;
 
             }
@@ -135,6 +135,34 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     canvas.DrawPath(pathData, paint);
                 }
+            }
+        }
+
+        public override void MoveTo(SKRect newBox)
+        {
+            var oldBox = Box;
+            //base.MoveTo(newBox);
+            var dif = SKMatrix.MakeIdentity();
+            SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY));
+            SKMatrix.PreConcat(ref dif, SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height));
+            SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
+            var oldPaths = Paths;
+            var newPaths = new List<SKPath>();
+            foreach (var path in oldPaths)
+            {
+                var vertices = path.Points;
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    vertices[i] = dif.MapPoint(vertices[i]);
+                }
+                var newPath = new SKPath();
+                newPath.AddPoly(vertices, false);
+                newPaths.Add(newPath);
+            }
+            Paths = newPaths;
+            foreach (var oldPath in oldPaths)
+            {
+                oldPath.Dispose();
             }
         }
         #endregion

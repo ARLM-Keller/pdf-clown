@@ -204,22 +204,24 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         protected virtual void DrawAppearance(SKCanvas canvas, FormXObject appearance)
         {
-            if (appearance != null)
+            if (appearance == null)
             {
-                var bounds = Box;
-                var appearanceBounds = appearance.Box;
-                var mapedAppearanceBounds = appearance.Matrix.MapRect(appearance.Box);
-
-                SKMatrix initialCtm = SKMatrix.MakeIdentity();
-                initialCtm.SetScaleTranslate(bounds.Width / mapedAppearanceBounds.Width, -bounds.Height / mapedAppearanceBounds.Height, bounds.Left, bounds.Top + bounds.Height);
-                SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-mapedAppearanceBounds.Left, -mapedAppearanceBounds.Top));
-
-                var targetBounds = initialCtm.MapRect(appearanceBounds);
-                //System.Diagnostics.Debug.WriteLine($"Draw Clip:{canvas.LocalClipBounds} {this.Text} {targetBounds}");
-                
-                var picture = appearance.Render();
-                canvas.DrawPicture(picture, ref initialCtm);
+                return;
             }
+            var bounds = Box;
+            var appearanceBounds = appearance.Box;
+            var mapedAppearanceBounds = appearance.Matrix.MapRect(appearance.Box);
+
+            SKMatrix initialCtm = SKMatrix.MakeIdentity();
+            initialCtm.SetScaleTranslate(bounds.Width / mapedAppearanceBounds.Width, -bounds.Height / mapedAppearanceBounds.Height, bounds.Left, bounds.Top + bounds.Height);
+            SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-mapedAppearanceBounds.Left, -mapedAppearanceBounds.Top));
+
+            var targetBounds = initialCtm.MapRect(appearanceBounds);
+            //System.Diagnostics.Debug.WriteLine($"Draw Clip:{canvas.LocalClipBounds} {this.Text} {targetBounds}");
+
+            var picture = appearance.Render();
+            canvas.DrawPicture(picture, ref initialCtm);
+
         }
         #endregion
         #endregion

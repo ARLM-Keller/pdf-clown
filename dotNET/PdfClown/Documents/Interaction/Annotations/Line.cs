@@ -31,6 +31,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -218,6 +219,19 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public override bool ShowToolTip => !CaptionVisible;
+
+        public override void MoveTo(SKRect newBox)
+        {
+            var oldBox = Box;
+            var dif = SKMatrix.MakeIdentity();
+            SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY));
+            SKMatrix.PreConcat(ref dif, SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height));
+            SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
+
+            StartPoint = dif.MapPoint(StartPoint);
+            EndPoint = dif.MapPoint(EndPoint);
+            base.MoveTo(newBox);
+        }
         #endregion
 
         #region private
@@ -254,6 +268,13 @@ namespace PdfClown.Documents.Interaction.Annotations
                     canvas.DrawTextOnPath(Text, path, new SKPoint(10, -2), paint);
                 }
             }
+        }
+
+        public void RefreshBox()
+        {
+            var box = SKRect.Create(StartPoint, SKSize.Empty);
+            box.Add(EndPoint);
+            Box = box;
         }
         #endregion
         #endregion

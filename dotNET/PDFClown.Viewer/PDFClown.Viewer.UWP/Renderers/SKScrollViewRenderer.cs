@@ -53,6 +53,12 @@ namespace PdfClown.Viewer.UWP
                     case CursorType.SizeNS:
                         Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeNorthSouth, 0);
                         break;
+                    case CursorType.SizeNESW:
+                        Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeNortheastSouthwest, 0);
+                        break;
+                    case CursorType.SizeNWSE:
+                        Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeNorthwestSoutheast, 0);
+                        break;
                     case CursorType.Hand:
                         Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Hand, 0);
                         break;
@@ -62,6 +68,9 @@ namespace PdfClown.Viewer.UWP
                     case CursorType.ScrollAll:
                         Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
                         break;
+                    case CursorType.Cross:
+                        Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Cross, 0);
+                        break;                        
                 }
             }
         }

@@ -38,6 +38,10 @@
       <Link>res\fonts\AGL20.scsv</Link>
       <LogicalName>fonts.AGL20</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\..\main\res\pkg\fonts\G500.scsv">
+      <Link>res\fonts\G500.scsv</Link>
+      <LogicalName>fonts.G500</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\..\main\res\pkg\fonts\afm\Courier.afm">
       <Link>res\fonts\afm\Courier.afm</Link>
       <LogicalName>fonts.afm.Courier</LogicalName>
@@ -102,6 +106,22 @@
       <Link>res\fonts\cmap\Identity-V</Link>
       <LogicalName>fonts.cmap.Identity-V</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\..\main\res\pkg\fonts\cmap\GB-EUC-H">
+      <Link>res\fonts\cmap\GB-EUC-H</Link>
+      <LogicalName>fonts.cmap.GB-EUC-H</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\main\res\pkg\fonts\cmap\GB-EUC-V">
+      <Link>res\fonts\cmap\GB-EUC-V</Link>
+      <LogicalName>fonts.cmap.GB-EUC-V</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\main\res\pkg\fonts\cmap\GBK-EUC-H">
+      <Link>res\fonts\cmap\GBK-EUC-H</Link>
+      <LogicalName>fonts.cmap.GBK-EUC-H</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\main\res\pkg\fonts\cmap\GBK-EUC-V">
+      <Link>res\fonts\cmap\GBK-EUC-V</Link>
+      <LogicalName>fonts.cmap.GBK-EUC-V</LogicalName>
+    </EmbeddedResource>    
     <EmbeddedResource Include="..\..\main\res\pkg\fonts\cff\ExpertCharset">
       <Link>res\fonts\cff\ExpertCharset</Link>
       <LogicalName>fonts.cff.ExpertCharset</LogicalName>
@@ -118,6 +138,7 @@
       <Link>res\fonts\cff\StandardStrings</Link>
       <LogicalName>fonts.cff.StandardStrings</LogicalName>
     </EmbeddedResource>
+    
     <EmbeddedResource Include="Assets\Comment.svg" />
     <EmbeddedResource Include="Assets\Graph.svg" />
     <EmbeddedResource Include="Assets\Key.svg" />
@@ -130,7 +151,7 @@
     <EmbeddedResource Include="Assets\Tag.svg" />
   </ItemGroup>
   <PropertyGroup>
-    <RestoreSources>../FreeImage.NETCore/Package;$(RestoreSources);</RestoreSources>    
+    <RestoreSources>../FreeImage.NETCore/Package;$(RestoreSources);</RestoreSources>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.633" />
@@ -142,6 +163,6 @@
   <!--<ItemGroup>
     <ProjectReference Include="..\FreeImage.NETCore\FreeImage.NETCore.csproj" />
   </ItemGroup>-->
-  
+
 
 </Project>

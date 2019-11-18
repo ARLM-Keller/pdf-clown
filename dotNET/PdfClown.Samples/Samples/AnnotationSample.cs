@@ -52,9 +52,9 @@ namespace PdfClown.Samples.CLI
                 IconType = StickyNote.IconTypeEnum.Note,
                 Color = DeviceRGBColor.Get(SKColors.Yellow),
                 Popup = new Popup(
-                page,
-                SKRect.Create(200, 25, 200, 75),
-                "Text of the Popup annotation (this text won't be visible as associating popups to markup annotations overrides the former's properties with the latter's)"
+                    page,
+                    SKRect.Create(200, 25, 200, 75),
+                    "Text of the Popup annotation (this text won't be visible as associating popups to markup annotations overrides the former's properties with the latter's)"
                 ),
                 Author = "Stefano",
                 Subject = "Sticky note",
@@ -67,9 +67,9 @@ namespace PdfClown.Samples.CLI
                 Author = "Stefano",
                 Subject = "Sticky note",
                 Popup = new Popup(
-                page,
-                SKRect.Create(400, 25, 200, 75),
-                "Text of the Popup annotation (this text won't be visible as associating popups to markup annotations overrides the former's properties with the latter's)"
+                    page,
+                    SKRect.Create(400, 25, 200, 75),
+                    "Text of the Popup annotation (this text won't be visible as associating popups to markup annotations overrides the former's properties with the latter's)"
                 )
             };
             new StickyNote(page, new SKPoint(110, 50), "Text of the Comment sticky note annotation")
@@ -92,10 +92,10 @@ namespace PdfClown.Samples.CLI
             new FreeText(page, SKRect.Create(250, 90, 150, 70), "Text of the Callout note annotation")
             {
                 Line = new FreeText.CalloutLine(
-                page,
-                new SKPoint(250, 125),
-                new SKPoint(150, 125),
-                new SKPoint(100, 100)
+                    page,
+                    new SKPoint(250, 125),
+                    new SKPoint(150, 125),
+                    new SKPoint(100, 100)
                 ),
                 Type = FreeText.TypeEnum.Callout,
                 LineEndStyle = LineEndStyleEnum.OpenArrow,

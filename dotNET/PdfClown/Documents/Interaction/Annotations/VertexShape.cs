@@ -100,6 +100,23 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             base.Draw(canvas);
         }
+
+        public override void MoveTo(SKRect newBox)
+        {
+            var oldBox = Box;
+            //base.MoveTo(newBox);
+            var dif = SKMatrix.MakeIdentity();
+            SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY));
+            SKMatrix.PreConcat(ref dif, SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height));
+            SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
+            var vertices = Vertices;
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                vertices[i] = dif.MapPoint(vertices[i]);
+            }
+            Vertices = vertices;
+            base.MoveTo(newBox);
+        }
         #endregion
         #endregion
         #endregion

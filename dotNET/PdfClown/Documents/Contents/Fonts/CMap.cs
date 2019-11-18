@@ -45,9 +45,7 @@ namespace PdfClown.Documents.Contents.Fonts
           <summary>Gets the character map extracted from the given data.</summary>
           <param name="stream">Character map data.</param>
         */
-        public static IDictionary<ByteArray, int> Get(
-          bytes::IInputStream stream
-          )
+        public static IDictionary<ByteArray, int> Get(bytes::IInputStream stream)
         {
             CMapParser parser = new CMapParser(stream);
             return parser.Parse();
@@ -57,9 +55,7 @@ namespace PdfClown.Documents.Contents.Fonts
           <summary>Gets the character map extracted from the given encoding object.</summary>
           <param name="encodingObject">Encoding object.</param>
         */
-        public static IDictionary<ByteArray, int> Get(
-          PdfDataObject encodingObject
-          )
+        public static IDictionary<ByteArray, int> Get(PdfDataObject encodingObject)
         {
             if (encodingObject == null)
                 return null;
@@ -76,9 +72,7 @@ namespace PdfClown.Documents.Contents.Fonts
           <summary>Gets the character map extracted from the given data.</summary>
           <param name="stream">Character map data.</param>
         */
-        public static IDictionary<ByteArray, int> Get(
-          PdfStream stream
-          )
+        public static IDictionary<ByteArray, int> Get(PdfStream stream)
         { return Get(stream.Body); }
 
         /**
@@ -86,9 +80,7 @@ namespace PdfClown.Documents.Contents.Fonts
           <param name="name">Predefined character map name.</param>
           <returns>null, in case no name matching occurs.</returns>
         */
-        public static IDictionary<ByteArray, int> Get(
-          PdfName name
-          )
+        public static IDictionary<ByteArray, int> Get(PdfName name)
         { return Get((string)name.Value); }
 
         /**
@@ -96,9 +88,7 @@ namespace PdfClown.Documents.Contents.Fonts
           <param name="name">Predefined character map name.</param>
           <returns>null, in case no name matching occurs.</returns>
         */
-        public static IDictionary<ByteArray, int> Get(
-          string name
-          )
+        public static IDictionary<ByteArray, int> Get(string name)
         {
             using (Stream cmapResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("fonts.cmap." + name))
             {

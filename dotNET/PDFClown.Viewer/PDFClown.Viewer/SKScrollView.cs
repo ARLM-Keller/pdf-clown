@@ -616,10 +616,13 @@ namespace PdfClown.Viewer
     {
         Arrow,
         SizeWE,
+        SizeNESW,
         SizeNS,
+        SizeNWSE,
         Hand,
         Wait,
-        ScrollAll
+        ScrollAll,
+        Cross
     }
 
     [Flags]

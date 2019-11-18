@@ -56,6 +56,12 @@ namespace PdfClown.Viewer.WPF
                     case CursorType.SizeNS:
                         Control.Cursor = Cursors.SizeNS;
                         break;
+                    case CursorType.SizeNESW:
+                        Control.Cursor = Cursors.SizeNESW;
+                        break;
+                    case CursorType.SizeNWSE:
+                        Control.Cursor = Cursors.SizeNWSE;
+                        break;
                     case CursorType.Hand:
                         Control.Cursor = Cursors.Hand;
                         break;
@@ -65,7 +71,9 @@ namespace PdfClown.Viewer.WPF
                     case CursorType.ScrollAll:
                         Control.Cursor = Cursors.ScrollAll;
                         break;
-
+                    case CursorType.Cross:
+                        Control.Cursor = Cursors.Cross;
+                        break;
                 }
             }
         }

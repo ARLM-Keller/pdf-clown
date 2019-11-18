@@ -323,10 +323,13 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var temp = SKRect.Create(0, 0, textBounds.Width, 0);
                 var left = textBounds.Left + 5;
                 var top = textBounds.Top + paint.FontSpacing;
-                foreach (var line in GetLines(Text.Trim(), textBounds, paint))
+                if (!string.IsNullOrEmpty(Text))
                 {
-                    canvas.DrawText(line, left, top, paint);
-                    top += paint.FontSpacing;
+                    foreach (var line in GetLines(Text.Trim(), textBounds, paint))
+                    {
+                        canvas.DrawText(line, left, top, paint);
+                        top += paint.FontSpacing;
+                    }
                 }
             }
             if (Type == TypeEnum.Callout && Line != null)

@@ -42,9 +42,7 @@ namespace PdfClown.Util
         public ByteArray(byte[] data)
         { Array.Copy(data, this.Data = new byte[data.Length], data.Length); }
 
-        public int CompareTo(
-          ByteArray other
-          )
+        public int CompareTo(ByteArray other)
         {
             int comparison = Data.Length - other.Data.Length;
             if (comparison == 0)

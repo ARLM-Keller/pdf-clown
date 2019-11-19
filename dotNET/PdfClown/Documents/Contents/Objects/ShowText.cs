@@ -181,6 +181,8 @@ namespace PdfClown.Documents.Contents.Objects
                                     fill.Typeface = nameTypeface;
                                     context.DrawText(text, 0, 0, fill);
                                 }
+                                else
+                                { }
                             }
 
                             if (stroke != null)

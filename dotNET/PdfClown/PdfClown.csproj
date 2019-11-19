@@ -42,6 +42,10 @@
       <Link>res\fonts\G500.scsv</Link>
       <LogicalName>fonts.G500</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\..\main\res\pkg\fonts\Embedded_Subset_DLFONT12e+ArialNarrow.scsv">
+      <Link>res\fonts\Embedded_Subset_DLFONT12e+ArialNarrow.scsv</Link>
+      <LogicalName>fonts.Embedded_Subset_DLFONT12e+ArialNarrow</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\..\main\res\pkg\fonts\afm\Courier.afm">
       <Link>res\fonts\afm\Courier.afm</Link>
       <LogicalName>fonts.afm.Courier</LogicalName>

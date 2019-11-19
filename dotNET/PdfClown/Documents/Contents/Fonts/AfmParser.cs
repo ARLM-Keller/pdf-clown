@@ -191,7 +191,7 @@ namespace PdfClown.Documents.Contents.Fonts
                   charName == null
                       || Metrics.IsCustomEncoding
                     ? charCode
-                    : GlyphMapping.NameToCode(charName).Value
+                    : GlyphMapping.Default.NameToCode(charName).Value
                   );
 
                 GlyphIndexes[code] = charCode;
@@ -227,8 +227,8 @@ namespace PdfClown.Documents.Contents.Fonts
 
                 Match lineMatch = lineMatches[0];
 
-                int code1 = GlyphMapping.NameToCode(lineMatch.Groups[1].Value).Value;
-                int code2 = GlyphMapping.NameToCode(lineMatch.Groups[2].Value).Value;
+                int code1 = GlyphMapping.Default.NameToCode(lineMatch.Groups[1].Value).Value;
+                int code2 = GlyphMapping.Default.NameToCode(lineMatch.Groups[2].Value).Value;
                 int pair = code1 << 16 + code2;
                 int value = ConvertUtils.ParseAsIntInvariant(lineMatch.Groups[3].Value);
 

@@ -223,7 +223,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 case TokenTypeEnum.Integer: // Character code in plain format.
                     return (int)Token;
                 case TokenTypeEnum.Name: // Character name.
-                    return GlyphMapping.NameToCode((string)Token).Value;
+                    return GlyphMapping.Default.NameToCode((string)Token).Value;
                 default:
                     throw new Exception(
                       "Hex string, integer or name expected instead of " + TokenType

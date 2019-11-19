@@ -1,0 +1,41 @@
+# Name:          Embedded_Subset_DLFONT:12e+ArialNarrow
+# Table version: 0.0
+# Date:          
+#
+#
+# Format: Semicolon-delimited fields:
+#            (1) glyph name
+#            (2) Unicode scalar value
+twodotleadervertical;0023
+dbldanda;0041
+phook;0044
+Dz;0045
+ohookabove;0046
+angleleft;0047
+ovowelsigngujarati;0048
+ccircle;0049
+oneideographicparen;004B
+semivoicedmarkkana;004C
+noonghunnaarabic;004E
+xmonospace;004D
+thothongthai;004F
+strokelongoverlaycmb;0050
+erbopomofo;0052
+second;0053
+ringhalfleftarmenian;0054
+dochadathai;0055
+mhook;0056
+caronbelowcmb;0057
+greatersmall;043C
+onegurmukhi;0412
+odieresiscyrillic;0415
+apple;0426
+angle;0427
+anglebracketleft;0428
+ascript;0429
+blinebelow;042B
+ddhabengali;042C
+dagger;042D
+ef;042E
+reviamugrashhebrew;042F
+#--end

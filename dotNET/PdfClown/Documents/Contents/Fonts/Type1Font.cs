@@ -67,11 +67,21 @@ namespace PdfClown.Documents.Contents.Fonts
         protected override void OnLoad()
         {
             base.OnLoad();
-            PdfDataObject encodingObject = BaseDataObject.Resolve(PdfName.Encoding);
-            if (encodingObject is PdfDictionary encodingDictionary
+
+            if (BaseDataObject.Resolve(PdfName.Encoding) is PdfDictionary encodingDictionary
                 && encodingDictionary.Values.Count > 0
                 && encodingDictionary.Resolve(PdfName.Differences) is PdfArray differencesObject)
             {
+                var fontMapping = (GlyphMapping)null;
+
+                if (BaseDataObject.Resolve(PdfName.BaseFont) is PdfName pdfName)
+                {
+                    var name = Regex.Replace(pdfName.RawValue, @"[\/?:*""><|]+", "", RegexOptions.Compiled);
+                    if (GlyphMapping.IsExist(name))
+                    {
+                        fontMapping = new GlyphMapping(name);
+                    }
+                }
 
                 byte[] charCodeData = new byte[1];
                 foreach (PdfDirectObject differenceObject in differencesObject)
@@ -86,10 +96,14 @@ namespace PdfClown.Documents.Contents.Fonts
                         { codes.Remove(charCode); }
                         else
                         {
-                            int? code = CADCyrillicMapping.NameToCode(charName);
+                            int? code = GlyphMapping.DLFONT.NameToCode(charName) ?? fontMapping?.NameToCode(charName);
                             if (code != null)
                             {
                                 codes[charCode] = code.Value;
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($" {charName}");
                             }
                         }
                         charCodeData[0]++;
@@ -114,20 +128,20 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 typeface = SKFontManager.Default.CreateTypeface(data);
             }
-            //#if DEBUG
-            //            name = Regex.Replace(name, @"[\/?:*""><|]+", "", RegexOptions.Compiled);
-            //            System.IO.File.WriteAllBytes($"export_{name}.psc", bytes);
-            //            if (typeface == null)
-            //            {
-            //                using (var manifestStream = typeof(Type1Font).Assembly.GetManifestResourceStream(name + ".otf"))
-            //                {
-            //                    if (manifestStream != null)
-            //                    {
-            //                        typeface = SKFontManager.Default.CreateTypeface(manifestStream);
-            //                    }
-            //                }
-            //            }
-            //#endif            
+#if DEBUG
+            name = Regex.Replace(name, @"[\/?:*""><|]+", "", RegexOptions.Compiled);
+            System.IO.File.WriteAllBytes($"export_{name}.psc", bytes);
+            //if (typeface == null)
+            //{
+            //    using (var manifestStream = typeof(Type1Font).Assembly.GetManifestResourceStream(name + ".otf"))
+            //    {
+            //        if (manifestStream != null)
+            //        {
+            //            typeface = SKFontManager.Default.CreateTypeface(manifestStream);
+            //        }
+            //    }
+            //}
+#endif
 
             if (typeface == null)
             {

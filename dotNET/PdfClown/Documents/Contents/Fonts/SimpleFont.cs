@@ -102,7 +102,7 @@ namespace PdfClown.Documents.Contents.Fonts
                                 { codes.Remove(charCode); }
                                 else
                                 {
-                                    int? code = GlyphMapping.NameToCode(charName);
+                                    int? code = GlyphMapping.Default.NameToCode(charName);
                                     codes[charCode] = (code ?? charCodeData[0]);
                                 }
                                 charCodeData[0]++;
@@ -120,7 +120,6 @@ namespace PdfClown.Documents.Contents.Fonts
                 //    && encodingDictionary.Values.Count > 0
                 //    && encodingDictionary.Resolve(PdfName.Differences) is PdfArray differencesObject)
                 //{
-
                 //    byte[] charCodeData = new byte[1];
                 //    foreach (PdfDirectObject differenceObject in differencesObject)
                 //    {

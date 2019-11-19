@@ -82,7 +82,7 @@ namespace PdfClown.Documents.Contents.Fonts
                         Match encodingLineMatch = encodingLineMatches[0];
                         byte[] inputCode = new byte[] { (byte)Int32.Parse(encodingLineMatch.Groups[1].Value) };
                         string name = encodingLineMatch.Groups[2].Value.Substring(1);
-                        codes[new ByteArray(inputCode)] = GlyphMapping.NameToCode(name).Value;
+                        codes[new ByteArray(inputCode)] = GlyphMapping.Default.NameToCode(name).Value;
                     }
                     break;
                 }

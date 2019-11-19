@@ -74,7 +74,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         #region protected
         protected void Put(int charCode, string charName)
-        { Put(charCode, GlyphMapping.NameToCode(charName).Value); }
+        { Put(charCode, GlyphMapping.Default.NameToCode(charName).Value); }
 
         protected void Put(int charCode, int unicode)
         { codes[new ByteArray(new byte[] { (byte)charCode })] = unicode; }

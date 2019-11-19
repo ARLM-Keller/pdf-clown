@@ -77,7 +77,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             Paragraph
         };
 
-        private const int size = 32;
+        public const int size = 32;
         #endregion
 
         #region static

@@ -293,11 +293,16 @@ namespace PdfClown.Viewer
                     annotation.Draw(canvas);
                     if (annotation == SelectedAnnotation)
                     {
-                        using (var paint = new SKPaint { Color = SKColors.OrangeRed, Style = SKPaintStyle.Stroke, StrokeWidth = 2 })
+                        canvas.SetMatrix(drawPictureMatrix);
+                        using (var paint = new SKPaint { Color = SKColors.OrangeRed, Style = SKPaintStyle.Stroke, StrokeWidth = 1 })
                         {
-                            var bounds = annotation.GetBounds(SKMatrix.MakeIdentity());
+                            var bounds = annotation.Box;
+                            if (annotation is StickyNote stick)
+                            {
+                                bounds.Size = new SKSize(StickyNote.size / canvas.TotalMatrix.ScaleX, StickyNote.size / canvas.TotalMatrix.ScaleY);
+                            }
                             bounds.Inflate(3, 3);
-                            canvas.DrawRect(bounds, paint);
+                            canvas.DrawRoundRect(bounds, 3,3, paint);
                         }
                     }
                 }

@@ -198,10 +198,10 @@ namespace PdfClown.Viewer
 
         private void OnDragging(Annotation oldValue, Annotation newValue)
         {
-            SelectedAnnotation = newValue;
             if (newValue == null)
             {
                 IsChanged = true;
+                SelectedAnnotation = oldValue;
             }
         }
 
@@ -216,6 +216,7 @@ namespace PdfClown.Viewer
             {
                 Cursor = CursorType.Arrow;
                 IsChanged = true;
+                SelectedAnnotation = oldValue;
             }
         }
 
@@ -230,6 +231,7 @@ namespace PdfClown.Viewer
             {
                 Cursor = CursorType.Arrow;
                 IsChanged = true;
+                SelectedAnnotation = oldValue;
             }
         }
 
@@ -291,7 +293,10 @@ namespace PdfClown.Viewer
                 if (annotation.Visible)
                 {
                     annotation.Draw(canvas);
-                    if (annotation == SelectedAnnotation)
+                    if (annotation == SelectedAnnotation
+                        && annotation != Dragging
+                        && annotation != Sizing
+                        && annotation != Pointing)
                     {
                         canvas.SetMatrix(drawPictureMatrix);
                         using (var paint = new SKPaint { Color = SKColors.OrangeRed, Style = SKPaintStyle.Stroke, StrokeWidth = 1 })
@@ -302,7 +307,7 @@ namespace PdfClown.Viewer
                                 bounds.Size = new SKSize(StickyNote.size / canvas.TotalMatrix.ScaleX, StickyNote.size / canvas.TotalMatrix.ScaleY);
                             }
                             bounds.Inflate(3, 3);
-                            canvas.DrawRoundRect(bounds, 3,3, paint);
+                            canvas.DrawRoundRect(bounds, 3, 3, paint);
                         }
                     }
                 }

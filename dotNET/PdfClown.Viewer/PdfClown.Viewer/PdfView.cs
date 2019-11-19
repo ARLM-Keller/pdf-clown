@@ -30,7 +30,8 @@ namespace PdfClown.Viewer
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnSizingChanged((Annotation)oldValue, (Annotation)newValue));
         public static readonly BindableProperty PointingProperty = BindableProperty.Create(nameof(Pointing), typeof(Annotation), typeof(PdfView), null,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnPointingChanged((Annotation)oldValue, (Annotation)newValue));
-
+        public static readonly BindableProperty IsChangedProperty = BindableProperty.Create(nameof(IsChanged), typeof(bool), typeof(PdfView), false,
+            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnIsChangedChanged((bool)oldValue, (bool)newValue));
 
         private readonly List<PdfPagePicture> pictures = new List<PdfPagePicture>();
         private readonly SKPaint paintText = new SKPaint { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 14 };
@@ -44,6 +45,7 @@ namespace PdfClown.Viewer
         private SKMatrix CurrentViewMatrix;
         private SKRect CurrentArea;
         private PdfPagePicture CurrentPicture;
+
         private Annotation CurrentAnnotation;
         private SKRect CurrentAnnotationBounds;
         private string currentAnnotationText;
@@ -98,6 +100,12 @@ namespace PdfClown.Viewer
             set => SetValue(PointingProperty, value);
         }
 
+        public bool IsChanged
+        {
+            get => (bool)GetValue(IsChangedProperty);
+            set => SetValue(IsChangedProperty, value);
+        }
+
         private string CurrentAnnotationText
         {
             get => currentAnnotationText;
@@ -143,6 +151,11 @@ namespace PdfClown.Viewer
             }
         }
 
+        public string FilePath { get; private set; }
+        public string TempFilePath { get; private set; }
+
+        public event EventHandler<EventArgs> DragComplete;
+
         public IEnumerable<Annotation> GetAllAnnotations()
         {
             foreach (var picture in pictures)
@@ -186,6 +199,10 @@ namespace PdfClown.Viewer
         private void OnDragging(Annotation oldValue, Annotation newValue)
         {
             SelectedAnnotation = newValue;
+            if (newValue == null)
+            {
+                IsChanged = true;
+            }
         }
 
         private void OnSizingChanged(Annotation oldValue, Annotation newValue)
@@ -198,6 +215,7 @@ namespace PdfClown.Viewer
             else
             {
                 Cursor = CursorType.Arrow;
+                IsChanged = true;
             }
         }
 
@@ -211,7 +229,13 @@ namespace PdfClown.Viewer
             else
             {
                 Cursor = CursorType.Arrow;
+                IsChanged = true;
             }
+        }
+
+        private void OnIsChangedChanged(bool oldValue, bool newValue)
+        {
+
         }
 
         protected override void OnVerticalValueChanged(double oldValue, double newValue)
@@ -546,6 +570,7 @@ namespace PdfClown.Viewer
             {
                 Dragging.Page.Annotations.Add(Dragging);
             }
+            DragComplete?.Invoke(this, EventArgs.Empty);
             Dragging = null;
         }
 
@@ -606,17 +631,27 @@ namespace PdfClown.Viewer
             UpdateCurrentMatrix();
         }
 
-        public Task LoadAsync(System.IO.Stream stream)
-        {
-            return Task.Run(() => Load(stream));
-        }
-
         public void Load(string filePath)
         {
-            var fileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Open,
+            if (File != null)
+            {
+                ClearPictures();
+                File.Dispose();
+            }
+            FilePath = filePath;
+            TempFilePath = filePath + "~";
+            System.IO.File.Copy(filePath, TempFilePath, true);
+            var fileStream = new System.IO.FileStream(TempFilePath, System.IO.FileMode.Open,
                                                              System.IO.FileAccess.ReadWrite,
                                                              System.IO.FileShare.ReadWrite);
             Load(fileStream);
+        }
+
+        public void Save()
+        {
+            File.Save(FilePath, SerializationModeEnum.Standard);
+            System.IO.File.SetLastWriteTimeUtc(FilePath, DateTime.UtcNow);
+            IsChanged = false;
         }
 
         public void Load(System.IO.Stream stream)
@@ -632,6 +667,7 @@ namespace PdfClown.Viewer
             File = new File(stream);
             Document = File.Document;
             LoadPages();
+            IsChanged = false;
         }
 
         private SKSize LoadPages()

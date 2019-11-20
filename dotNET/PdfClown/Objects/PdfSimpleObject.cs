@@ -86,11 +86,9 @@ namespace PdfClown.Objects
         {
             object value = null;
             obj = Resolve(obj);
-            if (obj != null)
+            if (obj is IPdfValued valued)
             {
-                PropertyInfo valueProperty = obj.GetType().GetProperty("Value");
-                if (valueProperty != null)
-                { value = valueProperty.GetGetMethod().Invoke(obj, null); }
+                value = valued.Value;                
             }
             return value ?? defaultValue;
         }

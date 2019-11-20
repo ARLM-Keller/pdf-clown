@@ -27,13 +27,13 @@ using System;
 
 namespace PdfClown.Objects
 {
-    public interface IPdfSimpleObject
-      : IComparable<PdfDirectObject>
+    public interface IPdfValued
     {
-        object Value
-        {
-            get;
-        }
+        object Value { get; }
+    }
+
+    public interface IPdfSimpleObject : IPdfValued, IComparable<PdfDirectObject>
+    {
     }
 
     /**
@@ -41,9 +41,6 @@ namespace PdfClown.Objects
     */
     public interface IPdfSimpleObject<TValue> : IPdfSimpleObject
     {
-        TValue RawValue
-        {
-            get;
-        }
+        TValue RawValue { get; }
     }
 }

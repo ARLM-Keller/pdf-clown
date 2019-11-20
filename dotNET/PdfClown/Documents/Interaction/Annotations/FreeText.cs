@@ -305,7 +305,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             var bounds = Box;
             var textBounds = TextBox;
-            var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
+            var color = SKColor;
 
             using (var paint = new SKPaint { Color = color, Style = SKPaintStyle.Fill })
             {
@@ -320,17 +320,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
             using (var paint = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.StrokeAndFill })
             {
-                var temp = SKRect.Create(0, 0, textBounds.Width, 0);
-                var left = textBounds.Left + 5;
-                var top = textBounds.Top + paint.FontSpacing;
-                if (!string.IsNullOrEmpty(Text))
-                {
-                    foreach (var line in GetLines(Text.Trim(), textBounds, paint))
-                    {
-                        canvas.DrawText(line, left, top, paint);
-                        top += paint.FontSpacing;
-                    }
-                }
+                canvas.DrawLines(Text, textBounds, paint);
             }
             if (Type == TypeEnum.Callout && Line != null)
             {
@@ -363,36 +353,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        private IEnumerable<string> GetLines(string text, SKRect textBounds, SKPaint paint)
-        {
-            //var builder = new SKTextBlobBuilder();
-            foreach (var line in text.Split('\r', '\n'))
-            {
-                var count = (int)paint.BreakText(line, textBounds.Width);
-                if (count == line.Length)
-                    yield return line;
-                else
-                {
-                    var index = 0;
-                    while (true)
-                    {
-                        for (int i = (index + count) - 1; i > index; i--)
-                        {
-                            if (line[i] == ' ')
-                            {
-                                count = (i + 1) - index;
-                                break;
-                            }
-                        }
-                        yield return line.Substring(index, count);
-                        index += count;
-                        if (index >= line.Length)
-                            break;
-                        count = (int)paint.BreakText(line.Substring(index), textBounds.Width);
-                    }
-                }
-            }
-        }
+
+
 
         #endregion
         #endregion
@@ -427,5 +389,61 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public static PdfName GetName(this FreeText.TypeEnum type)
         { return codes[type]; }
+    }
+
+    public static class DrawHelper
+    {
+        private static readonly string[] split = new string[] { "\r\n", "\n" };
+
+        public static float DrawLines(this SKCanvas canvas, string text, SKRect textBounds, SKPaint paint)
+        {
+            var left = textBounds.Left + 5;
+            var top = textBounds.Top + paint.FontSpacing;
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                foreach (var line in DrawHelper.GetLines(text.Trim(), textBounds, paint))
+                {
+                    if (line.Length > 0)
+                    {
+                        canvas.DrawText(line, left, top, paint);
+                    }
+                    top += paint.FontSpacing;
+                }
+            }
+
+            return top;
+        }
+
+        public static IEnumerable<string> GetLines(string text, SKRect textBounds, SKPaint paint)
+        {
+            //var builder = new SKTextBlobBuilder();
+            foreach (var line in text.Split(split, StringSplitOptions.None))
+            {
+                var count = line.Length == 0 ? 0 : (int)paint.BreakText(line, textBounds.Width);
+                if (count == line.Length)
+                    yield return line;
+                else
+                {
+                    var index = 0;
+                    while (true)
+                    {
+                        for (int i = (index + count) - 1; i > index; i--)
+                        {
+                            if (line[i] == ' ')
+                            {
+                                count = (i + 1) - index;
+                                break;
+                            }
+                        }
+                        yield return line.Substring(index, count);
+                        index += count;
+                        if (index >= line.Length)
+                            break;
+                        count = (int)paint.BreakText(line.Substring(index), textBounds.Width);
+                    }
+                }
+            }
+        }
     }
 }

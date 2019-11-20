@@ -177,7 +177,16 @@ NOTE: Fail fast if the referenced indirect object is undefined.
         { return visitor.Visit(this, data); }
 
         public override int CompareTo(PdfDirectObject obj)
-        { throw new NotImplementedException(); }
+        {
+            if (obj == null)
+                return 1;
+            if (ReferenceEquals(this, obj))
+                return 0;
+            if (obj is PdfReference reference)
+                return string.Compare(Id, reference.Id, StringComparison.Ordinal);
+            else
+                return GetHashCode().CompareTo(obj.GetHashCode());
+        }
 
         public override bool Equals(object other)
         {

@@ -65,21 +65,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region interface
         #region public
-        /**
-          <summary>Gets/Sets the constant opacity value to be used in painting the annotation.</summary>
-          <remarks>This value applies to all visible elements of the annotation (including its background
-          and border) but not to the popup window that appears when the annotation is opened.</remarks>
-        */
-        [PDF(VersionEnum.PDF14)]
-        public virtual double Alpha
-        {
-            get => (double)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.CA], 1d);
-            set
-            {
-                BaseDataObject[PdfName.CA] = PdfReal.Get(value);
-                OnPropertyChanged();
-            }
-        }
+       
 
         /**
           <summary>Gets/Sets the annotation editor. It is displayed as a text label in the title bar of
@@ -161,21 +147,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 BaseDataObject[PdfName.RT] = value.GetCode();
-                OnPropertyChanged();
-            }
-        }
-
-        /**
-          <summary>Gets/Sets the annotation subject.</summary>
-        */
-        [PDF(VersionEnum.PDF15)]
-        public virtual string Subject
-        {
-            get => (string)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.Subj]);
-            set
-            {
-                BaseDataObject[PdfName.Subj] = PdfTextString.Get(value);
-                ModificationDate = DateTime.Now;
                 OnPropertyChanged();
             }
         }

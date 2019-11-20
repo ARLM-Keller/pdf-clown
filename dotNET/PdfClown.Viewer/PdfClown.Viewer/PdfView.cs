@@ -155,6 +155,7 @@ namespace PdfClown.Viewer
         public string TempFilePath { get; private set; }
 
         public event EventHandler<EventArgs> DragComplete;
+        public event EventHandler<EventArgs> SelectedAnnotationChanged;
 
         public IEnumerable<Annotation> GetAllAnnotations()
         {
@@ -188,6 +189,7 @@ namespace PdfClown.Viewer
                 SelectedMarkup = null;
             else if (newValue is Markup markup)
                 SelectedMarkup = markup;
+            SelectedAnnotationChanged?.Invoke(this, EventArgs.Empty);
             InvalidateSurface();
         }
 
@@ -299,7 +301,7 @@ namespace PdfClown.Viewer
                         && annotation != Pointing)
                     {
                         canvas.SetMatrix(drawPictureMatrix);
-                        using (var paint = new SKPaint { Color = SKColors.OrangeRed, Style = SKPaintStyle.Stroke, StrokeWidth = 1 })
+                        using (var paint = new SKPaint { Color = SKColors.Blue, Style = SKPaintStyle.Stroke, StrokeWidth = 1 })
                         {
                             var bounds = annotation.Box;
                             if (annotation is StickyNote stick)

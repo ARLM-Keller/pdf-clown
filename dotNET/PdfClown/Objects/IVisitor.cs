@@ -44,21 +44,14 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          ObjectStream obj,
-          object data
-          );
-
+        PdfObject Visit(ObjectStream obj, object data);
         /**
           <summary>Visits an object array.</summary>
           <param name="object">Visited object.</param>
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfArray obj,
-          object data
-          );
+        PdfObject Visit(PdfArray obj, object data);
 
         /**
           <summary>Visits a boolean object.</summary>
@@ -66,10 +59,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfBoolean obj,
-          object data
-          );
+        PdfObject Visit(PdfBoolean obj, object data);
 
         /**
           <summary>Visits a data object.</summary>

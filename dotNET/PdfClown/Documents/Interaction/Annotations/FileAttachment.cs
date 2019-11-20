@@ -151,7 +151,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override void Draw(SKCanvas canvas)
         {
             var bounds = Box;
-            var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
+            var color = SKColor;
             SvgImage.DrawImage(canvas, IconType.ToString(), color, bounds, 1);
         }
 

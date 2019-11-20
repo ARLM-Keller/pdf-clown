@@ -236,6 +236,22 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         /**
+         <summary>Gets/Sets the constant opacity value to be used in painting the annotation.</summary>
+         <remarks>This value applies to all visible elements of the annotation (including its background
+         and border) but not to the popup window that appears when the annotation is opened.</remarks>
+       */
+        [PDF(VersionEnum.PDF14)]
+        public virtual double Alpha
+        {
+            get => PdfSimpleObject<object>.GetDoubleValue(BaseDataObject[PdfName.CA]) ?? 1D;
+            set
+            {
+                BaseDataObject[PdfName.CA] = PdfReal.Get(value);
+                OnPropertyChanged();
+            }
+        }
+
+        /**
           <summary>Gets/Sets the appearance specifying how the annotation is presented visually on the page.</summary>
         */
         [PDF(VersionEnum.PDF12)]
@@ -299,6 +315,17 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value);
+                OnPropertyChanged();
+            }
+        }
+
+        public virtual SKColor SKColor
+        {
+            get => Color?.ColorSpace.GetColor(Color, Alpha) ?? SKColors.Black;
+            set
+            {
+                Color = DeviceRGBColor.Get(value);
+                Alpha = value.Alpha / 255D;
                 OnPropertyChanged();
             }
         }
@@ -390,6 +417,21 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 BaseDataObject[PdfName.Contents] = PdfTextString.Get(value);
+                ModificationDate = DateTime.Now;
+                OnPropertyChanged();
+            }
+        }
+
+        /**
+         <summary>Gets/Sets the annotation subject.</summary>
+       */
+        [PDF(VersionEnum.PDF15)]
+        public virtual string Subject
+        {
+            get => (string)PdfSimpleObject<Object>.GetValue(BaseDataObject[PdfName.Subj]);
+            set
+            {
+                BaseDataObject[PdfName.Subj] = PdfTextString.Get(value);
                 ModificationDate = DateTime.Now;
                 OnPropertyChanged();
             }

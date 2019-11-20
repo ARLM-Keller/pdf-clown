@@ -263,9 +263,12 @@ namespace PdfClown.Documents.Interaction.Annotations
                 using (var path = new SKPath())
                 using (var paint = new SKPaint { Color = color, TextSize = 10, IsAntialias = true })
                 {
+                    var textLength = paint.MeasureText(Text);
+                    var lineLength = SKPoint.Distance(StartPoint, EndPoint);
+                    var offset = (lineLength - textLength )/ 2;
                     path.MoveTo(StartPoint);
                     path.LineTo(EndPoint);
-                    canvas.DrawTextOnPath(Text, path, new SKPoint(10, -2), paint);
+                    canvas.DrawTextOnPath(Text, path, new SKPoint(offset, -2), paint);
                 }
             }
         }
@@ -274,6 +277,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             var box = SKRect.Create(StartPoint, SKSize.Empty);
             box.Add(EndPoint);
+            box.Inflate(box.Width < 5 ? 5 : 0, box.Height < 5 ? 5 : 0);
             Box = box;
         }
         #endregion

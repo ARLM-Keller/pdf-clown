@@ -301,7 +301,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override bool ShowToolTip => false;
 
-        public override void Draw(SKCanvas canvas)
+        public override void DrawSpecial(SKCanvas canvas)
         {
             var bounds = Box;
             var textBounds = TextBox;
@@ -318,7 +318,13 @@ namespace PdfClown.Documents.Interaction.Annotations
                 canvas.DrawRect(textBounds, paint);
             }
 
-            using (var paint = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.StrokeAndFill })
+            using (var paint = new SKPaint
+            {
+                Color = SKColors.Black,
+                Style = SKPaintStyle.StrokeAndFill,
+                TextSize = 12,
+                IsAntialias = true
+            })
             {
                 canvas.DrawLines(Text, textBounds, paint);
             }

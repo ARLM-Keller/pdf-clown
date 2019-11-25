@@ -33,6 +33,7 @@ using System;
 using System.Collections.Generic;
 using SkiaSharp;
 using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -65,7 +66,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region interface
         #region public
-       
+
 
         /**
           <summary>Gets/Sets the annotation editor. It is displayed as a text label in the title bar of
@@ -168,32 +169,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        protected virtual void DrawAppearance(SKCanvas canvas)
-        {
-            DrawAppearance(canvas, Appearance.Normal[null]);
-        }
 
-        protected virtual void DrawAppearance(SKCanvas canvas, FormXObject appearance)
-        {
-            if (appearance == null)
-            {
-                return;
-            }
-            var bounds = Box;
-            var appearanceBounds = appearance.Box;
-            var mapedAppearanceBounds = appearance.Matrix.MapRect(appearance.Box);
-
-            SKMatrix initialCtm = SKMatrix.MakeIdentity();
-            initialCtm.SetScaleTranslate(bounds.Width / mapedAppearanceBounds.Width, -bounds.Height / mapedAppearanceBounds.Height, bounds.Left, bounds.Top + bounds.Height);
-            SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-mapedAppearanceBounds.Left, -mapedAppearanceBounds.Top));
-
-            var targetBounds = initialCtm.MapRect(appearanceBounds);
-            //System.Diagnostics.Debug.WriteLine($"Draw Clip:{canvas.LocalClipBounds} {this.Text} {targetBounds}");
-
-            var picture = appearance.Render();
-            canvas.DrawPicture(picture, ref initialCtm);
-
-        }
         #endregion
         #endregion
         #endregion

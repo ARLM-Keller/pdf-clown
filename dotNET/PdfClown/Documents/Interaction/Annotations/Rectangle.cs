@@ -51,14 +51,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
 
         #region interface
-        public override void Draw(SKCanvas canvas)
+        public override void DrawSpecial(SKCanvas canvas)
         {
             using (var path = new SKPath())
             {
                 path.AddRect(Box);
-                Draw(canvas, path);
+                DrawPath(canvas, path);
             }
-            base.Draw(canvas);
         }
         #endregion
         #endregion

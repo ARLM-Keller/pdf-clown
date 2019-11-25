@@ -94,31 +94,42 @@ namespace PdfClown.Documents.Contents.Objects
             var canvas = scanner.RenderContext;
             if (canvas == null)
                 return;
-            var xObject = GetXObject(scanner.ContentContext);
-            if (xObject is xObjects.ImageXObject imageObject)
+            try
             {
-                var image = imageObject.LoadImage(state);
-                if (image != null)
+                canvas.Save();
+                var xObject = GetXObject(scanner.ContentContext);
+                if (xObject is xObjects.ImageXObject imageObject)
                 {
-                    var size = imageObject.Size;
-                    var imageMatrix = imageObject.Matrix;
-                    imageMatrix.ScaleY *= -1;
-                    SKMatrix.PreConcat(ref imageMatrix, SKMatrix.MakeTranslation(0, -size.Height));
-                    canvas.Concat(ref imageMatrix);
-                    canvas.DrawBitmap(image, 0, 0, ImagePaint);
-                    //using (var surf = SKSurface.Create(canvas.GRContext, true, new SKImageInfo(image.Width, image.Height)))
-                    //{
-                    //    surf.Canvas.DrawBitmap(original, 0, 0);
-                    //    surf.Canvas.Flush();
-                    //    intermediates[i] = surf.Snapshot();
-                    //}
+                    var image = imageObject.LoadImage(state);
+                    if (image != null)
+                    {
+                        var size = imageObject.Size;
+                        var imageMatrix = imageObject.Matrix;
+                        imageMatrix.ScaleY *= -1;
+                        SKMatrix.PreConcat(ref imageMatrix, SKMatrix.MakeTranslation(0, -size.Height));
+                        canvas.Concat(ref imageMatrix);
 
+                        canvas.DrawBitmap(image, 0, 0, ImagePaint);
+                        //using (var surf = SKSurface.Create(canvas.GRContext, true, new SKImageInfo(image.Width, image.Height)))
+                        //{
+                        //    surf.Canvas.DrawBitmap(original, 0, 0);
+                        //    surf.Canvas.Flush();
+                        //    intermediates[i] = surf.Snapshot();
+                        //}
+                    }
+                }
+                else if (xObject is xObjects.FormXObject formObject)
+                {
+                    var formMatrix = formObject.Matrix;
+                    canvas.Concat(ref formMatrix);
+
+                    var picture = formObject.Render();
+                    canvas.DrawPicture(picture);
                 }
             }
-            else if (xObject is xObjects.FormXObject formObject)
+            finally
             {
-                var picture = formObject.Render();
-                canvas.DrawPicture(picture);
+                canvas.Restore();
             }
         }
 

@@ -153,12 +153,14 @@ namespace PdfClown.Documents.Contents
         */
         public SKMatrix GetInitialCtm()
         {
+            SKMatrix initialCtm;
             if (Scanner.ContentContext is FormXObject formObject)
             {
-                return formObject.Matrix;
+                var box = formObject.Box;
+                initialCtm = new SKMatrix { Values = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 } };
+                SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-box.Left, -box.Top));
             }
-            SKMatrix initialCtm;
-            if (Scanner.RenderContext == null) // Device-independent.
+            else if (Scanner.RenderContext == null) // Device-independent.
             {
                 initialCtm = SKMatrix.MakeIdentity(); // Identity.
             }

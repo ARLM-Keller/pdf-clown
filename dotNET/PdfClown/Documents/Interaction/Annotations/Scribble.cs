@@ -124,9 +124,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                                         (float)(pageHeight - ((IPdfNumber)pathObject[pointIndex + 1]).RawValue));
         }
 
-        public override void Draw(SKCanvas canvas)
+        public override void DrawSpecial(SKCanvas canvas)
         {
-            base.Draw(canvas);
             var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
             using (var paint = new SKPaint { Color = color })
             {
@@ -141,6 +140,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override void MoveTo(SKRect newBox)
         {
             var oldBox = Box;
+            if (oldBox.Width != newBox.Width
+                || oldBox.Height != newBox.Height)
+            {
+                Appearance.Normal[null] = null;
+            }
             //base.MoveTo(newBox);
             var dif = SKMatrix.MakeIdentity();
             SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY));

@@ -148,7 +148,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override void Draw(SKCanvas canvas)
+        public override void DrawSpecial(SKCanvas canvas)
         {
             var bounds = Box;
             var color = SKColor;

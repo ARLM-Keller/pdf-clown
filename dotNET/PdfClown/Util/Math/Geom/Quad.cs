@@ -31,7 +31,7 @@ namespace PdfClown.Util.Math.Geom
     /**
       <summary>Quadrilateral shape.</summary>
     */
-    public class Quad
+    public class Quad : IDisposable
     {
         #region static
         #region interface
@@ -70,6 +70,42 @@ namespace PdfClown.Util.Math.Geom
 
         #region interface
         #region public
+
+        public SKPoint[] Points
+        {
+            get => points;
+            set
+            {
+                if (value.Length != 4)
+                    throw new ArgumentException("Cardinality MUST be 4.", "points");
+
+                points = value;
+                path?.Dispose();
+                path = null;
+            }
+        }
+        #endregion
+
+        #region private
+        public SKPath Path
+        {
+            get
+            {
+                if (path == null)
+                {
+                    path = new SKPath();//FillMode.Alternate
+                    path.AddPoly(points);
+                }
+                return path;
+            }
+        }
+
+        public float Width => SKPoint.Distance(points[0], points[1]);
+
+        public float Height => SKPoint.Distance(points[1], points[2]);
+
+        public SKPoint Location => points[0];
+
         public bool Contains(SKPoint SKPoint)
         {
             return Path.Contains(SKPoint.X, SKPoint.Y);
@@ -85,9 +121,9 @@ namespace PdfClown.Util.Math.Geom
             return Path.GetBounds(out var rect) ? rect : SKRect.Empty;
         }
 
-        public SKPath GetPathIterator()
+        public SKPathMeasure GetPathIterator()
         {
-            return new SKPath(Path);
+            return new SKPathMeasure(Path);
         }
 
         /**
@@ -109,44 +145,26 @@ namespace PdfClown.Util.Math.Geom
         public Quad Inflate(float valueX, float valueY)
         {
             SKRect oldBounds = GetBounds();
-            SKMatrix matrix = SKMatrix.MakeTranslation(-oldBounds.Left, -oldBounds.Top);
-            path.Transform(matrix);
-            matrix = SKMatrix.MakeScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height);
-            path.Transform(matrix);
+            path.Transform(SKMatrix.MakeTranslation(-oldBounds.Left, -oldBounds.Top));
+            path.Transform(SKMatrix.MakeScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height));
             SKRect newBounds = GetBounds();
-            matrix = SKMatrix.MakeTranslation(oldBounds.Left - (newBounds.Width - oldBounds.Width) / 2, oldBounds.Top - (newBounds.Height - oldBounds.Height) / 2);
-            path.Transform(matrix);
+            path.Transform(SKMatrix.MakeTranslation(oldBounds.Left - (newBounds.Width - oldBounds.Width) / 2, oldBounds.Top - (newBounds.Height - oldBounds.Height) / 2));
             points = path.Points;
             return this;
         }
 
-        public SKPoint[] Points
+        public void Transform(SKMatrix matrix)
         {
-            get => points;
-            set
-            {
-                if (value.Length != 4)
-                    throw new ArgumentException("Cardinality MUST be 4.", "points");
-
-                points = value;
-                path = null;
-            }
+            Path.Transform(matrix);
+            points = path.Points;
         }
-        #endregion
 
-        #region private
-        private SKPath Path
+        public void Dispose()
         {
-            get
-            {
-                if (path == null)
-                {
-                    path = new SKPath();//FillMode.Alternate
-                    path.AddPoly(points);
-                }
-                return path;
-            }
+            path?.Dispose();
+            path = null;
         }
+
         #endregion
         #endregion
         #endregion

@@ -6,7 +6,7 @@
 # Format: Semicolon-delimited fields:
 #            (1) glyph name
 #            (2) Unicode scalar value
-G131;042F
+G131;00B0
 G145;2300
 G570;0410
 G571;0411

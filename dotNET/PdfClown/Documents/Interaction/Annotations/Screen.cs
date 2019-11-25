@@ -43,8 +43,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       <remarks>It specifies a region of a page upon which media clips may be played.</remarks>
     */
     [PDF(VersionEnum.PDF15)]
-    public sealed class Screen
-      : Annotation
+    public sealed class Screen : Annotation
     {
         #region static
         #region fields
@@ -68,15 +67,8 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region dynamic
         #region constructors
-        public Screen(
-          Page page,
-          SKRect box,
-          String text,
-          String mediaPath,
-          String mimeType
-          ) : this(
-            page, box, text,
-            new MediaRendition(
+        public Screen(Page page, SKRect box, String text, String mediaPath, String mimeType)
+            : this(page, box, text, new MediaRendition(
               new MediaClipData(
                 FileSpecification.Get(
                   EmbeddedFile.Get(page.Document, mediaPath),
@@ -88,12 +80,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             )
         { }
 
-        public Screen(
-          Page page,
-          SKRect box,
-          String text,
-          Rendition rendition
-          ) : base(page, PdfName.Screen, box, text)
+        public Screen(Page page, SKRect box, String text, Rendition rendition)
+            : base(page, PdfName.Screen, box, text)
         {
             Render render = new Render(this, Render.OperationEnum.PlayResume, rendition);
             {
@@ -130,9 +118,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        internal Screen(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Screen(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
         #endregion

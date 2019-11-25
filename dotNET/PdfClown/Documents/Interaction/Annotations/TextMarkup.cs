@@ -189,12 +189,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (quadPointsObject != null)
                 {
                     float pageHeight = Page.Box.Height;
-                    for (
-                      int index = 0,
-                        length = quadPointsObject.Count;
-                      index < length;
-                      index += 8
-                      )
+                    var length = quadPointsObject.Count;
+                    for (int index = 0; index < length; index += 8)
                     {
                         /*
                           NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
@@ -203,21 +199,16 @@ namespace PdfClown.Documents.Interaction.Annotations
                           new Quad(
                             new SKPoint(
                               ((IPdfNumber)quadPointsObject[index]).FloatValue,
-                              pageHeight - ((IPdfNumber)quadPointsObject[index + 1]).FloatValue
-                              ),
+                              pageHeight - ((IPdfNumber)quadPointsObject[index + 1]).FloatValue),
                             new SKPoint(
                               ((IPdfNumber)quadPointsObject[index + 2]).FloatValue,
-                              pageHeight - ((IPdfNumber)quadPointsObject[index + 3]).FloatValue
-                              ),
+                              pageHeight - ((IPdfNumber)quadPointsObject[index + 3]).FloatValue),
                             new SKPoint(
                               ((IPdfNumber)quadPointsObject[index + 6]).FloatValue,
-                              pageHeight - ((IPdfNumber)quadPointsObject[index + 7]).FloatValue
-                              ),
+                              pageHeight - ((IPdfNumber)quadPointsObject[index + 7]).FloatValue),
                             new SKPoint(
                               ((IPdfNumber)quadPointsObject[index + 4]).FloatValue,
-                              pageHeight - ((IPdfNumber)quadPointsObject[index + 5]).FloatValue
-                              )
-                            )
+                              pageHeight - ((IPdfNumber)quadPointsObject[index + 5]).FloatValue))
                           );
                     }
                 }
@@ -424,10 +415,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             composer.Flush();
         }
 
-        public override void Draw(SKCanvas canvas)
-        {
-            DrawAppearance(canvas);
-        }
         #endregion
         #endregion
         #endregion

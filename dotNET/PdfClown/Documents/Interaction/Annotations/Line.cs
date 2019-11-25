@@ -223,6 +223,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override void MoveTo(SKRect newBox)
         {
             var oldBox = Box;
+            if (oldBox.Width != newBox.Width
+               || oldBox.Height != newBox.Height)
+            {
+                Appearance.Normal[null] = null;
+            }
             var dif = SKMatrix.MakeIdentity();
             SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY));
             SKMatrix.PreConcat(ref dif, SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height));
@@ -249,9 +254,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             return endStylesObject;
         }
 
-        public override void Draw(SKCanvas canvas)
+        public override void DrawSpecial(SKCanvas canvas)
         {
-            base.Draw(canvas);
             var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
             using (var paint = new SKPaint { Color = color })
             {
@@ -265,7 +269,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     var textLength = paint.MeasureText(Text);
                     var lineLength = SKPoint.Distance(StartPoint, EndPoint);
-                    var offset = (lineLength - textLength )/ 2;
+                    var offset = (lineLength - textLength) / 2;
                     path.MoveTo(StartPoint);
                     path.LineTo(EndPoint);
                     canvas.DrawTextOnPath(Text, path, new SKPoint(offset, -2), paint);

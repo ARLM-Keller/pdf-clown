@@ -37,6 +37,8 @@ using System;
 using SkiaSharp;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -300,7 +302,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 BaseDataObject[PdfName.Rect] = new Objects.Rectangle(value.Left, GetPageHeight() - value.Top, value.Width, value.Height)
                     .BaseDataObject;
-                System.Diagnostics.Debug.WriteLine($"New Bounds: {Box}");
                 OnPropertyChanged();
             }
         }
@@ -493,8 +494,55 @@ namespace PdfClown.Documents.Interaction.Annotations
             return page?.Box.Height ?? Document.GetSize().Height;
         }
 
-        public virtual void Draw(SKCanvas canvas)
-        { }
+        public void Draw(SKCanvas canvas)
+        {
+            var appearance = Appearance.Normal[null];
+            if (appearance != null)
+            {
+                DrawAppearance(canvas, appearance);
+            }
+            else
+            {
+                DrawSpecial(canvas);
+            }
+        }
+
+        public virtual void DrawSpecial(SKCanvas canvas)
+        {
+
+        }
+
+        protected virtual void DrawAppearance(SKCanvas canvas, FormXObject appearance)
+        {
+            var bounds = Box;
+            var appearanceBounds = appearance.Box;
+            var appearanceMatrix = appearance.Matrix;
+            var mapedAppearanceBounds = appearanceMatrix.MapRect(appearanceBounds);
+
+            //var quad = Quad.Get(appearanceBounds);
+            //quad.Transform(appearanceMatrix);
+
+            var self = SKMatrix.MakeIdentity();
+            SKMatrix.PreConcat(ref self, SKMatrix.MakeTranslation(bounds.MidX, bounds.MidY));
+            SKMatrix.PreConcat(ref self, SKMatrix.MakeScale(bounds.Width / mapedAppearanceBounds.Width, -bounds.Height / mapedAppearanceBounds.Height));
+            SKMatrix.PreConcat(ref self, SKMatrix.MakeTranslation(-mapedAppearanceBounds.Width / 2F, -mapedAppearanceBounds.Height / 2F));
+            SKMatrix.PreConcat(ref self, SKMatrix.MakeTranslation(-(mapedAppearanceBounds.Left - appearanceBounds.Left), -(mapedAppearanceBounds.Top - appearanceBounds.Top)));
+            //var self = new SKMatrix
+            //{
+            //    TransX = bounds.Left - (mapedAppearanceBounds.Left - appearanceBounds.Left),
+            //    TransY = bounds.Top + (mapedAppearanceBounds.Top - appearanceBounds.Top) + bounds.Height,
+            //    ScaleX = bounds.Width / mapedAppearanceBounds.Width,
+            //    ScaleY = -bounds.Height / mapedAppearanceBounds.Height,
+            //    //SkewX = appearanceMatrix.SkewX,
+            //    //SkewY = -appearanceMatrix.SkewY,
+            //    Persp2 = 1
+            //};
+            SKMatrix.PreConcat(ref self, appearanceMatrix);
+
+
+            var picture = appearance.Render();
+            canvas.DrawPicture(picture, ref self);
+        }
 
         public virtual SKRect GetBounds(SKMatrix matrix)
         {

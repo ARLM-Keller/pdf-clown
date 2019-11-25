@@ -82,7 +82,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => BaseDataObject[PdfName.IC] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        public void Draw(SKCanvas canvas, SKPath path)
+        public void DrawPath(SKCanvas canvas, SKPath path)
         {
             if (FillColor != null)
             {
@@ -106,9 +106,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override void Draw(SKCanvas canvas)
+        public override void MoveTo(SKRect newBox)
         {
-            base.DrawAppearance(canvas);            
+            var oldBox = Box;
+            if (oldBox.Width != newBox.Width
+                || oldBox.Height != newBox.Height)
+            {
+                Appearance.Normal[null] = null;
+            }
+
+            base.MoveTo(newBox);
         }
 
         #endregion

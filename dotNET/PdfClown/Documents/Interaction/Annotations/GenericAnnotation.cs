@@ -31,12 +31,9 @@ namespace PdfClown.Documents.Interaction.Annotations
       <summary>Weakly-typed annotation.</summary>
       <remarks>This is used to model annotations which do not have a dedicated type.</remarks>
     */
-    public sealed class GenericAnnotation
-      : Annotation
+    public sealed class GenericAnnotation : Annotation
     {
-        internal GenericAnnotation(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal GenericAnnotation(PdfDirectObject baseObject) : base(baseObject)
         { }
     }
 }

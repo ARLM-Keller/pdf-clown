@@ -90,15 +90,14 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override void Draw(SKCanvas canvas)
+        public override void DrawSpecial(SKCanvas canvas)
         {
             using (var path = new SKPath())
             {
                 path.AddPoly(Vertices.ToArray());
                 path.Close();
-                Draw(canvas, path);
+                DrawPath(canvas, path);
             }
-            base.Draw(canvas);
         }
 
         public override void MoveTo(SKRect newBox)

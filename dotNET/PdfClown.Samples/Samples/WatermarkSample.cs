@@ -24,8 +24,7 @@ namespace PdfClown.Samples.CLI
         </para>
       </remarks>
     */
-    public class WatermarkSample
-      : Sample
+    public class WatermarkSample : Sample
     {
         public override void Run()
         {

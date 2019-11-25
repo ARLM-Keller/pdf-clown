@@ -146,7 +146,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 if (key == null) // Single state.
                 {
-                    BaseObject = value.BaseObject;
+                    BaseObject = value?.BaseObject;
                     appearance.BaseDataObject[statesKey] = BaseObject;
                 }
                 else // Multiple state.

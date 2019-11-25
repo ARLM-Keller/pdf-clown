@@ -33,9 +33,7 @@ namespace PdfClown.Util.IO
     */
     public class IOUtils
     {
-        public static bool Exists(
-          string path
-          )
+        public static bool Exists(string path)
         { return Directory.Exists(path) || File.Exists(path); }
     }
 }

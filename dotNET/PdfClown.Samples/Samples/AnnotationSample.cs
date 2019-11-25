@@ -280,8 +280,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(485, 515),
                   null, // Default size is natural size.
                   "This is 'Confidential', a standard stamp",
-                  Stamp.StandardTypeEnum.Confidential
-                  )
+                  Stamp.StandardTypeEnum.Confidential)
                 {
                     Rotation = 15,
                     Author = "Stefano",
@@ -294,8 +293,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(485, 580),
                   null, // Default size is natural size.
                   "This is 'SBApproved', a standard stamp",
-                  Stamp.StandardTypeEnum.BusinessApproved
-                  )
+                  Stamp.StandardTypeEnum.BusinessApproved)
                 {
                     Author = "Stefano",
                     Subject = "Standard stamp"
@@ -307,8 +305,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(485, 635),
                   new SKSize(0, 40), // This scales the width proportionally to the 40-unit height (you can obviously do also the opposite, defining only the width).
                   "This is 'SHSignHere', a standard stamp",
-                  Stamp.StandardTypeEnum.SignHere
-                  )
+                  Stamp.StandardTypeEnum.SignHere)
                 {
                     Rotation = -10,
                     Author = "Stefano",
@@ -325,8 +322,7 @@ namespace PdfClown.Samples.CLI
                   page,
                   composer.ShowText("Highlight annotation", new SKPoint(35, 680)),
                   "Text of the Highlight annotation",
-                  TextMarkup.MarkupTypeEnum.Highlight
-                  )
+                  TextMarkup.MarkupTypeEnum.Highlight)
                 {
                     Author = "Stefano",
                     Subject = "An highlight text markup!"
@@ -335,36 +331,31 @@ namespace PdfClown.Samples.CLI
                   page,
                   composer.ShowText("Highlight annotation 2", new SKPoint(35, 695)).Inflate(0, 1),
                   "Text of the Highlight annotation 2",
-                  TextMarkup.MarkupTypeEnum.Highlight
-                  )
+                  TextMarkup.MarkupTypeEnum.Highlight)
                 { Color = DeviceRGBColor.Get(SKColors.Magenta) };
                 new TextMarkup(
                   page,
                   composer.ShowText("Highlight annotation 3", new SKPoint(35, 710)).Inflate(0, 2),
                   "Text of the Highlight annotation 3",
-                  TextMarkup.MarkupTypeEnum.Highlight
-                  )
+                  TextMarkup.MarkupTypeEnum.Highlight)
                 { Color = DeviceRGBColor.Get(SKColors.Red) };
 
                 new TextMarkup(
                   page,
                   composer.ShowText("Squiggly annotation", new SKPoint(180, 680)),
                   "Text of the Squiggly annotation",
-                  TextMarkup.MarkupTypeEnum.Squiggly
-                  );
+                  TextMarkup.MarkupTypeEnum.Squiggly);
                 new TextMarkup(
                   page,
                   composer.ShowText("Squiggly annotation 2", new SKPoint(180, 695)).Inflate(0, 2.5f),
                   "Text of the Squiggly annotation 2",
-                  TextMarkup.MarkupTypeEnum.Squiggly
-                  )
+                  TextMarkup.MarkupTypeEnum.Squiggly)
                 { Color = DeviceRGBColor.Get(SKColors.Orange) };
                 new TextMarkup(
                   page,
                   composer.ShowText("Squiggly annotation 3", new SKPoint(180, 710)).Inflate(0, 3),
                   "Text of the Squiggly annotation 3",
-                  TextMarkup.MarkupTypeEnum.Squiggly
-                  )
+                  TextMarkup.MarkupTypeEnum.Squiggly)
                 { Color = DeviceRGBColor.Get(SKColors.Pink) };
 
                 new TextMarkup(

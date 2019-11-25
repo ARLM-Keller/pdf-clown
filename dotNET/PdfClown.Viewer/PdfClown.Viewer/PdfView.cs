@@ -301,14 +301,14 @@ namespace PdfClown.Viewer
                         && annotation != Pointing)
                     {
                         canvas.SetMatrix(drawPictureMatrix);
-                        using (var paint = new SKPaint { Color = SKColors.Blue, Style = SKPaintStyle.Stroke, StrokeWidth = 1 })
+                        using (var paint = new SKPaint { Color = SKColors.Blue, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true })
                         {
                             var bounds = annotation.Box;
                             if (annotation is StickyNote stick)
                             {
                                 bounds.Size = new SKSize(StickyNote.size / canvas.TotalMatrix.ScaleX, StickyNote.size / canvas.TotalMatrix.ScaleY);
                             }
-                            bounds.Inflate(3, 3);
+                            bounds.Inflate(2, 2);
                             canvas.DrawRoundRect(bounds, 3, 3, paint);
                         }
                     }

@@ -170,7 +170,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override void Draw(SKCanvas canvas)
+        public override void DrawSpecial(SKCanvas canvas)
         {
             var box = Box;
             var bounds = SKRect.Create(box.Left, box.Top, size / canvas.TotalMatrix.ScaleX, size / canvas.TotalMatrix.ScaleY);

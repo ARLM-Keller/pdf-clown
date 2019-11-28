@@ -219,7 +219,18 @@ namespace PdfClown.Documents.Contents
                 default:
                     throw new NotImplementedException();
             }
+        }
 
+        public static SKMatrix GetRotationMatrix(SKRect box, int rotate)
+        {
+            var matrix = SKMatrix.MakeIdentity();
+            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(box.MidX, box.MidY));
+            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeRotationDegrees(rotate));
+            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1, -1));
+            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(-box.MidX, -box.MidY));
+            var mappedBox = matrix.MapRect(box);
+            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(-mappedBox.Left, -mappedBox.Top));
+            return matrix;
         }
 
         /**
@@ -471,6 +482,8 @@ namespace PdfClown.Documents.Contents
             state.TextState = textState;
             state.wordSpace = wordSpace;
         }
+
+
         #endregion
         #endregion
         #endregion

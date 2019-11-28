@@ -32,9 +32,14 @@ namespace PdfClown.Viewer
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnPointingChanged((Annotation)oldValue, (Annotation)newValue));
         public static readonly BindableProperty IsChangedProperty = BindableProperty.Create(nameof(IsChanged), typeof(bool), typeof(PdfView), false,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnIsChangedChanged((bool)oldValue, (bool)newValue));
+        public static readonly BindableProperty CurrentPointProperty = BindableProperty.Create(nameof(CurrentPoint), typeof(ControlPoint), typeof(PdfView), null,
+            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnCurrentPointChanged((ControlPoint)oldValue, (ControlPoint)newValue));
+        public static readonly BindableProperty HoverPointProperty = BindableProperty.Create(nameof(HoverPoint), typeof(ControlPoint), typeof(PdfView), null,
+           propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnHoverPointChanged((ControlPoint)oldValue, (ControlPoint)newValue));
 
         private readonly List<PdfPagePicture> pictures = new List<PdfPagePicture>();
         private readonly SKPaint paintText = new SKPaint { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 14 };
+        private readonly SKPaint paintPointFill = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill };
         private float oldScale = 1;
         private float scale = 1;
         private readonly float indent = 10;
@@ -52,7 +57,7 @@ namespace PdfClown.Viewer
         private SKRect currentAnnotationTextBounds;
         private SKPoint CurrentMoveLocation;
         private SKPoint? PressedCursorLocation;
-
+        private SKMatrix InvertPictureMatrix;
         public PdfView()
         {
             PaintContent += OnPaintContent;
@@ -98,6 +103,18 @@ namespace PdfClown.Viewer
         {
             get => (Annotation)GetValue(PointingProperty);
             set => SetValue(PointingProperty, value);
+        }
+
+        public ControlPoint CurrentPoint
+        {
+            get => (ControlPoint)GetValue(CurrentPointProperty);
+            set => SetValue(CurrentPointProperty, value);
+        }
+
+        public ControlPoint HoverPoint
+        {
+            get => (ControlPoint)GetValue(HoverPointProperty);
+            set => SetValue(HoverPointProperty, value);
         }
 
         public bool IsChanged
@@ -154,6 +171,7 @@ namespace PdfClown.Viewer
         public string FilePath { get; private set; }
         public string TempFilePath { get; private set; }
 
+
         public event EventHandler<EventArgs> DragComplete;
         public event EventHandler<EventArgs> SelectedAnnotationChanged;
 
@@ -197,6 +215,32 @@ namespace PdfClown.Viewer
         {
             SelectedAnnotation = newValue;
         }
+
+        private void OnCurrentPointChanged(ControlPoint oldValue, ControlPoint newValue)
+        {
+            if (newValue != null)
+            {
+                Cursor = CursorType.Cross;
+            }
+            else
+            {
+                Cursor = CursorType.Arrow;
+            }
+        }
+
+        private void OnHoverPointChanged(ControlPoint oldValue, ControlPoint newValue)
+        {
+            if (newValue != null)
+            {
+                Cursor = CursorType.Cross;
+            }
+            else
+            {
+                Cursor = CursorType.Arrow;
+            }
+        }
+
+
 
         private void OnDragging(Annotation oldValue, Annotation newValue)
         {
@@ -295,31 +339,45 @@ namespace PdfClown.Viewer
                 if (annotation.Visible)
                 {
                     annotation.Draw(canvas);
-                    if (annotation == SelectedAnnotation
-                        && annotation != Dragging
-                        && annotation != Sizing
-                        && annotation != Pointing)
+                    if (annotation == SelectedAnnotation)
                     {
-                        canvas.SetMatrix(drawPictureMatrix);
-                        using (var paint = new SKPaint { Color = SKColors.Blue, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true })
-                        {
-                            var bounds = annotation.Box;
-                            if (annotation is StickyNote stick)
-                            {
-                                bounds.Size = new SKSize(StickyNote.size / canvas.TotalMatrix.ScaleX, StickyNote.size / canvas.TotalMatrix.ScaleY);
-                            }
-                            bounds.Inflate(2, 2);
-                            canvas.DrawRoundRect(bounds, 3, 3, paint);
-                        }
+                        OnPaintSelectedAnnotation(canvas, annotation);
                     }
                 }
             }
-            if (Dragging != null)
+            if (Dragging != null && !pdfPicture.Annotations.Contains(Dragging))
             {
                 Dragging.Draw(canvas);
             }
             OnPaintAnnotationToolTip(canvas);
             canvas.Restore();
+        }
+
+        private void OnPaintSelectedAnnotation(SKCanvas canvas, Annotation annotation)
+        {
+            using (var paint = new SKPaint { Color = SKColors.Blue, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true })
+
+            {
+                if (annotation != Dragging
+                && annotation != Sizing
+                && annotation != Pointing
+                && annotation != CurrentPoint?.Annotation)
+                {
+                    var bounds = annotation.Box;
+                    if (annotation is StickyNote stick)
+                    {
+                        bounds.Size = new SKSize(StickyNote.size / canvas.TotalMatrix.ScaleX, StickyNote.size / canvas.TotalMatrix.ScaleY);
+                    }
+                    bounds.Inflate(2, 2);
+                    canvas.DrawRoundRect(bounds, 3, 3, paint);
+                }
+                foreach (var controlPoint in annotation.GetControlPoints())
+                {
+                    var bounds = controlPoint.Bounds;
+                    canvas.DrawOval(bounds, paintPointFill);
+                    canvas.DrawOval(bounds, paint);
+                }
+            }
         }
 
         private void OnPaintAnnotationToolTip(SKCanvas canvas)
@@ -380,7 +438,13 @@ namespace PdfClown.Viewer
             CurrentPicture = picture;
             CurrentPictureMatrix = CurrentViewMatrix;
             SKMatrix.PreConcat(ref CurrentPictureMatrix, CurrentPicture.Matrix);
+            CurrentPictureMatrix.TryInvert(out InvertPictureMatrix);
             //SKMatrix.PreConcat(ref CurrentPictureMatrix, CurrentPicture.InitialMatrix);
+            if (CurrentPoint != null)
+            {
+                OnTouchCurrentPoint(e);
+                return;
+            }
             if (Pointing != null)
             {
                 OnTouchPointed(e);
@@ -403,6 +467,7 @@ namespace PdfClown.Viewer
                     if (!annotation.Visible)
                         continue;
                     var bounds = annotation.GetBounds(CurrentPictureMatrix);
+                    bounds.Inflate(4, 4);
                     if (bounds.Contains(CurrentLocation))
                     {
                         CurrentAnnotationBounds = bounds;
@@ -418,26 +483,39 @@ namespace PdfClown.Viewer
             Cursor = CursorType.Arrow;
             CurrentAnnotation = null;
             CurrentAnnotationText = null;
+            HoverPoint = null;
+        }
+
+        private void OnTouchCurrentPoint(SKTouchEventArgs e)
+        {
+            if (e.ActionType == SKTouchAction.Moved)
+            {
+                CurrentPoint.Point = InvertPictureMatrix.MapPoint(e.Location);
+            }
+            else if (e.ActionType == SKTouchAction.Released)
+            {
+                CurrentPoint = null;
+            }
+            InvalidateSurface();
         }
 
         private void OnTouchPointed(SKTouchEventArgs e)
         {
             if (PressedCursorLocation == null)
                 return;
-            CurrentPictureMatrix.TryInvert(out var invert);
+
 
             if (e.ActionType == SKTouchAction.Moved)
             {
                 if (Pointing is Line line)
                 {
-                    line.EndPoint = invert.MapPoint(e.Location);
+                    line.EndPoint = InvertPictureMatrix.MapPoint(e.Location);
                 }
                 else if (Pointing is VertexShape vertexShape)
                 {
-                    vertexShape.LastPoint = invert.MapPoint(e.Location);
+                    vertexShape.LastPoint = InvertPictureMatrix.MapPoint(e.Location);
                 }
                 PressedCursorLocation = e.Location;
-                InvalidateSurface();
             }
             else if (e.ActionType == SKTouchAction.Released)
             {
@@ -448,7 +526,7 @@ namespace PdfClown.Viewer
                 }
                 else if (Pointing is VertexShape vertexShape)
                 {
-                    vertexShape.LastPoint = invert.MapPoint(e.Location);
+                    vertexShape.LastPoint = InvertPictureMatrix.MapPoint(e.Location);
                     var rect = new SKRect(vertexShape.FirstPoint.X - 5, vertexShape.FirstPoint.Y - 5, vertexShape.FirstPoint.X + 5, vertexShape.FirstPoint.Y + 5);
                     if (rect.Contains(vertexShape.LastPoint))
                     {
@@ -457,38 +535,38 @@ namespace PdfClown.Viewer
                     }
                     else
                     {
-                        vertexShape.AddPoint(invert.MapPoint(e.Location));
+                        vertexShape.AddPoint(InvertPictureMatrix.MapPoint(e.Location));
                     }
                 }
             }
+            InvalidateSurface();
         }
 
         private void OnTouchSized(SKTouchEventArgs e)
         {
             if (PressedCursorLocation == null)
                 return;
-            CurrentPictureMatrix.TryInvert(out var invert);
+
 
             if (e.ActionType == SKTouchAction.Moved)
             {
                 var bound = Sizing.GetBounds(CurrentPictureMatrix);
                 bound.Size += new SKSize(e.Location - PressedCursorLocation.Value);
 
-                Sizing.MoveTo(invert.MapRect(bound));
+                Sizing.MoveTo(InvertPictureMatrix.MapRect(bound));
 
                 PressedCursorLocation = e.Location;
-                InvalidateSurface();
             }
             else if (e.ActionType == SKTouchAction.Released)
             {
                 Sizing = null;
             }
+            InvalidateSurface();
+
         }
 
         private void OnTouchDragged(SKTouchEventArgs e)
         {
-            CurrentPictureMatrix.TryInvert(out var invert);
-
             if (e.ActionType == SKTouchAction.Moved)
             {
                 var bound = Dragging.GetBounds(CurrentPictureMatrix);
@@ -501,7 +579,7 @@ namespace PdfClown.Viewer
                     bound.Location += e.Location - PressedCursorLocation.Value;
                     PressedCursorLocation = e.Location;
                 }
-                Dragging.MoveTo(invert.MapRect(bound));
+                Dragging.MoveTo(InvertPictureMatrix.MapRect(bound));
 
                 InvalidateSurface();
             }
@@ -514,12 +592,12 @@ namespace PdfClown.Viewer
                 }
                 else if (Dragging is Line line)
                 {
-                    line.StartPoint = invert.MapPoint(e.Location);
+                    line.StartPoint = InvertPictureMatrix.MapPoint(e.Location);
                     Pointing = Dragging;
                 }
                 else if (Dragging is VertexShape vertexShape)
                 {
-                    vertexShape.FirstPoint = invert.MapPoint(e.Location);
+                    vertexShape.FirstPoint = InvertPictureMatrix.MapPoint(e.Location);
                     Pointing = Dragging;
                 }
                 else
@@ -556,6 +634,19 @@ namespace PdfClown.Viewer
                 }
                 else if (e.MouseButton == SKMouseButton.Unknown)
                 {
+                    if (annotation == SelectedAnnotation)
+                    {
+                        foreach (var controlPoint in annotation.GetControlPoints())
+                        {
+                            if (CurrentPictureMatrix.MapRect(controlPoint.Bounds).Contains(e.Location))
+                            {
+                                Cursor = CursorType.Cross;
+                                HoverPoint = controlPoint;
+                                return;
+                            }
+                        }
+                    }
+                    HoverPoint = null;
                     var rect = new SKRect(
                         CurrentAnnotationBounds.Right - 10,
                         CurrentAnnotationBounds.Bottom - 10,
@@ -577,7 +668,11 @@ namespace PdfClown.Viewer
                 {
                     PressedCursorLocation = e.Location;
                     SelectedAnnotation = CurrentAnnotation;
-                    if (Cursor == CursorType.SizeNWSE)
+                    if (annotation == SelectedAnnotation && HoverPoint != null)
+                    {
+                        CurrentPoint = HoverPoint;
+                    }
+                    else if (Cursor == CursorType.SizeNWSE)
                     {
                         Sizing = CurrentAnnotation;
                     }

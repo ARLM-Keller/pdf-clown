@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using SkiaSharp;
 using PdfClown.Util.Math.Geom;
+using PdfClown.Documents.Interaction.Actions;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -52,6 +53,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
 
         #region dynamic
+        private SKPoint? startPoint;
+        private SKPoint? endPoint;
+        private LineStartControlPoint cpStart;
+        private LineEndControlPoint cpEnd;
         #region constructors
         public Line(Page page, SKPoint startPoint, SKPoint endPoint, string text, DeviceRGBColor color)
             : base(page, PdfName.Line, SKRect.Create(startPoint.X, startPoint.Y, endPoint.X - startPoint.X, endPoint.Y - startPoint.Y), text)
@@ -81,27 +86,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                   : false;
             }
             set => BaseDataObject[PdfName.Cap] = PdfBoolean.Get(value);
-        }
-
-        /**
-          <summary>Gets/Sets the ending coordinates.</summary>
-        */
-        public SKPoint EndPoint
-        {
-            get
-            {
-                PdfArray coordinatesObject = (PdfArray)BaseDataObject[PdfName.L];
-                return new SKPoint(
-                  (float)((IPdfNumber)coordinatesObject[2]).RawValue,
-                  (float)(Page.Box.Height - ((IPdfNumber)coordinatesObject[3]).RawValue)
-                  );
-            }
-            set
-            {
-                PdfArray coordinatesObject = (PdfArray)BaseDataObject[PdfName.L];
-                coordinatesObject[2] = PdfReal.Get(value.X);
-                coordinatesObject[3] = PdfReal.Get(Page.Box.Height - value.Y);
-            }
         }
 
         /**
@@ -182,6 +166,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => BaseDataObject[PdfName.LL] = PdfReal.Get(-value);
         }
 
+        public PdfArray L
+        {
+            get => (PdfArray)BaseDataObject[PdfName.L];
+        }
+
         /**
           <summary>Gets/Sets the starting coordinates.</summary>
         */
@@ -189,17 +178,39 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get
             {
-                PdfArray coordinatesObject = (PdfArray)BaseDataObject[PdfName.L];
-                return new SKPoint(
-                  (float)((IPdfNumber)coordinatesObject[0]).RawValue,
-                  (float)(Page.Box.Height - ((IPdfNumber)coordinatesObject[1]).RawValue)
-                  );
+                return startPoint ?? (startPoint = PageMatrix.MapPoint(new SKPoint(
+                  (float)((IPdfNumber)L[0]).RawValue,
+                  (float)((IPdfNumber)L[1]).RawValue))).Value;
             }
             set
             {
-                PdfArray coordinatesObject = (PdfArray)BaseDataObject[PdfName.L];
-                coordinatesObject[0] = PdfReal.Get(value.X);
-                coordinatesObject[1] = PdfReal.Get(Page.Box.Height - value.Y);
+                startPoint = value;
+                value = InvertPageMatrix.MapPoint(value);
+                L[0] = PdfReal.Get(value.X);
+                L[1] = PdfReal.Get(value.Y);
+                RefreshBox();
+            }
+        }
+
+        /**
+          <summary>Gets/Sets the ending coordinates.</summary>
+        */
+        public SKPoint EndPoint
+        {
+            get
+            {
+                return endPoint ?? (endPoint = PageMatrix.MapPoint(new SKPoint(
+                  (float)((IPdfNumber)L[2]).RawValue,
+                  (float)((IPdfNumber)L[3]).RawValue))).Value;
+            }
+            set
+            {
+                endPoint = value;
+                value = InvertPageMatrix.MapPoint(value);
+                PdfArray coordinatesObject = L;
+                coordinatesObject[2] = PdfReal.Get(value.X);
+                coordinatesObject[3] = PdfReal.Get(value.Y);
+                RefreshBox();
             }
         }
 
@@ -279,13 +290,44 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override void RefreshBox()
         {
+            Appearance.Normal[null] = null;
             var box = SKRect.Create(StartPoint, SKSize.Empty);
             box.Add(EndPoint);
             box.Inflate(box.Width < 5 ? 5 : 0, box.Height < 5 ? 5 : 0);
             Box = box;
         }
+
+        public override IEnumerable<ControlPoint> GetControlPoints()
+        {
+            //foreach (var cpBase in base.GetControlPoints())
+            //{
+            //    yield return cpBase;
+            //}
+            yield return cpStart ?? (cpStart = new LineStartControlPoint { Annotation = this });
+            yield return cpEnd ?? (cpEnd = new LineEndControlPoint { Annotation = this });
+        }
         #endregion
         #endregion
         #endregion
+    }
+
+    public class LineStartControlPoint : ControlPoint
+    {
+        public Line Line => (Line)Annotation;
+        public override SKPoint Point
+        {
+            get => Line.StartPoint;
+            set => Line.StartPoint = value;
+        }
+    }
+
+    public class LineEndControlPoint : ControlPoint
+    {
+        public Line Line => (Line)Annotation;
+        public override SKPoint Point
+        {
+            get => Line.EndPoint;
+            set => Line.EndPoint = value;
+        }
     }
 }

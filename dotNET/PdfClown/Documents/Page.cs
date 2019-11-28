@@ -503,16 +503,8 @@ namespace PdfClown.Documents
             get
             {
                 if (rotateMatrix == null)
-                {
-                    var box = Box;
-                    var matrix = SKMatrix.MakeIdentity();// new SKMatrix { Values = new float[] { 1, 0, 0, 0, -1, box.Height, 0, 0, 1 } }; 
-                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(box.MidX, box.MidY));
-                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeRotationDegrees(Rotate));
-                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1, -1));
-                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(-box.MidX, -box.MidY));
-                    var mappedBox = matrix.MapRect(box);
-                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(-mappedBox.Left, -mappedBox.Top));
-                    rotateMatrix = matrix;
+                {                    
+                    rotateMatrix = GraphicsState.GetRotationMatrix(Box,Rotate);
                 }
                 return rotateMatrix.Value;
             }

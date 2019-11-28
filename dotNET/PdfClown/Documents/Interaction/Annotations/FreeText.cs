@@ -283,18 +283,18 @@ namespace PdfClown.Documents.Interaction.Annotations
             get
             {
                 var bounds = Box;
-                var box = Wrap<Objects.Rectangle>(BaseDataObject[PdfName.RD]) ?? new Objects.Rectangle(SKRect.Empty);
+                var diff = Wrap<Objects.Rectangle>(BaseDataObject[PdfName.RD])?.ToRectangleF() ?? SKRect.Empty;
                 return new SKRect(
-                  (float)box.Right + bounds.Left,
-                  (float)box.Bottom + bounds.Top,
-                  bounds.Right - (float)box.Left,
-                  bounds.Bottom - (float)box.Top);
+                  (float)diff.Right + bounds.Left,
+                  (float)diff.Bottom + bounds.Top,
+                  bounds.Right - (float)diff.Left,
+                  bounds.Bottom - (float)diff.Top);
             }
             set
             {
                 var bounds = Box;
-                BaseDataObject[PdfName.RD] = new Objects.Rectangle(value.Left, GetPageSize().Height - value.Top, value.Width, value.Height)
-                    .BaseDataObject;
+                var diff = new SKRect(bounds.Left - value.Left, bounds.Top - value.Top, bounds.Right - value.Right, bounds.Bottom - value.Bottom);
+                BaseDataObject[PdfName.RD] = new Objects.Rectangle(diff).BaseDataObject;
                 OnPropertyChanged();
             }
         }

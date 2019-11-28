@@ -39,6 +39,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Util.Math.Geom;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -49,6 +50,11 @@ namespace PdfClown.Documents.Interaction.Annotations
     public abstract class Annotation : PdfObjectWrapper<PdfDictionary>, ILayerable, INotifyPropertyChanged
     {
         private Page page;
+        private SKRect? boxCache;
+        private BottomRightControlPoint cpBottomRight;
+        private BottomLeftControlPoint cpBottomLeft;
+        private TopRightControlPoint cpTopRight;
+        private TopLeftControlPoint cpTopLeft;
 
         public event PropertyChangedEventHandler PropertyChanged;
         #region types
@@ -283,23 +289,27 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        protected SKMatrix PageMatrix
+        {
+            get => Page?.RotateMatrix ?? GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0);
+        }
+
+        protected SKMatrix InvertPageMatrix
+        {
+            get => Page?.InRotateMatrix ?? GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0);
+        }
+
         /**
           <summary>Gets/Sets the location of the annotation on the page in default user space units.
           </summary>
         */
         public virtual SKRect Box
         {
-            get
-            {
-                var box = Rect;
-                var matrix = Page?.RotateMatrix ?? SKMatrix.MakeIdentity();
-                return matrix.MapRect(box);// SKRect.Create(quad.Location, bounds.Size);
-            }
+            get => boxCache ?? (boxCache = PageMatrix.MapRect(Rect)).Value;// SKRect.Create(quad.Location, bounds.Size);
             set
             {
-                var matrix = Page?.InRotateMatrix ?? SKMatrix.MakeIdentity();
-                value = matrix.MapRect(value);
-                Rect = value;
+                boxCache = value;
+                Rect = InvertPageMatrix.MapRect(value);
                 OnPropertyChanged();
             }
         }
@@ -456,6 +466,48 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public SKPoint TopLeftPoint
+        {
+            get => new SKPoint(Box.Left, Box.Top);
+            set
+            {
+                var rect = new SKRect(value.X, value.Y, Box.Right, Box.Bottom);
+                MoveTo(rect);
+            }
+        }
+
+        public SKPoint TopRightPoint
+        {
+            get => new SKPoint(Box.Right, Box.Top);
+            set
+            {
+                var rect = new SKRect(Box.Left, value.Y, value.X, Box.Bottom);
+                MoveTo(rect);
+            }
+        }
+
+        public SKPoint BottomLeftPoint
+        {
+            get => new SKPoint(Box.Left, Box.Bottom);
+            set
+            {
+                var rect = new SKRect(value.X, Box.Top, Box.Right, value.Y);
+                MoveTo(rect);
+            }
+        }
+
+        public SKPoint BottomRightPoint
+        {
+            get => new SKPoint(Box.Right, Box.Bottom);
+            set
+            {
+                var rect = new SKRect(Box.Left, Box.Top, value.X, value.Y);
+                MoveTo(rect);
+            }
+        }
+
+
+
         public virtual void MoveTo(SKRect newBox)
         {
             Box = newBox;
@@ -492,11 +544,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
 
         #region private
-        protected SKSize GetPageSize()
-        {
-            return Page?.Box.Size ?? Document.GetSize();
-        }
-
         protected RotationEnum GetPageRotation()
         {
             return Page?.Rotation ?? RotationEnum.Downward;
@@ -565,8 +612,70 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public virtual void RefreshBox()
         { }
+
+        public virtual IEnumerable<ControlPoint> GetControlPoints()
+        {
+            yield return cpTopLeft ?? (cpTopLeft = new TopLeftControlPoint { Annotation = this });
+            yield return cpTopRight ?? (cpTopRight = new TopRightControlPoint { Annotation = this });
+            yield return cpBottomLeft ?? (cpBottomLeft = new BottomLeftControlPoint { Annotation = this });
+            yield return cpBottomRight ?? (cpBottomRight = new BottomRightControlPoint { Annotation = this });
+        }
         #endregion
         #endregion
         #endregion
     }
+
+
+    public abstract class ControlPoint
+    {
+        private const int r = 3;
+
+        public Annotation Annotation { get; set; }
+        public abstract SKPoint Point { get; set; }
+        public SKRect Bounds
+        {
+            get
+            {
+                var point = Point;
+                return new SKRect(point.X - r, point.Y - r, point.X + r, point.Y + r);
+            }
+        }
+    }
+
+    public class TopLeftControlPoint : ControlPoint
+    {
+        public override SKPoint Point
+        {
+            get => Annotation.TopLeftPoint;
+            set => Annotation.TopLeftPoint = value;
+        }
+    }
+
+    public class TopRightControlPoint : ControlPoint
+    {
+        public override SKPoint Point
+        {
+            get => Annotation.TopRightPoint;
+            set => Annotation.TopRightPoint = value;
+        }
+    }
+
+    public class BottomLeftControlPoint : ControlPoint
+    {
+        public override SKPoint Point
+        {
+            get => Annotation.BottomLeftPoint;
+            set => Annotation.BottomLeftPoint = value;
+        }
+    }
+
+    public class BottomRightControlPoint : ControlPoint
+    {
+        public override SKPoint Point
+        {
+            get => Annotation.BottomRightPoint;
+            set => Annotation.BottomRightPoint = value;
+        }
+    }
+
 }

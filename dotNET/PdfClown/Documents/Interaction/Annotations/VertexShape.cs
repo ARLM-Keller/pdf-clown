@@ -41,7 +41,8 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF15)]
     public abstract class VertexShape : Shape
     {
-        List<SKPoint> vertices = new List<SKPoint>();
+        private SKPoint[] points;
+        private Dictionary<int, IndexControlPoint> cache = new Dictionary<int, IndexControlPoint>();
         #region dynamic
         #region constructors
         protected VertexShape(Page page, SKRect box, string text, PdfName subtype)
@@ -58,83 +59,105 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets/Sets the coordinates of each vertex.</summary>
         */
-        public IList<SKPoint> Vertices
+        public SKPoint[] Points
         {
             get
             {
-                if (vertices.Count == 0)
+                if (points == null)
                 {
-                    PdfArray verticesObject = (PdfArray)BaseDataObject[PdfName.Vertices];
+                    PdfArray verticesObject = Vertices;
 
-                    float pageHeight = Page.Box.Height;
+                    var pageMatrix = PageMatrix;
                     var length = verticesObject.Count;
-                    for (int index = 0; index < length; index += 2)
+                    points = new SKPoint[length / 2];
+                    for (int i = 0, j = 0; i < length; i += 2, j++)
                     {
-                        vertices.Add(
-                          new SKPoint(
-                            ((IPdfNumber)verticesObject[index]).FloatValue,
-                            pageHeight - ((IPdfNumber)verticesObject[index + 1]).FloatValue
-                            )
-                          );
+                        var mappedPoint = pageMatrix.MapPoint(new SKPoint(
+                            ((IPdfNumber)verticesObject[i]).FloatValue,
+                            ((IPdfNumber)verticesObject[i + 1]).FloatValue));
+                        points[j] = mappedPoint;
                     }
                 }
-                return vertices;
+                return points;
             }
             set
             {
-                if (vertices != value)
+                if (points != value)
                 {
-                    vertices.Clear();
-                    vertices.AddRange(value);
+                    points = value;
                 }
+                var pageMatrix = InvertPageMatrix;
                 PdfArray verticesObject = new PdfArray();
                 float pageHeight = Page.Box.Height;
                 foreach (SKPoint vertex in value)
                 {
-                    verticesObject.Add(PdfReal.Get(vertex.X)); // x.
-                    verticesObject.Add(PdfReal.Get(pageHeight - vertex.Y)); // y.
+                    var mappedPoint = pageMatrix.MapPoint(vertex);
+                    verticesObject.Add(PdfReal.Get(mappedPoint.X));
+                    verticesObject.Add(PdfReal.Get(mappedPoint.Y));
                 }
 
-                BaseDataObject[PdfName.Vertices] = verticesObject;
+                Vertices = verticesObject;
+            }
+        }
+
+        public PdfArray Vertices
+        {
+            get => (PdfArray)BaseDataObject[PdfName.Vertices];
+            set => BaseDataObject[PdfName.Vertices] = value;
+        }
+
+        public SKPoint this[int index]
+        {
+            get => Points[index];
+            set
+            {
+                Points[index] = value;
+                Points = points;
+                RefreshBox();
             }
         }
 
         public SKPoint FirstPoint
         {
-            get => Vertices.Count == 0 ? SKPoint.Empty : vertices[0];
+            get => Points.Length == 0 ? SKPoint.Empty : points[0];
             set
             {
-                if (Vertices.Count > 0)
+                if (Points.Length > 0)
                 {
-                    vertices[0] = value;
-                    Vertices = vertices;
+                    points[0] = value;
+                    Points = points;
                 }
             }
         }
 
         public SKPoint LastPoint
         {
-            get => Vertices.Count == 0 ? SKPoint.Empty : vertices[vertices.Count - 1];
+            get => Points.Length == 0 ? SKPoint.Empty : points[points.Length - 1];
             set
             {
-                if (Vertices.Count > 0)
+                if (Points.Length > 0)
                 {
-                    vertices[vertices.Count - 1] = value;
-                    Vertices = vertices;
+                    points[points.Length - 1] = value;
+                    Points = points;
+                    RefreshBox();
                 }
             }
         }
 
         public void AddPoint(SKPoint point)
         {
-            Vertices.Add(point);
-            Vertices = vertices;
+            var oldVertices = Points;
+            var newVertices = new SKPoint[oldVertices.Length + 1];
+            Array.Copy(oldVertices, newVertices, oldVertices.Length);
+            newVertices[newVertices.Length - 1] = point;
+            Points = newVertices;
         }
 
         public override void RefreshBox()
         {
+            Appearance.Normal[null] = null;
             SKRect box = SKRect.Empty;
-            foreach (SKPoint point in Vertices)
+            foreach (SKPoint point in Points)
             {
                 if (box == SKRect.Empty)
                 { box = SKRect.Create(point.X, point.Y, 0, 0); }
@@ -150,7 +173,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             using (var path = new SKPath())
             {
-                path.AddPoly(Vertices.ToArray());
+                path.AddPoly(Points.ToArray());
                 path.Close();
                 DrawPath(canvas, path);
             }
@@ -164,16 +187,42 @@ namespace PdfClown.Documents.Interaction.Annotations
             SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY));
             SKMatrix.PreConcat(ref dif, SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height));
             SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
-            for (int i = 0; i < Vertices.Count; i++)
+            for (int i = 0; i < Points.Length; i++)
             {
-                vertices[i] = dif.MapPoint(vertices[i]);
+                points[i] = dif.MapPoint(points[i]);
             }
-            Vertices = vertices;
+            Points = points;
             base.MoveTo(newBox);
         }
 
+        public override IEnumerable<ControlPoint> GetControlPoints()
+        {
+            foreach (var cpBase in base.GetControlPoints())
+            {
+                yield return cpBase;
+            }
+            for (int i = 0; i < Points.Length; i++)
+            {
+                yield return cache.TryGetValue(i, out var controlPoint) ? controlPoint
+                    : (cache[i] = new IndexControlPoint { Annotation = this, Index = i });
+            }
+
+        }
         #endregion
         #endregion
         #endregion
+    }
+
+    public class IndexControlPoint : ControlPoint
+    {
+        public VertexShape VertexShape => (VertexShape)Annotation;
+
+        public int Index { get; set; }
+
+        public override SKPoint Point
+        {
+            get => VertexShape[Index];
+            set => VertexShape[Index] = value;
+        }
     }
 }

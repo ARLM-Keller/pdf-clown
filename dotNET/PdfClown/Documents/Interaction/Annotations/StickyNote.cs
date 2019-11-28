@@ -187,6 +187,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             var baseBounds = base.GetBounds(pageMatrix);
             return SKRect.Create(baseBounds.Left, baseBounds.Top, size, size);
         }
+
+        public override IEnumerable<ControlPoint> GetControlPoints()
+        { yield break; }
         //TODO:State and StateModel!!!
         #endregion
         #endregion

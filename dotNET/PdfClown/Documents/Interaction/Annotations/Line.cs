@@ -277,7 +277,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public void RefreshBox()
+        public override void RefreshBox()
         {
             var box = SKRect.Create(StartPoint, SKSize.Empty);
             box.Add(EndPoint);

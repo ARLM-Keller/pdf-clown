@@ -432,6 +432,10 @@ namespace PdfClown.Viewer
                 {
                     line.EndPoint = invert.MapPoint(e.Location);
                 }
+                else if (Pointing is VertexShape vertexShape)
+                {
+                    vertexShape.LastPoint = invert.MapPoint(e.Location);
+                }
                 PressedCursorLocation = e.Location;
                 InvalidateSurface();
             }
@@ -440,8 +444,22 @@ namespace PdfClown.Viewer
                 if (Pointing is Line line)
                 {
                     line.RefreshBox();
+                    Pointing = null;
                 }
-                Pointing = null;
+                else if (Pointing is VertexShape vertexShape)
+                {
+                    vertexShape.LastPoint = invert.MapPoint(e.Location);
+                    var rect = new SKRect(vertexShape.FirstPoint.X - 5, vertexShape.FirstPoint.Y - 5, vertexShape.FirstPoint.X + 5, vertexShape.FirstPoint.Y + 5);
+                    if (rect.Contains(vertexShape.LastPoint))
+                    {
+                        vertexShape.RefreshBox();
+                        Pointing = null;
+                    }
+                    else
+                    {
+                        vertexShape.AddPoint(invert.MapPoint(e.Location));
+                    }
+                }
             }
         }
 
@@ -494,9 +512,14 @@ namespace PdfClown.Viewer
                 {
                     CheckoutDrag();
                 }
-                if (Dragging is Line line)
+                else if (Dragging is Line line)
                 {
                     line.StartPoint = invert.MapPoint(e.Location);
+                    Pointing = Dragging;
+                }
+                else if (Dragging is VertexShape vertexShape)
+                {
+                    vertexShape.FirstPoint = invert.MapPoint(e.Location);
                     Pointing = Dragging;
                 }
                 else

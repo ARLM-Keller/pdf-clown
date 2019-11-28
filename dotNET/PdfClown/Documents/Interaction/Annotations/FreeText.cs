@@ -293,7 +293,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var bounds = Box;
-                BaseDataObject[PdfName.RD] = new Objects.Rectangle(value.Left, GetPageHeight() - value.Top, value.Width, value.Height)
+                BaseDataObject[PdfName.RD] = new Objects.Rectangle(value.Left, GetPageSize().Height - value.Top, value.Width, value.Height)
                     .BaseDataObject;
                 OnPropertyChanged();
             }

@@ -159,8 +159,7 @@ namespace PdfClown.Tokens
           )
         { throw new NotImplementedException(); }
 
-        protected override void WriteStandard(
-          )
+        protected override void WriteStandard()
         {
             // 1. Header [PDF:1.6:3.4.1].
             WriteHeader();
@@ -180,33 +179,21 @@ namespace PdfClown.Tokens
                 StringBuilder xrefInUseBlockBuilder = new StringBuilder();
                 IndirectObjects indirectObjects = file.IndirectObjects;
                 PdfReference freeReference = indirectObjects[0].Reference; // Initialized to the first free entry.
-                for (
-                  int index = 1;
-                  index < xrefSize;
-                  index++
-                  )
+                for (int index = 1; index < xrefSize; index++)
                 {
                     // Current entry insertion.
                     PdfIndirectObject indirectObject = indirectObjects[index];
                     if (indirectObject.IsInUse()) // In-use entry.
                     {
                         // Add in-use entry!
-                        AppendXRefEntry(
-                          xrefInUseBlockBuilder,
-                          indirectObject.Reference,
-                          stream.Length
-                          );
+                        AppendXRefEntry(xrefInUseBlockBuilder, indirectObject.Reference, stream.Length);
                         // Add in-use entry content!
                         indirectObject.WriteTo(stream, file);
                     }
                     else // Free entry.
                     {
                         // Add free entry!
-                        AppendXRefEntry(
-                          xrefBuilder,
-                          freeReference,
-                          index
-                          );
+                        AppendXRefEntry(xrefBuilder, freeReference, index);
 
                         // End current block!
                         xrefBuilder.Append(xrefInUseBlockBuilder);
@@ -217,11 +204,7 @@ namespace PdfClown.Tokens
                     }
                 }
                 // Add last free entry!
-                AppendXRefEntry(
-                  xrefBuilder,
-                  freeReference,
-                  0
-                  );
+                AppendXRefEntry(xrefBuilder, freeReference, 0);
 
                 // End last block!
                 xrefBuilder.Append(xrefInUseBlockBuilder);

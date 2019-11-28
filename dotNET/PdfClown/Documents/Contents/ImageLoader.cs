@@ -30,7 +30,7 @@ namespace PdfClown.Documents.Contents
                     {
                         var filterItem = filterArray[i];
                         var parameterItem = parameterArray?[i];
-                        Bytes.Buffer.Decode(buffer, filterItem, parameterItem ?? imageObject.Header);
+                        buffer = Bytes.Buffer.Extract(buffer, filterItem, parameterItem ?? imageObject.Header);
                         data = buffer.ToByteArray();
                         image = SKBitmap.Decode(data);
                         if (image != null)
@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Contents
                 }
                 else if (filter != null)
                 {
-                    Bytes.Buffer.Decode(buffer, filter, imageObject.Parameters ?? imageObject.Header);
+                    buffer = Bytes.Buffer.Extract(buffer, filter, imageObject.Parameters ?? imageObject.Header);
                     data = buffer.ToByteArray();
                     image = SKBitmap.Decode(data);
                 }
@@ -89,7 +89,7 @@ namespace PdfClown.Documents.Contents
             var filter = image.Filter;
             if (filter != null)
             {
-                Bytes.Buffer.Decode(buffer, filter, image.Parameters ?? image.Header);
+                buffer = Bytes.Buffer.Extract(buffer, filter, image.Parameters ?? image.Header);
                 data = buffer.ToByteArray();
             }
             Init(image, data, state);

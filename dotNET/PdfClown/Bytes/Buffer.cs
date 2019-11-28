@@ -79,6 +79,33 @@ namespace PdfClown.Bytes
                 }
             }
         }
+
+        public static IBuffer Extract(IBuffer buffer, PdfDataObject filter, PdfDirectObject parameters)
+        {
+
+            if (filter is PdfName) // Single filter.
+            {
+                buffer = buffer.Extract(Filter.Get((PdfName)filter), (PdfDictionary)parameters);
+            }
+            else // Multiple filters.
+            {
+                var filterIterator = ((PdfArray)filter).GetEnumerator();
+                var parametersIterator = (parameters != null ? ((PdfArray)parameters).GetEnumerator() : null);
+                while (filterIterator.MoveNext())
+                {
+                    PdfDictionary filterParameters;
+                    if (parametersIterator == null)
+                    { filterParameters = null; }
+                    else
+                    {
+                        parametersIterator.MoveNext();
+                        filterParameters = (PdfDictionary)Resolve(parametersIterator.Current);
+                    }
+                    buffer = buffer.Extract(Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters);
+                }
+            }
+            return buffer;
+        }
         #endregion
 
         #region dynamic
@@ -184,6 +211,12 @@ namespace PdfClown.Bytes
         {
             data = filter.Decode(data, 0, length, parameters);
             length = data.Length;
+        }
+
+        public IBuffer Extract(Filter filter, PdfDictionary parameters)
+        {
+            var data = filter.Decode(this.data, 0, this.length, parameters);
+            return new Buffer(data);
         }
 
         public void Delete(int index, int length)
@@ -412,7 +445,7 @@ namespace PdfClown.Bytes
         {
             return (byte)ReadByte() // Fixed-point mantissa (8 bits).
                + ReadByte() / 64f; // Fixed-point fraction (8 bits).
-        }        
+        }
 
         public void Seek(long position)
         {

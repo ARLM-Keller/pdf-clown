@@ -61,11 +61,22 @@ namespace PdfClown.Objects
 
         public static T WrapAlternate<T>(PdfDirectObject baseObject)
             where T : IPdfObjectWrapper
-        { return baseObject != null ? (baseObject.AlternateWrapper is T exist ? exist : (T)Activator.CreateInstance(typeof(T), baseObject)) : default(T); }
+        {
+            return baseObject != null
+                  ? (baseObject.AlternateWrapper is T exist ? exist
+                    : (T)Activator.CreateInstance(typeof(T), baseObject))
+                  : default(T);
+        }
 
         public static T Wrap<T>(PdfDirectObject baseObject)
             where T : IPdfObjectWrapper
-        { return baseObject != null ? (baseObject.Wrapper is T exist ? exist : (T)Activator.CreateInstance(typeof(T), baseObject)) : default(T); }
+        {
+            return baseObject != null
+                ? (baseObject.Wrapper is T exist ? exist
+                  : baseObject is PdfReference reference && reference.DataObject?.Wrapper is T dexist ? dexist
+                  : (T)Activator.CreateInstance(typeof(T), baseObject))
+                : default(T);
+        }
 
         #endregion
         #endregion

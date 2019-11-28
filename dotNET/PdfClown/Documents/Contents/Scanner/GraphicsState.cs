@@ -173,6 +173,8 @@ namespace PdfClown.Documents.Contents
 
         public static SKMatrix GetInitialMatrix(IContentContext contentContext, SKSize canvasSize)
         {
+            if (contentContext == null)
+                return SKMatrix.MakeIdentity();
             return GetInitialMatrix(contentContext, canvasSize, contentContext.Box);
         }
 
@@ -187,23 +189,7 @@ namespace PdfClown.Documents.Contents
             else
             {
                 // Axes orientation.
-                switch (rotation)
-                {
-                    case RotationEnum.Downward:
-                        initialCtm = new SKMatrix { Values = new float[] { 1, 0, 0, 0, -1, canvasSize.Height, 0, 0, 1 } };
-                        break;
-                    case RotationEnum.Leftward:
-                        initialCtm = new SKMatrix { Values = new float[] { 0, 1, 0, 1, 0, 0, 0, 0, 1 } };
-                        break;
-                    case RotationEnum.Upward:
-                        initialCtm = new SKMatrix { Values = new float[] { -1, 0, canvasSize.Width, 0, 1, 0, 0, 0, 1 } };
-                        break;
-                    case RotationEnum.Rightward:
-                        initialCtm = new SKMatrix { Values = new float[] { 0, -1, canvasSize.Width, -1, 0, canvasSize.Height, 0, 0, 1 } };
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
+                initialCtm = GetRotationMatrix(canvasSize, rotation);
             }
 
             // Scaling.
@@ -216,6 +202,24 @@ namespace PdfClown.Documents.Contents
             // Origin alignment.
             SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-contentBox.Left, -contentBox.Top)); //TODO: verify minimum coordinates!
             return initialCtm;
+        }
+
+        public static SKMatrix GetRotationMatrix(SKSize canvasSize, RotationEnum rotation)
+        {
+            switch (rotation)
+            {
+                case RotationEnum.Downward:
+                    return new SKMatrix { Values = new float[] { 1, 0, 0, 0, -1, canvasSize.Height, 0, 0, 1 } };
+                case RotationEnum.Leftward:
+                    return new SKMatrix { Values = new float[] { 0, 1, 0, 1, 0, 0, 0, 0, 1 } };
+                case RotationEnum.Upward:
+                    return new SKMatrix { Values = new float[] { -1, 0, canvasSize.Width, 0, 1, 0, 0, 0, 1 } };
+                case RotationEnum.Rightward:
+                    return new SKMatrix { Values = new float[] { 0, -1, canvasSize.Width, -1, 0, canvasSize.Height, 0, 0, 1 } };
+                default:
+                    throw new NotImplementedException();
+            }
+
         }
 
         /**

@@ -78,6 +78,10 @@ namespace PdfClown.Documents
         public static readonly ISet<PdfName> InheritableAttributeKeys;
 
         private static readonly Dictionary<TabOrderEnum, PdfName> TabOrderEnumCodes;
+        private SKMatrix? initialMatrix;
+        private SKMatrix? inInitialMatrix;
+        private SKMatrix? rotateMatrix;
+        private SKMatrix? inRotateMatrix;
         #endregion
 
         #region constructors
@@ -466,6 +470,65 @@ namespace PdfClown.Documents
         {
             get => ((IPdfNumber)GetInheritableAttribute(PdfName.Rotate))?.IntValue ?? 0;
             set => BaseDataObject[PdfName.Rotate] = PdfInteger.Get(value);
+        }
+
+        public SKMatrix InitialMatrix
+        {
+            get
+            {
+                if (initialMatrix == null)
+                {
+                    var size = Box.Size;
+                    initialMatrix = GraphicsState.GetInitialMatrix(this, size);
+                }
+                return initialMatrix.Value;
+            }
+        }
+
+        public SKMatrix InvertMatrix
+        {
+            get
+            {
+                if (inInitialMatrix == null)
+                {
+                    InitialMatrix.TryInvert(out var invert);
+                    inInitialMatrix = invert;
+                }
+                return inInitialMatrix.Value;
+            }
+        }
+
+        public SKMatrix RotateMatrix
+        {
+            get
+            {
+                if (rotateMatrix == null)
+                {
+                    var box = Box;
+                    var matrix = SKMatrix.MakeIdentity();// new SKMatrix { Values = new float[] { 1, 0, 0, 0, -1, box.Height, 0, 0, 1 } }; 
+                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(box.MidX, box.MidY));
+                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeRotationDegrees(Rotate));
+                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1, -1));
+                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(-box.MidX, -box.MidY));
+                    var mappedBox = matrix.MapRect(box);
+                    SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(-mappedBox.Left, -mappedBox.Top));
+                    rotateMatrix = matrix;
+                }
+                return rotateMatrix.Value;
+            }
+        }
+
+        public SKMatrix InRotateMatrix
+        {
+            get
+            {
+                if (inRotateMatrix == null)
+                {
+                    RotateMatrix.TryInvert(out var invert);
+                    inRotateMatrix = invert;
+                }
+                return inRotateMatrix.Value;
+            }
         }
 
         #region IAppDataHolder

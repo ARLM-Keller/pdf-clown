@@ -291,19 +291,23 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get
             {
-                var box = Wrap<Objects.Rectangle>(BaseDataObject[PdfName.Rect]);
-                return SKRect.Create(
-                  (float)box.Left,
-                  (float)(GetPageHeight() - box.Top),
-                  (float)box.Width,
-                  (float)box.Height);
+                var box = Rect;
+                var matrix = Page?.RotateMatrix ?? SKMatrix.MakeIdentity();
+                return matrix.MapRect(box);// SKRect.Create(quad.Location, bounds.Size);
             }
             set
             {
-                BaseDataObject[PdfName.Rect] = new Objects.Rectangle(value.Left, GetPageHeight() - value.Top, value.Width, value.Height)
-                    .BaseDataObject;
+                var matrix = Page?.InRotateMatrix ?? SKMatrix.MakeIdentity();
+                value = matrix.MapRect(value);
+                Rect = value;
                 OnPropertyChanged();
             }
+        }
+
+        public virtual SKRect Rect
+        {
+            get => Wrap<Objects.Rectangle>(BaseDataObject[PdfName.Rect]).ToRectangleF();
+            set => BaseDataObject[PdfName.Rect] = new Objects.Rectangle(value).BaseDataObject;
         }
 
         /**
@@ -488,10 +492,14 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
 
         #region private
-        protected float GetPageHeight()
+        protected SKSize GetPageSize()
         {
-            Page page = Page;
-            return page?.Box.Height ?? Document.GetSize().Height;
+            return Page?.Box.Size ?? Document.GetSize();
+        }
+
+        protected RotationEnum GetPageRotation()
+        {
+            return Page?.Rotation ?? RotationEnum.Downward;
         }
 
         public void Draw(SKCanvas canvas)
@@ -514,7 +522,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         protected virtual void DrawAppearance(SKCanvas canvas, FormXObject appearance)
         {
-            var bounds = Box;
+            var bounds = Rect;
             var appearanceBounds = appearance.Box;
             var appearanceMatrix = appearance.Matrix;
             var mapedAppearanceBounds = appearanceMatrix.MapRect(appearanceBounds);
@@ -522,11 +530,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             //var quad = Quad.Get(appearanceBounds);
             //quad.Transform(appearanceMatrix);
 
-            var self = SKMatrix.MakeIdentity();
+            var self = Page?.RotateMatrix ?? SKMatrix.MakeIdentity();
             SKMatrix.PreConcat(ref self, SKMatrix.MakeTranslation(bounds.MidX, bounds.MidY));
-            SKMatrix.PreConcat(ref self, SKMatrix.MakeScale(bounds.Width / mapedAppearanceBounds.Width, -bounds.Height / mapedAppearanceBounds.Height));
+            SKMatrix.PreConcat(ref self, SKMatrix.MakeScale(bounds.Width / mapedAppearanceBounds.Width, bounds.Height / mapedAppearanceBounds.Height));
             SKMatrix.PreConcat(ref self, SKMatrix.MakeTranslation(-mapedAppearanceBounds.Width / 2F, -mapedAppearanceBounds.Height / 2F));
-            SKMatrix.PreConcat(ref self, SKMatrix.MakeTranslation(-(mapedAppearanceBounds.Left - appearanceBounds.Left), -(mapedAppearanceBounds.Top - appearanceBounds.Top)));
+            SKMatrix.PreConcat(ref self, SKMatrix.MakeTranslation((appearanceBounds.Left - mapedAppearanceBounds.Left), (appearanceBounds.Top - mapedAppearanceBounds.Top)));
             //var self = new SKMatrix
             //{
             //    TransX = bounds.Left - (mapedAppearanceBounds.Left - appearanceBounds.Left),
@@ -555,6 +563,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        public virtual void RefreshBox()
+        { }
         #endregion
         #endregion
         #endregion

@@ -197,16 +197,15 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override IEnumerable<ControlPoint> GetControlPoints()
         {
-            foreach (var cpBase in base.GetControlPoints())
-            {
-                yield return cpBase;
-            }
             for (int i = 0; i < Points.Length; i++)
             {
                 yield return cache.TryGetValue(i, out var controlPoint) ? controlPoint
                     : (cache[i] = new IndexControlPoint { Annotation = this, Index = i });
             }
-
+            foreach (var cpBase in base.GetControlPoints())
+            {
+                yield return cpBase;
+            }
         }
         #endregion
         #endregion

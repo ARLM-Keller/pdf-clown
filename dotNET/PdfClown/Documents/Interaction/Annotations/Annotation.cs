@@ -519,7 +519,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             // Shallow removal (references):
             // * reference on page
-            Page.Annotations.Remove(this);
+            Page?.Annotations.Remove(this);
 
             // Deep removal (indirect object).
             return base.Delete();

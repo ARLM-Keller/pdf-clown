@@ -30,6 +30,14 @@ namespace PdfClown.Util.Math.Geom
 {
     public static class Extension
     {
+        public static void Add(this ref SKRect rectangle, SKPoint[] points)
+        {
+            foreach (var point in points)
+            {
+                rectangle.Add(point);
+            }
+        }
+
         public static void Add(this ref SKRect rectangle, SKPoint point)
         {
             if (point.X < rectangle.Left)

@@ -30,6 +30,31 @@ namespace PdfClown.Util.Math.Geom
 {
     public static class Extension
     {
+        public static void AddOpenArrow(this SKPath path, SKPoint point, SKPoint normal)
+        {
+            var matrix1 = SKMatrix.MakeRotationDegrees(35);
+            var rotated1 = matrix1.MapVector(normal.X, normal.Y);
+            var matrix2 = SKMatrix.MakeRotationDegrees(-35);
+            var rotated2 = matrix2.MapVector(normal.X, normal.Y);
+
+            path.MoveTo(point + new SKPoint(rotated1.X * 8, rotated1.Y * 8));
+            path.LineTo(point);
+            path.LineTo(point + new SKPoint(rotated2.X * 8, rotated2.Y * 8));
+        }
+
+        public static void AddCloseArrow(this SKPath path, SKPoint point, SKPoint normal)
+        {
+            var matrix1 = SKMatrix.MakeRotationDegrees(35);
+            var rotated1 = matrix1.MapVector(normal.X, normal.Y);
+            var matrix2 = SKMatrix.MakeRotationDegrees(-35);
+            var rotated2 = matrix2.MapVector(normal.X, normal.Y);
+
+            path.MoveTo(point + new SKPoint(rotated1.X * 8, rotated1.Y * 8));
+            path.LineTo(point);
+            path.LineTo(point + new SKPoint(rotated2.X * 8, rotated2.Y * 8));
+            path.Close();
+        }
+
         public static void Add(this ref SKRect rectangle, SKPoint[] points)
         {
             foreach (var point in points)

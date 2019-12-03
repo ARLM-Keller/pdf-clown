@@ -269,24 +269,66 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
             using (var paint = new SKPaint { Color = color })
+            using (var path = new SKPath())
             {
+                var lineLength = SKPoint.Distance(StartPoint, EndPoint);
+                var normal = SKPoint.Normalize(EndPoint - StartPoint);
+                var invertNormal = new SKPoint(normal.X * -1, normal.Y * -1);
+
                 Border?.Apply(paint, null);
-                canvas.DrawLine(StartPoint, EndPoint, paint);
-            }
-            if (CaptionVisible && !string.IsNullOrEmpty(Text))
-            {
-                using (var path = new SKPath())
-                using (var paint = new SKPaint { Color = color, TextSize = 10, IsAntialias = true })
+                path.MoveTo(StartPoint);
+                path.LineTo(EndPoint);
+
+                if (CaptionVisible && !string.IsNullOrEmpty(Text))
                 {
-                    var textLength = paint.MeasureText(Text);
-                    var lineLength = SKPoint.Distance(StartPoint, EndPoint);
-                    var offset = (lineLength - textLength) / 2;
-                    path.MoveTo(StartPoint);
-                    path.LineTo(EndPoint);
-                    canvas.DrawTextOnPath(Text, path, new SKPoint(offset, -2), paint);
+
+                    using (var textPaint = new SKPaint { Color = color, TextSize = 9, IsAntialias = true })
+                    {
+                        var textLength = textPaint.MeasureText(Text);
+                        var offset = (lineLength - textLength) / 2;
+
+                        canvas.DrawTextOnPath(Text, path, new SKPoint(offset, 2), textPaint);
+                        path.Rewind();
+                        path.MoveTo(StartPoint);
+                        path.LineTo(StartPoint + new SKPoint(normal.X * offset, normal.Y * offset));
+
+                        path.MoveTo(EndPoint);
+                        path.LineTo(EndPoint + new SKPoint(normal.X * -offset, normal.Y * -offset));
+                    }
                 }
+                if (StartStyle == LineEndStyleEnum.OpenArrow)
+                {
+                    path.AddOpenArrow(StartPoint, normal);
+                }
+                else if (StartStyle == LineEndStyleEnum.ClosedArrow)
+                {
+                    path.AddCloseArrow(StartPoint, normal);
+                }
+                else if (StartStyle == LineEndStyleEnum.Circle)
+                {
+                    path.AddCircle(StartPoint.X, StartPoint.Y, 4);
+                }
+
+                if (EndStyle == LineEndStyleEnum.OpenArrow)
+                {
+                    path.AddOpenArrow(EndPoint, invertNormal);
+                }
+                else if (EndStyle == LineEndStyleEnum.ClosedArrow)
+                {
+                    path.AddCloseArrow(EndPoint, invertNormal);
+                }
+                else if (EndStyle == LineEndStyleEnum.Circle)
+                {
+                    path.AddCircle(EndPoint.X, EndPoint.Y, 4);
+                }
+
+
+                canvas.DrawPath(path, paint);
+
             }
         }
+
+
 
         public override void RefreshBox()
         {

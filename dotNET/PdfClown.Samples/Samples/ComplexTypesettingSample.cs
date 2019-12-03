@@ -9,7 +9,6 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction;
 using actions = PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Documents.Interaction.Viewer;
 using PdfClown.Documents.Interchange.Metadata;
 using files = PdfClown.Files;

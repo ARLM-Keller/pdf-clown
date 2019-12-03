@@ -31,7 +31,7 @@ namespace PdfClown.Util.Math.Geom
     /**
       <summary>Quadrilateral shape.</summary>
     */
-    public class Quad : IDisposable
+    public class Quad
     {
         #region static
         #region interface
@@ -57,8 +57,6 @@ namespace PdfClown.Util.Math.Geom
         #region dynamic
         #region fields
         private SKPoint[] points;
-
-        private SKPath path;
         #endregion
 
         #region constructors
@@ -80,24 +78,16 @@ namespace PdfClown.Util.Math.Geom
                     throw new ArgumentException("Cardinality MUST be 4.", "points");
 
                 points = value;
-                path?.Dispose();
-                path = null;
             }
         }
         #endregion
 
         #region private
-        public SKPath Path
+        public SKPath GetPath()
         {
-            get
-            {
-                if (path == null)
-                {
-                    path = new SKPath();//FillMode.Alternate
-                    path.AddPoly(points);
-                }
-                return path;
-            }
+            var path = new SKPath();//FillMode.Alternate
+            path.AddPoly(points);
+            return path;
         }
 
         public float Width => SKPoint.Distance(points[0], points[1]);
@@ -108,23 +98,25 @@ namespace PdfClown.Util.Math.Geom
 
         public bool Contains(SKPoint SKPoint)
         {
-            return Path.Contains(SKPoint.X, SKPoint.Y);
+            return GetBounds().Contains(SKPoint.X, SKPoint.Y);
         }
 
         public bool Contains(float x, float y)
         {
-            return Path.Contains(x, y);
+            return GetBounds().Contains(x, y);
         }
 
         public SKRect GetBounds()
         {
-            return Path.GetBounds(out var rect) ? rect : SKRect.Empty;
+            var rect = new SKRect();
+            rect.Add(points);
+            return rect;
         }
 
-        public SKPathMeasure GetPathIterator()
-        {
-            return new SKPathMeasure(Path);
-        }
+        //public SKPathMeasure GetPathIterator()
+        //{
+        //    return new SKPathMeasure(Path);
+        //}
 
         /**
           <summary>Expands the size of this quad stretching around its center.</summary>
@@ -145,24 +137,16 @@ namespace PdfClown.Util.Math.Geom
         public Quad Inflate(float valueX, float valueY)
         {
             SKRect oldBounds = GetBounds();
-            path.Transform(SKMatrix.MakeTranslation(-oldBounds.Left, -oldBounds.Top));
-            path.Transform(SKMatrix.MakeScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height));
+            points = SKMatrix.MakeTranslation(-oldBounds.Left, -oldBounds.Top).MapPoints(points);
+            points = SKMatrix.MakeScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height).MapPoints(points);
             SKRect newBounds = GetBounds();
-            path.Transform(SKMatrix.MakeTranslation(oldBounds.Left - (newBounds.Width - oldBounds.Width) / 2, oldBounds.Top - (newBounds.Height - oldBounds.Height) / 2));
-            points = path.Points;
+            points = SKMatrix.MakeTranslation(oldBounds.Left - (newBounds.Width - oldBounds.Width) / 2, oldBounds.Top - (newBounds.Height - oldBounds.Height) / 2).MapPoints(points);
             return this;
         }
 
         public void Transform(SKMatrix matrix)
         {
-            Path.Transform(matrix);
-            points = path.Points;
-        }
-
-        public void Dispose()
-        {
-            path?.Dispose();
-            path = null;
+            points = matrix.MapPoints(points);
         }
 
         #endregion

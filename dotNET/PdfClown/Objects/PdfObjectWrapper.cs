@@ -73,7 +73,7 @@ namespace PdfClown.Objects
         {
             return baseObject != null
                 ? (baseObject.Wrapper is T exist ? exist
-                  : baseObject is PdfReference reference && reference.DataObject?.Wrapper is T dexist ? dexist
+                  : baseObject is PdfReference reference && reference.DataObject?.Wrapper is T dexist ? (T)(baseObject.Wrapper = dexist)
                   : (T)Activator.CreateInstance(typeof(T), baseObject))
                 : default(T);
         }

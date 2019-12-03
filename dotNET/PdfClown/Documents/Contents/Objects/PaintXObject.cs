@@ -120,6 +120,8 @@ namespace PdfClown.Documents.Contents.Objects
                 }
                 else if (xObject is xObjects.FormXObject formObject)
                 {
+                    var translate = SKMatrix.MakeTranslation(formObject.Box.Left, formObject.Box.Top);
+                    canvas.Concat(ref translate);
                     var formMatrix = formObject.Matrix;
                     canvas.Concat(ref formMatrix);
 

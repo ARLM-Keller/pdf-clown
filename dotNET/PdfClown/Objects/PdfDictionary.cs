@@ -76,7 +76,8 @@ namespace PdfClown.Objects
           <param name="values">Entry values to add to this dictionary; their position and number must
           match the <code>keys</code> argument.</param>
         */
-        public PdfDictionary(PdfName[] keys, PdfDirectObject[] values) : this(values.Length)
+        public PdfDictionary(PdfName[] keys, PdfDirectObject[] values)
+            : this(values.Length)
         {
             Updateable = false;
             for (int index = 0; index < values.Length; index++)
@@ -89,9 +90,8 @@ namespace PdfClown.Objects
           <param name="objects">Sequence of key/value-paired objects (where key is a <see
           cref="PdfName"/> and value is a <see cref="PdfDirectObject"/>).</param>
         */
-        public PdfDictionary(
-          params PdfDirectObject[] objects
-          ) : this(objects.Length / 2)
+        public PdfDictionary(params PdfDirectObject[] objects)
+            : this(objects.Length / 2)
         {
             Updateable = false;
             for (int index = 0; index < objects.Length;)
@@ -103,9 +103,8 @@ namespace PdfClown.Objects
           <summary>Creates a new dictionary object with the specified entries.</summary>
           <param name="entries">Map whose entries have to be added to this dictionary.</param>
         */
-        public PdfDictionary(
-          IDictionary<PdfName, PdfDirectObject> entries
-          ) : this(entries.Count)
+        public PdfDictionary(IDictionary<PdfName, PdfDirectObject> entries)
+            : this(entries.Count)
         {
             Updateable = false;
             foreach (KeyValuePair<PdfName, PdfDirectObject> entry in entries)
@@ -317,8 +316,7 @@ namespace PdfClown.Objects
                   Library prescription (no exception is thrown anytime a key is not found --
                   a null pointer is returned instead).
                 */
-                PdfDirectObject value;
-                entries.TryGetValue(key, out value);
+                entries.TryGetValue(key, out var value);
                 return value;
             }
             set

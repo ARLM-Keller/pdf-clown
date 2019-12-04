@@ -30,6 +30,7 @@ using PdfClown.Documents.Multimedia;
 using PdfClown.Objects;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -122,7 +123,7 @@ namespace PdfClown.Documents
         public T Get<T>(PdfString key) where T : PdfObjectWrapper
         {
             PdfObjectWrapper names = Get(typeof(T));
-            return (T)names.GetType().GetProperty("Item", BindingFlags.Public | BindingFlags.Instance).GetValue(names, new object[] { key });
+            return names is IDictionary dictionary ? (T)dictionary[key] : default(T);
         }
 
         #endregion

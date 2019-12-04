@@ -31,6 +31,7 @@ using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -125,7 +126,7 @@ namespace PdfClown.Documents.Contents
         public T Get<T>(PdfName key) where T : PdfObjectWrapper
         {
             PdfObjectWrapper resources = Get(typeof(T));
-            return (T)resources.GetType().GetProperty("Item", BindingFlags.Public | BindingFlags.Instance).GetValue(resources, new object[] { key });
+            return resources is IDictionary dictionary ? (T)dictionary[key] : default(T);
         }
         #endregion
         #endregion

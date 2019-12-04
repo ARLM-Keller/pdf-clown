@@ -49,46 +49,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Predefined stamp type [PDF:1.6:8.4.5].</summary>
         */
-        public enum StandardTypeEnum
-        {
-            Accepted,
-            Approved,
-            AsIs,
-            BusinessApproved,
-            BusinessCompleted,
-            BusinessConfidential,
-            BusinessDraft,
-            BusinessFinal,
-            BusinessForComment,
-            BusinessForPublicRelease,
-            BusinessInformationOnly,
-            BusinessNotApproved,
-            BusinessNotForPublicRelease,
-            BusinessVoid,
-            BusinessPreliminaryResults,
-            Confidential,
-            Departmental,
-            Draft,
-            Experimental,
-            Expired,
-            Final,
-            ForComment,
-            ForPublicRelease,
-            InitialHere,
-            NotApproved,
-            NotForPublicRelease,
-            Rejected,
-            SignHere,
-            Sold,
-            TopSecret,
-            Witness
-        }
         #endregion
 
         #region static
         #region fields
         private static readonly string CustomTypeName = "Custom";
-        private static readonly StandardTypeEnum DefaultType = StandardTypeEnum.Draft;
+        private static readonly StandardStampEnum DefaultType = StandardStampEnum.Draft;
         #endregion
         #endregion
 
@@ -108,7 +74,7 @@ namespace PdfClown.Documents.Interaction.Annotations
           <param name="text">Annotation text.</param>
           <param name="type">Predefined stamp type.</param>
         */
-        public Stamp(Page page, SKPoint location, SKSize? size, string text, StandardTypeEnum type) : base(
+        public Stamp(Page page, SKPoint location, SKSize? size, string text, StandardStampEnum type) : base(
           page,
           PdfName.Stamp,
           GeomUtils.Align(size.HasValue
@@ -143,7 +109,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         #region public
         /**
           <summary>Gets/Sets the type name of this stamp.</summary>
-          <remarks>To ensure predictable rendering of the <see cref="StandardTypeEnum">standard stamp
+          <remarks>To ensure predictable rendering of the <see cref="StandardStampEnum">standard stamp
           types</see> across the systems, <see cref="Document.Configuration.StampPath"/> must be defined
           so as to embed the corresponding templates.</remarks>
         */
@@ -159,7 +125,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 PdfName typeNameObject = PdfName.Get(value);
                 BaseDataObject[PdfName.Name] = (typeNameObject != null && !typeNameObject.Equals(DefaultType.GetName()) ? typeNameObject : null);
 
-                StandardTypeEnum? standardType = StampStandardTypeEnumExtension.Get(typeNameObject);
+                StandardStampEnum? standardType = StampStandardTypeEnumExtension.Get(typeNameObject);
                 if (standardType.HasValue)
                 {
                     /*
@@ -215,6 +181,41 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
     }
 
+    public enum StandardStampEnum
+    {
+        Accepted,
+        Approved,
+        AsIs,
+        BusinessApproved,
+        BusinessCompleted,
+        BusinessConfidential,
+        BusinessDraft,
+        BusinessFinal,
+        BusinessForComment,
+        BusinessForPublicRelease,
+        BusinessInformationOnly,
+        BusinessNotApproved,
+        BusinessNotForPublicRelease,
+        BusinessVoid,
+        BusinessPreliminaryResults,
+        Confidential,
+        Departmental,
+        Draft,
+        Experimental,
+        Expired,
+        Final,
+        ForComment,
+        ForPublicRelease,
+        InitialHere,
+        NotApproved,
+        NotForPublicRelease,
+        Rejected,
+        SignHere,
+        Sold,
+        TopSecret,
+        Witness
+    }
+
     internal static class StampStandardTypeEnumExtension
     {
         private class TypeItem
@@ -229,49 +230,49 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        private static readonly Dictionary<Stamp.StandardTypeEnum, TypeItem> codes;
+        private static readonly Dictionary<StandardStampEnum, TypeItem> codes;
 
         static StampStandardTypeEnumExtension()
         {
-            codes = new Dictionary<Stamp.StandardTypeEnum, TypeItem>
+            codes = new Dictionary<StandardStampEnum, TypeItem>
             {
-                [Stamp.StandardTypeEnum.Accepted] = new TypeItem(PdfName.SHAccepted, 1.14f),
-                [Stamp.StandardTypeEnum.Approved] = new TypeItem(PdfName.Approved, 3.8f),
-                [Stamp.StandardTypeEnum.AsIs] = new TypeItem(PdfName.AsIs, 3.8f),
-                [Stamp.StandardTypeEnum.BusinessApproved] = new TypeItem(PdfName.SBApproved, 3.3f),
-                [Stamp.StandardTypeEnum.BusinessCompleted] = new TypeItem(PdfName.SBCompleted, 3.55f),
-                [Stamp.StandardTypeEnum.BusinessConfidential] = new TypeItem(PdfName.SBConfidential, 4.23f),
-                [Stamp.StandardTypeEnum.BusinessDraft] = new TypeItem(PdfName.SBDraft, 2.27f),
-                [Stamp.StandardTypeEnum.BusinessFinal] = new TypeItem(PdfName.SBFinal, 1.97f),
-                [Stamp.StandardTypeEnum.BusinessForComment] = new TypeItem(PdfName.SBForComment, 4.28f),
-                [Stamp.StandardTypeEnum.BusinessForPublicRelease] = new TypeItem(PdfName.SBForPublicRelease, 5.85f),
-                [Stamp.StandardTypeEnum.BusinessInformationOnly] = new TypeItem(PdfName.SBInformationOnly, 5.55f),
-                [Stamp.StandardTypeEnum.BusinessNotApproved] = new TypeItem(PdfName.SBNotApproved, 4.42f),
-                [Stamp.StandardTypeEnum.BusinessNotForPublicRelease] = new TypeItem(PdfName.SBNotForPublicRelease, 6.98f),
-                [Stamp.StandardTypeEnum.BusinessVoid] = new TypeItem(PdfName.SBVoid, 1.83f),
-                [Stamp.StandardTypeEnum.BusinessPreliminaryResults] = new TypeItem(PdfName.SBPreliminaryResults, 6.14f),
-                [Stamp.StandardTypeEnum.Confidential] = new TypeItem(PdfName.Confidential, 3.8f),
-                [Stamp.StandardTypeEnum.Departmental] = new TypeItem(PdfName.Departmental, 3.8f),
-                [Stamp.StandardTypeEnum.Draft] = new TypeItem(PdfName.Draft, 3.8f),
-                [Stamp.StandardTypeEnum.Experimental] = new TypeItem(PdfName.Experimental, 3.8f),
-                [Stamp.StandardTypeEnum.Expired] = new TypeItem(PdfName.Expired, 3.8f),
-                [Stamp.StandardTypeEnum.Final] = new TypeItem(PdfName.Final, 3.8f),
-                [Stamp.StandardTypeEnum.ForComment] = new TypeItem(PdfName.ForComment, 3.8f),
-                [Stamp.StandardTypeEnum.ForPublicRelease] = new TypeItem(PdfName.ForPublicRelease, 3.8f),
-                [Stamp.StandardTypeEnum.InitialHere] = new TypeItem(PdfName.SHInitialHere, 3.29f),
-                [Stamp.StandardTypeEnum.NotApproved] = new TypeItem(PdfName.NotApproved, 3.8f),
-                [Stamp.StandardTypeEnum.NotForPublicRelease] = new TypeItem(PdfName.NotForPublicRelease, 3.8f),
-                [Stamp.StandardTypeEnum.Rejected] = new TypeItem(PdfName.SBRejected, 1.0f),
-                [Stamp.StandardTypeEnum.SignHere] = new TypeItem(PdfName.SHSignHere, 3.29f),
-                [Stamp.StandardTypeEnum.Sold] = new TypeItem(PdfName.Sold, 3.8f),
-                [Stamp.StandardTypeEnum.TopSecret] = new TypeItem(PdfName.TopSecret, 3.8f),
-                [Stamp.StandardTypeEnum.Witness] = new TypeItem(PdfName.SHWitness, 3.29f)
+                [StandardStampEnum.Accepted] = new TypeItem(PdfName.SHAccepted, 1.14f),
+                [StandardStampEnum.Approved] = new TypeItem(PdfName.Approved, 3.8f),
+                [StandardStampEnum.AsIs] = new TypeItem(PdfName.AsIs, 3.8f),
+                [StandardStampEnum.BusinessApproved] = new TypeItem(PdfName.SBApproved, 3.3f),
+                [StandardStampEnum.BusinessCompleted] = new TypeItem(PdfName.SBCompleted, 3.55f),
+                [StandardStampEnum.BusinessConfidential] = new TypeItem(PdfName.SBConfidential, 4.23f),
+                [StandardStampEnum.BusinessDraft] = new TypeItem(PdfName.SBDraft, 2.27f),
+                [StandardStampEnum.BusinessFinal] = new TypeItem(PdfName.SBFinal, 1.97f),
+                [StandardStampEnum.BusinessForComment] = new TypeItem(PdfName.SBForComment, 4.28f),
+                [StandardStampEnum.BusinessForPublicRelease] = new TypeItem(PdfName.SBForPublicRelease, 5.85f),
+                [StandardStampEnum.BusinessInformationOnly] = new TypeItem(PdfName.SBInformationOnly, 5.55f),
+                [StandardStampEnum.BusinessNotApproved] = new TypeItem(PdfName.SBNotApproved, 4.42f),
+                [StandardStampEnum.BusinessNotForPublicRelease] = new TypeItem(PdfName.SBNotForPublicRelease, 6.98f),
+                [StandardStampEnum.BusinessVoid] = new TypeItem(PdfName.SBVoid, 1.83f),
+                [StandardStampEnum.BusinessPreliminaryResults] = new TypeItem(PdfName.SBPreliminaryResults, 6.14f),
+                [StandardStampEnum.Confidential] = new TypeItem(PdfName.Confidential, 3.8f),
+                [StandardStampEnum.Departmental] = new TypeItem(PdfName.Departmental, 3.8f),
+                [StandardStampEnum.Draft] = new TypeItem(PdfName.Draft, 3.8f),
+                [StandardStampEnum.Experimental] = new TypeItem(PdfName.Experimental, 3.8f),
+                [StandardStampEnum.Expired] = new TypeItem(PdfName.Expired, 3.8f),
+                [StandardStampEnum.Final] = new TypeItem(PdfName.Final, 3.8f),
+                [StandardStampEnum.ForComment] = new TypeItem(PdfName.ForComment, 3.8f),
+                [StandardStampEnum.ForPublicRelease] = new TypeItem(PdfName.ForPublicRelease, 3.8f),
+                [StandardStampEnum.InitialHere] = new TypeItem(PdfName.SHInitialHere, 3.29f),
+                [StandardStampEnum.NotApproved] = new TypeItem(PdfName.NotApproved, 3.8f),
+                [StandardStampEnum.NotForPublicRelease] = new TypeItem(PdfName.NotForPublicRelease, 3.8f),
+                [StandardStampEnum.Rejected] = new TypeItem(PdfName.SBRejected, 1.0f),
+                [StandardStampEnum.SignHere] = new TypeItem(PdfName.SHSignHere, 3.29f),
+                [StandardStampEnum.Sold] = new TypeItem(PdfName.Sold, 3.8f),
+                [StandardStampEnum.TopSecret] = new TypeItem(PdfName.TopSecret, 3.8f),
+                [StandardStampEnum.Witness] = new TypeItem(PdfName.SHWitness, 3.29f)
             };
         }
 
-        public static Stamp.StandardTypeEnum? Get(PdfName name)
+        public static StandardStampEnum? Get(PdfName name)
         {
-            foreach (KeyValuePair<Stamp.StandardTypeEnum, TypeItem> entry in codes)
+            foreach (KeyValuePair<StandardStampEnum, TypeItem> entry in codes)
             {
                 if (entry.Value.Code.Equals(name))
                     return entry.Key;
@@ -282,10 +283,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the aspect ratio of the original Acrobat standard stamp.</summary>
         */
-        public static float GetAspect(this Stamp.StandardTypeEnum type)
+        public static float GetAspect(this StandardStampEnum type)
         { return codes[type].Aspect; }
 
-        public static PdfName GetName(this Stamp.StandardTypeEnum type)
+        public static PdfName GetName(this StandardStampEnum type)
         { return codes[type].Code; }
     }
 }

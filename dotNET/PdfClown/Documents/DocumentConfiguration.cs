@@ -49,7 +49,7 @@ namespace PdfClown.Documents
 
         private Document document;
 
-        private IDictionary<Stamp.StandardTypeEnum, FormXObject> importedStamps;
+        private IDictionary<StandardStampEnum, FormXObject> importedStamps;
         #endregion
 
         #region constructors
@@ -88,7 +88,7 @@ namespace PdfClown.Documents
           path</see> and embedded in the document.</remarks>
           <param name="type">Predefined stamp type whose appearance has to be retrieved.</param>
         */
-        public FormXObject GetStamp(Stamp.StandardTypeEnum? type)
+        public FormXObject GetStamp(StandardStampEnum? type)
         {
             if (!type.HasValue
               || stampPath == null)
@@ -98,7 +98,7 @@ namespace PdfClown.Documents
             if (importedStamps != null)
             { importedStamps.TryGetValue(type.Value, out stamp); }
             else
-            { importedStamps = new Dictionary<Stamp.StandardTypeEnum, FormXObject>(); }
+            { importedStamps = new Dictionary<StandardStampEnum, FormXObject>(); }
             if (stamp == null)
             {
                 if (io::File.GetAttributes(stampPath).HasFlag(io::FileAttributes.Directory)) // Acrobat standard stamps directory.
@@ -106,41 +106,41 @@ namespace PdfClown.Documents
                     string stampFileName;
                     switch (type.Value)
                     {
-                        case Stamp.StandardTypeEnum.Approved:
-                        case Stamp.StandardTypeEnum.AsIs:
-                        case Stamp.StandardTypeEnum.Confidential:
-                        case Stamp.StandardTypeEnum.Departmental:
-                        case Stamp.StandardTypeEnum.Draft:
-                        case Stamp.StandardTypeEnum.Experimental:
-                        case Stamp.StandardTypeEnum.Expired:
-                        case Stamp.StandardTypeEnum.Final:
-                        case Stamp.StandardTypeEnum.ForComment:
-                        case Stamp.StandardTypeEnum.ForPublicRelease:
-                        case Stamp.StandardTypeEnum.NotApproved:
-                        case Stamp.StandardTypeEnum.NotForPublicRelease:
-                        case Stamp.StandardTypeEnum.Sold:
-                        case Stamp.StandardTypeEnum.TopSecret:
+                        case StandardStampEnum.Approved:
+                        case StandardStampEnum.AsIs:
+                        case StandardStampEnum.Confidential:
+                        case StandardStampEnum.Departmental:
+                        case StandardStampEnum.Draft:
+                        case StandardStampEnum.Experimental:
+                        case StandardStampEnum.Expired:
+                        case StandardStampEnum.Final:
+                        case StandardStampEnum.ForComment:
+                        case StandardStampEnum.ForPublicRelease:
+                        case StandardStampEnum.NotApproved:
+                        case StandardStampEnum.NotForPublicRelease:
+                        case StandardStampEnum.Sold:
+                        case StandardStampEnum.TopSecret:
                             stampFileName = "Standard.pdf";
                             break;
-                        case Stamp.StandardTypeEnum.BusinessApproved:
-                        case Stamp.StandardTypeEnum.BusinessConfidential:
-                        case Stamp.StandardTypeEnum.BusinessDraft:
-                        case Stamp.StandardTypeEnum.BusinessFinal:
-                        case Stamp.StandardTypeEnum.BusinessForComment:
-                        case Stamp.StandardTypeEnum.BusinessForPublicRelease:
-                        case Stamp.StandardTypeEnum.BusinessNotApproved:
-                        case Stamp.StandardTypeEnum.BusinessNotForPublicRelease:
-                        case Stamp.StandardTypeEnum.BusinessCompleted:
-                        case Stamp.StandardTypeEnum.BusinessVoid:
-                        case Stamp.StandardTypeEnum.BusinessPreliminaryResults:
-                        case Stamp.StandardTypeEnum.BusinessInformationOnly:
+                        case StandardStampEnum.BusinessApproved:
+                        case StandardStampEnum.BusinessConfidential:
+                        case StandardStampEnum.BusinessDraft:
+                        case StandardStampEnum.BusinessFinal:
+                        case StandardStampEnum.BusinessForComment:
+                        case StandardStampEnum.BusinessForPublicRelease:
+                        case StandardStampEnum.BusinessNotApproved:
+                        case StandardStampEnum.BusinessNotForPublicRelease:
+                        case StandardStampEnum.BusinessCompleted:
+                        case StandardStampEnum.BusinessVoid:
+                        case StandardStampEnum.BusinessPreliminaryResults:
+                        case StandardStampEnum.BusinessInformationOnly:
                             stampFileName = "StandardBusiness.pdf";
                             break;
-                        case Stamp.StandardTypeEnum.Rejected:
-                        case Stamp.StandardTypeEnum.Accepted:
-                        case Stamp.StandardTypeEnum.InitialHere:
-                        case Stamp.StandardTypeEnum.SignHere:
-                        case Stamp.StandardTypeEnum.Witness:
+                        case StandardStampEnum.Rejected:
+                        case StandardStampEnum.Accepted:
+                        case StandardStampEnum.InitialHere:
+                        case StandardStampEnum.SignHere:
+                        case StandardStampEnum.Witness:
                             stampFileName = "SignHere.pdf";
                             break;
                         default:

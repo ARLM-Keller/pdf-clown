@@ -36,7 +36,7 @@ namespace PdfClown.Objects
       <summary>Abstract tree [PDF:1.7:3.8.5].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public abstract class Tree<TKey, TValue> : PdfObjectWrapper<PdfDictionary>, IDictionary<TKey, TValue>
+    public abstract class Tree<TKey, TValue> : PdfObjectWrapper<PdfDictionary>, IDictionary<TKey, TValue>, IDictionary
         where TKey : PdfDirectObject, IPdfSimpleObject
         where TValue : PdfObjectWrapper
     {
@@ -725,6 +725,18 @@ namespace PdfClown.Objects
             get;
         }
 
+        public bool IsFixedSize => false;
+
+        ICollection IDictionary.Keys => (ICollection)Keys;
+
+        ICollection IDictionary.Values => (ICollection)Values;
+
+        public bool IsSynchronized => true;
+
+        public object SyncRoot => throw new NotImplementedException();
+
+        public object this[object key] { get => this[(TKey)key]; set => this[(TKey)key] = (TValue)value; }
+
         /**
           <summary>Wraps a base object within its corresponding high-level representation.</summary>
         */
@@ -899,12 +911,8 @@ namespace PdfClown.Objects
             if (kidsObject == null) // Leaf node.
             {
                 PdfArray namesObject = (PdfArray)node.Resolve(pairsKey);
-                for (
-                  int index = 0,
-                    length = namesObject.Count;
-                  index < length;
-                  index += 2
-                  )
+                var length = namesObject.Count;
+                for (int index = 0; index < length; index += 2)
                 { filler.Add(namesObject, index); }
             }
             else // Intermediate node.
@@ -1025,6 +1033,31 @@ namespace PdfClown.Objects
                   new PdfDirectObject[] { lowLimit, highLimit }
                   );
             }
+        }
+
+        void IDictionary.Add(object key, object value)
+        {
+            Add((TKey)key, (TValue)value);
+        }
+
+        bool IDictionary.Contains(object key)
+        {
+            return ContainsKey((TKey)key);
+        }
+
+        IDictionaryEnumerator IDictionary.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IDictionary.Remove(object key)
+        {
+            Remove((TKey)key);
+        }
+
+        void ICollection.CopyTo(Array array, int index)
+        {
+            throw new NotImplementedException();
         }
         #endregion
         #endregion

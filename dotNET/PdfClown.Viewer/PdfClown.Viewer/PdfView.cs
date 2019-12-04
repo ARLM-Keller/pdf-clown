@@ -401,7 +401,7 @@ namespace PdfClown.Viewer
         {
             return base.OnKeyDown(keyName, modifiers);
             if (keyName == "Escape")
-            { 
+            {
             }
         }
 
@@ -510,10 +510,6 @@ namespace PdfClown.Viewer
 
         private void OnTouchPointed(SKTouchEventArgs e)
         {
-            if (PressedCursorLocation == null)
-                return;
-
-
             if (e.ActionType == SKTouchAction.Moved)
             {
                 if (Pointing is Line line)
@@ -523,8 +519,7 @@ namespace PdfClown.Viewer
                 else if (Pointing is VertexShape vertexShape)
                 {
                     vertexShape.LastPoint = InvertPictureMatrix.MapPoint(e.Location);
-                }
-                PressedCursorLocation = e.Location;
+                }                
             }
             else if (e.ActionType == SKTouchAction.Released)
             {
@@ -595,6 +590,10 @@ namespace PdfClown.Viewer
             else if (e.ActionType == SKTouchAction.Pressed)
             {
                 PressedCursorLocation = e.Location;
+                var picture = GetPicture(Dragging.Page);
+                if (picture?.Annotations.Contains(Dragging) ?? true)
+                    return;
+
                 if (Dragging is StickyNote sticky)
                 {
                     CheckoutDrag();
@@ -635,9 +634,15 @@ namespace PdfClown.Viewer
             }
             else if (e.ActionType == SKTouchAction.Released)
             {
-                if (Dragging is VertexShape vertexShape)
+                PressedCursorLocation = null;
+                var picture = GetPicture(Dragging.Page);
+                if (!(picture?.Annotations.Contains(Dragging) ?? true))
                 {
-                    Pointing = Dragging;
+
+                    if (Dragging is VertexShape vertexShape)
+                    {
+                        Pointing = Dragging;
+                    }
                 }
                 CheckoutDrag();
             }
@@ -721,7 +726,7 @@ namespace PdfClown.Viewer
 
         private void CheckoutDrag()
         {
-            if (Dragging == null )
+            if (Dragging == null)
                 return;
             if (Dragging.Page != null)
             {

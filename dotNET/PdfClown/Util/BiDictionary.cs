@@ -115,7 +115,7 @@ namespace PdfClown.Util
                   If the user is interested in verifying whether such result represents a non-existing key
                   or an actual null object, it suffices to query ContainsKey() method.
                 */
-                TValue value; dictionary.TryGetValue(key, out value); return value;
+                return dictionary.TryGetValue(key, out var value) ? value : default(TValue);
             }
             set
             {

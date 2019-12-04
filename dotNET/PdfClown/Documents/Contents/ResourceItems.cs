@@ -30,6 +30,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PdfClown.Documents.Contents
 {
@@ -37,7 +38,7 @@ namespace PdfClown.Documents.Contents
       <summary>Collection of a specific resource type.</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public abstract class ResourceItems<TValue> : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, TValue>
+    public abstract class ResourceItems<TValue> : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, TValue>, IDictionary
         where TValue : PdfObjectWrapper
     {
         #region dynamic
@@ -112,14 +113,21 @@ namespace PdfClown.Documents.Contents
 
         public bool IsReadOnly => false;
 
+        bool IDictionary.IsFixedSize => false;
+
+        ICollection IDictionary.Keys => (ICollection)Keys;
+
+        ICollection IDictionary.Values => (ICollection)Values;
+
+        bool ICollection.IsSynchronized => true;
+
+        object ICollection.SyncRoot => BaseDataObject;
+
+        object IDictionary.this[object key] { get => this[(PdfName)key]; set => this[(PdfName)key] = (TValue)value; }
+
         public bool Remove(KeyValuePair<PdfName, TValue> entry)
         {
-            return BaseDataObject.Remove(
-              new KeyValuePair<PdfName, PdfDirectObject>(
-                entry.Key,
-                entry.Value.BaseObject
-                )
-              );
+            return BaseDataObject.Remove(new KeyValuePair<PdfName, PdfDirectObject>(entry.Key, entry.Value.BaseObject));
         }
 
         #region IEnumerable<KeyValuePair<PdfName,TValue>>
@@ -144,8 +152,75 @@ namespace PdfClown.Documents.Contents
         */
         protected virtual TValue WrapItem(PdfDirectObject baseObject)
         { return Wrap<TValue>(baseObject); }
+
+        void IDictionary.Add(object key, object value)
+        {
+            Add((PdfName)key, (TValue)value);
+        }
+
+        bool IDictionary.Contains(object key)
+        {
+            return ContainsKey((PdfName)key);
+        }
+
+        IDictionaryEnumerator IDictionary.GetEnumerator()
+        {
+            return new DictionaryEnurator(this);
+        }
+
+        void IDictionary.Remove(object key)
+        {
+            Remove((PdfName)key);
+        }
+
+        void ICollection.CopyTo(Array array, int index)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
         #endregion
         #endregion
+
+        internal class DictionaryEnurator : IDictionaryEnumerator
+        {
+            private DictionaryEntry entry;
+            private IDictionary dictionary;
+            private IList keys;
+            private int i = 0;
+
+            public DictionaryEnurator(IDictionary dictionarys)
+            {
+                this.dictionary = dictionarys;
+                this.keys = new List<object>(dictionarys.Keys.Cast<object>());
+            }
+
+            public DictionaryEntry Entry { get => entry; }
+
+            public object Key => entry.Key;
+
+            public object Value => entry.Value;
+
+            public object Current => entry;
+
+            public bool MoveNext()
+            {
+                i++;
+                if (keys.Count <= i || keys.Count == 0)
+                {
+                    entry = new DictionaryEntry(null, null);
+                    return false;
+                }
+                var key = keys[i];
+                entry = new DictionaryEntry(key, dictionary[key]);
+                return true;
+            }
+
+            public void Reset()
+            {
+                i = -1;
+            }
+        }
     }
+
+
 }

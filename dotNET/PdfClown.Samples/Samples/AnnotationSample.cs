@@ -280,7 +280,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(485, 515),
                   null, // Default size is natural size.
                   "This is 'Confidential', a standard stamp",
-                  Stamp.StandardTypeEnum.Confidential)
+                  StandardStampEnum.Confidential)
                 {
                     Rotation = 15,
                     Author = "Stefano",
@@ -293,7 +293,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(485, 580),
                   null, // Default size is natural size.
                   "This is 'SBApproved', a standard stamp",
-                  Stamp.StandardTypeEnum.BusinessApproved)
+                  StandardStampEnum.BusinessApproved)
                 {
                     Author = "Stefano",
                     Subject = "Standard stamp"
@@ -305,7 +305,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(485, 635),
                   new SKSize(0, 40), // This scales the width proportionally to the 40-unit height (you can obviously do also the opposite, defining only the width).
                   "This is 'SHSignHere', a standard stamp",
-                  Stamp.StandardTypeEnum.SignHere)
+                  StandardStampEnum.SignHere)
                 {
                     Rotation = -10,
                     Author = "Stefano",

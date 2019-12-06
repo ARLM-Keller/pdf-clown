@@ -83,7 +83,7 @@ namespace PdfClown.Viewer
                     }
                     if (annotation is Popup popup)
                     {
-                        if(!Annotations.Contains(popup.Markup))
+                        if(popup.Markup != null && !Annotations.Contains(popup.Markup))
                             Annotations.Add(popup.Markup);
                     }
                 }

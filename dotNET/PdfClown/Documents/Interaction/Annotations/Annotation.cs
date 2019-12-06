@@ -120,8 +120,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return null;
             if (baseObject.Wrapper is Annotation annotation)
                 return annotation;
-
-            PdfName annotationType = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.Subtype];
+            var dictionary = (PdfDictionary)baseObject.Resolve();
+            if (dictionary == null)
+                return null;
+            PdfName annotationType = (PdfName)dictionary[PdfName.Subtype];
             if (annotationType.Equals(PdfName.Text))
                 return new StickyNote(baseObject);
             else if (annotationType.Equals(PdfName.Link))

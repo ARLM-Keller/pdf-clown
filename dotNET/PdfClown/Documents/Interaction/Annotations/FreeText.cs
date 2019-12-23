@@ -129,7 +129,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     var val = FreeText.InvertPageMatrix.MapPoint(value.Value);
                     coordinates[2] = PdfReal.Get(val.X);
                     coordinates[3] = PdfReal.Get(val.Y);
-                    FreeText.RefreshBox();
+                    //FreeText.RefreshBox();
                 }
             }
 

@@ -25,7 +25,7 @@ namespace PdfClown.Viewer
         public static readonly BindableProperty SelectedMarkupProperty = BindableProperty.Create(nameof(SelectedMarkup), typeof(Markup), typeof(PdfView), null,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnSelectedMarkupChanged((Markup)oldValue, (Markup)newValue));
         public static readonly BindableProperty DraggingProperty = BindableProperty.Create(nameof(Dragging), typeof(Annotation), typeof(PdfView), null,
-            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnDragging((Annotation)oldValue, (Annotation)newValue));
+            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnDraggingChanged((Annotation)oldValue, (Annotation)newValue));
         public static readonly BindableProperty SizingProperty = BindableProperty.Create(nameof(Sizing), typeof(Annotation), typeof(PdfView), null,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnSizingChanged((Annotation)oldValue, (Annotation)newValue));
         public static readonly BindableProperty PointingProperty = BindableProperty.Create(nameof(Pointing), typeof(Annotation), typeof(PdfView), null,
@@ -151,12 +151,12 @@ namespace PdfClown.Viewer
         public SKSize DocumentSize { get; private set; }
         public Pages Pages { get; private set; }
 
-        public PdfPagePicture CurrentPage
+        public PdfPagePicture CenterPage
         {
             get
             {
                 var area = CurrentArea;
-                area.Inflate(-50, -50);
+                area.Inflate(-(float)Width / 4F, -(float)Height / 4F);
                 foreach (var pdfPicture in pictures)
                 {
                     if (CurrentViewMatrix.MapRect(pdfPicture.Bounds).IntersectsWith(area))
@@ -241,14 +241,23 @@ namespace PdfClown.Viewer
             }
         }
 
-
-
-        private void OnDragging(Annotation oldValue, Annotation newValue)
+        private void OnDraggingChanged(Annotation oldValue, Annotation newValue)
         {
             if (newValue == null)
             {
                 IsChanged = true;
                 SelectedAnnotation = oldValue;
+            }
+            else
+            {
+                if (Dragging.Page != null)
+                {
+                    var picture = GetPicture(Dragging.Page);
+                    if (picture != null && !picture.Annotations.Contains(Dragging))
+                    {
+                        picture.Annotations.Add(Dragging);
+                    }
+                }
             }
         }
 
@@ -346,10 +355,10 @@ namespace PdfClown.Viewer
                     }
                 }
             }
-            if (Dragging != null && !pdfPicture.Annotations.Contains(Dragging))
-            {
-                Dragging.Draw(canvas);
-            }
+            //if (Dragging != null && !pdfPicture.Annotations.Contains(Dragging))
+            //{
+            //    Dragging.Draw(canvas);
+            //}
             OnPaintAnnotationToolTip(canvas);
             canvas.Restore();
         }
@@ -469,6 +478,17 @@ namespace PdfClown.Viewer
                 OnTouchDragged(e);
                 return;
             }
+            else if (SelectedAnnotation != null && SelectedAnnotation.Page == CurrentPicture.Page)
+            {
+                var bounds = SelectedAnnotation.GetBounds(CurrentPictureMatrix);
+                bounds.Inflate(4, 4);
+                if (bounds.Contains(CurrentLocation))
+                {
+                    CurrentAnnotationBounds = bounds;
+                    OnTouchAnnotation(SelectedAnnotation, e);
+                    return;
+                }
+            }
             else
             {
                 foreach (var annotation in CurrentPicture.Annotations)
@@ -519,7 +539,7 @@ namespace PdfClown.Viewer
                 else if (Pointing is VertexShape vertexShape)
                 {
                     vertexShape.LastPoint = InvertPictureMatrix.MapPoint(e.Location);
-                }                
+                }
             }
             else if (e.ActionType == SKTouchAction.Released)
             {
@@ -573,6 +593,14 @@ namespace PdfClown.Viewer
         {
             if (e.ActionType == SKTouchAction.Moved)
             {
+                if (CurrentPicture.Page != Dragging.Page)
+                {
+                    var oldPicture = GetPicture(Dragging.Page);
+                    oldPicture.Annotations.Remove(Dragging);
+                    CurrentPicture.Annotations.Add(Dragging);
+                    Dragging.Page = CurrentPicture.Page;
+                    PressedCursorLocation = null;
+                }
                 var bound = Dragging.GetBounds(CurrentPictureMatrix);
                 if (PressedCursorLocation == null || e.MouseButton == SKMouseButton.Unknown)
                 {
@@ -590,10 +618,9 @@ namespace PdfClown.Viewer
             else if (e.ActionType == SKTouchAction.Pressed)
             {
                 PressedCursorLocation = e.Location;
-                var picture = GetPicture(Dragging.Page);
-                if (picture?.Annotations.Contains(Dragging) ?? true)
+                if (!Dragging.IsNew)
                     return;
-
+                Dragging.IsNew = false;
                 if (Dragging is StickyNote sticky)
                 {
                     CheckoutDrag();
@@ -605,7 +632,12 @@ namespace PdfClown.Viewer
                 }
                 else if (Dragging is VertexShape vertexShape)
                 {
+                    Dragging.IsNew = true;
                     vertexShape.FirstPoint = InvertPictureMatrix.MapPoint(e.Location);
+                }
+                else if (Dragging is Shape shape)
+                {
+                    Sizing = Dragging;
                 }
                 else if (Dragging is FreeText freeText)
                 {
@@ -636,13 +668,10 @@ namespace PdfClown.Viewer
             {
                 PressedCursorLocation = null;
                 var picture = GetPicture(Dragging.Page);
-                if (!(picture?.Annotations.Contains(Dragging) ?? true))
+                if (Dragging.IsNew && Dragging is VertexShape vertexShape)
                 {
-
-                    if (Dragging is VertexShape vertexShape)
-                    {
-                        Pointing = Dragging;
-                    }
+                    Dragging.IsNew = false;
+                    Pointing = Dragging;
                 }
                 CheckoutDrag();
             }
@@ -728,18 +757,7 @@ namespace PdfClown.Viewer
         {
             if (Dragging == null)
                 return;
-            if (Dragging.Page != null)
-            {
-                var picture = GetPicture(Dragging.Page);
-                if (picture != null && !picture.Annotations.Contains(Dragging))
-                {
-                    picture.Annotations.Add(Dragging);
-                }
-                if (!Dragging.Page.Annotations.Contains(Dragging))
-                {
-                    Dragging.Page.Annotations.Add(Dragging);
-                }
-            }
+
             DragComplete?.Invoke(this, EventArgs.Empty);
             Dragging = null;
         }

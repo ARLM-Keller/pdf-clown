@@ -40,6 +40,7 @@ using System.Runtime.CompilerServices;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Util.Math.Geom;
 using System.Collections.Generic;
+//using System.Diagnostics;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -192,11 +193,11 @@ namespace PdfClown.Documents.Interaction.Annotations
                       )
                   )
         {
-            this.page = page;
-            page.Annotations.Add(this);
+            Page = page;
             Box = box;
             Text = text;
             Printable = true;
+            IsNew = true;
         }
 
         public Annotation(PdfDirectObject baseObject) : base(baseObject)
@@ -407,7 +408,25 @@ namespace PdfClown.Documents.Interaction.Annotations
           <summary>Gets/Sets the associated page.</summary>
         */
         [PDF(VersionEnum.PDF13)]
-        public virtual Page Page => page ?? (page = Wrap<Page>(BaseDataObject[PdfName.P]));
+        public virtual Page Page
+        {
+            get => page ?? (page = Wrap<Page>(BaseDataObject[PdfName.P]));
+            set
+            {
+                var oldPage = Page;
+                if (oldPage == value)
+                {
+                    return;
+                }
+                oldPage?.Annotations.Remove(this);
+                page = value;
+                if (page != null)
+                {
+                    page.Annotations.Add(this);
+                    //Debug.WriteLine($"Move to page {page}");
+                }
+            }
+        }
 
         /**
           <summary>Gets/Sets whether to print the annotation when the page is printed.</summary>
@@ -541,6 +560,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public virtual bool ShowToolTip => true;
+        public bool IsNew { get; set; }
 
         #endregion
         #endregion

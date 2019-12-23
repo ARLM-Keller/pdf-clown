@@ -77,13 +77,15 @@ namespace PdfClown.Viewer
                 Annotations = new List<Annotation>();
                 foreach (var annotation in Page.Annotations)
                 {
+                    if (annotation == null)
+                        continue;
                     if (!Annotations.Contains(annotation))
                     {
                         Annotations.Add(annotation);
                     }
                     if (annotation is Popup popup)
                     {
-                        if(popup.Markup != null && !Annotations.Contains(popup.Markup))
+                        if (popup.Markup != null && !Annotations.Contains(popup.Markup))
                             Annotations.Add(popup.Markup);
                     }
                 }

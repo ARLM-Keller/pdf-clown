@@ -159,9 +159,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.633" />
-    <PackageReference Include="SkiaSharp" Version="1.68.0" />
+    <PackageReference Include="SkiaSharp" Version="1.68.1.1" />
     <PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
-    <PackageReference Include="SkiaSharp.HarfBuzz" Version="1.68.0" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" Version="1.68.1.1" />
     <PackageReference Include="FreeImage.NETCore" Version="4.3.7" />
   </ItemGroup>
   <!--<ItemGroup>

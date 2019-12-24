@@ -1,5 +1,6 @@
 ﻿using PdfClown.Viewer;
 using PdfClown.Viewer.WPF;
+using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using SkiaSharp.Views.WPF;
 using System.ComponentModel;
@@ -192,6 +193,32 @@ namespace PdfClown.Viewer.WPF
                 }
             }
             base.Dispose(disposing);
+        }
+
+        public SKPoint GetScaledCoord(double x, double y)
+        {
+            if (Element.IgnorePixelScaling)
+            {
+                return new SKPoint((float)x, (float)y);
+            }
+            else
+            {
+                return SKCanvasHelper.GetScaledCoord(Control, x, y);
+            }
+        }
+    }
+
+    public static class SKCanvasHelper
+    {
+        public static SKPoint GetScaledCoord(FrameworkElement control, double x, double y)
+        {
+            var matrix = control != null ? PresentationSource.FromVisual(control)?.CompositionTarget?.TransformToDevice : null;
+            var xfactor = matrix?.M11 ?? 1D;
+            var yfactor = matrix?.M22 ?? 1D;
+            x = x * xfactor;
+            y = y * yfactor;
+
+            return new SKPoint((float)x, (float)y);
         }
     }
 }

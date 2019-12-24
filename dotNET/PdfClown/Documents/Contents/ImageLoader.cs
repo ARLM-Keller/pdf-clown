@@ -1,6 +1,8 @@
 ﻿
 using BitMiracle.LibTiff.Classic;
 using FreeImageAPI;
+using PdfClown.Bytes;
+using PdfClown.Bytes.Filters;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
@@ -18,50 +20,214 @@ namespace PdfClown.Documents.Contents
         public static SKBitmap Load(IImageObject imageObject, GraphicsState state)
         {
             var buffer = imageObject.Data;
-            var data = buffer.ToByteArray();
-            var image = SKBitmap.Decode(data);
-            if (image == null)
+            var data = buffer.GetBuffer();
+            var image = (SKBitmap)null;
+            var filter = imageObject.Filter;
+            if (filter is PdfArray filterArray)
             {
-                var filter = imageObject.Filter;
-                if (filter is PdfArray filterArray)
+                var parameterArray = imageObject.Parameters as PdfArray;
+                for (int i = 0; i < filterArray.Count; i++)
                 {
-                    var parameterArray = imageObject.Parameters as PdfArray;
-                    for (int i = 0; i < filterArray.Count; i++)
+                    var filterItem = (PdfName)filterArray[i];
+                    var parameterItem = parameterArray?[i];
+                    image = LoadImage(imageObject, data, filterItem, parameterItem);
+                    if (image == null)
                     {
-                        var filterItem = filterArray[i];
-                        var parameterItem = parameterArray?[i];
                         buffer = Bytes.Buffer.Extract(buffer, filterItem, parameterItem ?? imageObject.Header);
-                        data = buffer.ToByteArray();
-                        image = SKBitmap.Decode(data);
-                        if (image != null)
-                            break;
+                        data = buffer.GetBuffer();
                     }
                 }
-                else if (filter != null)
+            }
+            else if (filter != null)
+            {
+                var filterItem = (PdfName)filter;
+                image = LoadImage(imageObject, data, filterItem, imageObject.Parameters ?? imageObject.Header);
+                if (image == null)
                 {
                     buffer = Bytes.Buffer.Extract(buffer, filter, imageObject.Parameters ?? imageObject.Header);
-                    data = buffer.ToByteArray();
+                    data = buffer.GetBuffer();
                     image = SKBitmap.Decode(data);
                 }
-
             }
+
             if (image == null)
             {
-                if (IsTiff(data))
-                {
-                    image = LoadTiff(data);
-                }
-                else if (IsJPEG(data))
-                {
-                    image = LoadJPEG(data);
-                }
-                else
-                {
-                    var imageLoader = new ImageLoader(imageObject, data, state);
-                    image = imageLoader.Load();
-                }
+                var imageLoader = new ImageLoader(imageObject, data, state);
+                image = imageLoader.Load();
             }
             return image;
+        }
+
+        public static SKBitmap LoadImage(IImageObject imageObject, byte[] data, PdfName filterItem, PdfDirectObject parameterItem)
+        {
+            SKBitmap image = null;
+            if (filterItem.Equals(PdfName.DCTDecode)
+                || filterItem.Equals(PdfName.DCT))
+            {
+                image = SKBitmap.Decode(data);
+            }
+            else if (filterItem.Equals(PdfName.CCITTFaxDecode)
+                || filterItem.Equals(PdfName.CCF))
+            {
+                image = LoadTiff(data, parameterItem ?? imageObject.Header);
+            }
+            else if (filterItem.Equals(PdfName.JPXDecode))
+            {
+                image = LoadJPEG2000(data, parameterItem ?? imageObject.Header);
+            }
+            else if (filterItem.Equals(PdfName.JBIG2Decode))
+            {
+                image = LoadJBIG(data, parameterItem ?? imageObject.Header);
+            }
+
+            return image;
+        }
+
+        private static SKBitmap LoadJBIG(byte[] data, PdfDirectObject parameters = null)
+        {
+
+            var imageParams = ((PdfStream)parameters.Container.DataObject).Header;
+            var width = imageParams.Resolve(PdfName.Width) as PdfInteger;
+            var height = imageParams.Resolve(PdfName.Height) as PdfInteger;
+            var bpp = imageParams.Resolve(PdfName.BitsPerComponent) as PdfInteger;
+            var flag = imageParams.Resolve(PdfName.ImageMask) as PdfBoolean;
+
+            using (var output = new MemoryStream())
+            using (var input = new MemoryStream())
+            {
+                //
+                input.Write(new byte[] { 0X97, 0x4A, 0x42, 0x32, 0x0D, 0x0A, 0x1A, 0x0A, 0x01, 0x00, 0x00, 0x00, 0x01 }, 0, 13);
+                if (parameters is PdfDictionary dict)
+                {
+                    var jbigGlobal = dict.Resolve(PdfName.JBIG2Globals) as PdfStream;
+                    if (jbigGlobal != null)
+                    {
+                        var body = jbigGlobal.GetBody(false);
+                        var bodyBuffer = body.GetBuffer();
+                        input.Write(bodyBuffer, 0, bodyBuffer.Length);
+                    }
+                }
+                input.Write(data, 0, data.Length);
+                input.Write(new byte[] { 0X00, 0x00, 0x00, 0x03, 0x31, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 }, 0, 11);
+                input.Write(new byte[] { 0X00, 0x00, 0x00, 0x04, 0x33, 0x01, 0x00, 0x00, 0x00, 0x00}, 0, 10);
+                input.Flush();
+                input.Position = 0;
+                FREE_IMAGE_FORMAT format = FreeImage.GetFileTypeFromStream(input);
+                var bmp = FreeImage.LoadFromStream(input);
+                
+                if (bmp.IsNull)
+                {
+                    format = FreeImage.RegisterExternalPlugin("PluginJBIG.fip","JBIG","JBIG","JBIG",null);
+                    bmp = FreeImage.LoadFromStream(input, ref format);
+                }
+                FreeImage.SaveToStream(bmp, output, FREE_IMAGE_FORMAT.FIF_JPEG, FREE_IMAGE_SAVE_FLAGS.JPEG_OPTIMIZE);
+                FreeImage.Unload(bmp);
+                output.Flush();
+                output.Position = 0;
+                return SKBitmap.Decode(output);
+            }
+        }
+
+        public static SKBitmap LoadJPEG2000(byte[] jpegStream, PdfDirectObject parameters = null)
+        {
+            var imageParams = ((PdfStream)parameters.Container.DataObject).Header;
+            var width = imageParams.Resolve(PdfName.Width) as PdfInteger;
+            var height = imageParams.Resolve(PdfName.Height) as PdfInteger;
+            var bpp = imageParams.Resolve(PdfName.BitsPerComponent) as PdfInteger;
+            var flag = imageParams.Resolve(PdfName.ImageMask) as PdfBoolean;
+
+            using (var output = new MemoryStream())
+            using (var input = new MemoryStream(jpegStream))
+            {
+
+                var bmp = FreeImage.LoadFromStream(input);
+                if (bmp.IsNull)
+                {
+                    //var bmp = FreeImage.LoadMultiBitmapFromStream(input, FREE_IMAGE_FORMAT.FIF_JP2, FREE_IMAGE_LOAD_FLAGS.DEFAULT);
+                }
+                FreeImage.SaveToStream(bmp, output, FREE_IMAGE_FORMAT.FIF_JPEG, FREE_IMAGE_SAVE_FLAGS.JPEG_OPTIMIZE);
+                FreeImage.Unload(bmp);
+                output.Flush();
+                output.Position = 0;
+                return SKBitmap.Decode(output);
+            }
+        }
+
+        public static SKBitmap LoadTiff(byte[] data, PdfDirectObject parameters)
+        {
+            var length = data.Length;
+            var imageParams = ((PdfStream)parameters.Container.DataObject).Header;
+            const short TIFF_BIGENDIAN = 0x4d4d;
+            const short TIFF_LITTLEENDIAN = 0x4949;
+            const int ifd_length = 10;
+            const int header_length = 10 + (ifd_length * 12 + 4);
+            var width = imageParams.Resolve(PdfName.Width) as PdfInteger;
+            var height = imageParams.Resolve(PdfName.Height) as PdfInteger;
+            var bpp = imageParams.Resolve(PdfName.BitsPerComponent) as PdfInteger;
+            var flag = imageParams.Resolve(PdfName.ImageMask) as PdfBoolean;
+            using (MemoryStream output = new MemoryStream())
+            {
+                output.Write(BitConverter.GetBytes(BitConverter.IsLittleEndian ? TIFF_LITTLEENDIAN : TIFF_BIGENDIAN), 0, 2); // tiff_magic (big/little endianness)
+                output.Write(BitConverter.GetBytes((uint)42), 0, 2);         // tiff_version
+                output.Write(BitConverter.GetBytes((uint)8), 0, 4);          // first_ifd (Image file directory) / offset
+                output.Write(BitConverter.GetBytes((uint)ifd_length), 0, 2); // ifd_length, number of tags (ifd entries)
+
+                // Dictionary should be in order based on the TiffTag value
+                CCITTFaxFilter.WriteTiffTag(output, TiffTag.SUBFILETYPE, TiffType.LONG, 1, 0);
+                CCITTFaxFilter.WriteTiffTag(output, TiffTag.IMAGEWIDTH, TiffType.LONG, 1, (uint)width.RawValue);
+                CCITTFaxFilter.WriteTiffTag(output, TiffTag.IMAGELENGTH, TiffType.LONG, 1, (uint)height.RawValue);
+                CCITTFaxFilter.WriteTiffTag(output, TiffTag.BITSPERSAMPLE, TiffType.SHORT, 1, (uint)bpp.RawValue);
+                CCITTFaxFilter.WriteTiffTag(output, TiffTag.COMPRESSION, TiffType.SHORT, 1, (uint)Compression.CCITTFAX4); // CCITT Group 4 fax encoding.
+                CCITTFaxFilter.WriteTiffTag(output, TiffTag.PHOTOMETRIC, TiffType.SHORT, 1, flag?.BooleanValue ?? false
+                    ? (uint)(int)Photometric.MINISWHITE : (uint)(int)Photometric.MINISBLACK); // WhiteIsZero
+                CCITTFaxFilter.WriteTiffTag(output, TiffTag.STRIPOFFSETS, TiffType.LONG, 1, header_length);
+                CCITTFaxFilter.WriteTiffTag(output, TiffTag.SAMPLESPERPIXEL, TiffType.SHORT, 1, 1);
+                CCITTFaxFilter.WriteTiffTag(output, TiffTag.ROWSPERSTRIP, TiffType.LONG, 1, (uint)height.RawValue);
+                CCITTFaxFilter.WriteTiffTag(output, TiffTag.STRIPBYTECOUNTS, TiffType.LONG, 1, (uint)length);
+
+                // Next IFD Offset
+                output.Write(BitConverter.GetBytes((uint)0), 0, 4);
+                output.Write(data, 0, length);
+                output.Flush();
+                output.Position = 0;
+
+                return LoadTiff(output);
+            }
+        }
+
+        //https://stackoverflow.com/a/50370515/4682355
+        public static SKBitmap LoadTiff(MemoryStream memeoryStream)
+        {
+            // open a TIFF stored in the stream
+            using (var tifImg = Tiff.ClientOpen("in-memory", "r", memeoryStream, new TiffStream()))
+            {
+                // read the dimensions
+                var width = tifImg.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
+                var height = tifImg.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
+
+                // create the bitmap
+                var info = new SKImageInfo(width, height)
+                {
+                    ColorType = SKColorType.Rgba8888
+                };
+
+                // create the buffer that will hold the pixels
+                var raster = new int[width * height];
+                // read the image into the memory buffer
+                if (!tifImg.ReadRGBAImageOriented(width, height, raster, Orientation.TOPLEFT))
+                {
+                    // not a valid TIF image.
+                    return null;
+                }
+
+                // get a pointer to the buffer, and give it to the bitmap
+                var ptr = GCHandle.Alloc(raster, GCHandleType.Pinned);
+
+                var bitmap = new SKBitmap();
+                bitmap.InstallPixels(info, ptr.AddrOfPinnedObject(), info.RowBytes, (addr, ctx) => ptr.Free(), null);
+
+                return bitmap;
+            }
         }
 
         private GraphicsState state;
@@ -99,6 +265,8 @@ namespace PdfClown.Documents.Contents
         {
             Init(image, buffer, state);
         }
+
+
 
         private void Init(IImageObject image, byte[] buffer, GraphicsState state)
         {
@@ -230,58 +398,7 @@ namespace PdfClown.Documents.Contents
             var ptr = GCHandle.Alloc(raster, GCHandleType.Pinned);
             var bitmap = new SKBitmap();
             bitmap.InstallPixels(info, ptr.AddrOfPinnedObject(), info.RowBytes, (addr, ctx) => ptr.Free(), null);
-
             return bitmap;
-        }
-
-        public static SKBitmap LoadJPEG(byte[] jpegStream)
-        {
-            using (var output = new MemoryStream())
-            using (var input = new MemoryStream(jpegStream))
-            {
-                var bmp = FreeImage.LoadFromStream(input);
-
-                FreeImage.SaveToStream(bmp, output, FREE_IMAGE_FORMAT.FIF_JPEG, FREE_IMAGE_SAVE_FLAGS.JPEG_OPTIMIZE);
-                FreeImage.Unload(bmp);
-
-                return SKBitmap.Decode(output.ToArray());
-            }
-        }
-
-        //https://stackoverflow.com/a/50370515/4682355
-        public static SKBitmap LoadTiff(byte[] tiffStream)
-        {
-            // open a TIFF stored in the stream
-            using (var memeoryStream = new MemoryStream(tiffStream))
-            using (var tifImg = Tiff.ClientOpen("in-memory", "r", memeoryStream, new TiffStream()))
-            {
-                // read the dimensions
-                var width = tifImg.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
-                var height = tifImg.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
-
-                // create the bitmap
-                var info = new SKImageInfo(width, height)
-                {
-                    ColorType = SKColorType.Rgba8888
-                };
-
-                // create the buffer that will hold the pixels
-                var raster = new int[width * height];
-                // read the image into the memory buffer
-                if (!tifImg.ReadRGBAImageOriented(width, height, raster, Orientation.TOPLEFT))
-                {
-                    // not a valid TIF image.
-                    return null;
-                }
-
-                // get a pointer to the buffer, and give it to the bitmap
-                var ptr = GCHandle.Alloc(raster, GCHandleType.Pinned);
-
-                var bitmap = new SKBitmap();
-                bitmap.InstallPixels(info, ptr.AddrOfPinnedObject(), info.RowBytes, (addr, ctx) => ptr.Free(), null);
-
-                return bitmap;
-            }
         }
 
         public static bool IsImage(byte[] buf)

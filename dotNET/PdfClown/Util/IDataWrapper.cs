@@ -36,6 +36,8 @@ namespace PdfClown.Util
           <summary>Gets the buffer data copied to a newly-allocated byte array.</summary>
         */
         byte[] ToByteArray();
+
+        byte[] GetBuffer();
     }
 }
 

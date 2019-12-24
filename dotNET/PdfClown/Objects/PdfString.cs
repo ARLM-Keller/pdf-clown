@@ -154,6 +154,9 @@ namespace PdfClown.Objects
         public byte[] ToByteArray()
         { return (byte[])RawValue.Clone(); }
 
+        public byte[] GetBuffer()
+        { return RawValue; }
+
         public override string ToString()
         {
             switch (serializationMode)

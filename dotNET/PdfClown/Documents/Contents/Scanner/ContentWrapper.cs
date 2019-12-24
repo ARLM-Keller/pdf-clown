@@ -186,7 +186,10 @@ namespace PdfClown.Documents.Contents
             { Seek(Position + offset); }
 
             public byte[] ToByteArray()
-            { throw new NotImplementedException(); }
+            { return stream?.ToByteArray(); }
+
+            public byte[] GetBuffer()
+            { return stream?.GetBuffer(); }
 
             /**
               <summary>Ensures stream availability, moving to the next stream in case the current one has

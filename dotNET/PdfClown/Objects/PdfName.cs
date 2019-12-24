@@ -317,6 +317,7 @@ namespace PdfClown.Objects
         public static readonly PdfName IX = new PdfName("IX");
         public static readonly PdfName JavaScript = new PdfName("JavaScript");
         public static readonly PdfName JBIG2Decode = new PdfName("JBIG2Decode");
+        public static readonly PdfName JBIG2Globals = new PdfName("JBIG2Globals");
         public static readonly PdfName JPXDecode = new PdfName("JPXDecode");
         public static readonly PdfName JS = new PdfName("JS");
         public static readonly PdfName K = new PdfName("K");

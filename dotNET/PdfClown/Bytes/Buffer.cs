@@ -467,6 +467,11 @@ namespace PdfClown.Bytes
             Array.Copy(this.data, 0, data, 0, this.length);
             return data;
         }
+
+        public byte[] GetBuffer()
+        {
+            return data;
+        }
         #endregion
 
         #region IStream

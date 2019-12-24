@@ -235,6 +235,11 @@ namespace PdfClown.Bytes
                 }
             }
         }
+
+        public byte[] GetBuffer()
+        {
+            return null;
+        }
         #endregion
         #endregion
         #endregion

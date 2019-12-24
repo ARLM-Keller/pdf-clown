@@ -87,7 +87,7 @@ namespace PdfClown.Bytes.Filters
         #endregion
 
         #region private
-        private static void WriteTiffTag(System.IO.Stream stream, TiffTag tag, TiffType type, uint count, uint value)
+        public static void WriteTiffTag(System.IO.Stream stream, TiffTag tag, TiffType type, uint count, uint value)
         {
             if (stream == null) return;
 

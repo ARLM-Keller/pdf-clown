@@ -327,7 +327,6 @@ namespace PdfClown.Viewer
                     if (picture != null)
                     {
                         canvas.DrawPicture(picture, ref pdfPicture.Matrix);
-
                         if (ShowMarkup && pdfPicture.Annotations.Count > 0)
                         {
                             OnPaintAnnotations(canvas, pdfPicture);
@@ -774,7 +773,7 @@ namespace PdfClown.Viewer
             return null;
         }
 
-        public override void OnScrolled(int delta, KeyModifiers keyModifiers)
+        protected override void OnScrolled(int delta, KeyModifiers keyModifiers)
         {
             if (keyModifiers == KeyModifiers.None)
             {

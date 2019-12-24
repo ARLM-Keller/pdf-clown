@@ -8,21 +8,21 @@ using System.Windows;
 using System.Windows.Input;
 using Xamarin.Forms.Platform.WPF;
 
-[assembly: ExportRenderer(typeof(SKScrollView), typeof(SKScrollViewRenderer))]
+[assembly: ExportRenderer(typeof(SKGLScrollView), typeof(SKGLScrollViewRenderer))]
 namespace PdfClown.Viewer.WPF
 {
-    public class SKScrollViewRenderer : SKCanvasViewRenderer
+    public class SKGLScrollViewRenderer : SKGLViewRenderer
     {
         private bool pressed;
 
-        protected override void OnElementChanged(ElementChangedEventArgs<SKCanvasView> e)
+        protected override void OnElementChanged(ElementChangedEventArgs<SKGLView> e)
         {
             base.OnElementChanged(e);
-            if (e.OldElement is SKScrollView)
+            if (e.OldElement is SKGLView)
             {
                 e.NewElement.Touch -= OnElementTouch;
             }
-            if (e.NewElement is SKScrollView)
+            if (e.NewElement is SKGLView)
             {
                 e.NewElement.Touch += OnElementTouch;
                 if (Control != null)
@@ -44,7 +44,7 @@ namespace PdfClown.Viewer.WPF
 
         private void UpdateCursor()
         {
-            if (Control != null && Element is SKScrollView canvas)
+            if (Control != null && Element is SKGLScrollView canvas)
             {
                 switch (canvas.Cursor)
                 {
@@ -102,12 +102,12 @@ namespace PdfClown.Viewer.WPF
         {
             var view = sender as FrameworkElement;
             var pointerPoint = e.MouseDevice.GetPosition(view);
-            if (Element is SKScrollView canvas && canvas.ContainsCaptureBox(pointerPoint.X, pointerPoint.Y))
+            if (Element is SKGLScrollView canvas && canvas.ContainsCaptureBox(pointerPoint.X, pointerPoint.Y))
             {
                 pressed = true;
                 Mouse.Capture(Control);
             }
-            ((SKScrollView)Element).KeyModifiers = GetModifiers();
+            ((SKGLScrollView)Element).KeyModifiers = GetModifiers();
         }
 
         private static KeyModifiers GetModifiers()
@@ -131,10 +131,6 @@ namespace PdfClown.Viewer.WPF
 
         private void OnControlMouseMove(object sender, MouseEventArgs e)
         {
-            if (Element is SKScrollView scrollView)
-            {
-                scrollView.KeyModifiers = GetModifiers();
-            }
             if (pressed)
             {
                 RaiseTouch(sender, e, SKTouchAction.Moved);
@@ -163,10 +159,9 @@ namespace PdfClown.Viewer.WPF
 
         private void OnControlKeyDown(object sender, KeyEventArgs e)
         {
-            if (Element is SKScrollView scrollView)
+            if (Element is SKGLScrollView scrollView)
             {
-                scrollView.KeyModifiers = GetModifiers();
-                e.Handled = scrollView.OnKeyDown(e.Key.ToString(), scrollView.KeyModifiers);
+                e.Handled = scrollView.OnKeyDown(e.Key.ToString(), GetModifiers());
             }
         }
 
@@ -192,28 +187,14 @@ namespace PdfClown.Viewer.WPF
 
         public SKPoint GetScaledCoord(double x, double y)
         {
-            if (Element.IgnorePixelScaling)
+            //if (Element.IgnorePixelScaling)
             {
                 return new SKPoint((float)x, (float)y);
             }
-            else
-            {
-                return SKCanvasHelper.GetScaledCoord(Control, x, y);
-            }
-        }
-    }
-
-    public static class SKCanvasHelper
-    {
-        public static SKPoint GetScaledCoord(FrameworkElement control, double x, double y)
-        {
-            var matrix = control != null ? PresentationSource.FromVisual(control)?.CompositionTarget?.TransformToDevice : null;
-            var xfactor = matrix?.M11 ?? 1D;
-            var yfactor = matrix?.M22 ?? 1D;
-            x = x * xfactor;
-            y = y * yfactor;
-
-            return new SKPoint((float)x, (float)y);
+            //else
+            //{
+            //    return SKCanvasHelper.GetScaledCoord(Control, x, y);
+            //}
         }
     }
 }

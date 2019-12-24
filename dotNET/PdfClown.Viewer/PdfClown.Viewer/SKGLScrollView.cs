@@ -2,32 +2,28 @@
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace PdfClown.Viewer
 {
-    public class SKScrollView : SKCanvasView
+    public class SKGLScrollView : SKGLView
     {
-        public static readonly BindableProperty CursorProperty = BindableProperty.Create(nameof(Cursor), typeof(CursorType), typeof(SKScrollView), CursorType.Arrow,
-            propertyChanged: (bindable, oldValue, newValue) => ((SKScrollView)bindable).OnCursorChanged((CursorType)oldValue, (CursorType)newValue));
+        public static readonly BindableProperty CursorProperty = BindableProperty.Create(nameof(Cursor), typeof(CursorType), typeof(SKGLScrollView), CursorType.Arrow,
+            propertyChanged: (bindable, oldValue, newValue) => ((SKGLScrollView)bindable).OnCursorChanged((CursorType)oldValue, (CursorType)newValue));
 
-        public static readonly BindableProperty VerticalMaximumProperty = BindableProperty.Create(nameof(VerticalMaximum), typeof(double), typeof(SKScrollView), 1D,
-            propertyChanged: (bidable, oldValue, newValue) => ((SKScrollView)bidable).OnVerticalMaximumChanged((double)oldValue, (double)newValue));
+        public static readonly BindableProperty VerticalMaximumProperty = BindableProperty.Create(nameof(VerticalMaximum), typeof(double), typeof(SKGLScrollView), 1D,
+            propertyChanged: (bidable, oldValue, newValue) => ((SKGLScrollView)bidable).OnVerticalMaximumChanged((double)oldValue, (double)newValue));
 
-        public static readonly BindableProperty HorizontalMaximumProperty = BindableProperty.Create(nameof(HorizontalMaximum), typeof(double), typeof(SKScrollView), 1D,
-            propertyChanged: (bidable, oldValue, newValue) => ((SKScrollView)bidable).OnHorizontalMaximumChanged((double)oldValue, (double)newValue));
+        public static readonly BindableProperty HorizontalMaximumProperty = BindableProperty.Create(nameof(HorizontalMaximum), typeof(double), typeof(SKGLScrollView), 1D,
+            propertyChanged: (bidable, oldValue, newValue) => ((SKGLScrollView)bidable).OnHorizontalMaximumChanged((double)oldValue, (double)newValue));
 
-        public static readonly BindableProperty VerticalValueProperty = BindableProperty.Create(nameof(VerticalValue), typeof(double), typeof(SKScrollView), 0D,
-            propertyChanged: (bidable, oldValue, newValue) => ((SKScrollView)bidable).OnVerticalValueChanged((double)oldValue, (double)newValue));
-        public static readonly BindableProperty HorizontalValueProperty = BindableProperty.Create(nameof(HorizontalValue), typeof(double), typeof(SKScrollView), 0D,
-            propertyChanged: (bidable, oldValue, newValue) => ((SKScrollView)bidable).OnHorizontalValueChanged((double)oldValue, (double)newValue));
+        public static readonly BindableProperty VerticalValueProperty = BindableProperty.Create(nameof(VerticalValue), typeof(double), typeof(SKGLScrollView), 0D,
+            propertyChanged: (bidable, oldValue, newValue) => ((SKGLScrollView)bidable).OnVerticalValueChanged((double)oldValue, (double)newValue));
+        public static readonly BindableProperty HorizontalValueProperty = BindableProperty.Create(nameof(HorizontalValue), typeof(double), typeof(SKGLScrollView), 0D,
+            propertyChanged: (bidable, oldValue, newValue) => ((SKGLScrollView)bidable).OnHorizontalValueChanged((double)oldValue, (double)newValue));
 
-        public static readonly BindableProperty TargetProperty = BindableProperty.Create(nameof(Target), typeof(SKScrollView), typeof(SKScrollView), null,
-            propertyChanged: (bidable, oldValue, newValue) => ((SKScrollView)bidable).OnTargetChanged((SKScrollView)oldValue, (SKScrollView)newValue));
+        public static readonly BindableProperty TargetProperty = BindableProperty.Create(nameof(Target), typeof(SKGLScrollView), typeof(SKGLScrollView), null,
+            propertyChanged: (bidable, oldValue, newValue) => ((SKGLScrollView)bidable).OnTargetChanged((SKGLScrollView)oldValue, (SKGLScrollView)newValue));
 
         public static SkiaSharp.Extended.Svg.SKSvg GetCache(string imageName)
         {
@@ -99,10 +95,9 @@ namespace PdfClown.Viewer
             ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Black, SKBlendMode.SrcIn)
         };
 
-        public SKScrollView()
+        public SKGLScrollView()
         {
             IsTabStop = true;
-            IgnorePixelScaling = false;
             EnableTouchEvents = true;
             Touch += OnTouch;
         }
@@ -233,9 +228,9 @@ namespace PdfClown.Viewer
             }
         }
 
-        public event EventHandler<SKPaintSurfaceEventArgs> PaintContent;
+        public event EventHandler<SKPaintGLSurfaceEventArgs> PaintContent;
 
-        public event EventHandler<SKPaintSurfaceEventArgs> PaintOver;
+        public event EventHandler<SKPaintGLSurfaceEventArgs> PaintOver;
 
         public bool VerticalScrollBarVisible => VerticalMaximum >= (Height + step);
 
@@ -265,6 +260,10 @@ namespace PdfClown.Viewer
                     OnWindowScaleChanged();
                 }
             }
+        }
+        public void RaiseTouch(SKTouchEventArgs args)
+        {
+            OnTouch(args);
         }
 
         protected override void OnTouch(SKTouchEventArgs e)
@@ -333,7 +332,7 @@ namespace PdfClown.Viewer
             нorizontalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue, KeyModifiers));
         }
 
-        private void OnTargetChanged(SKScrollView oldValue, SKScrollView newValue)
+        private void OnTargetChanged(SKGLScrollView oldValue, SKGLScrollView newValue)
         {
             if (oldValue != null)
             {
@@ -455,11 +454,11 @@ namespace PdfClown.Viewer
             OnScrolled(e.Delta, KeyModifiers.None);
         }
 
-        protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
+        protected override void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
-            XScaleFactor = (float)(e.Info.Width / Width);
-            YScaleFactor = (float)(e.Info.Height / Height);
+            XScaleFactor = (float)(CanvasSize.Width / Width);
+            YScaleFactor = (float)(CanvasSize.Height / Height);
 
             canvas.Scale(XScaleFactor, YScaleFactor);
             canvas.Clear();
@@ -614,42 +613,5 @@ namespace PdfClown.Viewer
 
         public Func<double, double, bool> CheckCaptureBox;
 
-    }
-
-    public enum CursorType
-    {
-        Arrow,
-        SizeWE,
-        SizeNESW,
-        SizeNS,
-        SizeNWSE,
-        Hand,
-        Wait,
-        ScrollAll,
-        Cross
-    }
-
-    [Flags]
-    public enum KeyModifiers
-    {
-        None = 0,
-        Alt = 1,
-        Ctrl = 2,
-        Shift = 4,
-    }
-
-    public static class VisualElementExtension
-    {
-        public static bool IsParentsVisible(this VisualElement visual)
-        {
-            var parent = visual.Parent as VisualElement;
-            var flag = visual.IsVisible;
-            while (flag && parent != null)
-            {
-                flag = parent.IsVisible;
-                parent = parent.Parent as VisualElement;
-            }
-            return flag;
-        }
     }
 }

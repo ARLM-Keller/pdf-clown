@@ -2,6 +2,7 @@
 using PdfClown.Viewer.UWP;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
+using System;
 using System.ComponentModel;
 using Windows.System;
 using Windows.UI.Core;
@@ -10,14 +11,14 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Platform.UWP;
 
-[assembly: ExportRenderer(typeof(SKScrollView), typeof(SKScrollViewRenderer))]
+[assembly: ExportRenderer(typeof(SKGLScrollView), typeof(SKGLScrollViewRenderer))]
 namespace PdfClown.Viewer.UWP
 {
-    public class SKScrollViewRenderer : FocusableCanvasViewRenderer
+    public class SKGLScrollViewRenderer : SKGLViewRenderer
     {
         private bool pressed;
 
-        protected override void OnElementChanged(ElementChangedEventArgs<SKCanvasView> e)
+        protected override void OnElementChanged(ElementChangedEventArgs<SKGLView> e)
         {
             base.OnElementChanged(e);
             if (Control != null)
@@ -25,6 +26,8 @@ namespace PdfClown.Viewer.UWP
                 Control.PointerPressed += OnControlPointerPressed;
                 Control.PointerReleased += OnControlPointerReleased;
                 Control.PointerMoved += OnControlMouseMove;
+                Control.KeyDown += OnKeyDown;
+                Control.KeyUp += OnKeyUp;
             }
         }
 
@@ -39,7 +42,7 @@ namespace PdfClown.Viewer.UWP
 
         private void UpdateCursor()
         {
-            if (Element is SKScrollView canvas)
+            if (Element is SKGLScrollView canvas)
             {
                 switch (canvas.Cursor)
                 {
@@ -77,12 +80,12 @@ namespace PdfClown.Viewer.UWP
         protected void OnControlPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             var pointerPoint = e.GetCurrentPoint(Control);
-            if (Element is SKScrollView canvas && canvas.ContainsCaptureBox(pointerPoint.Position.X, pointerPoint.Position.Y))
+            if (Element is SKGLScrollView canvas && canvas.ContainsCaptureBox(pointerPoint.Position.X, pointerPoint.Position.Y))
             {
                 pressed = true;
                 Control.CapturePointer(e.Pointer);
             }
-            ((SKScrollView)Element).KeyModifiers = GetModifiers();
+            ((SKGLScrollView)Element).KeyModifiers = GetModifiers();
         }
 
         public static KeyModifiers GetModifiers()
@@ -110,10 +113,6 @@ namespace PdfClown.Viewer.UWP
 
         private void OnControlMouseMove(object sender, PointerRoutedEventArgs e)
         {
-            if (Element is SKScrollView scrollView)
-            {
-                scrollView.KeyModifiers = GetModifiers();
-            }
             if (pressed)
             {
                 RaiseTouch(sender, e, SKTouchAction.Moved);
@@ -123,13 +122,15 @@ namespace PdfClown.Viewer.UWP
         private void RaiseTouch(object sender, PointerRoutedEventArgs e, SKTouchAction action)
         {
             var pointerPoint = e.GetCurrentPoint(Control);
+            var scaleX = Control.CanvasSize.Width / Control.Width;
+            var scaleY = Control.CanvasSize.Height / Control.Height;
             //var windowsPoint = view.PointToScreen(pointerPoint);
-            var skPoint = Element.IgnorePixelScaling
+            var skPoint = true
                 ? new SKPoint((float)pointerPoint.Position.X, (float)pointerPoint.Position.Y)
-                : new SKPoint((float)(pointerPoint.Position.X * Control.Dpi), (float)(pointerPoint.Position.Y * Control.Dpi));
+                : new SKPoint((float)(pointerPoint.Position.X * scaleX), (float)(pointerPoint.Position.Y * scaleY));
             var args = new SKTouchEventArgs(e.Pointer.PointerId, action, SKMouseButton.Left, SKTouchDeviceType.Mouse, skPoint, true);
 
-            ((ISKCanvasViewController)Element).OnTouch(args);
+            ((SKGLScrollView)Element).RaiseTouch(args);
         }
 
         private DependencyObject GetTopParent(UIElement control)
@@ -142,12 +143,15 @@ namespace PdfClown.Viewer.UWP
             return parent;
         }
 
-        protected override void OnKeyDown(object sender, KeyRoutedEventArgs e)
+        protected virtual void OnKeyUp(object sender, KeyRoutedEventArgs e)
         {
-            if (Element is SKScrollView scrollView)
+        }
+
+        protected virtual void OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (Element is SKGLScrollView model)
             {
-                scrollView.KeyModifiers = GetModifiers();
-                e.Handled = scrollView.OnKeyDown(e.Key.ToString(), scrollView.KeyModifiers);
+                e.Handled = model.OnKeyDown(e.Key.ToString(), GetModifiers());
             }
         }
 

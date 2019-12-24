@@ -39,6 +39,7 @@ namespace PdfClown.Bytes.Filters
         #region static
         #region fields
         private static readonly Filter ASCII85Filter = new ASCII85Filter();
+        private static readonly Filter ASCIIHexFilter = new ASCIIHexFilter();
         private static readonly Filter FlateDecode = new FlateFilter();
         private static readonly Filter CCITTFaxDecode = new CCITTFaxFilter();
         private static readonly Filter JBIG2Decode = new JBIG2Filter();
@@ -68,7 +69,7 @@ namespace PdfClown.Bytes.Filters
                 throw new NotImplementedException("LZWDecode");
             else if (name.Equals(PdfName.ASCIIHexDecode)
               || name.Equals(PdfName.AHx))
-                throw new NotImplementedException("ASCIIHexDecode");
+                return ASCIIHexFilter;
             else if (name.Equals(PdfName.ASCII85Decode)
               || name.Equals(PdfName.A85))
                 return ASCII85Filter;

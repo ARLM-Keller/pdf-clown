@@ -267,12 +267,14 @@ namespace PdfClown.Viewer
             }
         }
 
+        public bool WheelTouchSupported { get; set; } = true;
+
         protected override void OnTouch(SKTouchEventArgs e)
         {
             base.OnTouch(new SKTouchEventArgs(e.Id, e.ActionType, e.MouseButton, e.DeviceType,
                 new SkiaSharp.SKPoint(e.Location.X / XScaleFactor, e.Location.Y / YScaleFactor),
                 e.InContact));
-            if (e.ActionType == SKTouchAction.WheelChanged)
+            if (WheelTouchSupported && e.ActionType == SKTouchAction.WheelChanged)
             {
                 OnScrolled(e.WheelDelta, KeyModifiers);
             }
@@ -598,7 +600,7 @@ namespace PdfClown.Viewer
             return args.Handled;
         }
 
-        protected virtual void OnScrolled(int delta, KeyModifiers keyModifiers)
+        public virtual void OnScrolled(int delta, KeyModifiers keyModifiers)
         {
             VerticalValue = VerticalValue - step * 2 * Math.Sign(delta);
             verticalScrolledHandler?.Invoke(this, new ScrollEventArgs(delta, keyModifiers));

@@ -773,7 +773,7 @@ namespace PdfClown.Viewer
             return null;
         }
 
-        protected override void OnScrolled(int delta, KeyModifiers keyModifiers)
+        public override void OnScrolled(int delta, KeyModifiers keyModifiers)
         {
             if (keyModifiers == KeyModifiers.None)
             {

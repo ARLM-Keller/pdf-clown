@@ -3,6 +3,7 @@ using PdfClown.Viewer.WPF;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using SkiaSharp.Views.WPF;
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
@@ -22,9 +23,10 @@ namespace PdfClown.Viewer.WPF
             {
                 e.NewElement.Touch -= OnElementTouch;
             }
-            if (e.NewElement is SKScrollView)
+            if (e.NewElement is SKScrollView scrollView)
             {
-                e.NewElement.Touch += OnElementTouch;
+                scrollView.WheelTouchSupported = false;
+                scrollView.Touch += OnElementTouch;
                 if (Control != null)
                 {
                     Control.Focusable = Element.IsTabStop;
@@ -81,6 +83,10 @@ namespace PdfClown.Viewer.WPF
 
         private void OnElementTouch(object sender, SKTouchEventArgs e)
         {
+            if (Element is SKScrollView scrollView)
+            {
+                scrollView.KeyModifiers = GetModifiers();
+            }
             if (e.ActionType == SKTouchAction.Released)
             {
                 Element.Focus();
@@ -91,23 +97,35 @@ namespace PdfClown.Viewer.WPF
         private void OnControlLoaded(object sender, RoutedEventArgs e)
         {
             Control.Loaded -= OnControlLoaded;
-
+            Control.MouseWheel += OnControlMouseWheel;
             Control.PreviewKeyDown += OnControlKeyDown;
             Control.PreviewMouseLeftButtonDown += OnControlMouseLeftButtonDown;
             Control.PreviewMouseLeftButtonUp += OnControlMouseLeftButtonUp;
             Control.PreviewMouseMove += OnControlMouseMove;
         }
 
+        private void OnControlMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Element is SKScrollView scrollView)
+            {
+                scrollView.OnScrolled(e.Delta, GetModifiers());
+            }
+        }
+
         private void OnControlMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var view = sender as FrameworkElement;
             var pointerPoint = e.MouseDevice.GetPosition(view);
-            if (Element is SKScrollView canvas && canvas.ContainsCaptureBox(pointerPoint.X, pointerPoint.Y))
+            if (Element is SKScrollView scrollView)
             {
-                pressed = true;
-                Mouse.Capture(Control);
+                scrollView.KeyModifiers = GetModifiers();
+                if (scrollView.ContainsCaptureBox(pointerPoint.X, pointerPoint.Y))
+                {
+                    pressed = true;
+                    Mouse.Capture(Control);
+                }
             }
-            ((SKScrollView)Element).KeyModifiers = GetModifiers();
+
         }
 
         private static KeyModifiers GetModifiers()

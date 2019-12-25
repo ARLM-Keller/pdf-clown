@@ -31,6 +31,7 @@ using System;
 using System.Collections.Generic;
 using SkiaSharp;
 using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Objects;
 
 namespace PdfClown.Documents.Contents
 {
@@ -397,6 +398,7 @@ namespace PdfClown.Documents.Contents
 
         public double? StrokeAlpha { get; internal set; }
         public double? FillAlpha { get; internal set; }
+        public PdfDictionary SMask { get; internal set; }
 
         #endregion
 
@@ -431,6 +433,7 @@ namespace PdfClown.Documents.Contents
             strokeColorSpace = colors::DeviceGrayColorSpace.Default;
             TextState = new TextGraphicsState();
             wordSpace = 0;
+            SMask = null;
 
             // Rendering context initialization.
             Scanner.RenderContext?.SetMatrix(ctm);
@@ -481,6 +484,7 @@ namespace PdfClown.Documents.Contents
             state.strokeColorSpace = strokeColorSpace;
             state.TextState = textState;
             state.wordSpace = wordSpace;
+            state.SMask = SMask;
         }
 
 

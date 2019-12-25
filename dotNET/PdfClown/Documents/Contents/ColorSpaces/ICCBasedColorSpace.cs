@@ -141,13 +141,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         private SKPoint3 XYZtoRGB(float x, float y, float z)
         {
-            var result = xyzD50.MapScalars(x, y, z, 1);
-            //float r = result[0], g = result[1], b = result[2];
-            float r = transfer.Transform(Math.Min(1F, Math.Max(0F, result[0]))), 
-                g = transfer.Transform(Math.Min(1F, Math.Max(0F, result[1]))), 
-                b = transfer.Transform(Math.Min(1F, Math.Max(0F, result[2])));
+            return new SKPoint3(x, y, z);
+            //var result = xyzD50.MapScalars(x, y, z, 1);
+            ////float r = result[0], g = result[1], b = result[2];
+            //float r = transfer.Transform(Math.Min(1F, Math.Max(0F, result[0]))), 
+            //    g = transfer.Transform(Math.Min(1F, Math.Max(0F, result[1]))), 
+            //    b = transfer.Transform(Math.Min(1F, Math.Max(0F, result[2])));
             
-            return new SKPoint3(r, g, b);
+            //return new SKPoint3(r, g, b);
         }
 
         #endregion

@@ -96,7 +96,7 @@ namespace PdfClown.Documents.Contents
             using (var input = new MemoryStream())
             {
                 //
-                input.Write(new byte[] { 0X97, 0x4A, 0x42, 0x32, 0x0D, 0x0A, 0x1A, 0x0A, 0x01, 0x00, 0x00, 0x00, 0x01 }, 0, 13);
+                input.Write(new byte[] { 0X97, 0x4A, 0x42, 0x32, 0x0D, 0x0A, 0x1A, 0x0A, 0x01, 0x00, 0x00, 0x00, 0x79 }, 0, 13);
                 if (parameters is PdfDictionary dict)
                 {
                     var jbigGlobal = dict.Resolve(PdfName.JBIG2Globals) as PdfStream;
@@ -109,15 +109,15 @@ namespace PdfClown.Documents.Contents
                 }
                 input.Write(data, 0, data.Length);
                 input.Write(new byte[] { 0X00, 0x00, 0x00, 0x03, 0x31, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 }, 0, 11);
-                input.Write(new byte[] { 0X00, 0x00, 0x00, 0x04, 0x33, 0x01, 0x00, 0x00, 0x00, 0x00}, 0, 10);
+                input.Write(new byte[] { 0X00, 0x00, 0x00, 0x04, 0x33, 0x01, 0x00, 0x00, 0x00, 0x00 }, 0, 10);
                 input.Flush();
                 input.Position = 0;
                 FREE_IMAGE_FORMAT format = FreeImage.GetFileTypeFromStream(input);
                 var bmp = FreeImage.LoadFromStream(input);
-                
+
                 if (bmp.IsNull)
                 {
-                    format = FreeImage.RegisterExternalPlugin("PluginJBIG.fip","JBIG","JBIG","JBIG",null);
+                    format = FreeImage.RegisterExternalPlugin("PluginJBIG.fip", "JBIG", "JBIG", "JBIG", null);
                     bmp = FreeImage.LoadFromStream(input, ref format);
                 }
                 FreeImage.SaveToStream(bmp, output, FREE_IMAGE_FORMAT.FIF_JPEG, FREE_IMAGE_SAVE_FLAGS.JPEG_OPTIMIZE);
@@ -310,14 +310,14 @@ namespace PdfClown.Documents.Contents
         public Color GetColor(int index)
         {
             var componentIndex = index * componentsCount;
-            var components = new List<PdfDirectObject>();
+            var components = new PdfDirectObject[componentsCount];
             for (int i = 0; i < componentsCount; i++)
             {
                 var value = componentIndex < buffer.Length ? buffer[componentIndex] : 0;
-                var interpolate = min + (value * ((max - min) / maximum));//indexed ? value : 
-                components.Add(indexed
+                var interpolate = indexed ? value : min + (value * ((max - min) / maximum));
+                components[i] = indexed
                     ? (PdfDirectObject)new PdfInteger((int)interpolate)
-                    : (PdfDirectObject)new PdfReal(interpolate));
+                    : (PdfDirectObject)new PdfReal(interpolate);
                 componentIndex++;
             }
             return colorSpace.GetColor(components, null);
@@ -335,7 +335,7 @@ namespace PdfClown.Documents.Contents
             };
             if (iccColorSpace != null)
             {
-                info.ColorSpace = iccColorSpace.GetSKColorSpace();
+                //info.ColorSpace = iccColorSpace.GetSKColorSpace();
             }
 
             // create the buffer that will hold the pixels

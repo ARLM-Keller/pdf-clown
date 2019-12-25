@@ -35,8 +35,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       <summary>Device Red-Green-Blue color value [PDF:1.6:4.5.3].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceRGBColor
-      : DeviceColor
+    public sealed class DeviceRGBColor : DeviceColor
     {
         #region static
         #region fields
@@ -77,20 +76,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         #region dynamic
         #region constructors
         public DeviceRGBColor(double r, double g, double b)
-            : this(
-            new List<PdfDirectObject>(
-              new PdfDirectObject[]
-              {
-            PdfReal.Get(NormalizeComponent(r)),
-            PdfReal.Get(NormalizeComponent(g)),
-            PdfReal.Get(NormalizeComponent(b))
-              }
-            )
-          )
+            : this(new PdfDirectObject[]
+            {
+                PdfReal.Get(NormalizeComponent(r)),
+                PdfReal.Get(NormalizeComponent(g)),
+                PdfReal.Get(NormalizeComponent(b))
+            })
         { }
 
         internal DeviceRGBColor(IList<PdfDirectObject> components)
-            : base(DeviceRGBColorSpace.Default, new PdfArray(components) )
+            : base(DeviceRGBColorSpace.Default, new PdfArray(components))
         { }
         #endregion
 

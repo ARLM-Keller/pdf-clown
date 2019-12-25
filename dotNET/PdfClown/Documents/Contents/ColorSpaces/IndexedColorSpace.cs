@@ -133,11 +133,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     var value = ((PdfArray)BaseDataObject).Resolve(3);
                     if (value is IDataWrapper wrapper)
                     {
-                        baseComponentValues = wrapper.ToByteArray();
+                        baseComponentValues = wrapper.GetBuffer();
                     }
                     else if (value is PdfStream stream)
                     {
-                        baseComponentValues = stream.GetBody(false).ToByteArray();
+                        baseComponentValues = stream.GetBody(true).GetBuffer();
                     }
                 }
                 return baseComponentValues;

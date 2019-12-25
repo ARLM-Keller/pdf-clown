@@ -36,8 +36,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       <summary>Device Red-Green-Blue color space [PDF:1.6:4.5.3].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceRGBColorSpace
-      : DeviceColorSpace
+    public sealed class DeviceRGBColorSpace : DeviceColorSpace
     {
         #region static
         #region fields

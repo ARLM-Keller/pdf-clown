@@ -44,6 +44,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private SKColorSpace skColorSpace;
         private SKMatrix44 xyzD50 = SKMatrix44.CreateIdentity();
         private ICCProfile iccProfile;
+        private SKColorSpaceTransferFn transfer;
         #region dynamic
         #region constructors
         //TODO:IMPL new element constructor!
@@ -75,31 +76,30 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override SKColor GetColor(Color color, double? alpha = null)
         {
-            GetIccProfile();
+            // GetIccProfile();
             GetSKColorSpace();
 
             var skColor = SKColors.Black;
             // FIXME: temporary hack
             if (color is DeviceRGBColor devRGB)
             {
-                var point = Power(xyzD50, (float)devRGB.R, (float)devRGB.G, (float)devRGB.B);
+                var point = XYZtoRGB((float)devRGB.R, (float)devRGB.G, (float)devRGB.B);
                 skColor = new SKColor(
                    (byte)(point.X * 255),
                    (byte)(point.Y * 255),
                    (byte)(point.Z * 255));
             }
+            else if (color is DeviceCMYKColor devCMYK)
+            {
+                
+            }
             else if (color is DeviceGrayColor devGray)
             {
-                var g = (float)devGray.G;
-                if (iccProfile != null)
-                {
-                    g = iccProfile.MapGrayDisplay(g);
-                }
-
+                var point = XYZtoRGB((float)devGray.G, (float)devGray.G, (float)devGray.G);
                 skColor = new SKColor(
-                    (byte)(g * 255),
-                    (byte)(g * 255),
-                    (byte)(g * 255));
+                   (byte)(point.X * 255),
+                   (byte)(point.Y * 255),
+                   (byte)(point.Z * 255));
             }
 
             if (alpha != null)
@@ -123,7 +123,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             if (skColorSpace == null)
             {
                 skColorSpace = SKColorSpace.CreateIcc(Profile.GetBody(true).ToByteArray());
-                xyzD50 = skColorSpace.ToXyzD50();
+                xyzD50 = skColorSpace.FromXyzD50();
+                skColorSpace.GetNumericalTransferFunction(out var spaceTransfer);
+                transfer = spaceTransfer.Invert();
             }
             return skColorSpace;
         }
@@ -133,18 +135,19 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             if (iccProfile == null)
             {
                 iccProfile = ICCProfile.Load(Profile.GetBody(true).ToByteArray());
+                
             }
         }
 
-        private SKPoint3 Power(SKMatrix44 matrix, float x, float y, float z)
+        private SKPoint3 XYZtoRGB(float x, float y, float z)
         {
-            var array = new[] { x, y, z };//matrix.MapScalars(x, y, z, 1);//
-            return new SKPoint3
-            {
-                X = array[0],
-                Y = array[1],
-                Z = array[2]
-            };
+            var result = xyzD50.MapScalars(x, y, z, 1);
+            //float r = result[0], g = result[1], b = result[2];
+            float r = transfer.Transform(Math.Min(1F, Math.Max(0F, result[0]))), 
+                g = transfer.Transform(Math.Min(1F, Math.Max(0F, result[1]))), 
+                b = transfer.Transform(Math.Min(1F, Math.Max(0F, result[2])));
+            
+            return new SKPoint3(r, g, b);
         }
 
         #endregion

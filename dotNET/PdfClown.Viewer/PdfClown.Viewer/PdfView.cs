@@ -43,11 +43,11 @@ namespace PdfClown.Viewer
         private float oldScale = 1;
         private float scale = 1;
         private readonly float indent = 10;
-        private SKMatrix CurrentWindowScaleMatrix;
-        private SKMatrix CurrentNavigationMatrix;
-        private SKMatrix CurrentPictureMatrix;
+        private SKMatrix CurrentWindowScaleMatrix = SKMatrix.MakeIdentity();
+        private SKMatrix CurrentNavigationMatrix = SKMatrix.MakeIdentity();
+        private SKMatrix CurrentPictureMatrix = SKMatrix.MakeIdentity();
         private SKPoint CurrentLocation;
-        private SKMatrix CurrentViewMatrix;
+        private SKMatrix CurrentViewMatrix = SKMatrix.MakeIdentity();
         private SKRect CurrentArea;
         private PdfPagePicture CurrentPicture;
 
@@ -57,7 +57,7 @@ namespace PdfClown.Viewer
         private SKRect currentAnnotationTextBounds;
         private SKPoint CurrentMoveLocation;
         private SKPoint? PressedCursorLocation;
-        private SKMatrix InvertPictureMatrix;
+        private SKMatrix InvertPictureMatrix = SKMatrix.MakeIdentity();
         public PdfView()
         {
             PaintContent += OnPaintContent;

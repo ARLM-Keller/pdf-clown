@@ -117,8 +117,7 @@ namespace PdfClown.Documents.Contents
 
                 if (bmp.IsNull)
                 {
-                    format = FreeImage.RegisterExternalPlugin("PluginJBIG.fip", "JBIG", "JBIG", "JBIG", null);
-                    bmp = FreeImage.LoadFromStream(input, ref format);
+                    return null;
                 }
                 FreeImage.SaveToStream(bmp, output, FREE_IMAGE_FORMAT.FIF_JPEG, FREE_IMAGE_SAVE_FLAGS.JPEG_OPTIMIZE);
                 FreeImage.Unload(bmp);
@@ -143,7 +142,7 @@ namespace PdfClown.Documents.Contents
                 var bmp = FreeImage.LoadFromStream(input);
                 if (bmp.IsNull)
                 {
-                    //var bmp = FreeImage.LoadMultiBitmapFromStream(input, FREE_IMAGE_FORMAT.FIF_JP2, FREE_IMAGE_LOAD_FLAGS.DEFAULT);
+                    return null;
                 }
                 FreeImage.SaveToStream(bmp, output, FREE_IMAGE_FORMAT.FIF_JPEG, FREE_IMAGE_SAVE_FLAGS.JPEG_OPTIMIZE);
                 FreeImage.Unload(bmp);

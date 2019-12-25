@@ -199,6 +199,7 @@ namespace PdfClown.Viewer.WPF
                 if (Control != null)
                 {
                     Control.Loaded -= OnControlLoaded;
+                    Control.MouseWheel -= OnControlMouseWheel;
                     Control.PreviewKeyDown -= OnControlKeyDown;
                     Control.PreviewMouseLeftButtonDown -= OnControlMouseLeftButtonDown;
                     Control.PreviewMouseLeftButtonUp -= OnControlMouseLeftButtonUp;

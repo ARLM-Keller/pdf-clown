@@ -43,6 +43,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF12)]
     public class TilingPattern : Pattern, IContentContext
     {
+        private SKPicture picture;
         #region types
         /**
           <summary>Uncolored tiling pattern ("stencil") associated to a color.</summary>
@@ -176,24 +177,22 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public ContentWrapper Contents => ContentWrapper.Wrap(BaseObject, this);
 
-        public SKBitmap GetBitmap()
+        public SKPicture GetPicture()
         {
+            if (picture != null)
+                return picture;
             var box = Box;
-            var bitmap = new SKBitmap((int)box.Width * 2, (int)box.Height * 2);
-            using (var canvas = new SKCanvas(bitmap))
+            using (var recorder = new SKPictureRecorder())// SKBitmap((int)box.Width, (int)box.Height);
+            using (var canvas = recorder.BeginRecording(SKRect.Create(box.Width, box.Height)))
             {
-                Render(canvas, new SKSize(bitmap.Width, bitmap.Height));
+                Render(canvas, box.Size);                
+                return picture = recorder.EndRecording();
             }
-            using (var stream = new SKFileWStream("TillingPattern.png"))
-            {
-                SKPixmap.Encode(stream, bitmap, SKEncodedImageFormat.Png, 100);
-            };
-            return bitmap;
         }
 
         public SKShader GetShader()
         {
-            return SKShader.CreateBitmap(GetBitmap(), SKShaderTileMode.Repeat, SKShaderTileMode.Repeat, SKMatrix);
+            return SKShader.CreatePicture(GetPicture(), SKShaderTileMode.Repeat, SKShaderTileMode.Repeat, SKMatrix, Box);
         }
 
         public void Render(SKCanvas context, SKSize size)

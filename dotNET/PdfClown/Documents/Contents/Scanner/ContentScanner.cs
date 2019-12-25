@@ -416,7 +416,7 @@ Parent level.
         {
             if (IsRootLevel() && ClearContext)
             {
-                //renderContext.ClipRect(SKRect.Create(renderSize));
+                renderContext.ClipRect(SKRect.Create(renderSize));
                 using (var paint = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill })
                 {
                     renderContext.DrawRect(SKRect.Create(renderSize), paint);

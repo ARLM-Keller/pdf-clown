@@ -467,17 +467,17 @@ namespace PdfClown.Viewer
                 OnTouchPointed(e);
                 return;
             }
-            else if (Sizing != null)
+            if (Sizing != null)
             {
                 OnTouchSized(e);
                 return;
             }
-            else if (Dragging != null)
+            if (Dragging != null)
             {
                 OnTouchDragged(e);
                 return;
             }
-            else if (SelectedAnnotation != null && SelectedAnnotation.Page == CurrentPicture.Page)
+            if (SelectedAnnotation != null && SelectedAnnotation.Page == CurrentPicture.Page)
             {
                 var bounds = SelectedAnnotation.GetBounds(CurrentPictureMatrix);
                 bounds.Inflate(4, 4);
@@ -488,20 +488,17 @@ namespace PdfClown.Viewer
                     return;
                 }
             }
-            else
+            foreach (var annotation in CurrentPicture.Annotations)
             {
-                foreach (var annotation in CurrentPicture.Annotations)
+                if (!annotation.Visible)
+                    continue;
+                var bounds = annotation.GetBounds(CurrentPictureMatrix);
+                bounds.Inflate(4, 4);
+                if (bounds.Contains(CurrentLocation))
                 {
-                    if (!annotation.Visible)
-                        continue;
-                    var bounds = annotation.GetBounds(CurrentPictureMatrix);
-                    bounds.Inflate(4, 4);
-                    if (bounds.Contains(CurrentLocation))
-                    {
-                        CurrentAnnotationBounds = bounds;
-                        OnTouchAnnotation(annotation, e);
-                        return;
-                    }
+                    CurrentAnnotationBounds = bounds;
+                    OnTouchAnnotation(annotation, e);
+                    return;
                 }
             }
             if (e.ActionType == SKTouchAction.Released)

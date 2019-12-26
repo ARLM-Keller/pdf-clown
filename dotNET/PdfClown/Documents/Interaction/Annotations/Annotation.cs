@@ -52,10 +52,10 @@ namespace PdfClown.Documents.Interaction.Annotations
     {
         private Page page;
         private SKRect? boxCache;
-        private BottomRightControlPoint cpBottomRight;
-        private BottomLeftControlPoint cpBottomLeft;
-        private TopRightControlPoint cpTopRight;
-        private TopLeftControlPoint cpTopLeft;
+        protected BottomRightControlPoint cpBottomRight;
+        protected BottomLeftControlPoint cpBottomLeft;
+        protected TopRightControlPoint cpTopRight;
+        protected TopLeftControlPoint cpTopLeft;
 
         public event PropertyChangedEventHandler PropertyChanged;
         #region types
@@ -426,6 +426,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     page.Annotations.Add(this);
                     //Debug.WriteLine($"Move to page {page}");
                 }
+                OnPropertyChanged();
             }
         }
 
@@ -527,8 +528,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                 MoveTo(rect);
             }
         }
-
-
 
         public virtual void MoveTo(SKRect newBox)
         {
@@ -637,6 +636,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         { }
 
         public virtual IEnumerable<ControlPoint> GetControlPoints()
+        {
+            yield break;
+        }
+
+        public IEnumerable<ControlPoint> GetDefaultControlPoint()
         {
             yield return cpTopLeft ?? (cpTopLeft = new TopLeftControlPoint { Annotation = this });
             yield return cpTopRight ?? (cpTopRight = new TopRightControlPoint { Annotation = this });

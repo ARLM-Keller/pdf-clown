@@ -30,6 +30,7 @@ using PdfClown.Objects;
 
 using System;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -116,6 +117,14 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
 
             base.MoveTo(newBox);
+        }
+
+        public override IEnumerable<ControlPoint> GetControlPoints()
+        {
+            foreach (var cpBase in GetDefaultControlPoint())
+            {
+                yield return cpBase;
+            }
         }
 
         #endregion

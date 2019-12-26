@@ -175,7 +175,13 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
         }
-
+        public override IEnumerable<ControlPoint> GetControlPoints()
+        {
+            foreach (var cpBase in GetDefaultControlPoint())
+            {
+                yield return cpBase;
+            }
+        }
         #endregion
         #endregion
         #endregion

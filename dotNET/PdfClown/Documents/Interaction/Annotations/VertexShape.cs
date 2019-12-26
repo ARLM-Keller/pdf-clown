@@ -202,7 +202,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 yield return cache.TryGetValue(i, out var controlPoint) ? controlPoint
                     : (cache[i] = new IndexControlPoint { Annotation = this, Index = i });
             }
-            foreach (var cpBase in base.GetControlPoints())
+            foreach (var cpBase in GetDefaultControlPoint())
             {
                 yield return cpBase;
             }

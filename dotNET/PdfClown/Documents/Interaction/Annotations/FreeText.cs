@@ -580,7 +580,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
 
-            foreach (var cpBase in base.GetControlPoints())
+            foreach (var cpBase in GetDefaultControlPoint())
             {
                 yield return cpBase;
             }

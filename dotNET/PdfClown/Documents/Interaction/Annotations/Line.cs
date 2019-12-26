@@ -341,10 +341,6 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override IEnumerable<ControlPoint> GetControlPoints()
         {
-            //foreach (var cpBase in base.GetControlPoints())
-            //{
-            //    yield return cpBase;
-            //}
             yield return cpStart ?? (cpStart = new LineStartControlPoint { Annotation = this });
             yield return cpEnd ?? (cpEnd = new LineEndControlPoint { Annotation = this });
         }

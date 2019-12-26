@@ -418,6 +418,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     return;
                 }
+                boxCache = null;
                 oldPage?.Annotations.Remove(this);
                 page = value;
                 if (page != null)

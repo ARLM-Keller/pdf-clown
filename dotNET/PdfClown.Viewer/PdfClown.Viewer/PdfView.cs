@@ -901,6 +901,27 @@ namespace PdfClown.Viewer
             return DocumentSize;
         }
 
+        public void ScrollTo(Annotation annotation)
+        {
+            if (annotation?.Page == null)
+            {
+                return;
+            }
+
+            var picture = GetPicture(annotation.Page);
+            if (picture == null)
+            {
+                return;
+            }
+            var matrix = SKMatrix.MakeIdentity();
+            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(scale, scale));
+            SKMatrix.PreConcat(ref matrix, picture.Matrix);
+            var bound = annotation.GetBounds(matrix);
+            var top = bound.Top - (CurrentArea.MidY / XScaleFactor - bound.Height / 2);
+            var left = bound.Left - (CurrentArea.MidX / YScaleFactor - bound.Width / 2);
+            AnimateScroll(Math.Max(top, 0), Math.Max(left, 0));
+        }
+
         private void UpdateMaximums()
         {
             UpdateCurrentMatrix();

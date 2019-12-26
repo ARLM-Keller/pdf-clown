@@ -579,13 +579,15 @@ namespace PdfClown.Viewer
             VerticalValue = top;
         }
 
-        public void AnimateScroll(double newValue)
+        protected void AnimateScroll(float top, double left)
         {
             if (ScrollAnimation != null)
             {
                 this.AbortAnimation(ahScroll);
             }
-            ScrollAnimation = new Animation(v => VerticalValue = v, VerticalValue, newValue, Easing.SinOut);
+            ScrollAnimation = new Animation();
+            ScrollAnimation.Add(0, 1, new Animation(v => VerticalValue = v, VerticalValue, top, Easing.SinOut));
+            ScrollAnimation.Add(0, 1, new Animation(v => HorizontalValue = v, HorizontalValue, left, Easing.SinOut));
             ScrollAnimation.Commit(this, ahScroll, 16, 270, finished: (d, f) => ScrollAnimation = null);
         }
 
@@ -616,42 +618,5 @@ namespace PdfClown.Viewer
 
         public Func<double, double, bool> CheckCaptureBox;
 
-    }
-
-    public enum CursorType
-    {
-        Arrow,
-        SizeWE,
-        SizeNESW,
-        SizeNS,
-        SizeNWSE,
-        Hand,
-        Wait,
-        ScrollAll,
-        Cross
-    }
-
-    [Flags]
-    public enum KeyModifiers
-    {
-        None = 0,
-        Alt = 1,
-        Ctrl = 2,
-        Shift = 4,
-    }
-
-    public static class VisualElementExtension
-    {
-        public static bool IsParentsVisible(this VisualElement visual)
-        {
-            var parent = visual.Parent as VisualElement;
-            var flag = visual.IsVisible;
-            while (flag && parent != null)
-            {
-                flag = parent.IsVisible;
-                parent = parent.Parent as VisualElement;
-            }
-            return flag;
-        }
     }
 }

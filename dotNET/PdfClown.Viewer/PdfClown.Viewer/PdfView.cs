@@ -758,7 +758,7 @@ namespace PdfClown.Viewer
             Dragging = null;
         }
 
-        private PdfPagePicture GetPicture(Documents.Page page)
+        public PdfPagePicture GetPicture(Documents.Page page)
         {
             foreach (var picture in pictures)
             {

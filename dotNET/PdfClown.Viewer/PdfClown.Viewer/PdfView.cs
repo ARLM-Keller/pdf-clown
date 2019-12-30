@@ -592,7 +592,7 @@ namespace PdfClown.Viewer
                 if (CurrentPicture.Page != Dragging.Page)
                 {
                     var oldPicture = GetPicture(Dragging.Page);
-                    oldPicture.Annotations.Remove(Dragging);
+                    oldPicture?.Annotations.Remove(Dragging);
                     CurrentPicture.Annotations.Add(Dragging);
                     Dragging.Page = CurrentPicture.Page;
                     PressedCursorLocation = null;
@@ -958,22 +958,35 @@ namespace PdfClown.Viewer
             pictures.Clear();
         }
 
-        public Annotation Delete(Annotation annotation)
+        public IEnumerable<Annotation> Delete(Annotation annotation)
         {
             if (annotation.Page != null)
             {
                 var picture = GetPicture(annotation.Page);
                 picture?.Annotations.Remove(annotation);
+                foreach (var item in picture?.Annotations.ToList())
+                {
+                    if (item is Markup markup
+                        && markup.InReplyTo == annotation
+                        && markup.ReplyType == Markup.ReplyTypeEnum.Thread)
+                    {
+                        foreach (var deleted in Delete(markup))
+                        {
+                            yield return deleted;
+                        }
+                    }
+                }
             }
             annotation.Delete();
             IsChanged = true;
             if (annotation is Popup popup)
             {
                 Delete(popup.Markup);
-                return popup.Markup;
+                yield return popup.Markup;
             }
+
+            yield return annotation;
             InvalidateSurface();
-            return annotation;
         }
     }
 

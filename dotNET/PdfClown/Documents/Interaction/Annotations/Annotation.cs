@@ -121,6 +121,11 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return null;
             if (baseObject.Wrapper is Annotation annotation)
                 return annotation;
+            if (baseObject is PdfReference reference && reference.DataObject?.Wrapper is Annotation referenceAnnotation)
+            {
+                baseObject.Wrapper = referenceAnnotation;
+                return referenceAnnotation;
+            }
             var dictionary = (PdfDictionary)baseObject.Resolve();
             if (dictionary == null)
                 return null;

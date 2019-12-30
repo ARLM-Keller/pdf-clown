@@ -87,6 +87,11 @@ namespace PdfClown.Documents.Files
                 return null;
             if (baseObject.Wrapper is FileSpecification specification)
                 return specification;
+            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is FileSpecification referenceSpecification)
+            {
+                baseObject.Wrapper = referenceSpecification;
+                return referenceSpecification;
+            }
 
             PdfDataObject baseDataObject = baseObject.Resolve();
             if (baseDataObject is PdfString)

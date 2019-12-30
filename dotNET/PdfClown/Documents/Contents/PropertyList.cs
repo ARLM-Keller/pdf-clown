@@ -54,7 +54,11 @@ namespace PdfClown.Documents.Contents
                 return null;
             if (baseObject.Wrapper is PropertyList propertyList)
                 return propertyList;
-
+            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is PropertyList referencePropertyList)
+            {
+                baseObject.Wrapper = referencePropertyList;
+                return referencePropertyList;
+            }
             PdfName type = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.Type];
             if (Layer.TypeName.Equals(type))
                 return new Layer(baseObject);

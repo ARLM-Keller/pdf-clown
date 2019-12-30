@@ -180,6 +180,11 @@ namespace PdfClown.Documents.Multimedia
                 return null;
             if (baseObject.Wrapper is Rendition rendition)
                 return rendition;
+            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is Rendition referenceRendition)
+            {
+                baseObject.Wrapper = referenceRendition;
+                return referenceRendition;
+            }
 
             PdfName subtype = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.S];
             if (PdfName.MR.Equals(subtype))

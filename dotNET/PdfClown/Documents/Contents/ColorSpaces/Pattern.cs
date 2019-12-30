@@ -60,6 +60,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 return null;
             if (baseObject.Wrapper is Pattern pattern)
                 return pattern;
+            if (baseObject is PdfReference reference && reference.DataObject?.Wrapper is Pattern referencePattern)
+            {
+                baseObject.Wrapper = referencePattern;
+                return referencePattern;
+            }
             PdfDataObject dataObject = baseObject.Resolve();
             PdfDictionary dictionary = TryGetDictionary(dataObject);
             int patternType = ((PdfInteger)dictionary[PdfName.PatternType]).RawValue;

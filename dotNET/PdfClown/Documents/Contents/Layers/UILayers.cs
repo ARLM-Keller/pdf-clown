@@ -46,7 +46,6 @@ namespace PdfClown.Documents.Contents.Layers
                     return null;
                 if (baseObject.Wrapper is IUILayerNode node)
                     return node;
-
                 PdfDataObject baseDataObject = baseObject.Resolve();
                 if (baseDataObject is PdfDictionary)
                     return Wrap<Layer>(baseObject);

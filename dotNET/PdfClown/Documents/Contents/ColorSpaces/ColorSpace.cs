@@ -52,6 +52,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 return null;
             if (baseObject.Wrapper is ColorSpace colorSpace)
                 return colorSpace;
+            if (baseObject is PdfReference reference && reference.DataObject?.Wrapper is ColorSpace referenceColorSpace)
+            {
+                baseObject.Wrapper = referenceColorSpace;
+                return referenceColorSpace;
+            }
             // Get the data object corresponding to the color space!
             PdfDataObject baseDataObject = baseObject.Resolve();
             /*

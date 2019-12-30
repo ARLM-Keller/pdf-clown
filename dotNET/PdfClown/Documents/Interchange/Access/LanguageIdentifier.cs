@@ -61,6 +61,11 @@ namespace PdfClown.Documents.Interchange.Access
                 return null;
             if (baseObject.Wrapper is LanguageIdentifier identifier)
                 return identifier;
+            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is LanguageIdentifier referenceIdentifier)
+            {
+                baseObject.Wrapper = referenceIdentifier;
+                return referenceIdentifier;
+            }
             if (baseObject.Resolve() is PdfTextString)
                 return new LanguageIdentifier(baseObject);
             else

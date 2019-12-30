@@ -149,7 +149,11 @@ namespace PdfClown.Documents.Contents.Fonts
                 return null;
             if (baseObject.Wrapper is Font font)
                 return font;
-
+            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is Font referenceFont)
+            {
+                baseObject.Wrapper = referenceFont;
+                return referenceFont;
+            }
             PdfReference reference = (PdfReference)baseObject;
             {
                 // Has the font been already instantiated?
@@ -366,7 +370,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 : parameters[0].Equals("ZapfDingbats", StringComparison.OrdinalIgnoreCase)
                 ? "Wingdings"
                 : parameters[0];
-            
+
             //SKFontManager.Default.FontFamilies
             if (fontName.IndexOf("Arial", StringComparison.Ordinal) > -1)
             {

@@ -157,7 +157,11 @@ namespace PdfClown.Documents.Interaction.Forms
                 return null;
             if (reference.Wrapper is Field field)
                 return field;
-
+            if (reference.DataObject?.Wrapper is Field referenceField)
+            {
+                reference.Wrapper = referenceField;
+                return referenceField;
+            }
             PdfDictionary dataObject = (PdfDictionary)reference.DataObject;
             PdfName fieldType = (PdfName)GetInheritableAttribute(dataObject, PdfName.FT);
             PdfInteger fieldFlags = (PdfInteger)GetInheritableAttribute(dataObject, PdfName.Ff);

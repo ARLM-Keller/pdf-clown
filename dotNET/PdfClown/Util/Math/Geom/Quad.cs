@@ -31,54 +31,80 @@ namespace PdfClown.Util.Math.Geom
     /**
       <summary>Quadrilateral shape.</summary>
     */
-    public class Quad
+    public struct Quad
     {
         #region static
         #region interface
         #region public
-        public static Quad Get(SKRect rectangle)
-        { return new Quad(GetPoints(rectangle)); }
-
-        public static SKPoint[] GetPoints(SKRect rectangle)
+        public static Quad Union(Quad value, Quad value2)
         {
-            SKPoint[] points = new SKPoint[4];
-            {
-                points[0] = new SKPoint(rectangle.Left, rectangle.Top);
-                points[1] = new SKPoint(rectangle.Right, rectangle.Top);
-                points[2] = new SKPoint(rectangle.Right, rectangle.Bottom);
-                points[3] = new SKPoint(rectangle.Left, rectangle.Bottom);
-            }
-            return points;
+            return new Quad(SKRect.Union(value.GetBounds(), value2.GetBounds()));
         }
+
+        public static Quad Transform(Quad quad, SKMatrix matrix)
+        {
+            var temp = new Quad(quad);
+            temp.Transform(ref matrix);
+            return temp;
+        }
+
         #endregion
         #endregion
         #endregion
 
         #region dynamic
         #region fields
-        private SKPoint[] points;
+        private SKPoint pointTopLeft;
+        private SKPoint pointTopRight;
+        private SKPoint pointBottomRight;
+        private SKPoint pointBottomLeft;
         #endregion
 
         #region constructors
-        public Quad(params SKPoint[] points)
+        public Quad(SKRect rectangle)
+            : this(new SKPoint(rectangle.Left, rectangle.Top),
+                  new SKPoint(rectangle.Right, rectangle.Top),
+                  new SKPoint(rectangle.Right, rectangle.Bottom),
+                  new SKPoint(rectangle.Left, rectangle.Bottom))
+        { }
+
+        public Quad(Quad quad)
+            : this(quad.pointTopLeft,
+                  quad.pointTopRight,
+                  quad.pointBottomRight,
+                  quad.pointBottomLeft)
+        { }
+
+        public Quad(SKPoint pointTopLeft, SKPoint pointTopRight, SKPoint pointBottomRight, SKPoint pointBottomLeft)
         {
-            Points = points;
+            this.pointTopLeft = pointTopLeft;
+            this.pointTopRight = pointTopRight;
+            this.pointBottomRight = pointBottomRight;
+            this.pointBottomLeft = pointBottomLeft;
         }
+
         #endregion
 
         #region interface
         #region public
 
-        public SKPoint[] Points
-        {
-            get => points;
-            set
-            {
-                if (value.Length != 4)
-                    throw new ArgumentException("Cardinality MUST be 4.", "points");
+        public float Width => SKPoint.Distance(pointTopLeft, pointTopRight);
 
-                points = value;
-            }
+        public float Height => SKPoint.Distance(pointTopRight, pointBottomRight);
+
+        public SKPoint Location => pointTopLeft;
+
+        public float Top => pointTopLeft.Y;
+
+        public float Left => pointTopLeft.X;
+
+        public float Right => pointBottomRight.X;
+
+        public float Bottom => pointBottomRight.Y;
+
+        public SKPoint[] GetPoints()
+        {
+            return new[] { pointTopLeft, pointTopRight, pointBottomRight, pointBottomLeft };
         }
         #endregion
 
@@ -86,19 +112,13 @@ namespace PdfClown.Util.Math.Geom
         public SKPath GetPath()
         {
             var path = new SKPath();//FillMode.Alternate
-            path.AddPoly(points);
+            path.AddPoly(GetPoints());
             return path;
         }
 
-        public float Width => SKPoint.Distance(points[0], points[1]);
-
-        public float Height => SKPoint.Distance(points[1], points[2]);
-
-        public SKPoint Location => points[0];
-
-        public bool Contains(SKPoint SKPoint)
+        public bool Contains(SKPoint point)
         {
-            return GetBounds().Contains(SKPoint.X, SKPoint.Y);
+            return GetBounds().Contains(point);
         }
 
         public bool Contains(float x, float y)
@@ -108,8 +128,10 @@ namespace PdfClown.Util.Math.Geom
 
         public SKRect GetBounds()
         {
-            var rect = new SKRect();
-            rect.Add(points);
+            var rect = new SKRect(pointTopLeft.X, pointTopLeft.Y, 0, 0);
+            rect.Add(pointTopRight);
+            rect.Add(pointBottomRight);
+            rect.Add(pointBottomLeft);
             return rect;
         }
 
@@ -137,16 +159,32 @@ namespace PdfClown.Util.Math.Geom
         public Quad Inflate(float valueX, float valueY)
         {
             SKRect oldBounds = GetBounds();
-            points = SKMatrix.MakeTranslation(-oldBounds.Left, -oldBounds.Top).MapPoints(points);
-            points = SKMatrix.MakeScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height).MapPoints(points);
-            SKRect newBounds = GetBounds();
-            points = SKMatrix.MakeTranslation(oldBounds.Left - (newBounds.Width - oldBounds.Width) / 2, oldBounds.Top - (newBounds.Height - oldBounds.Height) / 2).MapPoints(points);
+            var matrix = SKMatrix.MakeTranslation(oldBounds.MidX, oldBounds.MidY);
+            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height));
+            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(-(oldBounds.MidX), -(oldBounds.MidY)));
+            pointTopLeft = matrix.MapPoint(pointTopLeft);
+            pointTopRight = matrix.MapPoint(pointTopRight);
+            pointBottomRight = matrix.MapPoint(pointBottomRight);
+            pointBottomLeft = matrix.MapPoint(pointBottomLeft);
             return this;
         }
 
-        public void Transform(SKMatrix matrix)
+        public void Transform(ref SKMatrix matrix)
         {
-            points = matrix.MapPoints(points);
+            pointTopLeft = matrix.MapPoint(pointTopLeft);
+            pointTopRight = matrix.MapPoint(pointTopRight);
+            pointBottomRight = matrix.MapPoint(pointBottomRight);
+            pointBottomLeft = matrix.MapPoint(pointBottomLeft);
+        }
+
+        public bool IntersectsWith(Quad value)
+        {
+            return GetBounds().IntersectsWith(value.GetBounds());
+        }
+
+        public bool Contains(Quad value)
+        {
+            return GetBounds().Contains(value.GetBounds());
         }
 
         #endregion

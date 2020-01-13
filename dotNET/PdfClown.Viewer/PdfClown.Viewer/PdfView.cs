@@ -1,4 +1,5 @@
 ﻿using PdfClown.Documents;
+using PdfClown.Documents.Contents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Files;
 using PdfClown.Tools;
@@ -38,8 +39,10 @@ namespace PdfClown.Viewer
            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnHoverPointChanged((ControlPoint)oldValue, (ControlPoint)newValue));
 
         private readonly List<PdfPagePicture> pictures = new List<PdfPagePicture>();
+        private readonly SKPaint paintRed = new SKPaint { Style = SKPaintStyle.Stroke, Color = SKColors.OrangeRed };
         private readonly SKPaint paintText = new SKPaint { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 14 };
         private readonly SKPaint paintPointFill = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill };
+        private readonly SKPaint paintSelectionFill = new SKPaint { Color = SKColors.LightBlue, Style = SKPaintStyle.Fill, BlendMode = SKBlendMode.Multiply };
         private float oldScale = 1;
         private float scale = 1;
         private readonly float indent = 10;
@@ -58,6 +61,8 @@ namespace PdfClown.Viewer
         private SKPoint CurrentMoveLocation;
         private SKPoint? PressedCursorLocation;
         private SKMatrix InvertPictureMatrix;
+        private SKPoint CurrentPictureLocation;
+
         public PdfView()
         {
             PaintContent += OnPaintContent;
@@ -169,10 +174,14 @@ namespace PdfClown.Viewer
         }
 
         public string FilePath { get; private set; }
-        public string TempFilePath { get; private set; }
 
+        public string TempFilePath { get; private set; }
+        public List<TextChar> TextSelection { get; private set; } = new List<TextChar>();
+
+        public event EventHandler<EventArgs> TextSelectionChanged;
 
         public event EventHandler<EventArgs> DragComplete;
+
         public event EventHandler<EventArgs> SelectedAnnotationChanged;
 
         public IEnumerable<Annotation> GetAllAnnotations()
@@ -326,11 +335,46 @@ namespace PdfClown.Viewer
                     var picture = pdfPicture.GetPicture(this);
                     if (picture != null)
                     {
-                        canvas.DrawPicture(picture, ref pdfPicture.Matrix);
+                        canvas.Save();
+                        canvas.Concat(ref pdfPicture.Matrix);
+
+                        canvas.DrawPicture(picture);
+
                         if (ShowMarkup && pdfPicture.Annotations.Count > 0)
                         {
                             OnPaintAnnotations(canvas, pdfPicture);
                         }
+                        if (TextSelection.Count > 0)
+                        {
+                            foreach (var textChar in TextSelection)
+                            {
+                                if (textChar.TextString.Context == pdfPicture.Page)
+                                {
+                                    using (var path = textChar.Quad.GetPath())
+                                    {
+                                        canvas.DrawPath(path, paintSelectionFill);
+                                    }
+                                }
+                            }
+                        }
+                        //temp
+                        {
+                            try
+                            {
+                                foreach (var textString in pdfPicture.Page.Strings)
+                                {
+                                    foreach (var textChar in textString.TextChars)
+                                    {
+                                        canvas.DrawPoints(SKPointMode.Polygon, textChar.Quad.GetPoints(), paintRed);
+                                    }
+                                }
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+                        canvas.Restore();
                     }
                 }
             }
@@ -338,11 +382,6 @@ namespace PdfClown.Viewer
 
         private void OnPaintAnnotations(SKCanvas canvas, PdfPagePicture pdfPicture)
         {
-            canvas.Save();
-            var drawPictureMatrix = CurrentViewMatrix;
-            SKMatrix.PreConcat(ref drawPictureMatrix, pdfPicture.Matrix);
-
-            canvas.SetMatrix(drawPictureMatrix);
             foreach (var annotation in pdfPicture.Annotations)
             {
                 if (annotation.Visible)
@@ -359,13 +398,11 @@ namespace PdfClown.Viewer
             //    Dragging.Draw(canvas);
             //}
             OnPaintAnnotationToolTip(canvas);
-            canvas.Restore();
         }
 
         private void OnPaintSelectedAnnotation(SKCanvas canvas, Annotation annotation)
         {
             using (var paint = new SKPaint { Color = SKColors.Blue, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true })
-
             {
                 if (annotation != Dragging
                 && annotation != Sizing
@@ -393,6 +430,7 @@ namespace PdfClown.Viewer
         {
             if (!string.IsNullOrEmpty(CurrentAnnotationText))
             {
+                canvas.Save();
                 canvas.SetMatrix(CurrentWindowScaleMatrix);
                 using (var color = new SKPaint() { Color = SKColors.Silver, Style = SKPaintStyle.Fill })
                 {
@@ -402,6 +440,7 @@ namespace PdfClown.Viewer
                         currentAnnotationTextBounds.MidY + paintText.FontMetrics.Bottom,
                         paintText);
                 }
+                canvas.Restore();
             }
         }
 
@@ -456,6 +495,7 @@ namespace PdfClown.Viewer
             CurrentPictureMatrix = CurrentViewMatrix;
             SKMatrix.PreConcat(ref CurrentPictureMatrix, CurrentPicture.Matrix);
             CurrentPictureMatrix.TryInvert(out InvertPictureMatrix);
+            CurrentPictureLocation = InvertPictureMatrix.MapPoint(e.Location);
             //SKMatrix.PreConcat(ref CurrentPictureMatrix, CurrentPicture.InitialMatrix);
             if (CurrentPoint != null)
             {
@@ -501,14 +541,65 @@ namespace PdfClown.Viewer
                     return;
                 }
             }
+            if (OnTouchText(picture, e))
+            {
+                return;
+            }
             if (e.ActionType == SKTouchAction.Released)
             {
                 SelectedAnnotation = null;
+            }
+            else if (e.ActionType == SKTouchAction.Pressed)
+            {
+                TextSelection.Clear();
+                OnTextSelectionChanged();
             }
             Cursor = CursorType.Arrow;
             CurrentAnnotation = null;
             CurrentAnnotationText = null;
             HoverPoint = null;
+        }
+
+        private bool OnTouchText(PdfPagePicture picture, SKTouchEventArgs e)
+        {
+            var textSelectionChanged = false;
+            foreach (var textString in picture.Page.Strings)
+            {
+                foreach (var textChar in textString.TextChars)
+                {
+                    if (textChar.Quad.GetBounds().Contains(CurrentPictureLocation))
+                    {
+                        Cursor = CursorType.IBeam;
+                        if (e.MouseButton == SKMouseButton.Left)
+                        {
+                            if (e.ActionType == SKTouchAction.Pressed)
+                            {
+                                TextSelection.Clear();
+                                TextSelection.Add(textChar);
+                                OnTextSelectionChanged();
+                            }
+                            else if (e.ActionType == SKTouchAction.Moved)
+                            {
+                                if (!TextSelection.Contains(textChar))
+                                    TextSelection.Add(textChar);
+                                OnTextSelectionChanged();
+                            }
+                        }
+                        textSelectionChanged = true;
+                    }
+                    else if (textSelectionChanged)
+                    {
+                        break;
+                    }
+                }
+            }
+            return textSelectionChanged;
+        }
+
+        private void OnTextSelectionChanged()
+        {
+            InvalidateSurface();
+            TextSelectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnTouchCurrentPoint(SKTouchEventArgs e)
@@ -886,7 +977,6 @@ namespace PdfClown.Viewer
                 {
                     picture.Matrix.TransX += (DocumentSize.Width - picture.Size.Width + indent * 2) / 2;
                 }
-
             }
             this.pictures.AddRange(pictures);
             Device.BeginInvokeOnMainThread(() =>

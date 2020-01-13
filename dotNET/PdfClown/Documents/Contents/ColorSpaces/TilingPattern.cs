@@ -185,7 +185,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             using (var recorder = new SKPictureRecorder())// SKBitmap((int)box.Width, (int)box.Height);
             using (var canvas = recorder.BeginRecording(SKRect.Create(box.Width, box.Height)))
             {
-                Render(canvas, box.Size);                
+                Render(canvas, box.Size);
                 return picture = recorder.EndRecording();
             }
         }
@@ -234,9 +234,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public int Rotate => 0;
 
+        public SKMatrix InitialMatrix => SKMatrix.MakeIdentity();
+
+        public SKMatrix RotateMatrix => SKMatrix.MakeIdentity();
+
         public AppDataCollection AppData => throw new NotImplementedException();
 
         public DateTime? ModificationDate => (DateTime?)PdfSimpleObject<object>.GetValue(Dictionary[PdfName.LastModified]);
+
+        public List<ITextString> Strings { get; } = new List<ITextString>();
         #endregion
         #endregion
         #endregion

@@ -100,7 +100,7 @@ namespace PdfClown.Samples.CLI
                               (font, font size, text color, text rendering mode)
                               through textChar.style.
                             */
-                            composer.DrawRectangle(textChar.Box);
+                            composer.DrawPolygon(textChar.Quad.GetPoints());
                             composer.Stroke();
                         }
 

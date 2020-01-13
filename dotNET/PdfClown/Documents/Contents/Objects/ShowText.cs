@@ -31,6 +31,8 @@ using System;
 using System.Collections.Generic;
 using SkiaSharp;
 using PdfClown.Documents.Contents.Scanner;
+using System.Text;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -48,8 +50,9 @@ namespace PdfClown.Documents.Contents.Objects
               <param name="textChar">Scanned character.</param>
               <param name="textCharBox">Bounding box of the scanned character.</param>
             */
-            void ScanChar(char textChar, SKRect textCharBox);
+            void ScanChar(char textChar, Quad textCharBox);
         }
+        public TextStringWrapper textString;
         #endregion
 
         #region dynamic
@@ -65,7 +68,43 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region interface
         #region public
-        public override void Scan(GraphicsState state) { Scan(state, null); }
+
+        /**
+         <summary>Gets/Sets the encoded text.</summary>
+         <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
+         to the decode method of the corresponding font.</remarks>
+       */
+        public abstract byte[] Text
+        {
+            get;
+            set;
+        }
+
+        /**
+          <summary>Gets/Sets the encoded text elements along with their adjustments.</summary>
+          <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
+          to the decode method of the corresponding font.</remarks>
+          <returns>Each element can be either a byte array or a number:
+            <list type="bullet">
+              <item>if it's a byte array (encoded text), the operator shows text glyphs;</item>
+              <item>if it's a number (glyph adjustment), the operator inversely adjusts the next glyph position
+              by that amount (that is: a positive value reduces the distance between consecutive glyphs).</item>
+            </list>
+          </returns>
+        */
+        public virtual IList<object> Value
+        {
+            get => new List<object>() { Text };
+            set => Text = (byte[])value[0];
+        }
+
+        public override void Scan(GraphicsState state)
+        {
+            if (textString == null)
+                textString = new TextStringWrapper(state.Scanner, false);
+            textString.TextChars.Clear();
+            Scan(state, new TextStringWrapper.ShowTextScanner(textString));
+        }
 
         /**
           <summary>Executes scanning on this operation.</summary>
@@ -99,6 +138,10 @@ namespace PdfClown.Documents.Contents.Objects
             var fill = context != null && state.RenderModeFill ? state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha) : null;
             var typeface = font?.GetTypeface();
             var nameTypeface = font?.GetTypefaceByName();
+            if (context != null)
+            {
+                context.Save();
+            }
 
             if (fill != null)
             {
@@ -123,7 +166,7 @@ namespace PdfClown.Documents.Contents.Objects
                 double? newWordSpace = showTextToNextLine.WordSpace;
                 if (newWordSpace != null)
                 {
-                    if (textScanner == null)
+                    //if (textScanner == null)
                     { state.WordSpace = newWordSpace.Value; }
                     if (wordSpaceSupported)
                     { wordSpace = newWordSpace.Value * state.Scale; }
@@ -131,7 +174,7 @@ namespace PdfClown.Documents.Contents.Objects
                 double? newCharSpace = showTextToNextLine.CharSpace;
                 if (newCharSpace != null)
                 {
-                    if (textScanner == null)
+                    //if (textScanner == null)
                     { state.CharSpace = newCharSpace.Value; }
                     charSpace = newCharSpace.Value * state.Scale;
                 }
@@ -149,6 +192,12 @@ namespace PdfClown.Documents.Contents.Objects
 
                     foreach (char textChar in textString)
                     {
+                        //NOTE: The text rendering matrix is recomputed before each glyph is painted
+                        // during a text-showing operation.
+                        SKMatrix trm = ctm;
+                        SKMatrix.PreConcat(ref trm, tm);
+                        SKMatrix.PreConcat(ref trm, SKMatrix.MakeScale(1, -1));
+
                         if (context != null
                             && !(textString.Length == 1
                             && (textString[0] == ' '
@@ -164,10 +213,6 @@ namespace PdfClown.Documents.Contents.Objects
                                 : font is Type2Font
                                 ? System.Text.Encoding.UTF8.GetBytes(new[] { textChar })
                                 : font.Encode(textChar.ToString());
-                            SKMatrix trm = ctm;
-                            SKMatrix.PreConcat(ref trm, tm);
-                            SKMatrix.PreConcat(ref trm, SKMatrix.MakeScale(1, -1));
-                            context.Save();
                             context.SetMatrix(trm);
                             if (fill != null)
                             {
@@ -189,26 +234,15 @@ namespace PdfClown.Documents.Contents.Objects
                             {
                                 context.DrawText(text, 0, 0, stroke);
                             }
-                            context.Restore();
                         }
                         double charWidth = font.GetWidth(textChar) * scaledFactor;
 
                         if (textScanner != null)
                         {
-                            /*
-                              NOTE: The text rendering matrix is recomputed before each glyph is painted
-                              during a text-showing operation.
-                            */
-                            SKMatrix trm = ctm;
-                            SKMatrix.PreConcat(ref trm, tm);
-                            double charHeight = font.GetHeight(textChar, fontSize);
-                            SKRect charBox = SKRect.Create(
-                              trm.TransX,
-                              (float)(contextHeight - trm.TransY - font.GetAscent(fontSize) * trm.ScaleY),
-                              (float)charWidth * trm.ScaleX,
-                              (float)charHeight * trm.ScaleY
-                              );
-                            textScanner.ScanChar(textChar, charBox);
+                            var charBox = SKRect.Create(0, (float)(-font.GetAscent(fontSize)), (float)charWidth, (float)font.GetHeight(textChar, fontSize));
+                            var quad = new Quad(charBox);
+                            quad.Transform(ref trm);
+                            textScanner.ScanChar(textChar, quad);
                         }
                         /*
                           NOTE: After the glyph is painted, the text matrix is updated
@@ -222,8 +256,12 @@ namespace PdfClown.Documents.Contents.Objects
                     SKMatrix.PreConcat(ref tm, SKMatrix.MakeTranslation((float)(-Convert.ToSingle(textElement) * scaledFactor), 0));
                 }
             }
+            if (context != null)
+            {
+                context.Restore();
+            }
 
-            if (textScanner == null)
+            //if (textScanner == null)
             {
                 state.TextState.Tm = tm;
 
@@ -232,34 +270,7 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        /**
-          <summary>Gets/Sets the encoded text.</summary>
-          <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
-          to the decode method of the corresponding font.</remarks>
-        */
-        public abstract byte[] Text
-        {
-            get;
-            set;
-        }
 
-        /**
-          <summary>Gets/Sets the encoded text elements along with their adjustments.</summary>
-          <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
-          to the decode method of the corresponding font.</remarks>
-          <returns>Each element can be either a byte array or a number:
-            <list type="bullet">
-              <item>if it's a byte array (encoded text), the operator shows text glyphs;</item>
-              <item>if it's a number (glyph adjustment), the operator inversely adjusts the next glyph position
-              by that amount (that is: a positive value reduces the distance between consecutive glyphs).</item>
-            </list>
-          </returns>
-        */
-        public virtual IList<object> Value
-        {
-            get => new List<object>() { Text };
-            set => Text = (byte[])value[0];
-        }
         #endregion
         #endregion
         #endregion

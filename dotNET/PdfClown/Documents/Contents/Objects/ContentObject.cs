@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents.Scanner;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -36,6 +37,12 @@ namespace PdfClown.Documents.Contents.Objects
         #region dynamic
         #region interface
         #region public
+
+        /**
+          <summary>Get the graphics wrapper cache.</summary>
+        */
+        public GraphicsObjectWrapper Wrapper { get; set; }
+
         /**
           <summary>Applies this object to the specified graphics context, updating the specified
           graphics state.</summary>
@@ -50,6 +57,7 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="context">Document context.</param>
         */
         public abstract void WriteTo(IOutputStream stream, Document context);
+
         #endregion
         #endregion
         #endregion

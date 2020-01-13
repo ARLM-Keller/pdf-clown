@@ -896,11 +896,12 @@ namespace PdfClown.Documents.Contents.Composition
 
                 SKMatrix textToDeviceMatrix = state.GetTextToDeviceMatrix(true);
                 frame = new Quad(
-                  textToDeviceMatrix.MapPoint(new SKPoint((float)minX, (float)(y + ascent))),
-                  textToDeviceMatrix.MapPoint(new SKPoint((float)(minX + maxLineWidth), (float)(y + ascent))),
-                  textToDeviceMatrix.MapPoint(new SKPoint((float)(minX + maxLineWidth), (float)(y + ascent - textHeight))),
-                  textToDeviceMatrix.MapPoint(new SKPoint((float)minX, (float)(y + ascent - textHeight)))
+                  new SKPoint((float)minX, (float)(y + ascent)),
+                  new SKPoint((float)(minX + maxLineWidth), (float)(y + ascent)),
+                  new SKPoint((float)(minX + maxLineWidth), (float)(y + ascent - textHeight)),
+                  new SKPoint((float)minX, (float)(y + ascent - textHeight))
                   );
+                frame.Transform(ref textToDeviceMatrix);
             }
             finally
             { End(); } // Ends the local state.
@@ -1328,14 +1329,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="e">Item 2,0 of the matrix.</param>
           <param name="f">Item 2,1 of the matrix.</param>
         */
-        private void SetTextMatrix(
-          double a,
-          double b,
-          double c,
-          double d,
-          double e,
-          double f
-          )
+        private void SetTextMatrix(double a, double b, double c, double d, double e, double f)
         { Add(new objects::SetTextMatrix(a, b, c, d, e, f)); }
 
         /**
@@ -1354,9 +1348,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="offsetY">Vertical offset.</param>
         */
         private void TranslateTextRelative(double offsetX, double offsetY)
-        {
-            Add(new objects::TranslateTextRelative(offsetX, -offsetY));
-        }
+        { Add(new objects::TranslateTextRelative(offsetX, -offsetY)); }
 
         /**
           <summary>Applies a translation to the coordinate system from text space to user space,

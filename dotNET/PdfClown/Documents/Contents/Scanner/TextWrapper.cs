@@ -27,6 +27,7 @@ using PdfClown.Documents.Contents.Objects;
 using System.Collections.Generic;
 using SkiaSharp;
 using System.Text;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Contents.Scanner
 {
@@ -36,6 +37,8 @@ namespace PdfClown.Documents.Contents.Scanner
     public sealed class TextWrapper : GraphicsObjectWrapper<Text>
     {
         private List<TextStringWrapper> textStrings;
+        private string text;
+        private Quad? quad;
 
         internal TextWrapper(ContentScanner scanner) : base((Text)scanner.Current)
         {
@@ -61,16 +64,38 @@ namespace PdfClown.Documents.Contents.Scanner
             }
         }
 
+        public Quad? Quad
+        {
+            get
+            {
+                if (quad == null)
+                {
+                    foreach (TextStringWrapper textString in textStrings)
+                    {
+                        if (!quad.HasValue)
+                        { quad = textString.Quad; }
+                        else
+                        { quad = Util.Math.Geom.Quad.Union(quad.Value, textString.Quad.Value); }
+                    }
+                }
+                return quad;
+            }
+        }
+
         public string Text
         {
             get
             {
-                var textBuilder = new StringBuilder();
-                foreach (TextStringWrapper textString in textStrings)
+                if (text == null)
                 {
-                    textBuilder.Append(textString.Text);
+                    StringBuilder textBuilder = new StringBuilder();
+                    foreach (TextStringWrapper textString in textStrings)
+                    {
+                        textBuilder.Append(textString.Text);
+                    }
+                    text = textBuilder.ToString();
                 }
-                return textBuilder.ToString();
+                return text;
             }
         }
 

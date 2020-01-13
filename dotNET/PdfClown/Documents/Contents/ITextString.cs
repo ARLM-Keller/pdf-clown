@@ -27,6 +27,7 @@ using PdfClown.Objects;
 
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Contents
 {
@@ -37,19 +38,24 @@ namespace PdfClown.Documents.Contents
     public interface ITextString
     {
         /**
+          <summary>Gets the container of text - Page or FormOXbject.</summary>
+        */
+        IContentContext Context { get; }
+        /**
           <summary>Gets the text string bounds.</summary>
         */
-        SKRect? Box
-        { get; }
+        Quad? Quad { get; }
         /**
           <summary>Gets the decoded text.</summary>
         */
-        string Text
-        { get; }
+        string Text { get; }
         /**
           <summary>Gets the information of each text string character.</summary>
         */
-        List<TextChar> TextChars
-        { get; }
+        List<TextChar> TextChars { get; }
+        /**
+          <summary>Gets the font and paint information.</summary>
+        */
+        TextStyle Style { get; }
     }
 }

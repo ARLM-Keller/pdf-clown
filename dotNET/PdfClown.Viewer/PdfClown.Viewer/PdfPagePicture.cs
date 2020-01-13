@@ -7,6 +7,7 @@ using SkiaSharp.Views.Forms;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using PdfClown.Tools;
 
 namespace PdfClown.Viewer
 {
@@ -17,7 +18,6 @@ namespace PdfClown.Viewer
 
         private SKPicture picture;
         public SKMatrix Matrix = SKMatrix.MakeIdentity();
-        public SKMatrix InitialMatrix;
         private Page page;
 
         public PdfPagePicture()
@@ -63,9 +63,12 @@ namespace PdfClown.Viewer
                     }
                 }
                 picture = recorder.EndRecording();
-                Xamarin.Forms.Device.BeginInvokeOnMainThread(() => canvasView.InvalidateSurface());
             }
-            InitialMatrix = GraphicsState.GetInitialMatrix(Page, Size);
+            //text
+            var positionComparator = new TextStringPositionComparer<ITextString>();
+            Page.Strings.Sort(positionComparator);
+
+            Xamarin.Forms.Device.BeginInvokeOnMainThread(() => canvasView.InvalidateSurface());
         }
 
         public Page Page

@@ -62,7 +62,7 @@ namespace PdfClown.Samples.CLI
                 XAlignmentEnum.Left,
                 YAlignmentEnum.Middle,
                 45
-                ).Points
+                ).GetPoints()
               );
             composer.Stroke();
 
@@ -74,7 +74,7 @@ namespace PdfClown.Samples.CLI
                 XAlignmentEnum.Center,
                 YAlignmentEnum.Middle,
                 -25
-                ).Points
+                ).GetPoints()
               );
             composer.Stroke();
 

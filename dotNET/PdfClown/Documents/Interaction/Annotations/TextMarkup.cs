@@ -120,6 +120,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         #region static
         #region fields
         private static readonly PdfName HighlightExtGStateName = new PdfName("highlight");
+        private List<Quad> markupBoxes;
         #endregion
 
         #region interface
@@ -184,32 +185,37 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get
             {
-                IList<Quad> markupBoxes = new List<Quad>();
+                markupBoxes = new List<Quad>();
                 PdfArray quadPointsObject = (PdfArray)BaseDataObject[PdfName.QuadPoints];
                 if (quadPointsObject != null)
                 {
-                    float pageHeight = Page.Box.Height;
                     var length = quadPointsObject.Count;
-                    for (int index = 0; index < length; index += 8)
+                    if (markupBoxes.Count * 8 != length)
                     {
-                        /*
-                          NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
-                        */
-                        markupBoxes.Add(
-                          new Quad(
-                            new SKPoint(
-                              ((IPdfNumber)quadPointsObject[index]).FloatValue,
-                              pageHeight - ((IPdfNumber)quadPointsObject[index + 1]).FloatValue),
-                            new SKPoint(
-                              ((IPdfNumber)quadPointsObject[index + 2]).FloatValue,
-                              pageHeight - ((IPdfNumber)quadPointsObject[index + 3]).FloatValue),
-                            new SKPoint(
-                              ((IPdfNumber)quadPointsObject[index + 6]).FloatValue,
-                              pageHeight - ((IPdfNumber)quadPointsObject[index + 7]).FloatValue),
-                            new SKPoint(
-                              ((IPdfNumber)quadPointsObject[index + 4]).FloatValue,
-                              pageHeight - ((IPdfNumber)quadPointsObject[index + 5]).FloatValue))
-                          );
+                        markupBoxes.Clear();
+                        var pageMatrix = PageMatrix;
+
+                        for (int index = 0; index < length; index += 8)
+                        {
+                            /*
+                              NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
+                            */
+                            var quad = new Quad(
+                                new SKPoint(
+                                  ((IPdfNumber)quadPointsObject[index]).FloatValue,
+                                  ((IPdfNumber)quadPointsObject[index + 1]).FloatValue),
+                                new SKPoint(
+                                  ((IPdfNumber)quadPointsObject[index + 2]).FloatValue,
+                                  ((IPdfNumber)quadPointsObject[index + 3]).FloatValue),
+                                new SKPoint(
+                                  ((IPdfNumber)quadPointsObject[index + 6]).FloatValue,
+                                  ((IPdfNumber)quadPointsObject[index + 7]).FloatValue),
+                                new SKPoint(
+                                  ((IPdfNumber)quadPointsObject[index + 4]).FloatValue,
+                                  ((IPdfNumber)quadPointsObject[index + 5]).FloatValue));
+                            quad.Transform(ref pageMatrix);
+                            markupBoxes.Add(quad);
+                        }
                     }
                 }
                 return markupBoxes;
@@ -217,22 +223,25 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 PdfArray quadPointsObject = new PdfArray();
-                float pageHeight = Page.Box.Height;
+                var pageMatrix = InvertPageMatrix;
+                markupBoxes.Clear();
                 SKRect box = SKRect.Empty;
                 foreach (Quad markupBox in value)
                 {
+                    markupBoxes.Add(markupBox);
                     /*
                       NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
                     */
-                    SKPoint[] markupBoxPoints = markupBox.Points;
+                    SKPoint[] markupBoxPoints = pageMatrix.MapPoints(markupBox.GetPoints());
+
                     quadPointsObject.Add(PdfReal.Get(markupBoxPoints[0].X)); // x1.
-                    quadPointsObject.Add(PdfReal.Get(pageHeight - markupBoxPoints[0].Y)); // y1.
+                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[0].Y)); // y1.
                     quadPointsObject.Add(PdfReal.Get(markupBoxPoints[1].X)); // x2.
-                    quadPointsObject.Add(PdfReal.Get(pageHeight - markupBoxPoints[1].Y)); // y2.
+                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[1].Y)); // y2.
                     quadPointsObject.Add(PdfReal.Get(markupBoxPoints[3].X)); // x4.
-                    quadPointsObject.Add(PdfReal.Get(pageHeight - markupBoxPoints[3].Y)); // y4.
+                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[3].Y)); // y4.
                     quadPointsObject.Add(PdfReal.Get(markupBoxPoints[2].X)); // x3.
-                    quadPointsObject.Add(PdfReal.Get(pageHeight - markupBoxPoints[2].Y)); // y3.
+                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[2].Y)); // y3.
                     if (box.IsEmpty)
                     { box = markupBox.GetBounds(); }
                     else
@@ -324,7 +333,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                             {
                                 foreach (Quad markupBox in MarkupBoxes)
                                 {
-                                    SKPoint[] points = markupBox.Points;
+                                    SKPoint[] points = markupBox.GetPoints();
                                     float markupBoxHeight = points[3].Y - points[0].Y;
                                     float markupBoxMargin = GetMarkupBoxMargin(markupBoxHeight);
                                     composer.DrawCurve(
@@ -354,7 +363,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                             {
                                 foreach (Quad markupBox in MarkupBoxes)
                                 {
-                                    SKPoint[] points = markupBox.Points;
+                                    SKPoint[] points = markupBox.GetPoints();
                                     float markupBoxHeight = points[3].Y - points[0].Y;
                                     float lineWidth = markupBoxHeight * .05f;
                                     float step = markupBoxHeight * .125f;
@@ -395,7 +404,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                                 }
                                 foreach (Quad markupBox in MarkupBoxes)
                                 {
-                                    SKPoint[] points = markupBox.Points;
+                                    SKPoint[] points = markupBox.GetPoints();
                                     float markupBoxHeight = points[3].Y - points[0].Y;
                                     float boxYOffset = markupBoxHeight * lineYRatio + yOffset;
                                     composer.SetLineWidth(markupBoxHeight * .065);

@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using SkiaSharp;
 using System.Text;
 using PdfClown.Documents.Contents.Scanner;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Tools
 {
@@ -102,98 +103,7 @@ namespace PdfClown.Tools
             public IList<ITextString> TextStrings => textStrings;
         }
 
-        /**
-          <summary>Text string.</summary>
-          <remarks>This is typically used to assemble contiguous raw text strings
-          laying on the same line.</remarks>
-        */
-        private class TextString : ITextString
-        {
-            private List<TextChar> textChars = new List<TextChar>();
-
-            public SKRect? Box
-            {
-                get
-                {
-                    SKRect? box = null;
-                    foreach (TextChar textChar in textChars)
-                    {
-                        if (!box.HasValue)
-                        { box = (SKRect?)textChar.Box; }
-                        else
-                        { box = SKRect.Union(box.Value, textChar.Box); }
-                    }
-                    return box;
-                }
-            }
-
-            public string Text
-            {
-                get
-                {
-                    StringBuilder textBuilder = new StringBuilder();
-                    foreach (TextChar textChar in textChars)
-                    { textBuilder.Append(textChar); }
-                    return textBuilder.ToString();
-                }
-            }
-
-            public List<TextChar> TextChars => textChars;
-
-            public override string ToString()
-            { return Text; }
-        }
-
-        /**
-          <summary>Text string position comparer.</summary>
-        */
-        private class TextStringPositionComparer<T> : IComparer<T>
-          where T : ITextString
-        {
-            #region static
-            /**
-              <summary>Gets whether the specified boxes lay on the same text line.</summary>
-            */
-            public static bool IsOnTheSameLine(SKRect box1, SKRect box2)
-            {
-                /*
-                  NOTE: In order to consider the two boxes being on the same line,
-                  we apply a simple rule of thumb: at least 25% of a box's height MUST
-                  lay on the horizontal projection of the other one.
-                */
-                double minHeight = Math.Min(box1.Height, box2.Height);
-                double yThreshold = minHeight * .75;
-                return ((box1.Top > box2.Top - yThreshold
-                    && box1.Top < box2.Bottom + yThreshold - minHeight)
-                  || (box2.Top > box1.Top - yThreshold
-                    && box2.Top < box1.Bottom + yThreshold - minHeight));
-            }
-            #endregion
-
-            #region dynamic
-            #region IComparer
-            public int Compare(
-              T textString1,
-              T textString2
-              )
-            {
-                SKRect box1 = textString1.Box.Value;
-                SKRect box2 = textString2.Box.Value;
-                if (IsOnTheSameLine(box1, box2))
-                {
-                    /*
-                      [FIX:55:0.1.3] In order not to violate the transitive condition, equivalence on x-axis
-                      MUST fall back on y-axis comparison.
-                    */
-                    int xCompare = box1.Left.CompareTo(box2.Left);
-                    if (xCompare != 0)
-                        return xCompare;
-                }
-                return box1.Top.CompareTo(box2.Top);
-            }
-            #endregion
-            #endregion
-        }
+       
         #endregion
 
         #region static
@@ -424,9 +334,7 @@ namespace PdfClown.Tools
           <param name="textStrings">Text strings to filter, grouped by source area.</param>
           <param name="areas">Graphic areas which text strings have to be matched to.</param>
         */
-        public IDictionary<SKRect?, IList<ITextString>> Filter(
-          IDictionary<SKRect?, IList<ITextString>> textStrings,
-          params SKRect[] areas)
+        public IDictionary<SKRect?, IList<ITextString>> Filter(IDictionary<SKRect?, IList<ITextString>> textStrings, params SKRect[] areas)
         {
             IDictionary<SKRect?, IList<ITextString>> filteredTextStrings = null;
             foreach (IList<ITextString> areaTextStrings in textStrings.Values)
@@ -467,26 +375,25 @@ namespace PdfClown.Tools
             {
                 IList<ITextString> filteredAreaTextStrings = new List<ITextString>();
                 filteredAreasTextStrings[area] = filteredAreaTextStrings;
-                SKRect toleratedArea = (areaTolerance != 0
-                  ? SKRect.Create(
+                var toleratedArea = (areaTolerance != 0
+                  ? new Quad(SKRect.Create(
                     area.Left - areaTolerance,
                     area.Top - areaTolerance,
                     area.Width + areaTolerance * 2,
-                    area.Height + areaTolerance * 2
-                    )
-                  : area);
+                    area.Height + areaTolerance * 2))
+                  : new Quad(area));
                 foreach (ITextString textString in textStrings)
                 {
-                    SKRect? textStringBox = textString.Box;
-                    if (toleratedArea.IntersectsWith(textStringBox.Value))
+                    var textStringQuad = textString.Quad;
+                    if (toleratedArea.IntersectsWith(textStringQuad.Value))
                     {
                         TextString filteredTextString = new TextString();
                         List<TextChar> filteredTextStringChars = filteredTextString.TextChars;
                         foreach (TextChar textChar in textString.TextChars)
                         {
-                            SKRect textCharBox = textChar.Box;
-                            if ((areaMode == AreaModeEnum.Containment && toleratedArea.Contains(textCharBox))
-                              || (areaMode == AreaModeEnum.Intersection && toleratedArea.IntersectsWith(textCharBox)))
+                            var textCharQuad = textChar.Quad;
+                            if ((areaMode == AreaModeEnum.Containment && toleratedArea.Contains(textCharQuad))
+                              || (areaMode == AreaModeEnum.Intersection && toleratedArea.IntersectsWith(textCharQuad)))
                             { filteredTextStringChars.Add(textChar); }
                         }
                         if (filteredTextStringChars.Count > 0)
@@ -579,7 +486,7 @@ namespace PdfClown.Tools
                 // Add a new text string in case of new line!
                 if (textString != null
                   && textString.TextChars.Count > 0
-                  && !TextStringPositionComparer<ITextString>.IsOnTheSameLine(textString.Box.Value, rawTextString.Box.Value))
+                  && !TextStringPositionComparer<ITextString>.IsOnTheSameLine(textString.Quad.Value, rawTextString.Quad.Value))
                 {
                     if (dehyphenated
                       && previousTextChar.Value == '-') // Hyphened word.
@@ -593,13 +500,12 @@ namespace PdfClown.Tools
                         textString.TextChars.Add(
                           new TextChar(
                             ' ',
-                            SKRect.Create(
-                              previousTextChar.Box.Right,
-                              previousTextChar.Box.Top,
+                            new Quad(SKRect.Create(
+                              previousTextChar.Quad.Right,
+                              previousTextChar.Quad.Top,
                               0,
-                              previousTextChar.Box.Height
-                              ),
-                            textStyle,
+                              previousTextChar.Quad.Height)),
+                            textString,
                             true
                             )
                           );
@@ -609,7 +515,7 @@ namespace PdfClown.Tools
                     previousTextChar = null;
                 }
                 if (textString == null)
-                { textStrings.Add(textString = new TextString()); }
+                { textStrings.Add(textString = new TextString { Context = rawTextString.Context, Style = rawTextString.Style }); }
 
                 textStyle = rawTextString.Style;
                 double spaceWidth = textStyle.GetWidth(' ') * .5;
@@ -626,29 +532,27 @@ namespace PdfClown.Tools
                         if (!textChar.Contains(' ')
                           && !previousTextChar.Contains(' '))
                         {
-                            float charSpace = textChar.Box.Left - previousTextChar.Box.Right;
+                            float charSpace = textChar.Quad.Left - previousTextChar.Quad.Right;
                             if (charSpace > spaceWidth)
                             {
                                 // Add synthesized space character!
                                 textString.TextChars.Add(
                                   previousTextChar = new TextChar(
                                     ' ',
-                                    SKRect.Create(
-                                      previousTextChar.Box.Right,
-                                      textChar.Box.Top,
+                                    new Quad(SKRect.Create(
+                                      previousTextChar.Quad.Right,
+                                      textChar.Quad.Top,
                                       charSpace,
-                                      textChar.Box.Height
-                                      ),
-                                    textStyle,
-                                    true
-                                    )
+                                      textChar.Quad.Height
+                                      )),
+                                    textString,
+                                    true)
                                   );
                             }
                         }
-                        else if (dehyphenating
-                          && previousTextChar.Contains(' '))
+                        else if (dehyphenating && previousTextChar.Contains(' '))
                         {
-                            textStrings.Add(textString = new TextString());
+                            textStrings.Add(textString = new TextString { Context = rawTextString.Context, Style = rawTextString.Style });
                             dehyphenating = false;
                         }
                     }

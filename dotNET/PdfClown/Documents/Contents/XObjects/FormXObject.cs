@@ -33,6 +33,7 @@ using PdfClown.Objects;
 
 using System;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
@@ -202,6 +203,14 @@ namespace PdfClown.Documents.Contents.XObjects
         public RotationEnum Rotation => RotationEnum.Downward;
 
         public int Rotate => 0;
+
+        public SKMatrix InitialMatrix => SKMatrix.MakeIdentity();
+        
+        public SKMatrix RotateMatrix => SKMatrix.MakeIdentity();
+
+        public SKMatrix TextMatrix => SKMatrix.MakeIdentity();
+
+        public List<ITextString> Strings { get; } = new List<ITextString>();
 
         #region IAppDataHolder
         public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.Header.Get<PdfDictionary>(PdfName.PieceInfo), this);

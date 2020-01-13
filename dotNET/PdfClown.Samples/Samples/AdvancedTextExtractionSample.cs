@@ -14,11 +14,9 @@ namespace PdfClown.Samples.CLI
       (font, font size, text color, text rendering mode, text bounding box, and so on) from a PDF document;
       text is automatically sorted and aggregated.</summary>
     */
-    public class AdvancedTextExtractionSample
-      : Sample
+    public class AdvancedTextExtractionSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
@@ -39,15 +37,9 @@ namespace PdfClown.Samples.CLI
                     IList<ITextString> textStrings = extractor.Extract(page)[TextExtractor.DefaultArea];
                     foreach (ITextString textString in textStrings)
                     {
-                        SKRect textStringBox = textString.Box.Value;
+                        var textStringQuad = textString.Quad.Value;
                         Console.WriteLine(
-                          "Text ["
-                            + "x:" + Math.Round(textStringBox.Left) + ","
-                            + "y:" + Math.Round(textStringBox.Top) + ","
-                            + "w:" + Math.Round(textStringBox.Width) + ","
-                            + "h:" + Math.Round(textStringBox.Height)
-                            + "]: " + textString.Text
-                            );
+                          $"Text [x:{Math.Round(textStringQuad.Left)},y:{Math.Round(textStringQuad.Top)},w:{Math.Round(textStringQuad.Width)},h:{Math.Round(textStringQuad.Height)}]: {textString.Text}");
                     }
                 }
             }

@@ -153,22 +153,7 @@ namespace PdfClown.Documents.Contents
         */
         public SKMatrix GetInitialCtm()
         {
-            SKMatrix initialCtm;
-            if (Scanner.ContentContext is FormXObject formObject)
-            {
-                var box = formObject.Box;
-                initialCtm = new SKMatrix { Values = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 } };
-                SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-box.Left, -box.Top));
-            }
-            else if (Scanner.RenderContext == null) // Device-independent.
-            {
-                initialCtm = SKMatrix.MakeIdentity(); // Identity.
-            }
-            else // Device-dependent.
-            {
-                initialCtm = GetInitialMatrix(Scanner.ContentContext, Scanner.CanvasSize);
-            }
-            return initialCtm;
+            return GetInitialMatrix(Scanner.ContentContext, Scanner.CanvasSize);
         }
 
         public static SKMatrix GetInitialMatrix(IContentContext contentContext, SKSize canvasSize)
@@ -183,6 +168,10 @@ namespace PdfClown.Documents.Contents
             SKMatrix initialCtm;
             var rotation = contentContext.Rotation;
             if (contentContext is colors.TilingPattern tiling)
+            {
+                initialCtm = SKMatrix.MakeIdentity();
+            }
+            else if (contentContext is FormXObject xObject)
             {
                 initialCtm = SKMatrix.MakeIdentity();
             }

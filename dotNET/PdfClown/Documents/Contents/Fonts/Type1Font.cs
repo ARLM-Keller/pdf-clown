@@ -130,7 +130,8 @@ namespace PdfClown.Documents.Contents.Fonts
             }
 #if DEBUG
             name = Regex.Replace(name, @"[\/?:*""><|]+", "", RegexOptions.Compiled);
-            System.IO.File.WriteAllBytes($"export_{name}.psc", bytes);
+            try { System.IO.File.WriteAllBytes($"export_{name}.psc", bytes); }
+            catch { }
             //if (typeface == null)
             //{
             //    using (var manifestStream = typeof(Type1Font).Assembly.GetManifestResourceStream(name + ".otf"))

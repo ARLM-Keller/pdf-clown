@@ -1,5 +1,5 @@
 ﻿/*
-  Copyright 2007-2015 Stefano Chizzolini. http://www.pdfclown.org
+  Copyright 2009-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,70 +23,41 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Objects;
-
-using System;
+using PdfClown.Documents.Contents;
 using System.Collections.Generic;
-using SkiaSharp;
 using System.Text;
 using PdfClown.Util.Math.Geom;
+using PdfClown.Documents.Contents.Scanner;
+using SkiaSharp;
 
-namespace PdfClown.Documents.Contents.Scanner
+namespace PdfClown.Tools
 {
     /**
-      <summary>Text string information.</summary>
-    */
-    public sealed class TextStringWrapper : GraphicsObjectWrapper<ShowText>, ITextString
+         <summary>Text string.</summary>
+         <remarks>This is typically used to assemble contiguous raw text strings
+         laying on the same line.</remarks>
+       */
+    public class TextString : ITextString
     {
-        public class ShowTextScanner : ShowText.IScanner
+        public static TextString Transform(ITextString rawTextString, SKMatrix transform, IContentContext contentContext)
         {
-            TextStringWrapper wrapper;
-
-            internal ShowTextScanner(TextStringWrapper wrapper)
-            { this.wrapper = wrapper; }
-
-            public void ScanChar(char textChar, Quad textCharQuad)
+            var textString = new TextString()
             {
-                wrapper.textChars.Add(
-                  new TextChar(textChar, textCharQuad, wrapper, false));
+                Context = contentContext,
+                Style = rawTextString.Style
+            };
+            foreach (var textChar in rawTextString.TextChars)
+            {
+                var quad = textChar.Quad;
+                quad.Transform(ref transform);
+                textString.TextChars.Add(new TextChar(textChar.Value, quad, textString, true));
             }
+            return textString;
         }
 
-        private TextStyle style;
-        private List<TextChar> textChars;
-        private string text;
-        private Quad? quad;
-
-        internal TextStringWrapper(ContentScanner scanner, bool scan = true) : base((ShowText)scanner.Current)
-        {
-            Context = scanner.ContentContext;
-            Context.Strings.Add(this);
-
-            textChars = new List<TextChar>();
-            {
-                GraphicsState state = scanner.State;
-                style = new TextStyle(
-                  state.Font,
-                  state.FontSize * state.TextState.Tm.ScaleY,
-                  state.RenderMode,
-                  state.StrokeColor,
-                  state.StrokeColorSpace,
-                  state.FillColor,
-                  state.FillColorSpace,
-                  state.Scale * state.TextState.Tm.ScaleX,
-                  state.TextState.Tm.ScaleY
-                  );
-                if (scan)
-                {
-                    BaseDataObject.Scan(
-                      state,
-                      new ShowTextScanner(this)
-                      );
-                }
-            }
-        }
-        
-        public override SKRect? Box => Quad?.GetBounds();
+        private List<TextChar> textChars = new List<TextChar>();
+        private Quad? quad = null;
+        private string text = null;
 
         public Quad? Quad
         {
@@ -106,12 +77,7 @@ namespace PdfClown.Documents.Contents.Scanner
             }
         }
 
-        /**
-          <summary>Gets the text style.</summary>
-        */
-        public TextStyle Style => style;
-
-        public String Text
+        public string Text
         {
             get
             {
@@ -128,9 +94,17 @@ namespace PdfClown.Documents.Contents.Scanner
 
         public List<TextChar> TextChars => textChars;
 
-        public IContentContext Context { get; }
+        public IContentContext Context { get; set; }
+
+        public TextStyle Style { get; set; }
 
         public override string ToString()
         { return Text; }
+
+        public void Invalidate()
+        {
+            text = null;
+            quad = null;
+        }
     }
 }

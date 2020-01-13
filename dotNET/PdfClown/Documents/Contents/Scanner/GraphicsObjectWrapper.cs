@@ -35,6 +35,10 @@ namespace PdfClown.Documents.Contents.Scanner
         internal static GraphicsObjectWrapper Get(ContentScanner scanner)
         {
             var obj = scanner.Current;
+            if (obj.Wrapper is GraphicsObjectWrapper exist)
+            {
+                return exist;
+            }
             if (obj is ShowText)
                 return new TextStringWrapper(scanner);
             else if (obj is Text)

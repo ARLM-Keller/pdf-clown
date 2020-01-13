@@ -77,6 +77,9 @@ namespace PdfClown.Viewer.WPF
                     case CursorType.Cross:
                         Control.Cursor = Cursors.Cross;
                         break;
+                    case CursorType.IBeam:
+                        Control.Cursor = Cursors.IBeam;
+                        break;
                 }
             }
         }

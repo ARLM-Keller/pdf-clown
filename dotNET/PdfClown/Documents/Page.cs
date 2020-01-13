@@ -503,8 +503,8 @@ namespace PdfClown.Documents
             get
             {
                 if (rotateMatrix == null)
-                {                    
-                    rotateMatrix = GraphicsState.GetRotationMatrix(Box,Rotate);
+                {
+                    rotateMatrix = GraphicsState.GetRotationMatrix(Box, Rotate);
                 }
                 return rotateMatrix.Value;
             }
@@ -530,6 +530,8 @@ namespace PdfClown.Documents
         { return AppData.Ensure(appName); }
 
         public DateTime? ModificationDate => (DateTime)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.LastModified]);
+
+        public List<ITextString> Strings { get; } = new List<ITextString>();
 
         public void Touch(PdfName appName)
         { Touch(appName, DateTime.Now); }

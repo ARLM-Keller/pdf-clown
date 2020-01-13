@@ -46,6 +46,7 @@ namespace PdfClown.Documents.Contents.Scanner
         protected GraphicsObjectWrapper(TDataObject baseDataObject)
         {
             this.baseDataObject = baseDataObject;
+            baseDataObject.Wrapper = this;
         }
         #endregion
 

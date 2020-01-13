@@ -93,10 +93,10 @@ namespace PdfClown.Samples.CLI
             {
                 Line = new FreeText.CalloutLine(
                     page,
-                    new SKPoint(250, 125),
+                    new SKPoint(100, 100),
                     new SKPoint(150, 125),
-                    new SKPoint(100, 100)
-                ),
+                    new SKPoint(250, 125)
+                    ),
                 Type = FreeText.TypeEnum.Callout,
                 LineEndStyle = LineEndStyleEnum.OpenArrow,
                 Border = new Border(1),
@@ -107,12 +107,11 @@ namespace PdfClown.Samples.CLI
             composer.ShowText("File attachment annotation:", new SKPoint(35, 135));
             new FileAttachment(
               page,
-              SKRect.Create(50, 150, 20, 20),
+              SKRect.Create(50, 150, 15, 20),
               "Text of the File attachment annotation",
               FileSpecification.Get(
                 EmbeddedFile.Get(document, GetResourcePath("images" + Path.DirectorySeparatorChar + "gnu.jpg")),
-                "happyGNU.jpg"
-                )
+                "happyGNU.jpg")
               )
             {
                 IconType = FileAttachment.IconTypeEnum.PaperClip,

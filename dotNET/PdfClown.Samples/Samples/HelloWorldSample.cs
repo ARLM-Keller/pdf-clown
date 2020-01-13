@@ -35,9 +35,7 @@ namespace PdfClown.Samples.CLI
         /**
           <summary>Populates a PDF file with contents.</summary>
         */
-        private void Populate(
-          Document document
-          )
+        private void Populate(Document document)
         {
             // 1. Add the page to the document!
             Page page = new Page(document); // Instantiates the page inside the document context.
@@ -56,10 +54,7 @@ namespace PdfClown.Samples.CLI
               -- see BlockComposer for more advanced uses (horizontal and vertical alignment, hyphenation,
               etc.).
             */
-            composer.ShowText(
-              "Hello World!",
-              new SKPoint(32, 48)
-              );
+            composer.ShowText("Hello World!", new SKPoint(32, 48));
 
             composer.SetLineWidth(.25);
             composer.SetLineCap(LineCapEnum.Round);
@@ -79,7 +74,7 @@ namespace PdfClown.Samples.CLI
                 XAlignmentEnum.Center,
                 YAlignmentEnum.Middle,
                 15
-                ).Points
+                ).GetPoints()
               );
             composer.Stroke();
 

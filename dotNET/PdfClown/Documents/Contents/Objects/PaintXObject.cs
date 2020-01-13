@@ -30,6 +30,7 @@ using PdfClown.Objects;
 using System.Collections.Generic;
 using SkiaSharp;
 using System;
+using PdfClown.Tools;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -120,13 +121,18 @@ namespace PdfClown.Documents.Contents.Objects
                 }
                 else if (xObject is xObjects.FormXObject formObject)
                 {
-                    var translate = SKMatrix.MakeTranslation(formObject.Box.Left, formObject.Box.Top);
-                    canvas.Concat(ref translate);
-                    var formMatrix = formObject.Matrix;
-                    canvas.Concat(ref formMatrix);
-
                     var picture = formObject.Render();
+
+                    var ctm = state.Ctm;
+                    SKMatrix.PreConcat(ref ctm, SKMatrix.MakeTranslation(formObject.Box.Left, formObject.Box.Top));
+                    SKMatrix.PreConcat(ref ctm, formObject.Matrix);
+                    canvas.SetMatrix(ctm);
                     canvas.DrawPicture(picture);
+
+                    foreach (var textString in formObject.Strings)
+                    {
+                        scanner.ContentContext.Strings.Add(TextString.Transform(textString, ctm, scanner.ContentContext));
+                    }
                 }
             }
             finally

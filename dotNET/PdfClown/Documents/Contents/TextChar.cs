@@ -23,8 +23,9 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
-
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents
@@ -37,30 +38,30 @@ namespace PdfClown.Documents.Contents
     {
         #region dynamic
         #region fields
-        private readonly SKRect box;
-        private readonly TextStyle style;
+        private readonly Quad quad;
+        private readonly ITextString textString;
         private readonly char value;
         private readonly bool virtual_;
         #endregion
 
         #region constructors
-        public TextChar(char value, SKRect box, TextStyle style, bool virtual_)
+        public TextChar(char value, Quad box, ITextString textString, bool virtual_)
         {
             this.value = value;
-            this.box = box;
-            this.style = style;
+            this.quad = box;
+            this.textString = textString;
             this.virtual_ = virtual_;
         }
         #endregion
 
         #region interface
         #region public
-        public SKRect Box => box;
+        public Quad Quad => quad;
 
         public bool Contains(char value)
         { return this.value == value; }
 
-        public TextStyle Style => style;
+        public TextStyle Style => TextString.Style;
 
         public override string ToString()
         { return Value.ToString(); }
@@ -68,6 +69,8 @@ namespace PdfClown.Documents.Contents
         public char Value => value;
 
         public bool Virtual => virtual_;
+
+        public ITextString TextString => textString;
         #endregion
         #endregion
         #endregion

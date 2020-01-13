@@ -90,8 +90,6 @@ namespace PdfClown.Documents.Contents
         */
         private IList<ContentObject> objects;
 
-        public xObjects.FormXObject FormXObject { get; }
-
         /**
 Parent level.
 */
@@ -155,7 +153,6 @@ Parent level.
         */
         public ContentScanner(xObjects::FormXObject formXObject, ContentScanner parentLevel)
         {
-            FormXObject = formXObject;
             this.parentLevel = parentLevel;
             objects =
                 contents = formXObject.Contents;
@@ -169,7 +166,6 @@ Parent level.
 
         public ContentScanner(xObjects::FormXObject formXObject, SKCanvas canvas, SKSize size)
         {
-            FormXObject = formXObject;
             objects =
                 contents = formXObject.Contents;
 
@@ -421,7 +417,6 @@ Parent level.
                 {
                     renderContext.DrawRect(SKRect.Create(renderSize), paint);
                 }
-
             }
 
             try

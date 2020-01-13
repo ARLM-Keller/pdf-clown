@@ -147,6 +147,12 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public bool Filled => filled;
 
+        /**
+          <summary>Gets whether the current path has to be stroked.</summary>
+        */
+        public bool Stroked => stroked;
+
+
         public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
@@ -162,80 +168,86 @@ namespace PdfClown.Documents.Contents.Objects
                 if (filled)
                 {
                     pathObject.FillType = fillMode.ToSkia();
-                    var paint = state.FillColorSpace.GetPaint(state.FillColor, state.FillAlpha);
-                    if ((state.BlendMode?.Count ?? 0) > 0)
+                    using (var paint = state.FillColorSpace.GetPaint(state.FillColor, state.FillAlpha))
                     {
-                        foreach (var mode in state.BlendMode)
+                        if ((state.BlendMode?.Count ?? 0) > 0)
                         {
-                            switch (mode)
+                            foreach (var mode in state.BlendMode)
                             {
-                                case BlendModeEnum.Multiply:
-                                    paint.BlendMode = SKBlendMode.Multiply;
-                                    break;
-                                case BlendModeEnum.Lighten:
-                                    paint.BlendMode = SKBlendMode.Lighten;
-                                    break;
-                                case BlendModeEnum.Luminosity:
-                                    paint.BlendMode = SKBlendMode.Luminosity;
-                                    break;
-                                case BlendModeEnum.Overlay:
-                                    paint.BlendMode = SKBlendMode.Overlay;
-                                    break;
-                                case BlendModeEnum.Normal:
-                                    paint.BlendMode = SKBlendMode.SrcOver;
-                                    break;
-                                case BlendModeEnum.ColorBurn:
-                                    paint.BlendMode = SKBlendMode.ColorBurn;
-                                    break;
-                                case BlendModeEnum.Screen:
-                                    paint.BlendMode = SKBlendMode.Screen;
-                                    break;
-                                case BlendModeEnum.Darken:
-                                    paint.BlendMode = SKBlendMode.Darken;
-                                    break;
-                                case BlendModeEnum.ColorDodge:
-                                    paint.BlendMode = SKBlendMode.ColorDodge;
-                                    break;
-                                case BlendModeEnum.Compatible:
-                                    paint.BlendMode = SKBlendMode.SrcOver;
-                                    break;
-                                case BlendModeEnum.HardLight:
-                                    paint.BlendMode = SKBlendMode.HardLight;
-                                    break;
-                                case BlendModeEnum.SoftLight:
-                                    paint.BlendMode = SKBlendMode.SoftLight;
-                                    break;
-                                case BlendModeEnum.Difference:
-                                    paint.BlendMode = SKBlendMode.Difference;
-                                    break;
-                                case BlendModeEnum.Exclusion:
-                                    paint.BlendMode = SKBlendMode.Exclusion;
-                                    break;
-                                case BlendModeEnum.Hue:
-                                    paint.BlendMode = SKBlendMode.Hue;
-                                    break;
-                                case BlendModeEnum.Saturation:
-                                    paint.BlendMode = SKBlendMode.Saturation;
-                                    break;
-                                case BlendModeEnum.Color:
-                                    paint.BlendMode = SKBlendMode.Color;
-                                    break;
+                                ApplyBlend(paint, mode);
                             }
                         }
+                        context.DrawPath(pathObject, paint);
                     }
-                    context.DrawPath(pathObject, paint);
                 }
                 if (stroked)
                 {
-                    context.DrawPath(pathObject, GetStroke(state));
+                    using (var paint = GetStroke(state))
+                    {
+                        context.DrawPath(pathObject, paint);
+                    }
                 }
             }
         }
 
-        /**
-          <summary>Gets whether the current path has to be stroked.</summary>
-        */
-        public bool Stroked => stroked;
+        private static void ApplyBlend(SKPaint paint, BlendModeEnum mode)
+        {
+            switch (mode)
+            {
+                case BlendModeEnum.Multiply:
+                    paint.BlendMode = SKBlendMode.Multiply;
+                    break;
+                case BlendModeEnum.Lighten:
+                    paint.BlendMode = SKBlendMode.Lighten;
+                    break;
+                case BlendModeEnum.Luminosity:
+                    paint.BlendMode = SKBlendMode.Luminosity;
+                    break;
+                case BlendModeEnum.Overlay:
+                    paint.BlendMode = SKBlendMode.Overlay;
+                    break;
+                case BlendModeEnum.Normal:
+                    paint.BlendMode = SKBlendMode.SrcOver;
+                    break;
+                case BlendModeEnum.ColorBurn:
+                    paint.BlendMode = SKBlendMode.ColorBurn;
+                    break;
+                case BlendModeEnum.Screen:
+                    paint.BlendMode = SKBlendMode.Screen;
+                    break;
+                case BlendModeEnum.Darken:
+                    paint.BlendMode = SKBlendMode.Darken;
+                    break;
+                case BlendModeEnum.ColorDodge:
+                    paint.BlendMode = SKBlendMode.ColorDodge;
+                    break;
+                case BlendModeEnum.Compatible:
+                    paint.BlendMode = SKBlendMode.SrcOver;
+                    break;
+                case BlendModeEnum.HardLight:
+                    paint.BlendMode = SKBlendMode.HardLight;
+                    break;
+                case BlendModeEnum.SoftLight:
+                    paint.BlendMode = SKBlendMode.SoftLight;
+                    break;
+                case BlendModeEnum.Difference:
+                    paint.BlendMode = SKBlendMode.Difference;
+                    break;
+                case BlendModeEnum.Exclusion:
+                    paint.BlendMode = SKBlendMode.Exclusion;
+                    break;
+                case BlendModeEnum.Hue:
+                    paint.BlendMode = SKBlendMode.Hue;
+                    break;
+                case BlendModeEnum.Saturation:
+                    paint.BlendMode = SKBlendMode.Saturation;
+                    break;
+                case BlendModeEnum.Color:
+                    paint.BlendMode = SKBlendMode.Color;
+                    break;
+            }
+        }
+
         #endregion
         #endregion
         #endregion

@@ -27,6 +27,7 @@ using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Objects;
 
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
@@ -74,5 +75,11 @@ namespace PdfClown.Documents.Contents
 
         int Rotate
         { get; }
+
+        SKMatrix InitialMatrix { get; }
+
+        SKMatrix RotateMatrix { get; }
+
+        List<ITextString> Strings { get; }
     }
 }

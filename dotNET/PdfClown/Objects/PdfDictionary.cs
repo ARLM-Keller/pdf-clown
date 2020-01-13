@@ -111,6 +111,7 @@ namespace PdfClown.Objects
             { this[entry.Key] = (PdfDirectObject)Include(entry.Value); }
             Updateable = true;
         }
+
         #endregion
 
         #region interface

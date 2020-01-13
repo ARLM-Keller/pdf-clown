@@ -70,6 +70,9 @@ namespace PdfClown.Viewer.UWP
                     case CursorType.Cross:
                         Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Cross, 0);
                         break;
+                    case CursorType.IBeam:
+                        Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
+                        break;
                 }
             }
         }

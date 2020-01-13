@@ -10,6 +10,7 @@
         Hand,
         Wait,
         ScrollAll,
-        Cross
+        Cross,
+        IBeam
     }
 }

@@ -54,8 +54,10 @@ namespace PdfClown.Objects
           <summary>Converts a PDF date literal into its corresponding date.</summary>
           <exception cref="PdfClown.Util.Parsers.ParseException">Thrown when date literal parsing fails.</exception>
         */
-        public static DateTime ToDate(string value)
+        public static DateTime? ToDate(string value)
         {
+            if (string.Equals(value, "D:", StringComparison.Ordinal))
+                return null;
             // 1. Normalization.
             StringBuilder dateBuilder = new StringBuilder();
             try

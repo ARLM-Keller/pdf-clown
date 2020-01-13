@@ -1007,10 +1007,7 @@ namespace PdfClown.Samples.CLI
             composer.Stroke();
         }
 
-        private void DrawFrame(
-          PrimitiveComposer composer,
-          SKPoint[] frameVertices
-          )
+        private void DrawFrame(PrimitiveComposer composer, SKPoint[] frameVertices)
         {
             composer.BeginLocalState();
             composer.SetLineWidth(0.2f);
@@ -1020,14 +1017,7 @@ namespace PdfClown.Samples.CLI
             composer.End();
         }
 
-        private void DrawText(
-          PrimitiveComposer composer,
-          string value,
-          SKPoint location,
-          XAlignmentEnum xAlignment,
-          YAlignmentEnum yAlignment,
-          float rotation
-          )
+        private void DrawText(PrimitiveComposer composer, string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, float rotation)
         {
             // Show the anchor point!
             DrawCross(composer, location);
@@ -1045,10 +1035,7 @@ namespace PdfClown.Samples.CLI
             composer.End();
 
             // Draw the frame binding the shown text!
-            DrawFrame(
-              composer,
-              textFrame.Points
-              );
+            DrawFrame(composer, textFrame.GetPoints());
 
             composer.BeginLocalState();
             composer.SetFont(composer.State.Font, 8);

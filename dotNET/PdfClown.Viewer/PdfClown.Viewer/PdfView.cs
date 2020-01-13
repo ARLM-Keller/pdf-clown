@@ -357,23 +357,23 @@ namespace PdfClown.Viewer
                                 }
                             }
                         }
-                        //temp
-                        {
-                            try
-                            {
-                                foreach (var textString in pdfPicture.Page.Strings)
-                                {
-                                    foreach (var textChar in textString.TextChars)
-                                    {
-                                        canvas.DrawPoints(SKPointMode.Polygon, textChar.Quad.GetPoints(), paintRed);
-                                    }
-                                }
-                            }
-                            catch
-                            {
+                        ////temp
+                        //{
+                        //    try
+                        //    {
+                        //        foreach (var textString in pdfPicture.Page.Strings)
+                        //        {
+                        //            foreach (var textChar in textString.TextChars)
+                        //            {
+                        //                canvas.DrawPoints(SKPointMode.Polygon, textChar.Quad.GetPoints(), paintRed);
+                        //            }
+                        //        }
+                        //    }
+                        //    catch
+                        //    {
 
-                            }
-                        }
+                        //    }
+                        //}
                         canvas.Restore();
                     }
                 }

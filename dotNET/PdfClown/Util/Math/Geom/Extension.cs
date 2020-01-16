@@ -30,6 +30,20 @@ namespace PdfClown.Util.Math.Geom
 {
     public static class Extension
     {
+        public static float Cross(this SKPoint u, SKPoint v)
+        {
+            return u.X * v.Y - u.Y * v.X;
+        }
+
+        public static SKPoint GetPerp(this SKPoint a, float v, bool xbasis = true)
+        {
+            var b = xbasis 
+                ? SKPoint.Normalize(new SKPoint(a.Y == 0 ? 0 : v, a.Y == 0 ? v : -(a.X * v) / a.Y))
+                : SKPoint.Normalize(new SKPoint(a.X == 0 ? v : -(a.Y * v) / a.X, a.X == 0 ? 0 : v));
+            var abs = System.Math.Abs(v);
+            return new SKPoint(b.X * abs, b.Y * abs);
+        }
+
         public static void AddOpenArrow(this SKPath path, SKPoint point, SKPoint normal)
         {
             var matrix1 = SKMatrix.MakeRotationDegrees(35);
@@ -67,18 +81,20 @@ namespace PdfClown.Util.Math.Geom
         {
             if (point.X < rectangle.Left)
             {
-                //rectangle.Width += (rectangle.X - point.X);
                 rectangle.Left = point.X;
             }
             else if (point.X > rectangle.Right)
-            { rectangle.Right = point.X; }
+            {
+                rectangle.Right = point.X;
+            }
             if (point.Y < rectangle.Top)
             {
-                //rectangle.Height += (rectangle.Y - point.Y);
                 rectangle.Top = point.Y;
             }
             else if (point.Y > rectangle.Bottom)
-            { rectangle.Bottom = point.Y; }
+            {
+                rectangle.Bottom = point.Y;
+            }
         }
 
         public static SKPoint Center(this SKRect rectangle)

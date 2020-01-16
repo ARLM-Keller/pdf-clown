@@ -3,12 +3,14 @@ using PdfClown.Documents.Contents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Files;
 using PdfClown.Tools;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms;
@@ -61,7 +63,10 @@ namespace PdfClown.Viewer
         private SKPoint CurrentMoveLocation;
         private SKPoint? PressedCursorLocation;
         private SKMatrix InvertPictureMatrix;
-        private SKPoint CurrentPictureLocation;
+        private SKPoint CurrentPointerLocation;
+        private string selectedString;
+        private Quad? selectedQuad;
+        private TextChar startSelectionChar;
 
         public PdfView()
         {
@@ -178,6 +183,47 @@ namespace PdfClown.Viewer
         public string TempFilePath { get; private set; }
         public List<TextChar> TextSelection { get; private set; } = new List<TextChar>();
 
+        public Quad? SelectedQuad
+        {
+            get
+            {
+                if (selectedQuad == null)
+                {
+                    foreach (TextChar textChar in TextSelection)
+                    {
+                        if (!selectedQuad.HasValue)
+                        { selectedQuad = textChar.Quad; }
+                        else
+                        { selectedQuad = Quad.Union(selectedQuad.Value, textChar.Quad); }
+                    }
+                }
+                return selectedQuad;
+            }
+        }
+
+        public string SelectedString
+        {
+            get
+            {
+                if (selectedString == null)
+                {
+                    var textBuilder = new StringBuilder();
+                    TextChar prevTextChar = null;
+                    foreach (TextChar textChar in TextSelection)
+                    {
+                        if (prevTextChar != null && prevTextChar.TextString != textChar.TextString)
+                        {
+                            textBuilder.Append(' ');
+                        }
+                        textBuilder.Append(textChar.Value);
+                        prevTextChar = textChar;
+                    }
+                    selectedString = textBuilder.ToString();
+                }
+                return selectedString;
+            }
+        }
+
         public event EventHandler<EventArgs> TextSelectionChanged;
 
         public event EventHandler<EventArgs> DragComplete;
@@ -216,6 +262,17 @@ namespace PdfClown.Viewer
                 SelectedMarkup = null;
             else if (newValue is Markup markup)
                 SelectedMarkup = markup;
+            if (newValue != null)
+            {
+                if (newValue.Page != null)
+                {
+                    var picture = GetPicture(newValue.Page);
+                    if (picture != null && !picture.Annotations.Contains(newValue))
+                    {
+                        picture.Annotations.Add(newValue);
+                    }
+                }
+            }
             SelectedAnnotationChanged?.Invoke(this, EventArgs.Empty);
             InvalidateSurface();
         }
@@ -259,12 +316,12 @@ namespace PdfClown.Viewer
             }
             else
             {
-                if (Dragging.Page != null)
+                if (newValue.Page != null)
                 {
-                    var picture = GetPicture(Dragging.Page);
-                    if (picture != null && !picture.Annotations.Contains(Dragging))
+                    var picture = GetPicture(newValue.Page);
+                    if (picture != null && !picture.Annotations.Contains(newValue))
                     {
-                        picture.Annotations.Add(Dragging);
+                        picture.Annotations.Add(newValue);
                     }
                 }
             }
@@ -495,7 +552,7 @@ namespace PdfClown.Viewer
             CurrentPictureMatrix = CurrentViewMatrix;
             SKMatrix.PreConcat(ref CurrentPictureMatrix, CurrentPicture.Matrix);
             CurrentPictureMatrix.TryInvert(out InvertPictureMatrix);
-            CurrentPictureLocation = InvertPictureMatrix.MapPoint(e.Location);
+            CurrentPointerLocation = InvertPictureMatrix.MapPoint(e.Location);
             //SKMatrix.PreConcat(ref CurrentPictureMatrix, CurrentPicture.InitialMatrix);
             if (CurrentPoint != null)
             {
@@ -528,6 +585,10 @@ namespace PdfClown.Viewer
                     return;
                 }
             }
+            if (OnTouchText(picture, e))
+            {
+                return;
+            }
             foreach (var annotation in CurrentPicture.Annotations)
             {
                 if (!annotation.Visible)
@@ -540,10 +601,6 @@ namespace PdfClown.Viewer
                     OnTouchAnnotation(annotation, e);
                     return;
                 }
-            }
-            if (OnTouchText(picture, e))
-            {
-                return;
             }
             if (e.ActionType == SKTouchAction.Released)
             {
@@ -567,37 +624,66 @@ namespace PdfClown.Viewer
             {
                 foreach (var textChar in textString.TextChars)
                 {
-                    if (textChar.Quad.GetBounds().Contains(CurrentPictureLocation))
+                    if (textChar.Quad.Contains(CurrentPointerLocation))
                     {
                         Cursor = CursorType.IBeam;
-                        if (e.MouseButton == SKMouseButton.Left)
+                        if (e.ActionType == SKTouchAction.Pressed && e.MouseButton == SKMouseButton.Left)
                         {
-                            if (e.ActionType == SKTouchAction.Pressed)
-                            {
-                                TextSelection.Clear();
-                                TextSelection.Add(textChar);
-                                OnTextSelectionChanged();
-                            }
-                            else if (e.ActionType == SKTouchAction.Moved)
-                            {
-                                if (!TextSelection.Contains(textChar))
-                                    TextSelection.Add(textChar);
-                                OnTextSelectionChanged();
-                            }
+                            TextSelection.Clear();
+                            startSelectionChar = textChar;
+                            TextSelection.Add(textChar);
+                            OnTextSelectionChanged();
                         }
                         textSelectionChanged = true;
-                    }
-                    else if (textSelectionChanged)
-                    {
                         break;
                     }
                 }
             }
+            if (e.ActionType == SKTouchAction.Moved && e.MouseButton == SKMouseButton.Left && startSelectionChar != null)
+            {
+                var firstCharIndex = startSelectionChar.TextString.TextChars.IndexOf(startSelectionChar);
+                var firstString = startSelectionChar.TextString;
+                var firstStringIndex = picture.Page.Strings.IndexOf(firstString);
+                var firstMiddle = startSelectionChar.Quad.Middle.Value;
+                var line = new SKLine(firstMiddle, CurrentPointerLocation);
+                TextSelection.Clear();
+                if (startSelectionChar.Quad.Contains(line.a) && startSelectionChar.Quad.Contains(line.b))
+                {
+                    TextSelection.Add(startSelectionChar);
+                }
+                else
+                {
+                    for (int i = firstStringIndex == 0 ? 0 : firstStringIndex - 1; i < picture.Page.Strings.Count; i++)
+                    {
+                        var textString = picture.Page.Strings[i];
+                        foreach (var textChar in textString.TextChars)
+                        {
+                            if (SKLine.FindIntersection(line, textChar.Quad, true) != null)
+                            {
+                                TextSelection.Add(textChar);
+                            }
+                            else if (TextSelection.Count > 1)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+                OnTextSelectionChanged();
+                textSelectionChanged = true;
+            }
+            if (e.ActionType == SKTouchAction.Released)
+            {
+                startSelectionChar = null;
+            }
+
             return textSelectionChanged;
         }
 
         private void OnTextSelectionChanged()
         {
+            selectedQuad = null;
+            selectedString = null;
             InvalidateSurface();
             TextSelectionChanged?.Invoke(this, EventArgs.Empty);
         }

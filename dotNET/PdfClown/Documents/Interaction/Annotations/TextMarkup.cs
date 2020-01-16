@@ -120,7 +120,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         #region static
         #region fields
         private static readonly PdfName HighlightExtGStateName = new PdfName("highlight");
-        private List<Quad> markupBoxes;
+        private List<Quad> markupBoxes = new List<Quad>();
         #endregion
 
         #region interface
@@ -185,7 +185,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get
             {
-                markupBoxes = new List<Quad>();
+
                 PdfArray quadPointsObject = (PdfArray)BaseDataObject[PdfName.QuadPoints];
                 if (quadPointsObject != null)
                 {
@@ -292,14 +292,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         private void RefreshAppearance()
         {
             FormXObject normalAppearance;
-            SKRect box = Wrap<Objects.Rectangle>(BaseDataObject[PdfName.Rect]).ToRectangleF();
+            SKRect box = Rect;
             {
                 AppearanceStates normalAppearances = Appearance.Normal;
                 normalAppearance = normalAppearances[null];
                 if (normalAppearance != null)
                 {
                     normalAppearance.Box = box;
-                    normalAppearance.BaseDataObject.Body.SetLength(0);
+                    normalAppearance.BaseDataObject.Body.Clear();
+                    normalAppearance.ClearContents();
                 }
                 else
                 { normalAppearances[null] = normalAppearance = new FormXObject(Document, box); }
@@ -307,7 +308,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
             PrimitiveComposer composer = new PrimitiveComposer(normalAppearance);
             {
-                float yOffset = box.Height - Page.Box.Height;
+                var matrix = SKMatrix.MakeTranslation(0, box.Height - Page.Size.Height);
                 MarkupTypeEnum markupType = MarkupType;
                 switch (markupType)
                 {
@@ -331,25 +332,25 @@ namespace PdfClown.Documents.Interaction.Annotations
                             composer.ApplyState(defaultExtGState);
                             composer.SetFillColor(Color);
                             {
-                                foreach (Quad markupBox in MarkupBoxes)
+                                foreach (Quad markup in MarkupBoxes)
                                 {
-                                    SKPoint[] points = markupBox.GetPoints();
-                                    float markupBoxHeight = points[3].Y - points[0].Y;
-                                    float markupBoxMargin = GetMarkupBoxMargin(markupBoxHeight);
+                                    var markupBox = markup;
+                                    markupBox.Transform(ref matrix);
+                                    var sign = Math.Sign((markupBox.BottomLeft - markupBox.TopLeft).Y);
+                                    sign = sign == 0 ? -1 : sign;
+                                    float markupBoxHeight = markupBox.Height;
+                                    float markupBoxMargin = GetMarkupBoxMargin(markupBoxHeight) * sign;
+
                                     composer.DrawCurve(
-                                      new SKPoint(points[3].X, points[3].Y + yOffset),
-                                      new SKPoint(points[0].X, points[0].Y + yOffset),
-                                      new SKPoint(points[3].X - markupBoxMargin, points[3].Y - markupBoxMargin + yOffset),
-                                      new SKPoint(points[0].X - markupBoxMargin, points[0].Y + markupBoxMargin + yOffset)
-                                      );
-                                    composer.DrawLine(
-                                      new SKPoint(points[1].X, points[1].Y + yOffset)
-                                      );
+                                      markupBox.BottomLeft,
+                                      markupBox.TopLeft,
+                                      GetMarginPoint(markupBox.TopLeft, markupBox.BottomLeft, -markupBoxMargin),
+                                      GetMarginPoint(markupBox.BottomLeft, markupBox.TopLeft, -markupBoxMargin));
+                                    composer.DrawLine(markupBox.TopRight);
                                     composer.DrawCurve(
-                                      new SKPoint(points[2].X, points[2].Y + yOffset),
-                                      new SKPoint(points[1].X + markupBoxMargin, points[1].Y + markupBoxMargin + yOffset),
-                                      new SKPoint(points[2].X + markupBoxMargin, points[2].Y - markupBoxMargin + yOffset)
-                                      );
+                                      markupBox.BottomRight,
+                                      GetMarginPoint(markupBox.BottomRight, markupBox.TopRight, markupBoxMargin),
+                                      GetMarginPoint(markupBox.TopRight, markupBox.BottomRight, markupBoxMargin));
                                     composer.Fill();
                                 }
                             }
@@ -361,23 +362,35 @@ namespace PdfClown.Documents.Interaction.Annotations
                             composer.SetLineCap(LineCapEnum.Round);
                             composer.SetLineJoin(LineJoinEnum.Round);
                             {
-                                foreach (Quad markupBox in MarkupBoxes)
+                                foreach (Quad markup in MarkupBoxes)
                                 {
-                                    SKPoint[] points = markupBox.GetPoints();
-                                    float markupBoxHeight = points[3].Y - points[0].Y;
+                                    var markupBox = markup;
+                                    markupBox.Transform(ref matrix);
+                                    var sign = Math.Sign((markupBox.BottomLeft - markupBox.TopLeft).Y);
+                                    sign = sign == 0 ? 1 : sign;
+                                    float markupBoxHeight = markupBox.Height;
+                                    float markupBoxWidth = markupBox.Width;
                                     float lineWidth = markupBoxHeight * .05f;
                                     float step = markupBoxHeight * .125f;
-                                    float boxXOffset = points[3].X;
-                                    float boxYOffset = points[3].Y + yOffset - lineWidth;
-                                    bool phase = false;
+                                    float length = (float)Math.Sqrt(Math.Pow(step, 2) * 2);
+                                    var bottomUp = SKPoint.Normalize(markupBox.TopLeft - markupBox.BottomLeft);
+                                    bottomUp = new SKPoint(bottomUp.X * lineWidth, bottomUp.Y * lineWidth);
+                                    var startPoint = markupBox.BottomLeft + bottomUp;
+                                    var leftRight = SKPoint.Normalize(markupBox.BottomRight - markupBox.BottomLeft);
+                                    leftRight = new SKPoint(leftRight.X * step, leftRight.Y * step);
+                                    var leftRightPerp = leftRight.GetPerp(step * sign);
+                                    var stepPoint = startPoint + leftRight + leftRightPerp;
+                                    bool phase = true;
                                     composer.SetLineWidth(lineWidth);
-                                    for (float x = 0, xEnd = points[2].X - boxXOffset; x < xEnd || !phase; x += step)
+                                    composer.StartPath(startPoint);
+                                    startPoint += leftRight;
+                                    var x = 0F;
+                                    while (x < markupBoxWidth)
                                     {
-                                        SKPoint point = new SKPoint(x + boxXOffset, (phase ? -step : 0) + boxYOffset);
-                                        if (x == 0)
-                                        { composer.StartPath(point); }
-                                        else
-                                        { composer.DrawLine(point); }
+                                        composer.DrawLine(phase ? stepPoint : startPoint);
+                                        startPoint += leftRight;
+                                        stepPoint += leftRight;
+                                        x += step;
                                         phase = !phase;
                                     }
                                 }
@@ -402,16 +415,16 @@ namespace PdfClown.Documents.Interaction.Annotations
                                     default:
                                         throw new NotImplementedException();
                                 }
-                                foreach (Quad markupBox in MarkupBoxes)
+                                foreach (Quad markup in MarkupBoxes)
                                 {
-                                    SKPoint[] points = markupBox.GetPoints();
-                                    float markupBoxHeight = points[3].Y - points[0].Y;
-                                    float boxYOffset = markupBoxHeight * lineYRatio + yOffset;
+                                    var markupBox = markup;
+                                    markupBox.Transform(ref matrix);
+                                    float markupBoxHeight = markupBox.Height;
+                                    float boxYOffset = markupBoxHeight * lineYRatio;
+                                    var normal = SKPoint.Normalize(markupBox.BottomLeft - markupBox.TopLeft);
+                                    normal = new SKPoint(normal.X * boxYOffset, normal.Y * boxYOffset);
                                     composer.SetLineWidth(markupBoxHeight * .065);
-                                    composer.DrawLine(
-                                      new SKPoint(points[3].X, points[0].Y + boxYOffset),
-                                      new SKPoint(points[2].X, points[1].Y + boxYOffset)
-                                      );
+                                    composer.DrawLine(markupBox.TopLeft + normal, markupBox.TopRight + normal);
                                 }
                                 composer.Stroke();
                             }
@@ -422,6 +435,15 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
             composer.Flush();
+        }
+
+        private static SKPoint GetMarginPoint(SKPoint pointA, SKPoint pointB, float margin)
+        {
+            float absMargin = Math.Abs(margin);
+            var normal = SKPoint.Normalize(pointA - pointB);
+            normal = new SKPoint(normal.X * absMargin, normal.Y * absMargin);
+            var perp = normal.GetPerp(margin);
+            return (pointB + normal) + perp;
         }
 
         #endregion

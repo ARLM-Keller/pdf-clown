@@ -480,22 +480,12 @@ namespace PdfClown.Samples.CLI
             int step = (int)(pageSize.Height) / ((xAlignments.Length - 1) * yAlignments.Length + 1);
 
             BlockComposer blockComposer = new BlockComposer(composer);
-            SKRect frame = SKRect.Create(
-              30,
-              0,
-              pageSize.Width - 60,
-              step / 2
-              );
+            SKRect frame = SKRect.Create(30, 0, pageSize.Width - 60, step / 2);
             blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
             blockComposer.ShowText("Simple alignment");
             blockComposer.End();
 
-            frame = SKRect.Create(
-              30,
-              pageSize.Height - step / 2,
-              pageSize.Width - 60,
-              step / 2 - 10
-              );
+            frame = SKRect.Create(30, pageSize.Height - step / 2, pageSize.Width - 60, step / 2 - 10);
             blockComposer.Begin(frame, XAlignmentEnum.Left, YAlignmentEnum.Bottom);
             composer.SetFont(composer.State.Font, 10);
             blockComposer.ShowText(
@@ -508,8 +498,7 @@ namespace PdfClown.Samples.CLI
             int x = 30;
             int y = step;
             int alignmentIndex = 0;
-            foreach (XAlignmentEnum xAlignment
-              in (XAlignmentEnum[])Enum.GetValues(typeof(XAlignmentEnum)))
+            foreach (XAlignmentEnum xAlignment in (XAlignmentEnum[])Enum.GetValues(typeof(XAlignmentEnum)))
             {
                 /*
                   NOTE: As text shown through PrimitiveComposer has no bounding box constraining its extension,
@@ -519,20 +508,14 @@ namespace PdfClown.Samples.CLI
                 if (xAlignment.Equals(XAlignmentEnum.Justify))
                     continue;
 
-                foreach (YAlignmentEnum yAlignment
-                  in (YAlignmentEnum[])Enum.GetValues(typeof(YAlignmentEnum)))
+                foreach (YAlignmentEnum yAlignment in (YAlignmentEnum[])Enum.GetValues(typeof(YAlignmentEnum)))
                 {
                     if (alignmentIndex % 2 == 0)
                     {
                         composer.BeginLocalState();
                         composer.SetFillColor(BackColor);
                         composer.DrawRectangle(
-                          SKRect.Create(
-                            0,
-                            y - step / 2,
-                            pageSize.Width,
-                            step
-                            )
+                          SKRect.Create(0, y - step / 2, pageSize.Width, step)
                           );
                         composer.Fill();
                         composer.End();
@@ -568,8 +551,7 @@ namespace PdfClown.Samples.CLI
                 }
                 y = step;
                 rotation = 0;
-                foreach (XAlignmentEnum xAlignment
-                  in (XAlignmentEnum[])Enum.GetValues(typeof(XAlignmentEnum)))
+                foreach (XAlignmentEnum xAlignment in (XAlignmentEnum[])Enum.GetValues(typeof(XAlignmentEnum)))
                 {
                     /*
                       NOTE: As text shown through PrimitiveComposer has no bounding box constraining its extension,
@@ -579,8 +561,7 @@ namespace PdfClown.Samples.CLI
                     if (xAlignment.Equals(XAlignmentEnum.Justify))
                         continue;
 
-                    foreach (YAlignmentEnum yAlignment
-                      in (YAlignmentEnum[])Enum.GetValues(typeof(YAlignmentEnum)))
+                    foreach (YAlignmentEnum yAlignment in (YAlignmentEnum[])Enum.GetValues(typeof(YAlignmentEnum)))
                     {
                         float startArcAngle = 0;
                         switch (xAlignment)
@@ -595,24 +576,12 @@ namespace PdfClown.Samples.CLI
                         }
 
                         composer.DrawArc(
-                          SKRect.Create(
-                            x - 10,
-                            y - 10,
-                            20,
-                            20
-                            ),
+                          SKRect.Create(x - 10, y - 10, 20, 20),
                           startArcAngle,
                           startArcAngle + rotation
                           );
 
-                        DrawText(
-                          composer,
-                          "PDF Clown",
-                          new SKPoint(x, y),
-                          xAlignment,
-                          yAlignment,
-                          rotation
-                          );
+                        DrawText(composer, "PDF Clown", new SKPoint(x, y), xAlignment, yAlignment, rotation);
                         y += step;
                         rotation += rotationStep;
                     }
@@ -991,19 +960,10 @@ namespace PdfClown.Samples.CLI
             composer.Flush();
         }
 
-        private void DrawCross(
-          PrimitiveComposer composer,
-          SKPoint center
-          )
+        private void DrawCross(PrimitiveComposer composer, SKPoint center)
         {
-            composer.DrawLine(
-              new SKPoint(center.X - 10, center.Y),
-              new SKPoint(center.X + 10, center.Y)
-              );
-            composer.DrawLine(
-              new SKPoint(center.X, center.Y - 10),
-              new SKPoint(center.X, center.Y + 10)
-              );
+            composer.DrawLine(new SKPoint(center.X - 10, center.Y), new SKPoint(center.X + 10, center.Y));
+            composer.DrawLine(new SKPoint(center.X, center.Y - 10), new SKPoint(center.X, center.Y + 10));
             composer.Stroke();
         }
 
@@ -1030,8 +990,7 @@ namespace PdfClown.Samples.CLI
               location,
               xAlignment,
               yAlignment,
-              rotation
-              );
+              rotation);
             composer.End();
 
             // Draw the frame binding the shown text!
@@ -1042,10 +1001,7 @@ namespace PdfClown.Samples.CLI
             // Draw the rotation degrees!
             composer.ShowText(
               "(" + ((int)rotation) + " degrees)",
-              new SKPoint(
-                location.X + 70,
-                location.Y
-                ),
+              new SKPoint(location.X + 70, location.Y),
               XAlignmentEnum.Left,
               YAlignmentEnum.Middle,
               0

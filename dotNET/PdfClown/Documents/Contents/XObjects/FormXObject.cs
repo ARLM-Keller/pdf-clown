@@ -174,6 +174,12 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public ContentWrapper Contents => ContentWrapper.Wrap(BaseObject, this);
 
+        public void ClearContents()
+        {
+            BaseObject.ContentsWrapper = null;
+            InvalidatePicture();
+        }
+
         public SKPicture Render()
         {
             if (picture != null)
@@ -189,6 +195,7 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public void Render(SKCanvas context, SKSize size)
         {
+            ClearContents();
             var scanner = new ContentScanner(this, context, size);
             scanner.ClearContext = false;
             scanner.Render(context, size);
@@ -205,7 +212,7 @@ namespace PdfClown.Documents.Contents.XObjects
         public int Rotate => 0;
 
         public SKMatrix InitialMatrix => SKMatrix.MakeIdentity();
-        
+
         public SKMatrix RotateMatrix => SKMatrix.MakeIdentity();
 
         public SKMatrix TextMatrix => SKMatrix.MakeIdentity();
@@ -236,6 +243,12 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public XObject ToXObject(Document context)
         { return (XObject)Clone(context); }
+
+        internal void InvalidatePicture()
+        {
+            picture?.Dispose();
+            picture = null;
+        }
         #endregion
         #endregion
         #endregion

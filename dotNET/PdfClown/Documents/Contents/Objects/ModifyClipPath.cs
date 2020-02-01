@@ -80,7 +80,7 @@ namespace PdfClown.Documents.Contents.Objects
             if (pathObject != null)
             {
                 pathObject.FillType = clipMode.ToSkia();
-                scanner.RenderContext.ClipPath(pathObject, SKClipOperation.Intersect);
+                scanner.RenderContext.ClipPath(pathObject, SKClipOperation.Intersect, true);
             }
         }
         #endregion

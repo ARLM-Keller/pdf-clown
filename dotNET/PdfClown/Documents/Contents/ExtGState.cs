@@ -101,9 +101,40 @@ namespace PdfClown.Documents.Contents
                 { state.BlendMode = BlendMode; }
                 else if (parameterName.Equals(PdfName.Type))
                 { }
+                else if (parameterName.Equals(PdfName.SMask))
+                {
+                    state.SMask = SMask;
+                }
                 //TODO:extend supported parameters!!!
             }
         }
+
+        [PDF(VersionEnum.PDF14)]
+        public PdfDictionary SMask
+        {
+            get
+            {
+                var sMask = BaseDataObject[PdfName.SMask];
+                if (sMask is PdfDictionary dict)
+                {
+                    return dict;
+                }
+                else if (sMask is PdfReference reference)
+                {
+                    return (PdfDictionary)reference.Resolve();
+                }
+                else if (sMask is PdfName name)
+                {
+                    return (PdfDictionary)BaseDataObject[name];
+                }
+                else
+                {
+                    throw new Exception($"Not Supported SMask: {sMask.GetType().Name}!");
+                }
+            }
+            set => BaseDataObject[PdfName.SMask] = value;
+        }
+
 
         /**
           <summary>Gets/Sets the blend mode to be used in the transparent imaging model [PDF:1.7:7.2.4].

@@ -145,6 +145,14 @@ namespace PdfClown.Documents.Contents.XObjects
                 ;
         }
 
+        public PdfDictionary Group
+        {
+            get
+            {
+                return (PdfDictionary)BaseDataObject.Header.Resolve(PdfName.Group);
+            }
+        }
+
         public override SKSize Size
         {
             get

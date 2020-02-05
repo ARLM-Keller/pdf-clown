@@ -36,8 +36,7 @@ namespace PdfClown.Documents.Interaction.Actions
       action [PDF:1.6:8.6.4].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class JavaScript
-      : Action
+    public sealed class JavaScript : Action
     {
         #region static
         #region interface
@@ -45,10 +44,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Gets the Javascript script from the specified base data object.</summary>
         */
-        internal static string GetScript(
-          PdfDictionary baseDataObject,
-          PdfName key
-          )
+        internal static string GetScript(PdfDictionary baseDataObject, PdfName key)
         {
             PdfDataObject scriptObject = baseDataObject.Resolve(key);
             if (scriptObject == null)
@@ -65,11 +61,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Sets the Javascript script into the specified base data object.</summary>
         */
-        internal static void SetScript(
-          PdfDictionary baseDataObject,
-          PdfName key,
-          string value
-          )
+        internal static void SetScript(PdfDictionary baseDataObject, PdfName key, string value)
         {
             PdfDataObject scriptObject = baseDataObject.Resolve(key);
             if (!(scriptObject is PdfStream) && value.Length > 256)
@@ -93,15 +85,12 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public JavaScript(
-          Document context,
-          string script
-          ) : base(context, PdfName.JavaScript)
+        public JavaScript(Document context, string script) 
+            : base(context, PdfName.JavaScript)
         { Script = script; }
 
-        internal JavaScript(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal JavaScript(PdfDirectObject baseObject) 
+            : base(baseObject)
         { }
         #endregion
 

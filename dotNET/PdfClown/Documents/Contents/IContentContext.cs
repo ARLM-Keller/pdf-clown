@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Objects;
 
@@ -81,5 +82,7 @@ namespace PdfClown.Documents.Contents
         SKMatrix RotateMatrix { get; }
 
         List<ITextString> Strings { get; }
+
+        TransparencyXObject Group { get; }
     }
 }

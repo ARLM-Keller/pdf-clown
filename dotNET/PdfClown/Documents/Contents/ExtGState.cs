@@ -25,7 +25,9 @@
 
 using PdfClown.Documents;
 using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Scanner;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 
 using System;
@@ -110,29 +112,10 @@ namespace PdfClown.Documents.Contents
         }
 
         [PDF(VersionEnum.PDF14)]
-        public PdfDictionary SMask
+        public SoftMask SMask
         {
-            get
-            {
-                var sMask = BaseDataObject[PdfName.SMask];
-                if (sMask is PdfDictionary dict)
-                {
-                    return dict;
-                }
-                else if (sMask is PdfReference reference)
-                {
-                    return (PdfDictionary)reference.Resolve();
-                }
-                else if (sMask is PdfName name)
-                {
-                    return (PdfDictionary)BaseDataObject[name];
-                }
-                else
-                {
-                    throw new Exception($"Not Supported SMask: {sMask.GetType().Name}!");
-                }
-            }
-            set => BaseDataObject[PdfName.SMask] = value;
+            get => SoftMask.WrapSoftMask(BaseDataObject[PdfName.SMask]);
+            set => BaseDataObject[PdfName.SMask] = value.BaseObject;
         }
 
 

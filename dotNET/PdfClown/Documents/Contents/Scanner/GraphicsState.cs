@@ -387,7 +387,7 @@ namespace PdfClown.Documents.Contents
 
         public double? StrokeAlpha { get; internal set; }
         public double? FillAlpha { get; internal set; }
-        public PdfDictionary SMask { get; internal set; }
+        public SoftMask SMask { get; internal set; }
 
         #endregion
 

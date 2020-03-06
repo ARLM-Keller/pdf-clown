@@ -102,6 +102,10 @@
       <Link>res\fonts\afm\ZapfDingbats.afm</Link>
       <LogicalName>fonts.afm.ZapfDingbats</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\..\main\res\pkg\fonts\cmap\Adobe-GB1-UCS2">
+      <Link>res\fonts\cmap\Adobe-GB1-UCS2</Link>
+      <LogicalName>fonts.cmap.Adobe-GB1-UCS2</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\..\main\res\pkg\fonts\cmap\Identity-H">
       <Link>res\fonts\cmap\Identity-H</Link>
       <LogicalName>fonts.cmap.Identity-H</LogicalName>

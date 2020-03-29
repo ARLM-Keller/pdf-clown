@@ -35,6 +35,7 @@ namespace PdfClown.Util.Math.Geom
     public struct Quad
     {
         #region static
+        public static readonly Quad Empty = new Quad(SKRect.Empty);
         #region interface
         #region public
         public static Quad Union(Quad value, Quad value2)

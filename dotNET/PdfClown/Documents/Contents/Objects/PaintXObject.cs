@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using SkiaSharp;
 using System;
 using PdfClown.Tools;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -110,7 +111,7 @@ namespace PdfClown.Documents.Contents.Objects
                         SKMatrix.PreConcat(ref imageMatrix, SKMatrix.MakeTranslation(0, -size.Height));
                         canvas.Concat(ref imageMatrix);
 
-                        if (state.SMask is object)
+                        if (state.SMask is SoftMask softMask)
                         {
                             using (var recorder = new SKPictureRecorder())
                             using (var recorderCanvas = recorder.BeginRecording(new SKRect(0, 0, image.Width, image.Height)))
@@ -119,7 +120,7 @@ namespace PdfClown.Documents.Contents.Objects
 
                                 using (var picture = recorder.EndRecording())
                                 {
-                                    ApplyMask(state, canvas, picture);
+                                    ApplyMask(softMask, canvas, picture);
                                 }
                             }
                         }
@@ -139,9 +140,9 @@ namespace PdfClown.Documents.Contents.Objects
                     canvas.SetMatrix(ctm);
 
 
-                    if (state.SMask is object)
+                    if (state.SMask is SoftMask softMask)
                     {
-                        ApplyMask(state, canvas, picture);
+                        ApplyMask(softMask, canvas, picture);
                     }
                     else
                     {
@@ -163,46 +164,57 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        private static void ApplyMask(GraphicsState state, SKCanvas canvas, SKPicture picture)
+        private static void ApplyMask(SoftMask softMask, SKCanvas canvas, SKPicture picture)
         {
-            var softMaskFormObject = state.SMask.Group;
-            var subtype = state.SMask.SubType;
+            var softMaskFormObject = softMask.Group;
+            var subtype = softMask.SubType;
             var isLuminosity = subtype.Equals(PdfName.Luminosity);
 
             var group = softMaskFormObject.Group;
             var isolated = group.Isolated;
             var knockout = group.Knockout;
-            var softMaskPicture = softMaskFormObject.Render();//state.SMask
+            var softMaskPicture = softMaskFormObject.Render(softMask);//
 
             var paint = new SKPaint();
-
             if (isLuminosity)
             {
                 paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
                 {
-                            0.33f, 0.33f, 0.33f, 0, 0,
-                            0.33f, 0.33f, 0.33f, 0, 0,
-                            0.33f, 0.33f, 0.33f, 0, 0,
-                            0.33f, 0.33f, 0.33f, 0, 0
+                    0.33f, 0.33f, 0.33f, 0, 0,
+                    0.33f, 0.33f, 0.33f, 0, 0,
+                    0.33f, 0.33f, 0.33f, 0, 0,
+                    0.33f, 0.33f, 0.33f, 0, 0
+                    //0.30f, 0.59f, 0.11f, 0, 0,
+                    //0.30f, 0.59f, 0.11f, 0, 0,
+                    //0.30f, 0.59f, 0.11f, 0, 0,
+                    //0.30f, 0.59f, 0.11f, 0, 0
                 });
             }
             else // alpha
             {
-                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
+                //paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
+                //{
+                //    0, 0, 0, 1, 0,
+                //    0, 0, 0, 1, 0,
+                //    0, 0, 0, 1, 0,
+                //    0, 0, 0, 1, 0
+                //});
+            }
+
+            using (var recorder = new SKPictureRecorder())
+            using (var subCanvas = recorder.BeginRecording(new SKRect(0, 0, softMaskFormObject.Size.Width, softMaskFormObject.Size.Height)))
+            {
+                //subCanvas.Clear(SKColors.Transparent);
+                subCanvas.DrawPicture(softMaskPicture, paint);
+                subCanvas.DrawPicture(picture, new SKPaint { BlendMode = SKBlendMode.SrcATop });
+                var subPicture = recorder.EndRecording();
+                canvas.DrawPicture(subPicture, new SKPaint
                 {
-                            0, 0, 0, 1, 0,
-                            0, 0, 0, 1, 0,
-                            0, 0, 0, 1, 0,
-                            0, 0, 0, 1, 0
+                    BlendMode = knockout ? SKBlendMode.SrcOver : SKBlendMode.Overlay
                 });
             }
 
-            canvas.DrawPicture(softMaskPicture, paint);
 
-            canvas.DrawPicture(picture, new SKPaint
-            {
-                BlendMode = knockout ? SKBlendMode.SrcOver : SKBlendMode.Overlay
-            });
         }
 
         #endregion

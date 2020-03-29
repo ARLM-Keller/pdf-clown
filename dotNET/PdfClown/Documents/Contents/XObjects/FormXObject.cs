@@ -192,8 +192,7 @@ namespace PdfClown.Documents.Contents.XObjects
             {
                 if (mask != null)
                 {
-                    var isLuminosity = mask.SubType.Equals(PdfName.Luminosity);
-                    if (!isLuminosity)
+                    if (!mask.SubType.Equals(PdfName.Luminosity))
                     {
                         // alpha
                         canvas.Clear(SKColors.Transparent);
@@ -208,6 +207,7 @@ namespace PdfClown.Documents.Contents.XObjects
                         canvas.Clear(backgroundColorSK);
                     }
                 }
+
                 Render(canvas, box.Size);
                 return picture = recorder.EndRecording();
             }

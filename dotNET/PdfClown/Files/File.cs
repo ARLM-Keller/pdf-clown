@@ -310,6 +310,7 @@ namespace PdfClown.Files
                         System.IO.File.Move(TempPath, path);
                     }
                 }
+                Document?.ClearCache();
             }
         }
 

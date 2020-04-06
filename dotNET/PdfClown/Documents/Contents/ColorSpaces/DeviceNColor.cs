@@ -34,8 +34,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       <summary>DeviceN color value [PDF:1.6:4.5.5].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class DeviceNColor
-      : LeveledColor
+    public sealed class DeviceNColor : LeveledColor
     {
         #region static
         #region interface

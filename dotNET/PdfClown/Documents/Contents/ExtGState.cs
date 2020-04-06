@@ -25,7 +25,9 @@
 
 using PdfClown.Documents;
 using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Scanner;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 
 using System;
@@ -101,9 +103,21 @@ namespace PdfClown.Documents.Contents
                 { state.BlendMode = BlendMode; }
                 else if (parameterName.Equals(PdfName.Type))
                 { }
+                else if (parameterName.Equals(PdfName.SMask))
+                {
+                    state.SMask = SMask;
+                }
                 //TODO:extend supported parameters!!!
             }
         }
+
+        [PDF(VersionEnum.PDF14)]
+        public SoftMask SMask
+        {
+            get => SoftMask.WrapSoftMask(BaseDataObject[PdfName.SMask]);
+            set => BaseDataObject[PdfName.SMask] = value.BaseObject;
+        }
+
 
         /**
           <summary>Gets/Sets the blend mode to be used in the transparent imaging model [PDF:1.7:7.2.4].

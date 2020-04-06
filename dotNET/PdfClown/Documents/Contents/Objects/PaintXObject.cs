@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using SkiaSharp;
 using System;
 using PdfClown.Tools;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -110,13 +111,23 @@ namespace PdfClown.Documents.Contents.Objects
                         SKMatrix.PreConcat(ref imageMatrix, SKMatrix.MakeTranslation(0, -size.Height));
                         canvas.Concat(ref imageMatrix);
 
-                        canvas.DrawBitmap(image, 0, 0, ImagePaint);
-                        //using (var surf = SKSurface.Create(canvas.GRContext, true, new SKImageInfo(image.Width, image.Height)))
-                        //{
-                        //    surf.Canvas.DrawBitmap(original, 0, 0);
-                        //    surf.Canvas.Flush();
-                        //    intermediates[i] = surf.Snapshot();
-                        //}
+                        if (state.SMask is SoftMask softMask)
+                        {
+                            using (var recorder = new SKPictureRecorder())
+                            using (var recorderCanvas = recorder.BeginRecording(new SKRect(0, 0, image.Width, image.Height)))
+                            {
+                                recorderCanvas.DrawBitmap(image, 0, 0, ImagePaint);
+
+                                using (var picture = recorder.EndRecording())
+                                {
+                                    ApplyMask(softMask, canvas, picture);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            canvas.DrawBitmap(image, 0, 0, ImagePaint);
+                        }
                     }
                 }
                 else if (xObject is xObjects.FormXObject formObject)
@@ -124,10 +135,22 @@ namespace PdfClown.Documents.Contents.Objects
                     var picture = formObject.Render();
 
                     var ctm = state.Ctm;
-                    SKMatrix.PreConcat(ref ctm, SKMatrix.MakeTranslation(formObject.Box.Left, formObject.Box.Top));
                     SKMatrix.PreConcat(ref ctm, formObject.Matrix);
+                    SKMatrix.PreConcat(ref ctm, SKMatrix.MakeTranslation(formObject.Box.Left, formObject.Box.Top));
                     canvas.SetMatrix(ctm);
-                    canvas.DrawPicture(picture);
+
+
+                    if (state.SMask is SoftMask softMask)
+                    {
+                        ApplyMask(softMask, canvas, picture);
+                    }
+                    else
+                    {
+                        canvas.DrawPicture(picture, new SKPaint
+                        {
+                            BlendMode = SKBlendMode.SrcOver
+                        });
+                    }
 
                     foreach (var textString in formObject.Strings)
                     {
@@ -138,6 +161,50 @@ namespace PdfClown.Documents.Contents.Objects
             finally
             {
                 canvas.Restore();
+            }
+        }
+
+        private static void ApplyMask(SoftMask softMask, SKCanvas canvas, SKPicture picture)
+        {
+            var softMaskFormObject = softMask.Group;
+            var subtype = softMask.SubType;
+            var isLuminosity = subtype.Equals(PdfName.Luminosity);
+
+            var group = softMaskFormObject.Group;
+            var isolated = group.Isolated;
+            var knockout = group.Knockout;
+            var softMaskPicture = softMaskFormObject.Render(softMask);//
+
+            var paint = new SKPaint();
+            if (isLuminosity)
+            {
+                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
+                {
+                    0.33f, 0.33f, 0.33f, 0, 0,
+                    0.33f, 0.33f, 0.33f, 0, 0,
+                    0.33f, 0.33f, 0.33f, 0, 0,
+                    0.33f, 0.33f, 0.33f, 0, 0
+                    //0.30f, 0.59f, 0.11f, 0, 0,
+                    //0.30f, 0.59f, 0.11f, 0, 0,
+                    //0.30f, 0.59f, 0.11f, 0, 0,
+                    //0.30f, 0.59f, 0.11f, 0, 0
+                });
+                paint.ImageFilter = SKImageFilter.CreatePicture(softMaskPicture);
+                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
+                canvas.DrawPicture(picture, paint);
+            }
+            else // alpha
+            {
+                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
+                {
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0
+                });
+                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
+                canvas.DrawPicture(softMaskPicture, paint);
+                canvas.DrawPicture(picture);
             }
         }
 

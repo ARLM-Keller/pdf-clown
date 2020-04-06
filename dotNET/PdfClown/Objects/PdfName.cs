@@ -371,6 +371,7 @@ namespace PdfClown.Objects
         public static readonly PdfName MediaPlayerInfo = new PdfName("MediaPlayerInfo");
         public static readonly PdfName MediaPlayParams = new PdfName("MediaPlayParams");
         public static readonly PdfName MediaScreenParams = new PdfName("MediaScreenParams");
+        public static readonly PdfName Mask = new PdfName("Mask");
         public static readonly PdfName Metadata = new PdfName("Metadata");
         public static readonly PdfName MH = new PdfName("MH");
         public static readonly PdfName Mic = new PdfName("Mic");
@@ -561,7 +562,9 @@ namespace PdfClown.Objects
         public static readonly PdfName TopSecret = new PdfName("TopSecret");
         public static readonly PdfName ToUnicode = new PdfName("ToUnicode");
         public static readonly PdfName TP = new PdfName("TP");
+        public static readonly PdfName TR = new PdfName("TR");
         public static readonly PdfName Trans = new PdfName("Trans");
+        public static readonly PdfName Transparency = new PdfName("Transparency");
         public static readonly PdfName TrimBox = new PdfName("TrimBox");
         public static readonly PdfName TrueType = new PdfName("TrueType");
         public static readonly PdfName Ttl = new PdfName("Ttl");
@@ -624,7 +627,7 @@ namespace PdfClown.Objects
 #pragma warning restore 0108
 
         private static readonly byte[] NamePrefixChunk = tokens::Encoding.Pdf.Encode(tokens.Keyword.NamePrefix);
-
+        
 
 
         #endregion

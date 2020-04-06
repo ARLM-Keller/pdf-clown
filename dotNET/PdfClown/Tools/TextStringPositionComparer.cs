@@ -61,8 +61,8 @@ namespace PdfClown.Tools
         #region IComparer
         public int Compare(T textString1, T textString2)
         {
-            var quad1 = textString1.Quad.Value;
-            var quad2 = textString2.Quad.Value;
+            var quad1 = textString1.Quad ?? Quad.Empty;
+            var quad2 = textString2.Quad ?? Quad.Empty;
             if (IsOnTheSameLine(quad1, quad2))
             {
                 /*

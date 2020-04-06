@@ -119,6 +119,7 @@ Parent level.
           <summary>Device-independent size of the graphics canvas.</summary>
         */
         private SKSize contextSize;
+        private SKPaint paintWhiteBackground = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill };
         #endregion
 
         #region constructors
@@ -413,10 +414,7 @@ Parent level.
             if (IsRootLevel() && ClearContext)
             {
                 renderContext.ClipRect(SKRect.Create(renderSize));
-                using (var paint = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill })
-                {
-                    renderContext.DrawRect(SKRect.Create(renderSize), paint);
-                }
+                renderContext.DrawRect(SKRect.Create(renderSize), paintWhiteBackground);
             }
 
             try

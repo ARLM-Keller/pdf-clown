@@ -55,7 +55,10 @@ namespace PdfClown.Objects
 
         #region dynamic
         #region constructors
-        private PdfBoolean(bool value)
+        public PdfBoolean() : this(false)
+        { }
+
+        public PdfBoolean(bool value)
         { RawValue = value; }
         #endregion
 

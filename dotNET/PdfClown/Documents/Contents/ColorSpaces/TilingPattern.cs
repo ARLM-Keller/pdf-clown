@@ -243,6 +243,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public DateTime? ModificationDate => (DateTime?)PdfSimpleObject<object>.GetValue(Dictionary[PdfName.LastModified]);
 
         public List<ITextString> Strings { get; } = new List<ITextString>();
+
+        public TransparencyXObject Group => throw new NotImplementedException();
         #endregion
         #endregion
         #endregion

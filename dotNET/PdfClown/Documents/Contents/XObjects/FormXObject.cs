@@ -145,6 +145,8 @@ namespace PdfClown.Documents.Contents.XObjects
                 ;
         }
 
+        public TransparencyXObject Group => Wrap<TransparencyXObject>(BaseDataObject.Header[PdfName.Group]);
+
         public override SKSize Size
         {
             get
@@ -180,7 +182,7 @@ namespace PdfClown.Documents.Contents.XObjects
             InvalidatePicture();
         }
 
-        public SKPicture Render()
+        public SKPicture Render(SoftMask mask = null)
         {
             if (picture != null)
                 return picture;
@@ -188,6 +190,24 @@ namespace PdfClown.Documents.Contents.XObjects
             using (var recorder = new SKPictureRecorder())
             using (var canvas = recorder.BeginRecording(new SKRect(0, 0, box.Size.Width, box.Size.Height)))//
             {
+                if (mask != null)
+                {
+                    if (!mask.SubType.Equals(PdfName.Luminosity))
+                    {
+                        // alpha
+                        canvas.Clear(SKColors.Transparent);
+                    }
+                    else
+                    {
+                        var backgroundColorArray = mask.BackColor;
+                        var colorSpace = Group.ColorSpace;
+                        var backgroundColor = colorSpace.GetColor(backgroundColorArray, null);
+                        var backgroundColorSK = colorSpace.GetColor(backgroundColor, 0);
+
+                        canvas.Clear(backgroundColorSK);
+                    }
+                }
+
                 Render(canvas, box.Size);
                 return picture = recorder.EndRecording();
             }

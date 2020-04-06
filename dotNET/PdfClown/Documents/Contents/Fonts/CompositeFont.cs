@@ -122,7 +122,13 @@ namespace PdfClown.Documents.Contents.Fonts
                     if (ucs2CMap.Count > 0)
                     {
                         foreach (KeyValuePair<ByteArray, int> cmapEntry in cmap)
-                        { codes[cmapEntry.Key] = ConvertUtils.ByteArrayToInt(ucs2CMap.GetKey(cmapEntry.Value).Data); }
+                        {
+                            var value = ucs2CMap.GetKey(cmapEntry.Value);
+                            if (value != null)
+                            {
+                                codes[cmapEntry.Key] = ConvertUtils.ByteArrayToInt(value.Data);
+                            }
+                        }
                     }
                 }
                 if (codes.Count == 0)

@@ -37,6 +37,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents
 {
@@ -361,6 +362,8 @@ namespace PdfClown.Documents
           <summary>Gets the page number.</summary>
         */
         public int Number => Index + 1;
+
+        public TransparencyXObject Group => Wrap<TransparencyXObject>(BaseDataObject[PdfName.Group]);
 
         /**
           <summary>Gets/Sets the page size.</summary>

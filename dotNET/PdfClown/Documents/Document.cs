@@ -324,6 +324,18 @@ namespace PdfClown.Documents
                 return Resolve<T>(namedBaseObject);
         }
 
+        internal void ClearCache()
+        {
+            foreach (var entry in Cache)
+            {
+                if (entry.Value is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+            Cache.Clear();
+        }
+
         /**
           <summary>Gets/Sets the default resource collection [PDF:1.6:3.6.2].</summary>
           <remarks>The default resource collection is used as last resort by every page that doesn't

@@ -1,8 +1,9 @@
-/*
-  Copyright 2006-2011 Stefano Chizzolini. http://www.pdfclown.org
+﻿/*
+  Copyright 2006-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
+    * Alexandr
 
   This file should be part of the source code distribution of "PDF Clown library" (the
   Program): see the accompanying README files for more info.
@@ -23,27 +24,37 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
 
-namespace PdfClown.Documents.Contents.ColorSpaces
+namespace PdfClown.Documents.Contents.XObjects
 {
-    /**
-      <summary>Device color space [PDF:1.6:4.5.3].</summary>
-    */
-    [PDF(VersionEnum.PDF11)]
-    public abstract class DeviceColorSpace : ColorSpace
+    public sealed class TransparencyXObject : GroupXObject
     {
-        #region dynamic
-        #region constructors
-        protected DeviceColorSpace(Document context, PdfName baseDataObject) 
+        public TransparencyXObject(Document context, PdfDictionary baseDataObject)
             : base(context, baseDataObject)
+        {
+            SubType = PdfName.Transparency;
+        }
+
+        public TransparencyXObject(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        protected DeviceColorSpace(PdfDirectObject baseObject) 
-            : base(baseObject)
-        { }
-        #endregion
-        #endregion
+        public ColorSpaces.ColorSpace ColorSpace
+        {
+            get => ColorSpaces.ColorSpace.Wrap(BaseDataObject[PdfName.CS]);
+            set => BaseDataObject[PdfName.CS] = value?.BaseObject;
+        }
+
+        public bool Isolated
+        {
+            get => ((PdfBoolean)BaseDataObject[PdfName.I])?.RawValue ?? false;
+            set => BaseDataObject[PdfName.I] = PdfBoolean.Get(value);
+        }
+
+        public bool Knockout
+        {
+            get => ((PdfBoolean)BaseDataObject[PdfName.K])?.RawValue ?? false;
+            set => BaseDataObject[PdfName.K] = PdfBoolean.Get(value);
+        }
     }
 }

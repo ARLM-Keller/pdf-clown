@@ -135,8 +135,8 @@ namespace PdfClown.Documents.Contents.Objects
                     var picture = formObject.Render();
 
                     var ctm = state.Ctm;
-                    SKMatrix.PreConcat(ref ctm, SKMatrix.MakeTranslation(formObject.Box.Left, formObject.Box.Top));
                     SKMatrix.PreConcat(ref ctm, formObject.Matrix);
+                    SKMatrix.PreConcat(ref ctm, SKMatrix.MakeTranslation(formObject.Box.Left, formObject.Box.Top));
                     canvas.SetMatrix(ctm);
 
 
@@ -189,32 +189,23 @@ namespace PdfClown.Documents.Contents.Objects
                     //0.30f, 0.59f, 0.11f, 0, 0,
                     //0.30f, 0.59f, 0.11f, 0, 0
                 });
+                paint.ImageFilter = SKImageFilter.CreatePicture(softMaskPicture);
+                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
+                canvas.DrawPicture(picture, paint);
             }
             else // alpha
             {
-                //paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-                //{
-                //    0, 0, 0, 1, 0,
-                //    0, 0, 0, 1, 0,
-                //    0, 0, 0, 1, 0,
-                //    0, 0, 0, 1, 0
-                //});
-            }
-
-            using (var recorder = new SKPictureRecorder())
-            using (var subCanvas = recorder.BeginRecording(new SKRect(0, 0, softMaskFormObject.Size.Width, softMaskFormObject.Size.Height)))
-            {
-                //subCanvas.Clear(SKColors.Transparent);
-                subCanvas.DrawPicture(softMaskPicture, paint);
-                subCanvas.DrawPicture(picture, new SKPaint { BlendMode = SKBlendMode.SrcATop });
-                var subPicture = recorder.EndRecording();
-                canvas.DrawPicture(subPicture, new SKPaint
+                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
                 {
-                    BlendMode = knockout ? SKBlendMode.SrcOver : SKBlendMode.Overlay
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0
                 });
+                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
+                canvas.DrawPicture(softMaskPicture, paint);
+                canvas.DrawPicture(picture);
             }
-
-
         }
 
         #endregion

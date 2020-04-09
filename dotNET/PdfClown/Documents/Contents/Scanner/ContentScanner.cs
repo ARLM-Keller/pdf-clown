@@ -68,6 +68,8 @@ namespace PdfClown.Documents.Contents
         #region static
         #region fields
         private static readonly int StartIndex = -1;
+        private static readonly SKPaint paintWhiteBackground = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill };
+
         #endregion
         #endregion
 
@@ -119,7 +121,6 @@ Parent level.
           <summary>Device-independent size of the graphics canvas.</summary>
         */
         private SKSize contextSize;
-        private SKPaint paintWhiteBackground = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill };
         #endregion
 
         #region constructors

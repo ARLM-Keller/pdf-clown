@@ -88,10 +88,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 }
             }
             return pattern;
-
         }
 
-        public override SKColor GetColor(Color color, double? alpha = null)
+        public override bool IsSpaceColor(Color color)
+        { return color is Pattern; }
+
+        public override SKColor GetSKColor(Color color, double? alpha = null)
+        {
+            // FIXME: Auto-generated method stub
+            return SKColors.Black;
+        }
+
+        public override SKColor GetSKColor(double[] components, double? alpha = null)
         {
             // FIXME: Auto-generated method stub
             return SKColors.Black;
@@ -120,7 +128,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
             return new SKPaint
             {
-                Color = GetColor(color),
+                Color = GetSKColor(color),
                 Style = SKPaintStyle.Fill,
                 IsAntialias = true,
             };

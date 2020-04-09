@@ -31,9 +31,7 @@ namespace PdfClown.Objects
     /**
       <summary>PDF integer number object [PDF:1.6:3.2.2].</summary>
     */
-    public sealed class PdfInteger
-      : PdfSimpleObject<int>,
-        IPdfNumber
+    public sealed class PdfInteger : PdfSimpleObject<int>, IPdfNumber
     {
         #region static
         #region fields

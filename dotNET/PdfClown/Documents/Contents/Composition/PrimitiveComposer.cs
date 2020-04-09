@@ -593,7 +593,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void SetFillColor(colors::Color value)
         {
-            if (!scanner.State.FillColorSpace.Equals(value.ColorSpace))
+            if (!scanner.State.FillColorSpace.IsSpaceColor(value))
             {
                 // Set filling color space!
                 Add(new objects::SetFillColorSpace(GetResourceName(value.ColorSpace)));
@@ -682,7 +682,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void SetStrokeColor(colors::Color value)
         {
-            if (!scanner.State.StrokeColorSpace.Equals(value.ColorSpace))
+            if (!scanner.State.StrokeColorSpace.IsSpaceColor(value))
             {
                 // Set stroking color space!
                 Add(new objects::SetStrokeColorSpace(GetResourceName(value.ColorSpace)));

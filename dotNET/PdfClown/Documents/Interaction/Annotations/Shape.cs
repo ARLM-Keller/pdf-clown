@@ -87,7 +87,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             if (FillColor != null)
             {
-                var fillColor = FillColor.ColorSpace.GetColor(FillColor, Alpha);
+                var fillColor = DeviceRGBColorSpace.Default.GetSKColor(FillColor, Alpha);
                 using (var paint = new SKPaint { Color = fillColor, Style = SKPaintStyle.Fill })
                 {
                     var cloudPath = BorderEffect?.Apply(paint, path) ?? path;
@@ -98,7 +98,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             if (Border != null)
             {
-                var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
+                var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
                 using (var paint = new SKPaint { Color = color })
                 {
                     Border?.Apply(paint, BorderEffect);

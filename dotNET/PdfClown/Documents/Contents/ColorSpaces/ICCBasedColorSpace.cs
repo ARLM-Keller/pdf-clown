@@ -38,8 +38,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     */
     // TODO:IMPL improve profile support (see ICC.1:2003-09 spec)!!!
     [PDF(VersionEnum.PDF13)]
-    public sealed class ICCBasedColorSpace
-      : ColorSpace
+    public sealed class ICCBasedColorSpace : ColorSpace
     {
         private SKColorSpace skColorSpace;
         private SKMatrix44 xyzD50 = SKMatrix44.CreateIdentity();
@@ -74,7 +73,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return null;
         }
 
-        public override SKColor GetColor(Color color, double? alpha = null)
+        public override bool IsSpaceColor(Color color)
+        { return color is DeviceColor; }
+
+        public override SKColor GetSKColor(Color color, double? alpha = null)
         {
             // GetIccProfile();
             GetSKColorSpace();
@@ -91,7 +93,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
             else if (color is DeviceCMYKColor devCMYK)
             {
-                
+                //TODO
+
             }
             else if (color is DeviceGrayColor devGray)
             {
@@ -109,6 +112,38 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return skColor;
         }
 
+        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        {
+            var skColor = SKColors.Black;
+            if (components.Length == 3)
+            {
+                skColor = new SKColor(
+                   (byte)(components[0] * 255),
+                   (byte)(components[1] * 255),
+                   (byte)(components[2] * 255));
+            }
+            else if (components.Length == 4)
+            {
+                //TODO
+                skColor = new SKColor(
+                   (byte)(components[0] * 255),
+                   (byte)(components[1] * 255),
+                   (byte)(components[2] * 255));
+            }
+            else if (components.Length == 1)
+            {
+                skColor = new SKColor(
+                   (byte)(components[0] * 255),
+                   (byte)(components[0] * 255),
+                   (byte)(components[0] * 255));
+            }
+
+            if (alpha != null)
+            {
+                skColor = skColor.WithAlpha((byte)(alpha.Value * 255));
+            }
+            return skColor;
+        }
 
 
         public PdfStream Profile => (PdfStream)((PdfArray)BaseDataObject).Resolve(1);
@@ -135,7 +170,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             if (iccProfile == null)
             {
                 iccProfile = ICCProfile.Load(Profile.GetBody(true).ToByteArray());
-                
+
             }
         }
 
@@ -147,9 +182,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             //float r = transfer.Transform(Math.Min(1F, Math.Max(0F, result[0]))), 
             //    g = transfer.Transform(Math.Min(1F, Math.Max(0F, result[1]))), 
             //    b = transfer.Transform(Math.Min(1F, Math.Max(0F, result[2])));
-            
+
             //return new SKPoint3(r, g, b);
         }
+
+
 
         #endregion
         #endregion

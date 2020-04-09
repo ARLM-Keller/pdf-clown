@@ -25,6 +25,7 @@
 
 using PdfClown.Documents;
 using PdfClown.Objects;
+using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -34,13 +35,24 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public abstract class DeviceColorSpace : ColorSpace
     {
+        public static SKColor CalcSKColor(DeviceColor color, double? alfa = null)
+        {
+            if (color is DeviceRGBColor deviceRGB)
+                return DeviceRGBColorSpace.Default.GetSKColor(deviceRGB, alfa);
+            if (color is DeviceCMYKColor deviceCMYK)
+                return DeviceCMYKColorSpace.Default.GetSKColor(deviceCMYK, alfa);
+            if (color is DeviceGrayColor deviceGray)
+                return DeviceGrayColorSpace.Default.GetSKColor(deviceGray, alfa);
+            return SKColors.Black;
+        }
+
         #region dynamic
         #region constructors
-        protected DeviceColorSpace(Document context, PdfName baseDataObject) 
+        protected DeviceColorSpace(Document context, PdfName baseDataObject)
             : base(context, baseDataObject)
         { }
 
-        protected DeviceColorSpace(PdfDirectObject baseObject) 
+        protected DeviceColorSpace(PdfDirectObject baseObject)
             : base(baseObject)
         { }
         #endregion

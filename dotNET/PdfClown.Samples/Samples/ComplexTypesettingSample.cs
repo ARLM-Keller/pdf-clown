@@ -33,13 +33,11 @@ namespace PdfClown.Samples.CLI
         above-mentioned content flow composition), to be made available in the next releases.</para>
       </remarks>
     */
-    public class ComplexTypesettingSample
-      : Sample
+    public class ComplexTypesettingSample : Sample
     {
         private static readonly colorSpaces::Color TextColor_Highlight = new colorSpaces::DeviceRGBColor(255 / 255d, 50 / 255d, 50 / 255d);
 
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. PDF file instantiation.
             files::File file = new files::File();
@@ -62,9 +60,7 @@ namespace PdfClown.Samples.CLI
             Serialize(file, "Complex Typesetting", "complex typesetting", "typesetting, bookmarks, hyphenation, block composer, primitive composer, text alignment, image insertion, article threads");
         }
 
-        private void BuildBookmarks(
-          Document document
-          )
+        private void BuildBookmarks(Document document)
         {
             Pages pages = document.Pages;
             Bookmarks bookmarks = document.Bookmarks;
@@ -277,11 +273,7 @@ namespace PdfClown.Samples.CLI
             int paragraphIndex = 0;
             int paragraphTextIndex = 0;
             int frameIndex = -1;
-            for (
-              int paragraphCount = paragraphs.Length;
-              paragraphIndex < paragraphCount;
-              paragraphIndex++
-              )
+            for (int paragraphCount = paragraphs.Length; paragraphIndex < paragraphCount; paragraphIndex++)
             {
                 String paragraph = paragraphs[paragraphIndex];
 
@@ -339,10 +331,7 @@ namespace PdfClown.Samples.CLI
             composer.Flush();
         }
 
-        private void BuildWelcomePage(
-          Document document,
-          FormXObject template
-          )
+        private void BuildWelcomePage(Document document, FormXObject template)
         {
             // Add welcome page to the document!
             Page page = new Page(document); // Instantiates the page inside the document context.

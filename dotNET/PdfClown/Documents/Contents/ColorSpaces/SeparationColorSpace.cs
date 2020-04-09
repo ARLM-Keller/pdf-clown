@@ -41,8 +41,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       called a tint, that controls the application of the given colorant or color components only.</remarks>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class SeparationColorSpace
-      : SpecialDeviceColorSpace
+    public sealed class SeparationColorSpace : SpecialDeviceColorSpace
     {
         #region static
         #region fields
@@ -87,6 +86,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         { return new SeparationColor(components); }
+
+        public override bool IsSpaceColor(Color color)
+        { return color is SeparationColor; }
+       
         #endregion
         #endregion
         #endregion

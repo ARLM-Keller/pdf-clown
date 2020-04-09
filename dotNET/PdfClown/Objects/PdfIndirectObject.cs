@@ -86,6 +86,8 @@ namespace PdfClown.Objects
         public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
+        public override PdfDataObject Resolve()
+        { return DataObject; }
         /**
           <summary>Adds the <see cref="DataObject">data object</see> to the specified object stream
           [PDF:1.6:3.4.6].</summary>

@@ -126,7 +126,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override void DrawSpecial(SKCanvas canvas)
         {
-            var color = Color == null ? SKColors.Black : Color.ColorSpace.GetColor(Color, Alpha);
+            var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
             using (var paint = new SKPaint { Color = color })
             {
                 Border?.Apply(paint, null);

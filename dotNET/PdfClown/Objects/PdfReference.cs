@@ -79,15 +79,6 @@ namespace PdfClown.Objects
         */
         public int GenerationNumber => generationNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Generation : generationNumber;
 
-        public override int GetHashCode()
-        {
-            /*
-              NOTE: Uniqueness should be achieved XORring the (local) reference hash-code with the (global)
-              file hash-code.
-            */
-            return Id.GetHashCode() ^ File.GetHashCode();
-        }
-
         /**
           <summary>Gets the object identifier.</summary>
           <remarks>This corresponds to the serialized representation of an object identifier within a PDF file.</remarks>
@@ -167,6 +158,15 @@ NOTE: Fail fast if the referenced indirect object is undefined.
             return IndirectObject.Swap(((PdfReference)other).IndirectObject).Reference;
         }
 
+        public override int GetHashCode()
+        {
+            /*
+              NOTE: Uniqueness should be achieved XORring the (local) reference hash-code with the (global)
+              file hash-code.
+            */
+            return Id.GetHashCode() ^ File.GetHashCode();
+        }
+
         public override string ToString()
         { return IndirectReference; }
 
@@ -175,6 +175,9 @@ NOTE: Fail fast if the referenced indirect object is undefined.
 
         public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
+
+        public override PdfDataObject Resolve()
+        { return DataObject; }
 
         public override int CompareTo(PdfDirectObject obj)
         {

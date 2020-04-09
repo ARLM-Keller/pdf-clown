@@ -32,8 +32,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       <summary>Special color space [PDF:1.6:4.5.5].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public abstract class SpecialColorSpace
-      : ColorSpace
+    public abstract class SpecialColorSpace : ColorSpace
     {
         #region dynamic
         #region constructors

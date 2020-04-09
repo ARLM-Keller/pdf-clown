@@ -52,7 +52,7 @@ namespace PdfClown.Objects
         /**
           <summary>Gets the object equivalent to the given value.</summary>
         */
-        public static PdfTextString Get(string value)
+        public static new PdfTextString Get(string value)
         { return value != null ? new PdfTextString(value) : null; }
         #endregion
         #endregion

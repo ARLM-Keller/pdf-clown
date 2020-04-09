@@ -36,9 +36,7 @@ namespace PdfClown.Documents.Contents.Objects
       [PDF:1.6:4.5.7].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class SetFillColorSpace
-      : Operation,
-        IResourceReference<ColorSpace>
+    public sealed class SetFillColorSpace : Operation, IResourceReference<ColorSpace>
     {
         #region static
         #region fields

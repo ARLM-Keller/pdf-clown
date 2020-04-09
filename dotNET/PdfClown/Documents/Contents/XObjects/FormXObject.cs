@@ -202,7 +202,7 @@ namespace PdfClown.Documents.Contents.XObjects
                         var backgroundColorArray = mask.BackColor;
                         var colorSpace = Group.ColorSpace;
                         var backgroundColor = colorSpace.GetColor(backgroundColorArray, null);
-                        var backgroundColorSK = colorSpace.GetColor(backgroundColor, 0);
+                        var backgroundColorSK = colorSpace.GetSKColor(backgroundColor, 0);
 
                         canvas.Clear(backgroundColorSK);
                     }

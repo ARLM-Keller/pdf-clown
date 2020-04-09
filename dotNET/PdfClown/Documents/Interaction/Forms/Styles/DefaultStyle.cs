@@ -69,9 +69,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             { Apply((RadioButton)field); }
         }
 
-        private void Apply(
-          CheckBox field
-          )
+        private void Apply(CheckBox field)
         {
             Document document = field.Document;
             foreach (Widget widget in field.Widgets)
@@ -162,9 +160,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             }
         }
 
-        private void Apply(
-          RadioButton field
-          )
+        private void Apply(RadioButton field)
         {
             Document document = field.Document;
             foreach (Widget widget in field.Widgets)
@@ -173,30 +169,17 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                     PdfDictionary widgetDataObject = widget.BaseDataObject;
                     widgetDataObject[PdfName.DA] = new PdfString("/ZaDb 0 Tf 0 0 0 rg");
                     widgetDataObject[PdfName.MK] = new PdfDictionary(
-                      new PdfName[]
-                      {
-              PdfName.BG,
-              PdfName.BC,
-              PdfName.CA
-                      },
+                      new PdfName[] { PdfName.BG, PdfName.BC, PdfName.CA },
                       new PdfDirectObject[]
                       {
-              new PdfArray(new PdfDirectObject[]{PdfReal.Get(0.9412), PdfReal.Get(0.9412), PdfReal.Get(0.9412)}),
-              new PdfArray(new PdfDirectObject[]{PdfInteger.Default, PdfInteger.Default, PdfInteger.Default}),
-              new PdfString("l")
+                          new PdfArray(new PdfDirectObject[]{PdfReal.Get(0.9412), PdfReal.Get(0.9412), PdfReal.Get(0.9412)}),
+                          new PdfArray(new PdfDirectObject[]{PdfInteger.Default, PdfInteger.Default, PdfInteger.Default}),
+                          new PdfString("l")
                       }
                       );
                     widgetDataObject[PdfName.BS] = new PdfDictionary(
-                      new PdfName[]
-                      {
-              PdfName.W,
-              PdfName.S
-                      },
-                      new PdfDirectObject[]
-                      {
-              PdfReal.Get(0.8),
-              PdfName.S
-                      }
+                      new PdfName[] { PdfName.W, PdfName.S },
+                      new PdfDirectObject[] { PdfReal.Get(0.8), PdfName.S }
                       );
                     widgetDataObject[PdfName.H] = PdfName.P;
                 }
@@ -267,9 +250,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             }
         }
 
-        private void Apply(
-          PushButton field
-          )
+        private void Apply(PushButton field)
         {
             Document document = field.Document;
             Widget widget = field.Widgets[0];
@@ -318,9 +299,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             appearance.Normal[null] = normalAppearanceState;
         }
 
-        private void Apply(
-          TextField field
-          )
+        private void Apply(TextField field)
         {
             Document document = field.Document;
             Widget widget = field.Widgets[0];

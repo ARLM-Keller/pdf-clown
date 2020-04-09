@@ -32,15 +32,12 @@ namespace PdfClown.Objects
     */
     public interface IPdfIndirectObject
     {
-        PdfObject Clone(
-          File context
-          );
+        PdfObject Clone(File context);
 
         /**
           <summary>Gets/Sets the actual data associated to the indirect reference.</summary>
         */
-        PdfDataObject DataObject
-        { get; set; }
+        PdfDataObject DataObject { get; set; }
 
         /**
           <summary>Removes the object from its file context.</summary>
@@ -48,19 +45,16 @@ namespace PdfClown.Objects
             <para>The object is no more usable after this method returns.</para>
           </remarks>
         */
-        bool Delete(
-          );
+        bool Delete();
 
         /**
           <summary>Gets the indirect object associated to the indirect reference.</summary>
         */
-        PdfIndirectObject IndirectObject
-        { get; }
+        PdfIndirectObject IndirectObject { get; }
 
         /**
           <summary>Gets the indirect reference associated to the indirect object.</summary>
         */
-        PdfReference Reference
-        { get; }
+        PdfReference Reference { get; }
     }
 }

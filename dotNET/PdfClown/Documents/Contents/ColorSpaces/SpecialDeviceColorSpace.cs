@@ -31,6 +31,7 @@ using PdfClown.Util;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using System.Linq;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -75,18 +76,25 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             get;
         }
 
-        public override SKColor GetColor(Color color, double? alfa)
-        {
-            IList<PdfDirectObject> alternateColorComponents = TintFunction.Calculate(color.Components);
-            ColorSpace alternateSpace = AlternateSpace;
-            return alternateSpace.GetColor(alternateSpace.GetColor(alternateColorComponents, null), alfa);
-        }
-
         /**
           <summary>Gets the function to transform a tint value into color component values
           in the <see cref="AlternateSpace">alternate color space</see>.</summary>
         */
         public Function TintFunction => Function.Wrap(((PdfArray)BaseDataObject)[3]);
+
+        public override SKColor GetSKColor(Color color, double? alfa)
+        {
+            var alternateComponents = TintFunction.Calculate(color.Components.Select(p => ((IPdfNumber)p).RawValue).ToArray());
+            ColorSpace alternateSpace = AlternateSpace;
+            return alternateSpace.GetSKColor(alternateComponents, alfa);
+        }
+
+        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        {
+            var alternateComponents = TintFunction.Calculate(components);
+            ColorSpace alternateSpace = AlternateSpace;
+            return alternateSpace.GetSKColor(alternateComponents, alpha);
+        }
         #endregion
         #endregion
         #endregion

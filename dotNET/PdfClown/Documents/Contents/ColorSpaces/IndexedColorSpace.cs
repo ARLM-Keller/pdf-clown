@@ -42,8 +42,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         #region dynamic
         #region fields
         private IDictionary<int, Color> baseColors = new Dictionary<int, Color>();
+        private IDictionary<int, SKColor> baseSKColors = new Dictionary<int, SKColor>();
         private byte[] baseComponentValues;
         private ColorSpace baseSpace;
+        private int? componentCount;
         #endregion
 
         #region constructors
@@ -69,6 +71,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
         }
 
+        public int BaseSpaceComponentCount => componentCount ?? (componentCount = baseSpace.ComponentCount).Value;
+
         public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
@@ -86,9 +90,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             if (!baseColors.TryGetValue(colorIndex, out var baseColor))
             {
                 ColorSpace baseSpace = BaseSpace;
-                IList<PdfDirectObject> components = new List<PdfDirectObject>();
+                int componentCount = BaseSpaceComponentCount;
+                var components = new PdfDirectObject[componentCount];
                 {
-                    int componentCount = baseSpace.ComponentCount;
                     int componentValueIndex = colorIndex * componentCount;
                     byte[] baseComponentValues = BaseComponentValues;
                     for (int componentIndex = 0; componentIndex < componentCount; componentIndex++)
@@ -97,7 +101,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                             ? baseComponentValues[componentValueIndex]
                             : 0;
                         var value = ((int)byteValue & 0xff) / 255d;
-                        components.Add(PdfReal.Get(value));
+                        components[componentIndex] = PdfReal.Get(value);
                         componentValueIndex++;
                     }
                 }
@@ -106,18 +110,58 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return baseColor;
         }
 
+        public SKColor GetBaseSKColor(double[] color)
+        {
+            int colorIndex = (int)color[0];
+            if (!baseSKColors.TryGetValue(colorIndex, out var baseColor))
+            {
+                ColorSpace baseSpace = BaseSpace;
+                int componentCount = BaseSpaceComponentCount;
+                var components = new double[componentCount];
+                {
+                    int componentValueIndex = colorIndex * componentCount;
+                    byte[] baseComponentValues = BaseComponentValues;
+                    for (int componentIndex = 0; componentIndex < componentCount; componentIndex++)
+                    {
+                        var byteValue = componentValueIndex < baseComponentValues.Length
+                            ? baseComponentValues[componentValueIndex]
+                            : 0;
+                        var value = ((int)byteValue & 0xff) / 255d;
+                        components[componentIndex] = value;
+                        componentValueIndex++;
+                    }
+                }
+                baseColor = baseSKColors[colorIndex] = baseSpace.GetSKColor(components, null);
+            }
+            return baseColor;
+        }
+
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         { return new IndexedColor(components); }
 
-        public override SKColor GetColor(Color color, double? alfa = null)
+        public override bool IsSpaceColor(Color color)
+        { return color is IndexedColor; }
+
+        public override SKColor GetSKColor(Color color, double? alfa = null)
         {
-            return BaseSpace.GetColor(GetBaseColor((IndexedColor)color), alfa);
+            return BaseSpace.GetSKColor(GetBaseColor((IndexedColor)color), alfa);
+        }
+
+        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        {
+            var color = GetBaseSKColor(components);
+            if (alpha != null)
+            {
+                color = color.WithAlpha((byte)(alpha * 255));
+            }
+            return color;
         }
 
         public override SKPaint GetPaint(Color color, double? alpha = null)
         {
             return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color), alpha);
         }
+
         #endregion
 
         #region private

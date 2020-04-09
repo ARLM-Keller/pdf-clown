@@ -30,6 +30,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using System.Collections;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -131,7 +132,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public virtual SKPaint GetPaint(Color color, double? alpha = null)
         {
-            var skColor = GetColor(color, alpha);
+            var skColor = GetSKColor(color, alpha);
             return new SKPaint
             {
                 Color = skColor,
@@ -148,7 +149,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public abstract Color GetColor(IList<PdfDirectObject> components, IContentContext context);
 
-        public abstract SKColor GetColor(Color color, double? alpha = null);
+        public abstract SKColor GetSKColor(Color color, double? alpha = null);
+
+        public abstract SKColor GetSKColor(double[] components, double? alpha = null);
+
+        public abstract bool IsSpaceColor(Color value);
 
         #endregion
         #endregion

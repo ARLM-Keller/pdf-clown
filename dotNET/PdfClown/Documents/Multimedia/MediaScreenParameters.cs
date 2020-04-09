@@ -204,7 +204,7 @@ namespace PdfClown.Documents.Multimedia
                         PdfArray sizeObject = (PdfArray)BaseDataObject[PdfName.D];
                         return new SKSize(((PdfInteger)sizeObject[0]).IntValue, ((PdfInteger)sizeObject[1]).IntValue);
                     }
-                    set => BaseDataObject[PdfName.D] = new PdfArray(PdfInteger.Get(value.Width), PdfInteger.Get(value.Height));
+                    set => BaseDataObject[PdfName.D] = new PdfArray(PdfInteger.Get((int)value.Width), PdfInteger.Get((int)value.Height));
                 }
 
                 /**

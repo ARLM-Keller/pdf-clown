@@ -238,7 +238,7 @@ namespace PdfClown.Documents.Contents
                 PdfInteger lineCapObject = (PdfInteger)BaseDataObject[PdfName.LC];
                 return lineCapObject != null ? (LineCapEnum)lineCapObject.RawValue : (LineCapEnum?)null;
             }
-            set => BaseDataObject[PdfName.LC] = value.HasValue ? PdfInteger.Get(value.Value) : null;
+            set => BaseDataObject[PdfName.LC] = value.HasValue ? PdfInteger.Get((int)value.Value) : null;
         }
 
         [PDF(VersionEnum.PDF13)]
@@ -271,7 +271,7 @@ namespace PdfClown.Documents.Contents
                 PdfInteger lineJoinObject = (PdfInteger)BaseDataObject[PdfName.LJ];
                 return lineJoinObject != null ? (LineJoinEnum)lineJoinObject.RawValue : (LineJoinEnum?)null;
             }
-            set => BaseDataObject[PdfName.LJ] = value.HasValue ? PdfInteger.Get(value.Value) : null;
+            set => BaseDataObject[PdfName.LJ] = value.HasValue ? PdfInteger.Get((int)value.Value) : null;
         }
 
         [PDF(VersionEnum.PDF13)]

@@ -276,19 +276,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 var components = new double[1];
                 components[0] = domain[i];
                 var result = Function.Calculate(components);
-                var typeResult = new PdfDirectObject[compCount];
-                for (int j = 0; j < compCount; j++)
-                {
-                    typeResult[j] = PdfReal.Get(result[j]);
-                }
-                var pdfColor = colorSpace.GetColor(typeResult, null);
-                colors[i] = colorSpace.GetColor(pdfColor);
+                colors[i] = colorSpace.GetSKColor(result, null);
             }
 
             return SKShader.CreateLinearGradient(Coords[0], Coords[1], colors, Domain, SKShaderTileMode.Clamp);
-
         }
-
 
     }
 

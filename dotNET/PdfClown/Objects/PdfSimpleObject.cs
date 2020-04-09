@@ -47,16 +47,18 @@ namespace PdfClown.Objects
             if (value == null)
                 return null;
 
-            if (value is Int32)
-                return PdfInteger.Get((int)value);
-            else if (value is Double || value is Single)
-                return PdfReal.Get(value);
-            else if (value is string)
-                return PdfTextString.Get((string)value);
-            else if (value is DateTime)
-                return PdfDate.Get((DateTime)value);
-            else if (value is Boolean)
-                return PdfBoolean.Get((Boolean)value);
+            if (value is int intValue)
+                return PdfInteger.Get(intValue);
+            else if (value is double doubleValue)
+                return PdfReal.Get(doubleValue);
+            else if (value is float singleValue)
+                return PdfReal.Get(singleValue);
+            else if (value is string stringValue)
+                return PdfTextString.Get(stringValue);
+            else if (value is DateTime dateTimeValue)
+                return PdfDate.Get(dateTimeValue);
+            else if (value is bool booleanValue)
+                return PdfBoolean.Get(booleanValue);
             else
                 throw new NotImplementedException();
         }
@@ -88,7 +90,7 @@ namespace PdfClown.Objects
             obj = Resolve(obj);
             if (obj is IPdfValued valued)
             {
-                value = valued.Value;                
+                value = valued.Value;
             }
             return value ?? defaultValue;
         }

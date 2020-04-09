@@ -186,9 +186,9 @@ namespace PdfClown.Objects
           <summary>Ensures this object to be resolved into its corresponding data object.</summary>
           <seealso cref="Unresolve()"/>
         */
-        public PdfDataObject Resolve()
+        public virtual PdfDataObject Resolve()
         {
-            return this is IPdfIndirectObject inderect ? inderect.DataObject : (PdfDataObject)this;
+            return (PdfDataObject)this;
         }
 
         /**

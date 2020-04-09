@@ -82,6 +82,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         { return new DeviceNColor(components); }
+
+        public override bool IsSpaceColor(Color color)
+        { return color is DeviceNColor; }
         #endregion
         #endregion
         #endregion

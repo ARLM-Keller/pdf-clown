@@ -69,7 +69,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         { return new DeviceCMYKColor(components); }
 
-        public override SKColor GetColor(Color color, double? alpha = null)
+        public override bool IsSpaceColor(Color color)
+        { return color is DeviceCMYKColor; }
+
+        public override SKColor GetSKColor(Color color, double? alpha = null)
         {
             DeviceCMYKColor spaceColor = (DeviceCMYKColor)color;
             /*
@@ -83,6 +86,27 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             var r = (int)(255 * (1 - spaceColor.C) * (1 - spaceColor.K));
             var g = (int)(255 * (1 - spaceColor.M) * (1 - spaceColor.K));
             var b = (int)(255 * (1 - spaceColor.Y) * (1 - spaceColor.K));
+            var skColor = new SKColor((byte)r, (byte)g, (byte)b);
+            if (alpha != null)
+            {
+                skColor = skColor.WithAlpha((byte)(alpha.Value * 255));
+            }
+            return skColor;
+        }
+
+        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        {
+            /*
+              NOTE: This convertion algorithm was from Apache FOP.
+            */
+            //FIXME: verify whether this algorithm is effective (limit checking seems quite ugly to me!).
+            //float keyCorrection = (float)spaceColor.K;// / 2.5f;
+            //int r = (int)((1 - Math.Min(1, spaceColor.C + keyCorrection)) * 255); if (r < 0) { r = 0; }
+            //int g = (int)((1 - Math.Min(1, spaceColor.M + keyCorrection)) * 255); if (g < 0) { g = 0; }
+            //int b = (int)((1 - Math.Min(1, spaceColor.Y + keyCorrection)) * 255); if (b < 0) { b = 0; }
+            var r = (int)(255 * (1 - components[0]) * (1 - components[3]));
+            var g = (int)(255 * (1 - components[1]) * (1 - components[3]));
+            var b = (int)(255 * (1 - components[2]) * (1 - components[3]));
             var skColor = new SKColor((byte)r, (byte)g, (byte)b);
             if (alpha != null)
             {

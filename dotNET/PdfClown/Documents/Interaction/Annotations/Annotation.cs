@@ -344,7 +344,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public virtual SKColor SKColor
         {
-            get => Color?.ColorSpace.GetColor(Color, Alpha) ?? SKColors.Black;
+            get => DeviceColorSpace.CalcSKColor(Color, Alpha);
             set
             {
                 Color = DeviceRGBColor.Get(value);
@@ -615,7 +615,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             var self = PageMatrix;
             canvas.Save();
             canvas.Concat(ref self);
-            
+
             if (Alpha < 1)
             {
                 using (var paint = new SKPaint())

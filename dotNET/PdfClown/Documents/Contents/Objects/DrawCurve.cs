@@ -219,14 +219,10 @@ namespace PdfClown.Documents.Contents.Objects
             var pathObject = state.Scanner.RenderObject;
             if (pathObject != null)
             {
-                SKPoint controlPoint1 = (Control1.HasValue ? Control1.Value : pathObject.LastPoint);
+                SKPoint controlPoint1 = Control1 ?? pathObject.LastPoint;
                 SKPoint finalPoint = Point;
-                SKPoint controlPoint2 = (Control2.HasValue ? Control2.Value : finalPoint);
-                pathObject.CubicTo(
-                  controlPoint1,
-                  controlPoint2,
-                  finalPoint
-                  );
+                SKPoint controlPoint2 = Control2 ?? finalPoint;
+                pathObject.CubicTo(controlPoint1, controlPoint2, finalPoint);
             }
         }
         #endregion

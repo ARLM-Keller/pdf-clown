@@ -136,7 +136,6 @@ namespace PdfClown.Documents.Contents.Objects
 
                     var ctm = state.Ctm;
                     SKMatrix.PreConcat(ref ctm, formObject.Matrix);
-                    SKMatrix.PreConcat(ref ctm, SKMatrix.MakeTranslation(formObject.Box.Left, formObject.Box.Top));
                     canvas.SetMatrix(ctm);
 
 

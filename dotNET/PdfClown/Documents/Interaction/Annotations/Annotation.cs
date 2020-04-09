@@ -304,7 +304,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         protected SKMatrix InvertPageMatrix
         {
-            get => Page?.InRotateMatrix ?? GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0);
+            get => Page?.InRotateMatrix ?? (GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0).TryInvert(out var inverted) ? inverted : SKMatrix.MakeIdentity());
         }
 
         /**
@@ -598,32 +598,37 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             var bounds = Rect;
             var appearanceBounds = appearance.Box;
-            var appearanceMatrix = appearance.Matrix;
-            var mapedAppearanceBounds = appearanceMatrix.MapRect(appearanceBounds);
-
-            //var quad = Quad.Get(appearanceBounds);
-            //quad.Transform(appearanceMatrix);
-
-            var self = Page?.RotateMatrix ?? SKMatrix.MakeIdentity();
-            SKMatrix.PreConcat(ref self, SKMatrix.MakeTranslation(bounds.MidX, bounds.MidY));
-            SKMatrix.PreConcat(ref self, SKMatrix.MakeScale(bounds.Width / mapedAppearanceBounds.Width, bounds.Height / mapedAppearanceBounds.Height));
-            SKMatrix.PreConcat(ref self, SKMatrix.MakeTranslation(-mapedAppearanceBounds.Width / 2F, -mapedAppearanceBounds.Height / 2F));
-            SKMatrix.PreConcat(ref self, SKMatrix.MakeTranslation((appearanceBounds.Left - mapedAppearanceBounds.Left), (appearanceBounds.Top - mapedAppearanceBounds.Top)));
-            //var self = new SKMatrix
-            //{
-            //    TransX = bounds.Left - (mapedAppearanceBounds.Left - appearanceBounds.Left),
-            //    TransY = bounds.Top + (mapedAppearanceBounds.Top - appearanceBounds.Top) + bounds.Height,
-            //    ScaleX = bounds.Width / mapedAppearanceBounds.Width,
-            //    ScaleY = -bounds.Height / mapedAppearanceBounds.Height,
-            //    //SkewX = appearanceMatrix.SkewX,
-            //    //SkewY = -appearanceMatrix.SkewY,
-            //    Persp2 = 1
-            //};
-            SKMatrix.PreConcat(ref self, appearanceMatrix);
-
-
             var picture = appearance.Render();
-            canvas.DrawPicture(picture, ref self);
+
+            var startMatrix = appearance.StartMatrix;
+            var Matrix = appearance.Matrix;
+
+            var quad = new Quad(appearanceBounds);
+            quad.Transform(ref Matrix);
+
+            var A = SKMatrix.MakeScale(bounds.Width / quad.HorizontalLength, bounds.Height / quad.VerticalLenght);
+            var quadA = Quad.Transform(quad, ref A);
+            SKMatrix.PostConcat(ref A, SKMatrix.MakeTranslation(bounds.Left - quadA.Left, bounds.Top - quadA.Top));
+
+            SKMatrix.PostConcat(ref Matrix, A);
+
+            var self = PageMatrix;
+            canvas.Save();
+            canvas.Concat(ref self);
+            
+            if (Alpha < 1)
+            {
+                using (var paint = new SKPaint())
+                {
+                    paint.Color = paint.Color.WithAlpha((byte)(Alpha * 255));
+                    canvas.DrawPicture(picture, ref Matrix, paint);
+                }
+            }
+            else
+            {
+                canvas.DrawPicture(picture, ref Matrix);
+            }
+            canvas.Restore();
         }
 
         public virtual SKRect GetBounds(SKMatrix matrix)

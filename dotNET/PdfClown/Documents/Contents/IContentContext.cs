@@ -84,5 +84,7 @@ namespace PdfClown.Documents.Contents
         List<ITextString> Strings { get; }
 
         TransparencyXObject Group { get; }
+
+        void OnSetCtm(SKMatrix ctm);
     }
 }

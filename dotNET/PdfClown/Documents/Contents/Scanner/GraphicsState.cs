@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using SkiaSharp;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Contents
 {
@@ -170,11 +171,11 @@ namespace PdfClown.Documents.Contents
             var rotation = contentContext.Rotation;
             if (contentContext is colors.TilingPattern tiling)
             {
-                initialCtm = SKMatrix.MakeIdentity();
+                return SKMatrix.MakeIdentity();
             }
             else if (contentContext is FormXObject xObject)
             {
-                initialCtm = SKMatrix.MakeIdentity();
+                return SKMatrix.MakeIdentity();
             }
             else
             {
@@ -199,27 +200,24 @@ namespace PdfClown.Documents.Contents
             switch (rotation)
             {
                 case RotationEnum.Downward:
-                    return new SKMatrix { Values = new float[] { 1, 0, 0, 0, -1, canvasSize.Height, 0, 0, 1 } };
+                    return new SKMatrix(1, 0, 0, 0, -1, canvasSize.Height, 0, 0, 1);
                 case RotationEnum.Leftward:
-                    return new SKMatrix { Values = new float[] { 0, 1, 0, 1, 0, 0, 0, 0, 1 } };
+                    return new SKMatrix(0, 1, 0, 1, 0, 0, 0, 0, 1);
                 case RotationEnum.Upward:
-                    return new SKMatrix { Values = new float[] { -1, 0, canvasSize.Width, 0, 1, 0, 0, 0, 1 } };
+                    return new SKMatrix(-1, 0, canvasSize.Width, 0, 1, 0, 0, 0, 1);
                 case RotationEnum.Rightward:
-                    return new SKMatrix { Values = new float[] { 0, -1, canvasSize.Width, -1, 0, canvasSize.Height, 0, 0, 1 } };
+                    return new SKMatrix(0, -1, canvasSize.Width, -1, 0, canvasSize.Height, 0, 0, 1);
                 default:
                     throw new NotImplementedException();
             }
         }
 
-        public static SKMatrix GetRotationMatrix(SKRect box, int rotate)
+        public static SKMatrix GetRotationMatrix(SKRect box, int degrees)
         {
-            var matrix = SKMatrix.MakeIdentity();
-            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(box.MidX, box.MidY));
-            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeRotationDegrees(rotate));
+            var matrix = SKMatrix.MakeRotationDegrees(degrees);
             SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1, -1));
-            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(-box.MidX, -box.MidY));
             var mappedBox = matrix.MapRect(box);
-            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(-mappedBox.Left, -mappedBox.Top));
+            SKMatrix.PostConcat(ref matrix, SKMatrix.MakeTranslation(-mappedBox.Left, -mappedBox.Top));
             return matrix;
         }
 

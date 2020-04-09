@@ -583,6 +583,11 @@ namespace PdfClown.Documents
         #region private
         private PdfDirectObject GetInheritableAttribute(PdfName key)
         { return GetInheritableAttribute(BaseDataObject, key); }
+
+        public void OnSetCtm(SKMatrix ctm)
+        {
+            
+        }
         #endregion
         #endregion
         #endregion

@@ -225,6 +225,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             throw new NotImplementedException();
         }
+
+        public void OnSetCtm(SKMatrix ctm)
+        {
+            
+        }
         #endregion
 
         #region private

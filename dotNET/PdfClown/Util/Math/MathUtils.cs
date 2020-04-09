@@ -32,10 +32,13 @@ namespace PdfClown.Util.Math
     */
     public static class MathUtils
     {
+        private static readonly double DegPI = 180D / System.Math.PI;
+        private static readonly double RadPI = System.Math.PI / 180D;
+
         public static double ToDegrees(double radians)
-        { return 180 / System.Math.PI * radians; }
+        { return DegPI * radians; }
 
         public static double ToRadians(double degrees)
-        { return degrees * System.Math.PI / 180; }
+        { return RadPI * degrees; }
     }
 }

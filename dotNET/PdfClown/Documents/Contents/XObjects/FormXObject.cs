@@ -188,7 +188,7 @@ namespace PdfClown.Documents.Contents.XObjects
                 return picture;
             var box = Box;
             using (var recorder = new SKPictureRecorder())
-            using (var canvas = recorder.BeginRecording(new SKRect(0, 0, box.Size.Width, box.Size.Height)))//
+            using (var canvas = recorder.BeginRecording(box))
             {
                 if (mask != null)
                 {
@@ -247,6 +247,8 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public DateTime? ModificationDate => (DateTime?)PdfSimpleObject<object>.GetValue(BaseDataObject.Header[PdfName.LastModified]);
 
+        public SKMatrix? StartMatrix { get; private set; }
+
         public void Touch(PdfName appName)
         { Touch(appName, DateTime.Now); }
 
@@ -268,6 +270,12 @@ namespace PdfClown.Documents.Contents.XObjects
         {
             picture?.Dispose();
             picture = null;
+        }
+
+        public void OnSetCtm(SKMatrix ctm)
+        {
+            if (StartMatrix == null)
+                StartMatrix = ctm;
         }
         #endregion
         #endregion

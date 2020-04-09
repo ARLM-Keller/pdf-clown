@@ -13,14 +13,13 @@ namespace PdfClown.Viewer.Test.WPF
     public class OpenFileService : IOpenFileService
     {
         private const string formats = "PostScript Documents|*.pdf|Any Documents|*.*";
-
+        private static readonly OpenFileDialog dialog = new OpenFileDialog
+        {
+            Filter = formats,
+            Multiselect = false
+        };
         public Task<(Stream Stream, string FileName)> OpenFileDialog()
         {
-            var dialog = new OpenFileDialog
-            {
-                Filter = formats,
-                Multiselect = false
-            };
             if (dialog.ShowDialog() ?? false)
             {
                 return Task.FromResult<(Stream, string)>((new FileStream(dialog.FileName, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite), dialog.FileName));

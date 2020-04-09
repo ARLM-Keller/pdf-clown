@@ -99,6 +99,8 @@ namespace PdfClown.Documents.Contents.Objects
             var ctm = state.Ctm;
             SKMatrix.PreConcat(ref ctm, Value);
             state.Ctm = ctm;
+            state.Scanner.ContentContext.OnSetCtm(ctm);
+
             var context = state.Scanner.RenderContext;
             if (context != null)
             {

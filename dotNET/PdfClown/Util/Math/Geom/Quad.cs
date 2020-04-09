@@ -43,7 +43,7 @@ namespace PdfClown.Util.Math.Geom
             return value.Union(value2);
         }
 
-        public static Quad Transform(Quad quad, SKMatrix matrix)
+        public static Quad Transform(Quad quad, ref SKMatrix matrix)
         {
             var temp = new Quad(quad);
             temp.Transform(ref matrix);
@@ -101,7 +101,11 @@ namespace PdfClown.Util.Math.Geom
 
         public float Width => SKPoint.Distance(pointTopLeft, pointTopRight);
 
+        public float HorizontalLength => Right - Left;
+
         public float Height => SKPoint.Distance(pointTopRight, pointBottomRight);
+
+        public float VerticalLenght => Bottom - Top;
 
         public float Top =>
             System.Math.Min(pointTopLeft.Y,

@@ -60,10 +60,10 @@ namespace PdfClown.Documents.Contents.Fonts
             if (encodingObject == null)
                 return null;
 
-            if (encodingObject is PdfName) // Predefined CMap.
-                return Get((PdfName)encodingObject);
-            else if (encodingObject is PdfStream) // Embedded CMap file.
-                return Get((PdfStream)encodingObject);
+            if (encodingObject is PdfName pdfName) // Predefined CMap.
+                return Get(pdfName);
+            else if (encodingObject is PdfStream pdfStream) // Embedded CMap file.
+                return Get(pdfStream);
             else
                 throw new NotSupportedException("Unknown encoding object type: " + encodingObject.GetType().Name);
         }

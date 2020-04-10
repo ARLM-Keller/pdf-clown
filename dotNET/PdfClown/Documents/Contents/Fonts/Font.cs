@@ -844,9 +844,8 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             if (BaseDataObject.ContainsKey(PdfName.ToUnicode)) // To-Unicode explicit mapping.
             {
-                PdfStream toUnicodeStream = (PdfStream)BaseDataObject.Resolve(PdfName.ToUnicode);
-                CMapParser parser = new CMapParser(toUnicodeStream.Body);
-                codes = new BiDictionary<ByteArray, int>(parser.Parse());
+                var toUnicodeDictionary = CMap.Get( BaseDataObject.Resolve(PdfName.ToUnicode));
+                codes = new BiDictionary<ByteArray, int>(toUnicodeDictionary);
                 symbolic = false;
             }
 

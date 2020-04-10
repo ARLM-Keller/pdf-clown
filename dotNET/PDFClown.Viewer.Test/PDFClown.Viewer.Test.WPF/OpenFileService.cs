@@ -22,7 +22,7 @@ namespace PdfClown.Viewer.Test.WPF
         {
             if (dialog.ShowDialog() ?? false)
             {
-                return Task.FromResult<(Stream, string)>((new FileStream(dialog.FileName, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite), dialog.FileName));
+                return Task.FromResult<(Stream, string)>((new FileStream(dialog.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), dialog.FileName));
             }
             return Task.FromResult<(Stream, string)>((null, null));
         }

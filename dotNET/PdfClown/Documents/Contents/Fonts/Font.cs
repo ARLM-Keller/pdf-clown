@@ -37,8 +37,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SkiaSharp;
-using SkiaSharp.HarfBuzz;
-using HarfBuzzSharp;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
@@ -844,7 +842,7 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             if (BaseDataObject.ContainsKey(PdfName.ToUnicode)) // To-Unicode explicit mapping.
             {
-                var toUnicodeDictionary = CMap.Get( BaseDataObject.Resolve(PdfName.ToUnicode));
+                var toUnicodeDictionary = CMap.Get(BaseDataObject.Resolve(PdfName.ToUnicode));
                 codes = new BiDictionary<ByteArray, int>(toUnicodeDictionary);
                 symbolic = false;
             }

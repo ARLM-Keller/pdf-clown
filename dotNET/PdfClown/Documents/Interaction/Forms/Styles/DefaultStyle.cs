@@ -39,21 +39,17 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
     /**
       <summary>Default field appearance style.</summary>
     */
-    public sealed class DefaultStyle
-      : FieldStyle
+    public sealed class DefaultStyle : FieldStyle
     {
         #region dynamic
         #region constructors
-        public DefaultStyle(
-          )
+        public DefaultStyle()
         { BackColor = new DeviceRGBColor(.9, .9, .9); }
         #endregion
 
         #region interface
         #region public
-        public override void Apply(
-          Field field
-          )
+        public override void Apply(Field field)
         {
             if (field is PushButton)
             { Apply((PushButton)field); }
@@ -100,10 +96,10 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 normalAppearance[PdfName.Yes] = onState;
 
                 //TODO:verify!!!
-                //   appearance.getRollover().put(PdfName.Yes,onState);
-                //   appearance.getDown().put(PdfName.Yes,onState);
-                //   appearance.getRollover().put(PdfName.Off,offState);
-                //   appearance.getDown().put(PdfName.Off,offState);
+                //   appearance.getRollover()[PdfName.Yes,onState);
+                //   appearance.getDown()[PdfName.Yes,onState);
+                //   appearance.getRollover()[PdfName.Off,offState);
+                //   appearance.getDown()[PdfName.Off,offState);
 
                 float lineWidth = 1;
                 SKRect frame = SKRect.Create(lineWidth / 2, lineWidth / 2, size.Width - lineWidth, size.Height - lineWidth);
@@ -125,12 +121,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
                     composer.SetFont(
-                      new StandardType1Font(
-                        document,
-                        StandardType1Font.FamilyEnum.ZapfDingbats,
-                        true,
-                        false
-                        ),
+                      PdfType1Font.Load(document, PdfType1Font.FamilyEnum.ZapfDingbats, true, false),
                       size.Height * 0.8
                       );
                     blockComposer.ShowText(new String(new char[] { CheckSymbol }));
@@ -189,10 +180,10 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 FormXObject onState = normalAppearance[new PdfName(widget.Value)];
 
                 //TODO:verify!!!
-                //   appearance.getRollover().put(new PdfName(...),onState);
-                //   appearance.getDown().put(new PdfName(...),onState);
-                //   appearance.getRollover().put(PdfName.Off,offState);
-                //   appearance.getDown().put(PdfName.Off,offState);
+                //   appearance.getRollover()[new PdfName(...),onState);
+                //   appearance.getDown()[new PdfName(...),onState);
+                //   appearance.getRollover()[PdfName.Off,offState);
+                //   appearance.getDown()[PdfName.Off,offState);
 
                 SKSize size = widget.Box.Size;
                 float lineWidth = 1;
@@ -214,15 +205,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                     BlockComposer blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
-                    composer.SetFont(
-                      new StandardType1Font(
-                        document,
-                        StandardType1Font.FamilyEnum.ZapfDingbats,
-                        true,
-                        false
-                        ),
-                      size.Height * 0.8
-                      );
+                    composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.ZapfDingbats, true, false), size.Height * 0.8);
                     blockComposer.ShowText(new String(new char[] { RadioSymbol }));
                     blockComposer.End();
 
@@ -281,15 +264,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                     BlockComposer blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
-                    composer.SetFont(
-                      new StandardType1Font(
-                        document,
-                        StandardType1Font.FamilyEnum.Helvetica,
-                        true,
-                        false
-                        ),
-                      size.Height * 0.5
-                      );
+                    composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Helvetica, true, false), size.Height * 0.5);
                     blockComposer.ShowText(title);
                     blockComposer.End();
                 }
@@ -327,15 +302,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
 
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(
-                  new StandardType1Font(
-                    document,
-                    StandardType1Font.FamilyEnum.Helvetica,
-                    false,
-                    false
-                    ),
-                  FontSize
-                  );
+                composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Helvetica, false, false), FontSize);
                 composer.ShowText(
                   (string)field.Value,
                   new SKPoint(0, size.Height / 2),
@@ -380,15 +347,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
 
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(
-                  new StandardType1Font(
-                    document,
-                    StandardType1Font.FamilyEnum.Helvetica,
-                    false,
-                    false
-                    ),
-                  FontSize
-                  );
+                composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Helvetica, false, false), FontSize);
                 composer.ShowText(
                   (string)field.Value,
                   new SKPoint(0, size.Height / 2),
@@ -455,12 +414,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
                 composer.BeginMarkedContent(PdfName.Tx);
                 composer.SetFont(
-                  new StandardType1Font(
-                    document,
-                    StandardType1Font.FamilyEnum.Helvetica,
-                    false,
-                    false
-                    ),
+                  PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Helvetica, false, false),
                   FontSize
                   );
                 double y = 3;

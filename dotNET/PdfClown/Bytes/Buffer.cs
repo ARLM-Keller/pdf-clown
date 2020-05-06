@@ -54,12 +54,12 @@ namespace PdfClown.Bytes
             return @object == null ? null : @object.Resolve();
         }
 
-        public static void Decode(IBuffer buffer, PdfDataObject filter, PdfDirectObject parameters)
+        public static void Decode(IBuffer buffer, PdfDataObject filter, PdfDirectObject parameters, PdfDictionary header)
         {
 
-            if (filter is PdfName) // Single filter.
+            if (filter is PdfName name) // Single filter.
             {
-                buffer.Decode(Filter.Get((PdfName)filter), (PdfDictionary)parameters);
+                buffer.Decode(Filter.Get(name), (PdfDictionary)parameters, header);
             }
             else // Multiple filters.
             {
@@ -75,17 +75,20 @@ namespace PdfClown.Bytes
                         parametersIterator.MoveNext();
                         filterParameters = (PdfDictionary)Resolve(parametersIterator.Current);
                     }
-                    buffer.Decode(Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters);
+                    buffer.Decode(Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters, header);
                 }
             }
         }
 
-        public static IBuffer Extract(IBuffer buffer, PdfDataObject filter, PdfDirectObject parameters)
+        public static IBuffer Extract(IBuffer buffer, PdfDataObject filter, PdfDirectObject parameters, PdfDictionary header)
         {
-
+            if (filter == null)
+            {
+                return buffer;
+            }
             if (filter is PdfName) // Single filter.
             {
-                buffer = buffer.Extract(Filter.Get((PdfName)filter), (PdfDictionary)parameters);
+                buffer = buffer.Extract(Filter.Get((PdfName)filter), (PdfDictionary)parameters, header);
             }
             else // Multiple filters.
             {
@@ -101,7 +104,7 @@ namespace PdfClown.Bytes
                         parametersIterator.MoveNext();
                         filterParameters = (PdfDictionary)Resolve(parametersIterator.Current);
                     }
-                    buffer = buffer.Extract(Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters);
+                    buffer = buffer.Extract(Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters, header);
                 }
             }
             return buffer;
@@ -131,6 +134,7 @@ namespace PdfClown.Bytes
         private ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian;
 
         private bool dirty;
+        private int mark;
         #endregion
 
         #region constructors
@@ -207,15 +211,15 @@ namespace PdfClown.Bytes
             return clone;
         }
 
-        public void Decode(Filter filter, PdfDictionary parameters)
+        public void Decode(Filter filter, PdfDirectObject parameters, PdfDictionary header)
         {
-            data = filter.Decode(data, 0, length, parameters);
+            data = filter.Decode(data, 0, length, parameters, header);
             length = data.Length;
         }
 
-        public IBuffer Extract(Filter filter, PdfDictionary parameters)
+        public IBuffer Extract(Filter filter, PdfDirectObject parameters, PdfDictionary header)
         {
-            var data = filter.Decode(this.data, 0, this.length, parameters);
+            var data = filter.Decode(this.data, 0, this.length, parameters, header);
             return new Buffer(data);
         }
 
@@ -227,14 +231,8 @@ namespace PdfClown.Bytes
             NotifyChange();
         }
 
-        public bool Dirty
-        {
-            get => dirty;
-            set => dirty = value;
-        }
-
-        public byte[] Encode(Filter filter, PdfDictionary parameters)
-        { return filter.Encode(data, 0, length, parameters); }
+        public byte[] Encode(Filter filter, PdfDirectObject parameters, PdfDictionary header)
+        { return filter.Encode(data, 0, length, parameters, header); }
 
         public int GetByte(int index)
         { return data[index]; }
@@ -297,6 +295,12 @@ namespace PdfClown.Bytes
         { stream.Write(data, 0, length); }
 
         #region IInputStream
+        public bool Dirty
+        {
+            get => dirty;
+            set => dirty = value;
+        }
+
         public ByteOrderEnum ByteOrder
         {
             get => byteOrder;
@@ -305,15 +309,38 @@ namespace PdfClown.Bytes
 
         /* int GetHashCode() uses inherited implementation. */
 
-        public long Position => position;
-
-        public void Read(byte[] data)
-        { Read(data, 0, data.Length); }
-
-        public void Read(byte[] data, int offset, int length)
+        public long Position
         {
+            get => position;
+            private set => position = (int)value;
+        }
+
+        public int Read(byte[] data)
+        { return Read(data, 0, data.Length); }
+
+        public int Read(byte[] data, int offset, int length)
+        {
+            if (position + length > Length)
+            {
+                length = (int)(Length - position);
+            }
             Array.Copy(this.data, position, data, offset, length);
             position += length;
+            return length;
+        }
+
+        public int Read(sbyte[] data)
+        { return Read(data, 0, data.Length); }
+
+        public int Read(sbyte[] data, int offset, int length)
+        {
+            if (position + length > Length)
+            {
+                length = (int)(Length - position);
+            }
+            System.Buffer.BlockCopy(this.data, position, data, offset, length);
+            position += length;
+            return length;
         }
 
         public byte[] ReadNullTermitaded()
@@ -457,8 +484,22 @@ namespace PdfClown.Bytes
             this.position = (int)position;
         }
 
-        public void Skip(long offset)
-        { Seek(position + offset); }
+        public long Skip(long offset)
+        {
+            var newPosition = position + offset;
+            Seek(newPosition);
+            return newPosition;
+        }
+
+        public int Mark()
+        {
+            return mark = position;
+        }
+
+        public void Reset()
+        {
+            Seek(mark);
+        }
 
         #region IDataWrapper
         public byte[] ToByteArray()
@@ -476,6 +517,8 @@ namespace PdfClown.Bytes
 
         #region IStream
         public long Length => length;
+
+        public long Available { get => length - position; }
 
         #region IDisposable
         public void Dispose()
@@ -534,6 +577,11 @@ namespace PdfClown.Bytes
 
             dirty = true;
             OnChange(this, null);
+        }
+
+        internal void Flush()
+        {
+            throw new NotImplementedException();
         }
 
 

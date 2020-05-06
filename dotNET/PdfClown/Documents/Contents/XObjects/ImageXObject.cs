@@ -32,7 +32,6 @@ using System;
 using SkiaSharp;
 using System.IO;
 using System.Text;
-using BitMiracle.LibTiff.Classic;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using PdfClown.Bytes;
@@ -104,7 +103,7 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public PdfDirectObject Parameters => Stream.Parameters;
 
-        public PdfDirectObject Header => Stream.Header;
+        public PdfDictionary Header => Stream.Header;
 
         /**
           <summary>Gets the size of the image (in samples).</summary>

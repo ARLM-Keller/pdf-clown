@@ -48,17 +48,20 @@ namespace PdfClown.Objects
         #region private
         private static PdfArray Normalize(PdfArray rectangle)
         {
-            if (rectangle[0].CompareTo(rectangle[2]) > 0)
+            if (rectangle.Count > 3)
             {
-                PdfDirectObject leftCoordinate = rectangle[2];
-                rectangle[2] = rectangle[0];
-                rectangle[0] = leftCoordinate;
-            }
-            if (rectangle[1].CompareTo(rectangle[3]) > 0)
-            {
-                PdfDirectObject bottomCoordinate = rectangle[3];
-                rectangle[3] = rectangle[1];
-                rectangle[1] = bottomCoordinate;
+                if (rectangle[0].CompareTo(rectangle[2]) > 0)
+                {
+                    PdfDirectObject leftCoordinate = rectangle[2];
+                    rectangle[2] = rectangle[0];
+                    rectangle[0] = leftCoordinate;
+                }
+                if (rectangle[1].CompareTo(rectangle[3]) > 0)
+                {
+                    PdfDirectObject bottomCoordinate = rectangle[3];
+                    rectangle[3] = rectangle[1];
+                    rectangle[1] = bottomCoordinate;
+                }
             }
             return rectangle;
         }
@@ -79,10 +82,10 @@ namespace PdfClown.Objects
         public Rectangle(double left, double top, double width, double height)
             : this(new PdfArray(new PdfDirectObject[]
               {
-            PdfReal.Get(left), // Left (X).
-            PdfReal.Get(top - height), // Bottom (Y).
-            PdfReal.Get(left + width), // Right.
-            PdfReal.Get(top) // Top.
+                  PdfReal.Get(left), // Left (X).
+                  PdfReal.Get(top - height), // Bottom (Y).
+                  PdfReal.Get(left + width), // Right.
+                  PdfReal.Get(top) // Top.
               }
               )
             )
@@ -118,7 +121,7 @@ namespace PdfClown.Objects
             set => BaseDataObject[3] = PdfReal.Get(value);
         }
 
-        public SKRect ToRectangleF()
+        public SKRect ToRect()
         { return SKRect.Create((float)X, (float)Y, (float)Width, (float)Height); }
 
         public double Width

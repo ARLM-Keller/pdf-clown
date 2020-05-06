@@ -511,7 +511,7 @@ namespace PdfClown.Documents.Contents.Fonts
             if (!Symbolic) // non-symbolic
             {
                 string name = encoding.GetName(code);
-                if (".notdef".Equals(name, StringComparison.Ordinal))
+                if (name == null || ".notdef".Equals(name, StringComparison.Ordinal))
                 {
                     return 0;
                 }

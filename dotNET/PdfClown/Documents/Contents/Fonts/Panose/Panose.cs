@@ -58,7 +58,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 if (classification == null)
                 {
                     byte[] panose = new byte[12];
-                    Array.Copy(bytes, 2, panose, 0, 12);
+                    Array.Copy(bytes, 2, panose, 0, 10);
                     classification = new PanoseClassification(panose);
                 }
                 return classification;

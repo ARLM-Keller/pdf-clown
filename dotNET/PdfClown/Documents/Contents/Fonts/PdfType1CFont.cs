@@ -104,7 +104,7 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             ReadEncoding();
             fontMatrixTransform = FontMatrix;
-            fontMatrixTransform.SetScaleTranslate(1000, 1000, 0, 0);
+            fontMatrixTransform.PreConcat(SKMatrix.CreateScale(1000, 1000));
         }
 
         public override BaseFont Font

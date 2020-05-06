@@ -608,9 +608,9 @@ namespace PdfClown.Documents.Interaction.Annotations
 
             var A = SKMatrix.MakeScale(bounds.Width / quad.HorizontalLength, bounds.Height / quad.VerticalLenght);
             var quadA = Quad.Transform(quad, ref A);
-            SKMatrix.PostConcat(ref A, SKMatrix.MakeTranslation(bounds.Left - quadA.Left, bounds.Top - quadA.Top));
+            A.PostConcat(SKMatrix.MakeTranslation(bounds.Left - quadA.Left, bounds.Top - quadA.Top));
 
-            SKMatrix.PostConcat(ref Matrix, A);
+            Matrix.PostConcat(A);
 
             var self = PageMatrix;
             canvas.Save();

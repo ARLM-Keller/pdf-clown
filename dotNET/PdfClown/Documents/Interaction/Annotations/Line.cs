@@ -240,9 +240,9 @@ namespace PdfClown.Documents.Interaction.Annotations
                 Appearance.Normal[null] = null;
             }
             var dif = SKMatrix.MakeIdentity();
-            SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY));
-            SKMatrix.PreConcat(ref dif, SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height));
-            SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
+            dif.PreConcat(SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY));
+            dif.PreConcat(SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height));
+            dif.PreConcat(SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
 
             StartPoint = dif.MapPoint(StartPoint);
             EndPoint = dif.MapPoint(EndPoint);

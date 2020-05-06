@@ -550,7 +550,7 @@ namespace PdfClown.Viewer
         {
             CurrentPicture = picture;
             CurrentPictureMatrix = CurrentViewMatrix;
-            SKMatrix.PreConcat(ref CurrentPictureMatrix, CurrentPicture.Matrix);
+            CurrentPictureMatrix.PreConcat(CurrentPicture.Matrix);
             CurrentPictureMatrix.TryInvert(out InvertPictureMatrix);
             CurrentPointerLocation = InvertPictureMatrix.MapPoint(e.Location);
             //SKMatrix.PreConcat(ref CurrentPictureMatrix, CurrentPicture.InitialMatrix);
@@ -1049,7 +1049,7 @@ namespace PdfClown.Viewer
                     Page = page,
                     Size = imageSize
                 };
-                details.Matrix.SetScaleTranslate(1, 1, indent, totalHeight);
+                details.Matrix.PreConcat(SKMatrix.CreateTranslation(indent, totalHeight));
                 pictures.Add(details);
                 if (imageSize.Width > totalWidth)
                     totalWidth = imageSize.Width;
@@ -1087,8 +1087,8 @@ namespace PdfClown.Viewer
                 return;
             }
             var matrix = SKMatrix.MakeIdentity();
-            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(scale, scale));
-            SKMatrix.PreConcat(ref matrix, picture.Matrix);
+            matrix.PreConcat(SKMatrix.MakeScale(scale, scale));
+            matrix.PreConcat(picture.Matrix);
             var bound = annotation.GetBounds(matrix);
             var top = bound.Top - (CurrentArea.MidY / XScaleFactor - bound.Height / 2);
             var left = bound.Left - (CurrentArea.MidX / YScaleFactor - bound.Width / 2);
@@ -1119,10 +1119,13 @@ namespace PdfClown.Viewer
             {
                 dy = (float)(Height - maximumHeight) / 2;
             }
-            CurrentNavigationMatrix.SetScaleTranslate(scale, scale, ((float)-HorizontalValue) + dx, ((float)-VerticalValue) + dy);
+            CurrentNavigationMatrix = new SKMatrix(
+                scale, 0, ((float)-HorizontalValue) + dx,
+                0, scale, ((float)-VerticalValue) + dy,
+                0, 0, 1);
 
             CurrentViewMatrix = CurrentWindowScaleMatrix;
-            SKMatrix.PreConcat(ref CurrentViewMatrix, CurrentNavigationMatrix);
+            CurrentViewMatrix.PreConcat(CurrentNavigationMatrix);
         }
 
         private void ClearPictures()

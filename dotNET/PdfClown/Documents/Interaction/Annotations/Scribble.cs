@@ -147,9 +147,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             //base.MoveTo(newBox);
             var dif = SKMatrix.MakeIdentity();
-            SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY));
-            SKMatrix.PreConcat(ref dif, SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height));
-            SKMatrix.PreConcat(ref dif, SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
+            dif.PreConcat(SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY));
+            dif.PreConcat(SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height));
+            dif.PreConcat(SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
             var oldPaths = Paths;
             var newPaths = new List<SKPath>();
             foreach (var path in oldPaths)

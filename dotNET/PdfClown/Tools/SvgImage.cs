@@ -56,11 +56,11 @@ namespace PdfClown.Tools
 
             if (rotate > 0)
             {
-                SKMatrix.PreConcat(ref matrix, SKMatrix.MakeRotationDegrees(rotate, (left + widthR / 2), (top + heightR / 2)));
+                matrix.PreConcat(SKMatrix.MakeRotationDegrees(rotate, (left + widthR / 2), (top + heightR / 2)));
             }
 
-            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(left + (widthR - width) / 2F, top + (heightR - height) / 2F));
-            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(scale, scale));
+            matrix.PreConcat(SKMatrix.MakeTranslation(left + (widthR - width) / 2F, top + (heightR - height) / 2F));
+            matrix.PreConcat(SKMatrix.MakeScale(scale, scale));
 
             return matrix;
         }

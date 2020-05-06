@@ -109,7 +109,7 @@ namespace PdfClown.Documents.Contents.Objects
                         var size = imageObject.Size;
                         var imageMatrix = imageObject.Matrix;
                         imageMatrix.ScaleY *= -1;
-                        SKMatrix.PreConcat(ref imageMatrix, SKMatrix.MakeTranslation(0, -size.Height));
+                        imageMatrix.PreConcat(SKMatrix.MakeTranslation(0, -size.Height));
                         canvas.Concat(ref imageMatrix);
 
                         if (state.SMask is SoftMask softMask)
@@ -136,7 +136,7 @@ namespace PdfClown.Documents.Contents.Objects
                     var picture = formObject.Render();
 
                     var ctm = state.Ctm;
-                    SKMatrix.PreConcat(ref ctm, formObject.Matrix);
+                    ctm.PreConcat(formObject.Matrix);
                     canvas.SetMatrix(ctm);
 
 

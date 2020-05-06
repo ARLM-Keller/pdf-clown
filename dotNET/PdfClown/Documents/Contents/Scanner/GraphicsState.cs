@@ -184,13 +184,13 @@ namespace PdfClown.Documents.Contents
 
             // Scaling.
             SKSize rotatedCanvasSize = rotation.Transform(canvasSize);
-            SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeScale(
+            initialCtm.PreConcat(SKMatrix.MakeScale(
                rotatedCanvasSize.Width / contentBox.Width,
                rotatedCanvasSize.Height / contentBox.Height
                ));
 
             // Origin alignment.
-            SKMatrix.PreConcat(ref initialCtm, SKMatrix.MakeTranslation(-contentBox.Left, -contentBox.Top)); //TODO: verify minimum coordinates!
+            initialCtm.PreConcat(SKMatrix.MakeTranslation(-contentBox.Left, -contentBox.Top)); //TODO: verify minimum coordinates!
             return initialCtm;
         }
 
@@ -318,9 +318,9 @@ namespace PdfClown.Documents.Contents
         public static SKMatrix GetRotationMatrix(SKRect box, int degrees)
         {
             var matrix = SKMatrix.MakeRotationDegrees(degrees);
-            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1, -1));
+            matrix.PreConcat(SKMatrix.MakeScale(1, -1));
             var mappedBox = matrix.MapRect(box);
-            SKMatrix.PostConcat(ref matrix, SKMatrix.MakeTranslation(-mappedBox.Left, -mappedBox.Top));
+            matrix.PostConcat(SKMatrix.MakeTranslation(-mappedBox.Left, -mappedBox.Top));
             return matrix;
         }
 
@@ -336,7 +336,7 @@ namespace PdfClown.Documents.Contents
               transformation matrix (ctm) and the text matrix (tm).
             */
             SKMatrix matrix = GetUserToDeviceMatrix(topDown);
-            SKMatrix.PreConcat(ref matrix, textState.Tm);
+            matrix.PreConcat(textState.Tm);
             return matrix;
         }
 
@@ -350,7 +350,7 @@ namespace PdfClown.Documents.Contents
             if (topDown)
             {
                 SKMatrix matrix = new SKMatrix { Values = new float[] { 1, 0, 0, 0, -1, scanner.CanvasSize.Height, 0, 0, 1 } };
-                SKMatrix.PreConcat(ref matrix, ctm);
+                matrix.PreConcat(ctm);
                 return matrix;
             }
             else

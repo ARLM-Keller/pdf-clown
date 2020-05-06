@@ -170,7 +170,7 @@ namespace PdfClown.Documents.Contents.Objects
                     charSpace = newCharSpace.Value;
                 }
                 tm = state.TextState.Tlm;
-                SKMatrix.PreConcat(ref tm, new SKMatrix { Values = new float[] { 1, 0, 0, 0, 1, (float)-state.Lead, 0, 0, 1 } });
+                tm.PreConcat(new SKMatrix { Values = new float[] { 1, 0, 0, 0, 1, (float)-state.Lead, 0, 0, 1 } });
             }
             else
             { tm = state.TextState.Tm; }
@@ -202,8 +202,8 @@ namespace PdfClown.Documents.Contents.Objects
                             //NOTE: The text rendering matrix is recomputed before each glyph is painted
                             // during a text-showing operation.
                             SKMatrix trm = parameters;// ctm;
-                            SKMatrix.PostConcat(ref trm, tm);
-                            SKMatrix.PostConcat(ref trm, ctm);
+                            trm.PostConcat(tm);
+                            trm.PostConcat(ctm);
 
                             // get glyph's position vector if this is vertical text
                             // changes to vertical text should be tested with PDFBOX-2294 and PDFBOX-1422
@@ -212,9 +212,9 @@ namespace PdfClown.Documents.Contents.Objects
                                 // position vector, in text space
                                 var v = font.GetPositionVector(code);
                                 // apply the position vector to the horizontal origin to get the vertical origin
-                                SKMatrix.PreConcat(ref trm, SKMatrix.MakeTranslation(v.X, v.Y));
+                                trm.PreConcat(SKMatrix.MakeTranslation(v.X, v.Y));
                             }
-                            SKMatrix.PreConcat(ref trm, fm);
+                            trm.PreConcat(fm);
 
                             if (context != null && !(textChar == ' '))
                             {
@@ -232,7 +232,7 @@ namespace PdfClown.Documents.Contents.Objects
                                     : SKRect.Create(0, -charBBox.Bottom, width, charBBox.Height);
 
                                 var quad = new Quad(charBox);
-                                SKMatrix.PreConcat(ref trm, SKMatrix.MakeScale(1, -1));
+                                trm.PreConcat(SKMatrix.MakeScale(1, -1));
                                 quad.Transform(ref trm);
                                 textScanner.ScanChar(textChar, quad);
                             }
@@ -253,7 +253,7 @@ namespace PdfClown.Documents.Contents.Objects
                                 tx = (float)((w.X * fontSize + charSpace + wordSpacing) * horizontalScaling);
                                 ty = 0;
                             }
-                            SKMatrix.PreConcat(ref tm, SKMatrix.MakeTranslation(tx, ty));
+                            tm.PreConcat(SKMatrix.MakeTranslation(tx, ty));
                         }
                     }
                 }
@@ -274,7 +274,7 @@ namespace PdfClown.Documents.Contents.Objects
                         ty = 0;
                     }
 
-                    SKMatrix.PreConcat(ref tm, SKMatrix.MakeTranslation(tx, ty));
+                    tm.PreConcat(SKMatrix.MakeTranslation(tx, ty));
                 }
             }
             if (context != null)

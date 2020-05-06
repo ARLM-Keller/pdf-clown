@@ -429,6 +429,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
                 catch (Exception e)
                 {
+                    Debug.WriteLine($"error: {e} on GetPath");
                     gid = 0;
                 }
             }

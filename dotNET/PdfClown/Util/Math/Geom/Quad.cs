@@ -188,8 +188,8 @@ namespace PdfClown.Util.Math.Geom
         {
             SKRect oldBounds = GetBounds();
             var matrix = SKMatrix.MakeTranslation(oldBounds.MidX, oldBounds.MidY);
-            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height));
-            SKMatrix.PreConcat(ref matrix, SKMatrix.MakeTranslation(-(oldBounds.MidX), -(oldBounds.MidY)));
+            matrix.PreConcat(SKMatrix.MakeScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height));
+            matrix.PreConcat(SKMatrix.MakeTranslation(-(oldBounds.MidX), -(oldBounds.MidY)));
             pointTopLeft = matrix.MapPoint(pointTopLeft);
             pointTopRight = matrix.MapPoint(pointTopRight);
             pointBottomRight = matrix.MapPoint(pointBottomRight);

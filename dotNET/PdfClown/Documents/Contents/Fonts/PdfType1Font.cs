@@ -227,7 +227,7 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             ReadEncoding();
             fontMatrixTransform = FontMatrix;
-            fontMatrixTransform.PreConcat(SKMatrix.CreateScale(1000, 1000));
+            fontMatrixTransform = fontMatrixTransform.PreConcat(SKMatrix.CreateScale(1000, 1000));
         }
 
         public PdfType1Font(Document context, string baseFont) : base(context, baseFont)

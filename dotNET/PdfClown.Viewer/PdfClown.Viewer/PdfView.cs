@@ -550,7 +550,7 @@ namespace PdfClown.Viewer
         {
             CurrentPicture = picture;
             CurrentPictureMatrix = CurrentViewMatrix;
-            CurrentPictureMatrix.PreConcat(CurrentPicture.Matrix);
+            CurrentPictureMatrix = CurrentPictureMatrix.PreConcat(CurrentPicture.Matrix);
             CurrentPictureMatrix.TryInvert(out InvertPictureMatrix);
             CurrentPointerLocation = InvertPictureMatrix.MapPoint(e.Location);
             //SKMatrix.PreConcat(ref CurrentPictureMatrix, CurrentPicture.InitialMatrix);
@@ -1049,7 +1049,7 @@ namespace PdfClown.Viewer
                     Page = page,
                     Size = imageSize
                 };
-                details.Matrix.PreConcat(SKMatrix.CreateTranslation(indent, totalHeight));
+                details.Matrix = details.Matrix.PreConcat(SKMatrix.CreateTranslation(indent, totalHeight));
                 pictures.Add(details);
                 if (imageSize.Width > totalWidth)
                     totalWidth = imageSize.Width;
@@ -1086,9 +1086,9 @@ namespace PdfClown.Viewer
             {
                 return;
             }
-            var matrix = SKMatrix.MakeIdentity();
-            matrix.PreConcat(SKMatrix.MakeScale(scale, scale));
-            matrix.PreConcat(picture.Matrix);
+            var matrix = SKMatrix.MakeIdentity()
+                .PreConcat(SKMatrix.MakeScale(scale, scale))
+                .PreConcat(picture.Matrix);
             var bound = annotation.GetBounds(matrix);
             var top = bound.Top - (CurrentArea.MidY / XScaleFactor - bound.Height / 2);
             var left = bound.Left - (CurrentArea.MidX / YScaleFactor - bound.Width / 2);
@@ -1125,7 +1125,7 @@ namespace PdfClown.Viewer
                 0, 0, 1);
 
             CurrentViewMatrix = CurrentWindowScaleMatrix;
-            CurrentViewMatrix.PreConcat(CurrentNavigationMatrix);
+            CurrentViewMatrix = CurrentViewMatrix.PreConcat(CurrentNavigationMatrix);
         }
 
         private void ClearPictures()

@@ -473,10 +473,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             var oldBox = Box;
             var oldTextBox = TextBox;
 
-            var dif = SKMatrix.MakeIdentity();
-            dif.PreConcat(SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY));
-            dif.PreConcat(SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height));
-            dif.PreConcat(SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
+            var dif = SKMatrix.MakeIdentity()
+                .PreConcat(SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY))
+                .PreConcat(SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height))
+                .PreConcat(SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
 
             if (Type == TypeEnum.Callout && Line != null)
             {

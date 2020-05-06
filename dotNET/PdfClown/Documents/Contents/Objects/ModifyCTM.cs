@@ -97,7 +97,7 @@ namespace PdfClown.Documents.Contents.Objects
         public override void Scan(GraphicsState state)
         {
             var ctm = state.Ctm;
-            ctm.PreConcat(Value);
+            ctm = ctm.PreConcat(Value);
             state.Ctm = ctm;
             state.Scanner.ContentContext.OnSetCtm(ctm);
 

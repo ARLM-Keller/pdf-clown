@@ -601,16 +601,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             var picture = appearance.Render();
 
             var startMatrix = appearance.StartMatrix;
-            var Matrix = appearance.Matrix;
+            var matrix = appearance.Matrix;
 
             var quad = new Quad(appearanceBounds);
-            quad.Transform(ref Matrix);
+            quad.Transform(ref matrix);
 
-            var A = SKMatrix.MakeScale(bounds.Width / quad.HorizontalLength, bounds.Height / quad.VerticalLenght);
-            var quadA = Quad.Transform(quad, ref A);
-            A.PostConcat(SKMatrix.MakeTranslation(bounds.Left - quadA.Left, bounds.Top - quadA.Top));
+            var a = SKMatrix.MakeScale(bounds.Width / quad.HorizontalLength, bounds.Height / quad.VerticalLenght);
+            var quadA = Quad.Transform(quad, ref a);
+            a = a.PostConcat(SKMatrix.MakeTranslation(bounds.Left - quadA.Left, bounds.Top - quadA.Top));
 
-            Matrix.PostConcat(A);
+            a = matrix.PostConcat(a);
 
             var self = PageMatrix;
             canvas.Save();
@@ -621,12 +621,12 @@ namespace PdfClown.Documents.Interaction.Annotations
                 using (var paint = new SKPaint())
                 {
                     paint.Color = paint.Color.WithAlpha((byte)(Alpha * 255));
-                    canvas.DrawPicture(picture, ref Matrix, paint);
+                    canvas.DrawPicture(picture, ref matrix, paint);
                 }
             }
             else
             {
-                canvas.DrawPicture(picture, ref Matrix);
+                canvas.DrawPicture(picture, ref matrix);
             }
             canvas.Restore();
         }

@@ -184,13 +184,13 @@ namespace PdfClown.Documents.Contents
 
             // Scaling.
             SKSize rotatedCanvasSize = rotation.Transform(canvasSize);
-            initialCtm.PreConcat(SKMatrix.MakeScale(
+            initialCtm = initialCtm.PreConcat(SKMatrix.MakeScale(
                rotatedCanvasSize.Width / contentBox.Width,
                rotatedCanvasSize.Height / contentBox.Height
                ));
 
             // Origin alignment.
-            initialCtm.PreConcat(SKMatrix.MakeTranslation(-contentBox.Left, -contentBox.Top)); //TODO: verify minimum coordinates!
+            initialCtm = initialCtm.PreConcat(SKMatrix.MakeTranslation(-contentBox.Left, -contentBox.Top)); //TODO: verify minimum coordinates!
             return initialCtm;
         }
 
@@ -318,9 +318,9 @@ namespace PdfClown.Documents.Contents
         public static SKMatrix GetRotationMatrix(SKRect box, int degrees)
         {
             var matrix = SKMatrix.MakeRotationDegrees(degrees);
-            matrix.PreConcat(SKMatrix.MakeScale(1, -1));
+            matrix = matrix.PreConcat(SKMatrix.MakeScale(1, -1));
             var mappedBox = matrix.MapRect(box);
-            matrix.PostConcat(SKMatrix.MakeTranslation(-mappedBox.Left, -mappedBox.Top));
+            matrix = matrix.PostConcat(SKMatrix.MakeTranslation(-mappedBox.Left, -mappedBox.Top));
             return matrix;
         }
 
@@ -336,7 +336,7 @@ namespace PdfClown.Documents.Contents
               transformation matrix (ctm) and the text matrix (tm).
             */
             SKMatrix matrix = GetUserToDeviceMatrix(topDown);
-            matrix.PreConcat(textState.Tm);
+            matrix = matrix.PreConcat(textState.Tm);
             return matrix;
         }
 
@@ -350,7 +350,7 @@ namespace PdfClown.Documents.Contents
             if (topDown)
             {
                 SKMatrix matrix = new SKMatrix { Values = new float[] { 1, 0, 0, 0, -1, scanner.CanvasSize.Height, 0, 0, 1 } };
-                matrix.PreConcat(ctm);
+                matrix = matrix.PreConcat(ctm);
                 return matrix;
             }
             else

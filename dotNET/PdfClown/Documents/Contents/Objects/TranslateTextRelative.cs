@@ -92,7 +92,7 @@ namespace PdfClown.Documents.Contents.Objects
         public override void Scan(GraphicsState state)
         {
             var tlm = state.TextState.Tlm;
-            tlm.PreConcat(new SKMatrix { Values = new float[] { 1, 0, (float)OffsetX, 0, 1, (float)OffsetY, 0, 0, 1 } });
+            tlm = tlm.PreConcat(new SKMatrix { Values = new float[] { 1, 0, (float)OffsetX, 0, 1, (float)OffsetY, 0, 0, 1 } });
             state.TextState.Tlm =
                 state.TextState.Tm = tlm;
             if (LeadSet)

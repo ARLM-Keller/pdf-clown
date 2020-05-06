@@ -518,6 +518,7 @@
     <PackageReference Include="SkiaSharp" Version="1.68.2.1" />
     <PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />    
     <PackageReference Include="FreeImage.NETCore" Version="4.3.7" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.7.0"/>
   </ItemGroup>
   <!--<ItemGroup>
     <ProjectReference Include="..\FreeImage.NETCore\FreeImage.NETCore.csproj" />

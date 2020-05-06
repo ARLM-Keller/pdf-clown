@@ -138,8 +138,8 @@ namespace PdfClown.Documents.Contents.Objects
                     var size = Size;
                     var matrix = canvas.TotalMatrix;
 
-                    matrix.PreConcat(Matrix);
-                    matrix.PreConcat(SKMatrix.MakeTranslation(0, -size.Height));
+                    matrix = matrix.PreConcat(Matrix);
+                    matrix = matrix.PreConcat(SKMatrix.MakeTranslation(0, -size.Height));
                     canvas.SetMatrix(matrix);
                     var rect = SKRect.Create(0, 0, size.Width, size.Height);
                     var test = canvas.TotalMatrix.MapRect(rect);

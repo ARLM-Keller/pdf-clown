@@ -41,21 +41,21 @@ namespace PdfClown.Documents.Contents.Objects
         #region fields
         public static readonly string[] BeginOperatorKeywords = new string[]
           {
-        BeginSubpath.OperatorKeyword,
-        DrawRectangle.OperatorKeyword
+              BeginSubpath.OperatorKeyword,
+              DrawRectangle.OperatorKeyword
           };
         public static readonly string[] EndOperatorKeywords = new string[]
           {
-        PaintPath.CloseFillStrokeEvenOddOperatorKeyword,
-        PaintPath.CloseFillStrokeOperatorKeyword,
-        PaintPath.CloseStrokeOperatorKeyword,
-        PaintPath.EndPathNoOpOperatorKeyword,
-        PaintPath.FillEvenOddOperatorKeyword,
-        PaintPath.FillObsoleteOperatorKeyword,
-        PaintPath.FillOperatorKeyword,
-        PaintPath.FillStrokeEvenOddOperatorKeyword,
-        PaintPath.FillStrokeOperatorKeyword,
-        PaintPath.StrokeOperatorKeyword
+              PaintPath.CloseFillStrokeEvenOddOperatorKeyword,
+              PaintPath.CloseFillStrokeOperatorKeyword,
+              PaintPath.CloseStrokeOperatorKeyword,
+              PaintPath.EndPathNoOpOperatorKeyword,
+              PaintPath.FillEvenOddOperatorKeyword,
+              PaintPath.FillObsoleteOperatorKeyword,
+              PaintPath.FillOperatorKeyword,
+              PaintPath.FillStrokeEvenOddOperatorKeyword,
+              PaintPath.FillStrokeOperatorKeyword,
+              PaintPath.StrokeOperatorKeyword
           };
         #endregion
         #endregion

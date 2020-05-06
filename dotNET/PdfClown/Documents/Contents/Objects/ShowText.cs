@@ -33,6 +33,8 @@ using SkiaSharp;
 using PdfClown.Documents.Contents.Scanner;
 using System.Text;
 using PdfClown.Util.Math.Geom;
+using PdfClown.Tokens;
+using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -92,10 +94,10 @@ namespace PdfClown.Documents.Contents.Objects
             </list>
           </returns>
         */
-        public virtual IList<object> Value
+        public virtual IEnumerable<object> Value
         {
-            get => new List<object>() { Text };
-            set => Text = (byte[])value[0];
+            get => Enumerable.Repeat(Text, 1);
+            set => Text = (byte[])value.FirstOrDefault();
         }
 
         public override void Scan(GraphicsState state)
@@ -118,65 +120,54 @@ namespace PdfClown.Documents.Contents.Objects
               TODO: I really dislike this solution -- it's a temporary hack until the event-driven
               parsing mechanism is implemented...
             */
-            /*
-              TODO: support to vertical writing mode.
-            */
 
-            double contextHeight = state.Scanner.ContextSize.Height;
             Font font = state.Font ?? Font.LatestFont;
             if (font == null)
                 return;
+
+            bool wordSpaceSupported = !(font is PdfType0Font);
+            bool vertical = font.IsVertical;
+
             double fontSize = state.FontSize;
-            double scaledFactor = Font.GetScalingFactor(fontSize) * state.Scale;
-            bool wordSpaceSupported = !(font is CompositeFont);
-            double wordSpace = wordSpaceSupported ? state.WordSpace * state.Scale : 0;
-            double charSpace = state.CharSpace * state.Scale;
+            double horizontalScaling = state.Scale;
+            double wordSpace = wordSpaceSupported ? state.WordSpace : 0;
+            double charSpace = state.CharSpace;
+            var charBBox = font.BoundingBox;
+            SKMatrix fm = font.FontMatrix;
             SKMatrix ctm = state.Ctm;
             SKMatrix tm = state.TextState.Tm;
+
             //var encoding = font.GetEnoding();
             var context = state.Scanner.RenderContext;
-            var fill = context != null && state.RenderModeFill ? state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha) : null;
-            var typeface = font?.GetTypeface();
-            var nameTypeface = font?.GetTypefaceByName();
+
+            // put the text state parameters into matrix form
+            var parameters = new SKMatrix(
+                (float)(fontSize * horizontalScaling), 0f, 0f,
+                0f, (float)fontSize, (float)state.Rise,
+                0f, 0f, 1f);
+
             if (context != null)
             {
                 context.Save();
             }
 
-            if (fill != null)
-            {
-                fill.TextSize = (float)state.FontSize;
-                fill.TextScaleX = (float)state.Scale;
-            }
+            var fill = context != null && state.RenderModeFill ? state.CreateFillPaint() : null;
+            var stroke = context != null && state.RenderModeStroke ? state.CreateStrokePaint() : null;
 
-            var stroke = context != null && state.RenderModeStroke ? state.StrokeColorSpace?.GetPaint(state.StrokeColor, state.StrokeAlpha) : null;
-            if (stroke != null)
-            {
-                stroke.Typeface = typeface;
-                stroke.TextSize = (float)state.FontSize;
-                stroke.TextScaleX = (float)state.Scale;
-                stroke.Style = SKPaintStyle.Stroke;
-                stroke.StrokeWidth = (float)state.LineWidth;
-                stroke.StrokeCap = state.LineCap.ToSkia();
-                stroke.StrokeJoin = state.LineJoin.ToSkia();
-                stroke.StrokeMiter = (float)state.MiterLimit;
-            }
             if (this is ShowTextToNextLine showTextToNextLine)
             {
                 double? newWordSpace = showTextToNextLine.WordSpace;
                 if (newWordSpace != null)
                 {
-                    //if (textScanner == null)
-                    { state.WordSpace = newWordSpace.Value; }
+                    state.WordSpace = newWordSpace.Value;
                     if (wordSpaceSupported)
-                    { wordSpace = newWordSpace.Value * state.Scale; }
+                    { wordSpace = newWordSpace.Value; }
                 }
                 double? newCharSpace = showTextToNextLine.CharSpace;
                 if (newCharSpace != null)
                 {
-                    //if (textScanner == null)
-                    { state.CharSpace = newCharSpace.Value; }
-                    charSpace = newCharSpace.Value * state.Scale;
+                    state.CharSpace = newCharSpace.Value;
+                    charSpace = newCharSpace.Value;
                 }
                 tm = state.TextState.Tlm;
                 SKMatrix.PreConcat(ref tm, new SKMatrix { Values = new float[] { 1, 0, 0, 0, 1, (float)-state.Lead, 0, 0, 1 } });
@@ -188,86 +179,111 @@ namespace PdfClown.Documents.Contents.Objects
             {
                 if (textElement is byte[] byteElement) // Text string.
                 {
-                    string textString = font.Decode(byteElement);
-
-                    foreach (char textChar in textString)
+                    using (var buffer = new Bytes.Buffer(byteElement))
                     {
-                        //NOTE: The text rendering matrix is recomputed before each glyph is painted
-                        // during a text-showing operation.
-                        SKMatrix trm = ctm;
-                        SKMatrix.PreConcat(ref trm, tm);
-                        SKMatrix.PreConcat(ref trm, SKMatrix.MakeScale(1, -1));
-
-                        if (context != null
-                            && !(textString.Length == 1
-                            && (textString[0] == ' '
-                            || textString[0] == '\r'
-                            || textString[0] == '\n'
-                            || char.IsControl(textString[0])
-                            )))
+                        while (buffer.Position < buffer.Length)
                         {
-                            var text = font is Type1Font
-                                ? System.Text.Encoding.UTF8.GetBytes(new[] { textChar })
-                                //: font is Type1Font && typeface != null
-                                //? BitConverter.GetBytes(font.GetGlyph(textChar))
-                                : font is Type2Font
-                                ? System.Text.Encoding.UTF8.GetBytes(new[] { textChar })
-                                : font.Encode(textChar.ToString());
-                            context.SetMatrix(trm);
-                            if (fill != null)
+                            var code = font.ReadCode(buffer, out var codeBytes);
+                            var textCode = font.ToUnicode(code);
+                            if (textCode < 0)
                             {
-                                fill.Typeface = typeface;
-                                if (fill.ContainsGlyphs(text))
-                                {
-                                    context.DrawText(text, 0, 0, fill);
-                                }
-                                else if (typeface != nameTypeface)
-                                {
-                                    fill.Typeface = nameTypeface;
-                                    context.DrawText(text, 0, 0, fill);
-                                }
-                                else
-                                { }
+                                // Missing character.
+                                textCode = '?';// font.MissingCharacter(byteElement, code);
+                            }
+                            var textChar = (char)textCode;
+                            // Word spacing shall be applied to every occurrence of the single-byte character code
+                            // 32 in a string when using a simple font or a composite font that defines code 32 as
+                            // a single-byte code.
+                            double wordSpacing = 0;
+                            if (codeBytes.Length == 1 && code == 32)
+                            {
+                                wordSpacing = wordSpace;
+                            }
+                            //NOTE: The text rendering matrix is recomputed before each glyph is painted
+                            // during a text-showing operation.
+                            SKMatrix trm = parameters;// ctm;
+                            SKMatrix.PostConcat(ref trm, tm);
+                            SKMatrix.PostConcat(ref trm, ctm);
+
+                            // get glyph's position vector if this is vertical text
+                            // changes to vertical text should be tested with PDFBOX-2294 and PDFBOX-1422
+                            if (vertical)
+                            {
+                                // position vector, in text space
+                                var v = font.GetPositionVector(code);
+                                // apply the position vector to the horizontal origin to get the vertical origin
+                                SKMatrix.PreConcat(ref trm, SKMatrix.MakeTranslation(v.X, v.Y));
+                            }
+                            SKMatrix.PreConcat(ref trm, fm);
+
+                            if (context != null && !(textChar == ' '))
+                            {
+                                context.SetMatrix(trm);
+                                font.DrawChar(context, fill, stroke, textChar, code, codeBytes);
                             }
 
-                            if (stroke != null)
-                            {
-                                context.DrawText(text, 0, 0, stroke);
-                            }
-                        }
-                        double charWidth = font.GetWidth(textChar) * scaledFactor;
+                            var w = font.GetDisplacement(code);
 
-                        if (textScanner != null)
-                        {
-                            var charBox = SKRect.Create(0, (float)(-font.GetAscent(fontSize)), (float)charWidth, (float)font.GetHeight(textChar, fontSize));
-                            var quad = new Quad(charBox);
-                            quad.Transform(ref trm);
-                            textScanner.ScanChar(textChar, quad);
+                            if (textScanner != null)
+                            {
+                                var width = font.GetWidth(code);
+                                var charBox = vertical
+                                    ? SKRect.Create(charBBox.Right, 0, width, charBBox.Height)
+                                    : SKRect.Create(0, -charBBox.Bottom, width, charBBox.Height);
+
+                                var quad = new Quad(charBox);
+                                SKMatrix.PreConcat(ref trm, SKMatrix.MakeScale(1, -1));
+                                quad.Transform(ref trm);
+                                textScanner.ScanChar(textChar, quad);
+                            }
+                            /*
+                              NOTE: After the glyph is painted, the text matrix is updated
+                              according to the glyph displacement and any applicable spacing parameter.
+                            */
+                            // calculate the combined displacements
+                            float tx;
+                            float ty;
+                            if (vertical)
+                            {
+                                tx = 0;
+                                ty = (float)(w.Y * fontSize + charSpace + wordSpacing);
+                            }
+                            else
+                            {
+                                tx = (float)((w.X * fontSize + charSpace + wordSpacing) * horizontalScaling);
+                                ty = 0;
+                            }
+                            SKMatrix.PreConcat(ref tm, SKMatrix.MakeTranslation(tx, ty));
                         }
-                        /*
-                          NOTE: After the glyph is painted, the text matrix is updated
-                          according to the glyph displacement and any applicable spacing parameter.
-                        */
-                        SKMatrix.PreConcat(ref tm, SKMatrix.MakeTranslation((float)(charWidth + charSpace + (textChar == ' ' ? wordSpace : 0)), 0));
                     }
                 }
                 else // Text position adjustment.
                 {
-                    SKMatrix.PreConcat(ref tm, SKMatrix.MakeTranslation((float)(-Convert.ToSingle(textElement) * scaledFactor), 0));
+                    // calculate the combined displacements
+                    var tj = -Convert.ToSingle(textElement);
+                    float tx;
+                    float ty;
+                    if (vertical)
+                    {
+                        tx = 0;
+                        ty = (float)(tj / 1000 * fontSize);
+                    }
+                    else
+                    {
+                        tx = (float)(tj / 1000 * fontSize * horizontalScaling);
+                        ty = 0;
+                    }
+
+                    SKMatrix.PreConcat(ref tm, SKMatrix.MakeTranslation(tx, ty));
                 }
             }
             if (context != null)
             {
                 context.Restore();
             }
-
-            //if (textScanner == null)
-            {
-                state.TextState.Tm = tm;
-
-                if (this is ShowTextToNextLine)
-                { state.TextState.Tlm = tm; }
-            }
+            state.TextState.Tm = tm;
+            if (this is ShowTextToNextLine)
+            { state.TextState.Tlm = tm; }
         }
 
 

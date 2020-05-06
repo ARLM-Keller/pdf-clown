@@ -142,8 +142,7 @@ unaware of such a facility.
                 if (filter != null) // Stream encoded.
                 {
                     header.Updateable = false;
-
-                    Bytes.Buffer.Decode(body, filter, Parameters);
+                    Bytes.Buffer.Decode(body, filter, Parameters, Header);
                     // The stream is free from encodings.
                     Filter = null;
                     Parameters = null;
@@ -153,7 +152,19 @@ unaware of such a facility.
             return body;
         }
 
-
+        public IBuffer ExtractBody(bool decode)
+        {
+            var buffer = GetBody(false);
+            if (decode)
+            {
+                PdfDataObject filter = Filter;
+                if (filter != null) // Stream encoded.
+                {
+                    buffer = Bytes.Buffer.Extract(buffer, filter, Parameters, Header);
+                }
+            }
+            return buffer;
+        }
 
         /**
           <summary>Gets the stream header.</summary>
@@ -322,7 +333,7 @@ unaware of such a facility.
                            && !PdfName.Metadata.Equals(header[PdfName.Type])) // Filter needed.
                         {
                             // Apply the filter to the stream!
-                            bodyData = body.Encode(Bytes.Filters.Filter.Get((PdfName)(Filter = PdfName.FlateDecode)), null);
+                            bodyData = body.Encode(Bytes.Filters.Filter.Get((PdfName)(Filter = PdfName.FlateDecode)), null, Header);
                             filterApplied = true;
                         }
                         else // No filter needed.

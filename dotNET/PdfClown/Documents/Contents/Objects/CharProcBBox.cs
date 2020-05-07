@@ -74,25 +74,25 @@ namespace PdfClown.Documents.Contents.Objects
             set => operands[1] = PdfReal.Get(value);
         }
 
-        public double X
+        public double Left
         {
             get => ((IPdfNumber)operands[2]).RawValue;
             set => operands[0] = PdfReal.Get(value);
         }
 
-        public double Y
+        public double Top
         {
             get => ((IPdfNumber)operands[3]).RawValue;
             set => operands[1] = PdfReal.Get(value);
         }
 
-        public double Width
+        public double Right
         {
             get => ((IPdfNumber)operands[4]).RawValue;
             set => operands[2] = PdfReal.Get(value);
         }
 
-        public double Height
+        public double Bottom
         {
             get => ((IPdfNumber)operands[5]).RawValue;
             set => operands[3] = PdfReal.Get(value);
@@ -100,7 +100,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public SKRect BBox
         {
-            get => SKRect.Create((float)X, (float)Y, (float)Width, (float)Height);
+            get => new SKRect((float)Left, (float)Top, (float)Right, (float)Bottom);
         }
 
         #endregion

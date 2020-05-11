@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Contents.Objects
         #region static
         #region fields
         public static readonly string OperatorKeyword = "Do";
-        public static readonly SKPaint ImagePaint = new SKPaint { FilterQuality = SKFilterQuality.Low };
+        public static readonly SKPaint ImagePaint = new SKPaint { FilterQuality = SKFilterQuality.Low, BlendMode = SKBlendMode.SrcOver };
         #endregion
         #endregion
 
@@ -103,7 +103,7 @@ namespace PdfClown.Documents.Contents.Objects
                 canvas.Save();
                 if (xObject is xObjects.ImageXObject imageObject)
                 {
-                    var image = imageObject.LoadImage(state);
+                    var image = imageObject.Load(state);
                     if (image != null)
                     {
                         var size = imageObject.Size;
@@ -124,7 +124,7 @@ namespace PdfClown.Documents.Contents.Objects
                                     ApplyMask(softMask, canvas, picture);
                                 }
                             }
-                        }
+                        }                        
                         else
                         {
                             canvas.DrawBitmap(image, 0, 0, ImagePaint);
@@ -139,17 +139,13 @@ namespace PdfClown.Documents.Contents.Objects
                     ctm = ctm.PreConcat(formObject.Matrix);
                     canvas.SetMatrix(ctm);
 
-
                     if (state.SMask is SoftMask softMask)
                     {
                         ApplyMask(softMask, canvas, picture);
                     }
                     else
                     {
-                        canvas.DrawPicture(picture, new SKPaint
-                        {
-                            BlendMode = SKBlendMode.SrcOver
-                        });
+                        canvas.DrawPicture(picture, ImagePaint);
                     }
 
                     foreach (var textString in formObject.Strings)

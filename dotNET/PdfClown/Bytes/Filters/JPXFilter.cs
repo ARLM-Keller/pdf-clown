@@ -1,30 +1,22 @@
-﻿/*
-  Copyright 2006-2013 Stefano Chizzolini. http://www.pdfclown.org
-
-  Contributors:
-    
-  This file should be part of the source code distribution of "PDF Clown library" (the
-  Program): see the accompanying README files for more info.
-
-  This Program is free software; you can redistribute it and/or modify it under the terms
-  of the GNU Lesser General Public License as published by the Free Software Foundation;
-  either version 3 of the License, or (at your option) any later version.
-
-  This Program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY,
-  either expressed or implied; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License along with this
-  Program (see README files); if not, go to the GNU website (http://www.gnu.org/licenses/).
-
-  Redistribution and use, with or without modification, are permitted provided that such
-  redistributions retain the above copyright notice, license and disclaimer, along with
-  this list of conditions.
-*/
+﻿/* Copyright 2012 Mozilla Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 using FreeImageAPI;
+using PdfClown.Bytes.Filters.Jpx;
 using PdfClown.Objects;
-
+using PdfClown.Util.Collections.Generic;
 using System;
 using System.IO;
 
@@ -43,34 +35,55 @@ namespace PdfClown.Bytes.Filters
         public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
         {
             var imageParams = header;
-            var width = imageParams.Resolve(PdfName.Width) as PdfInteger;
-            var height = imageParams.Resolve(PdfName.Height) as PdfInteger;
+            //var width = imageParams.Resolve(PdfName.Width) as PdfInteger;
+            //var height = imageParams.Resolve(PdfName.Height) as PdfInteger;
             var bpp = imageParams.Resolve(PdfName.BitsPerComponent) as PdfInteger;
             var flag = imageParams.Resolve(PdfName.ImageMask) as PdfBoolean;
-            using (var output = new MemoryStream())
-            using (var input = new MemoryStream(data, offset, length))
-            {
-                var bmp = FreeImage.LoadFromStream(input);
-                FreeImage.SaveToStream(bmp, output, FREE_IMAGE_FORMAT.FIF_JPEG, FREE_IMAGE_SAVE_FLAGS.JPEG_OPTIMIZE);
-                FreeImage.Unload(bmp);
+            var jpxImage = new JpxImage();
+            jpxImage.Parse(data);
 
-                return output.ToArray();
+            var width = jpxImage.width;
+            var height = jpxImage.height;
+            var componentsCount = jpxImage.componentsCount;
+            var tileCount = jpxImage.tiles.Count;
+            var buffer = (byte[])null;
+            if (tileCount == 1)
+            {
+                buffer = jpxImage.tiles[0].items;
             }
+            else
+            {
+                buffer = new byte[width * height * componentsCount];
+
+                for (var k = 0; k < tileCount; k++)
+                {
+                    var tileComponents = jpxImage.tiles[k];
+                    var tileWidth = tileComponents.width;
+                    var tileHeight = tileComponents.height;
+                    var tileLeft = tileComponents.left;
+                    var tileTop = tileComponents.top;
+
+                    var src = tileComponents.items;
+                    var srcPosition = 0;
+                    var dataPosition = (width * tileTop + tileLeft) * componentsCount;
+                    var imgRowSize = width * componentsCount;
+                    var tileRowSize = tileWidth * componentsCount;
+
+                    for (var j = 0; j < tileHeight; j++)
+                    {
+                        var rowBytes = src.SubArray(srcPosition, srcPosition + tileRowSize);
+                        buffer.Set(rowBytes, dataPosition);
+                        srcPosition += tileRowSize;
+                        dataPosition += imgRowSize;
+                    }
+                }
+            }
+            return buffer;
         }
 
         public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
         {
-            using (var output = new MemoryStream())
-            using (var input = new MemoryStream(data, offset, length))
-            {
-                var bmp = FreeImage.LoadFromStream(input);
-
-                FreeImage.SaveToStream(bmp, output, FREE_IMAGE_FORMAT.FIF_JP2, FREE_IMAGE_SAVE_FLAGS.DEFAULT);
-
-                FreeImage.Unload(bmp);
-
-                return output.ToArray();
-            }
+            throw new NotSupportedException();
         }
         #endregion
 

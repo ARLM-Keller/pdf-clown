@@ -18,6 +18,6 @@ namespace PdfClown.Documents.Contents
         PdfArray Matte { get; }
         PdfDictionary Header { get; }
         PdfArray Decode { get; }
-        SKBitmap LoadImage(GraphicsState state);
+        SKBitmap Load(GraphicsState state);
     }
 }

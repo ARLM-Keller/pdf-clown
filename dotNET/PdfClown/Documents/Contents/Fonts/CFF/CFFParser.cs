@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 using PdfClown.Util;
+using PdfClown.Util.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -1529,17 +1530,6 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         public override string ToString()
         {
             return GetType().Name + "[" + debugFontName + "]";
-        }
-    }
-
-    public static class BytesExtension
-    {
-        public static byte[] CopyOfRange(this byte[] src, int start, int end)
-        {
-            var len = end - start;
-            var dest = new byte[len];
-            Array.Copy(src, start, dest, 0, len);
-            return dest;
         }
     }
 }

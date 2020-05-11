@@ -132,7 +132,7 @@ namespace PdfClown.Documents.Contents.Objects
             if (state.Scanner?.RenderContext != null)
             {
                 var canvas = state.Scanner.RenderContext;
-                var image = LoadImage(state);
+                var image = Load(state);
                 if (image != null)
                 {
                     var size = Size;
@@ -148,11 +148,11 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        public SKBitmap LoadImage(GraphicsState state)
+        public SKBitmap Load(GraphicsState state)
         {
             if (image != null)
                 return image;
-            return image = ImageLoader.Load(this, state);
+            return image = BitmapLoader.Load(this, state);
         }
 
         public override void WriteTo(IOutputStream stream, Document context)

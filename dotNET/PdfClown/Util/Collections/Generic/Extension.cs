@@ -76,8 +76,40 @@ namespace PdfClown.Util.Collections.Generic
                 list[i] = value;
             }
         }
+
+        public static void Set<T>(this T[] dest, T[] src, int index)
+        {
+            Array.Copy(src, 0, dest, index, src.Length);
+        }
+
+        public static T[] SubArray<T>(this T[] src, int start, int end)
+        {
+            var len = end - start;
+            var dest = new T[len];
+            Array.Copy(src, start, dest, 0, len);
+            return dest;
+        }
+
+        public static T[] CopyOfRange<T>(this T[] src, int start, int end)
+        {
+            var len = end - start;
+            var dest = new T[len];
+            Array.Copy(src, start, dest, 0, len);
+            return dest;
+        }
     }
 
+    public static class BytesExtension
+    {
+       
 
+        public static byte[] CopyOfRange(this byte[] src, int start, int end)
+        {
+            var len = end - start;
+            var dest = new byte[len];
+            Array.Copy(src, start, dest, 0, len);
+            return dest;
+        }
+    }
 }
 

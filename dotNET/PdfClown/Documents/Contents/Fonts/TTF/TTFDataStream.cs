@@ -203,7 +203,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         {
             try
             {
-                var secondsSince1904 = ReadUnsignedLong();
+                var secondsSince1904 = ReadLong();
                 var cal = new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                 return cal + TimeSpan.FromSeconds(secondsSince1904);
             }

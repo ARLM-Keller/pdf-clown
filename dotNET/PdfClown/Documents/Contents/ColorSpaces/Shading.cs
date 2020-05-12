@@ -210,10 +210,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             {
                 var array = Dictionary[PdfName.Coords] as PdfArray;
                 var coords = new SKPoint[] {
-                    new SKPoint((float)((PdfReal)array[0]).RawValue,
-                    (float)((PdfReal)array[1]).RawValue),
-                    new SKPoint((float)((PdfReal)array[2]).RawValue,
-                    (float)((PdfReal)array[3]).RawValue)};
+                    new SKPoint(((IPdfNumber)array[0]).FloatValue, ((IPdfNumber)array[1]).FloatValue),
+                    new SKPoint(((IPdfNumber)array[2]).FloatValue, ((IPdfNumber)array[3]).FloatValue)};
                 return coords;
             }
             set => Dictionary[PdfName.Domain] = new PdfArray(
@@ -229,8 +227,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 var array = Dictionary.Resolve(PdfName.Domain) as PdfArray;
                 if (array == null) return new float[] { 0F, 1F };
                 return new float[] {
-                    (float)((PdfReal)array[0]).RawValue,
-                    (float)((PdfReal)array[1]).RawValue
+                    ((IPdfNumber)array[0]).FloatValue,
+                    ((IPdfNumber)array[1]).FloatValue
                 };
             }
             set => Dictionary[PdfName.Domain] = new PdfArray(

@@ -121,26 +121,33 @@ namespace PdfClown.Documents
                     else // Page subtree incomplete.
                     {
                         PdfReference kidReference = (PdfReference)kids[levelIndex];
-                        PdfDictionary kid = (PdfDictionary)kidReference.DataObject;
-                        // Is current kid a page object?
-                        if (kid[PdfName.Type].Equals(PdfName.Page)) // Page object.
+                        PdfDataObject kidObject = kidReference.DataObject;
+                        if (kidObject is PdfDictionary kid)
                         {
-                            // 2. Page found.
-                            index++; // Absolute page index.
-                            levelIndex++; // Current level node index.
+                            // Is current kid a page object?
+                            if (kid[PdfName.Type].Equals(PdfName.Page)) // Page object.
+                            {
+                                // 2. Page found.
+                                index++; // Absolute page index.
+                                levelIndex++; // Current level node index.
 
-                            current = Wrap<Page>(kidReference);
-                            return true;
+                                current = Wrap<Page>(kidReference);
+                                return true;
+                            }
+                            else // Page tree node.
+                            {
+                                // 1. Go downward one level.
+                                // Save node index at the current level!
+                                levelIndexes.Push(levelIndex);
+                                // Move downward!
+                                parent = kid;
+                                kids = (PdfArray)parent.Resolve(PdfName.Kids);
+                                levelIndex = 0; // First node (new level).
+                            }
                         }
-                        else // Page tree node.
+                        else
                         {
-                            // 1. Go downward one level.
-                            // Save node index at the current level!
-                            levelIndexes.Push(levelIndex);
-                            // Move downward!
-                            parent = kid;
-                            kids = (PdfArray)parent.Resolve(PdfName.Kids);
-                            levelIndex = 0; // First node (new level).
+                            throw new Exception($"TODO Support type {kidObject.GetType()} in page enumeration!");
                         }
                     }
                 }

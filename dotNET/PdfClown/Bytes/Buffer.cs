@@ -54,7 +54,7 @@ namespace PdfClown.Bytes
             return @object == null ? null : @object.Resolve();
         }
 
-        public static void Decode(IBuffer buffer, PdfDataObject filter, PdfDirectObject parameters, PdfDictionary header)
+        public static void Decode(IBuffer buffer, PdfDataObject filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
 
             if (filter is PdfName name) // Single filter.
@@ -80,7 +80,7 @@ namespace PdfClown.Bytes
             }
         }
 
-        public static IBuffer Extract(IBuffer buffer, PdfDataObject filter, PdfDirectObject parameters, PdfDictionary header)
+        public static IBuffer Extract(IBuffer buffer, PdfDataObject filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (filter == null)
             {
@@ -211,13 +211,13 @@ namespace PdfClown.Bytes
             return clone;
         }
 
-        public void Decode(Filter filter, PdfDirectObject parameters, PdfDictionary header)
+        public void Decode(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             data = filter.Decode(data, 0, length, parameters, header);
             length = data.Length;
         }
 
-        public IBuffer Extract(Filter filter, PdfDirectObject parameters, PdfDictionary header)
+        public IBuffer Extract(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             var data = filter.Decode(this.data, 0, this.length, parameters, header);
             return new Buffer(data);
@@ -231,7 +231,7 @@ namespace PdfClown.Bytes
             NotifyChange();
         }
 
-        public byte[] Encode(Filter filter, PdfDirectObject parameters, PdfDictionary header)
+        public byte[] Encode(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         { return filter.Encode(data, 0, length, parameters, header); }
 
         public int GetByte(int index)

@@ -27,6 +27,7 @@ using PdfClown;
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Bytes.Filters
 {
@@ -103,9 +104,9 @@ namespace PdfClown.Bytes.Filters
 
         #region interface
         #region public
-        public abstract byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header);
+        public abstract byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
 
-        public abstract byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header);
+        public abstract byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
         #endregion
         #endregion
         #endregion

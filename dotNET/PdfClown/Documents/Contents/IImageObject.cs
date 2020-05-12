@@ -1,7 +1,7 @@
 ﻿using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
@@ -16,7 +16,7 @@ namespace PdfClown.Documents.Contents
         IImageObject SMask { get; }
         bool ImageMask { get; }
         PdfArray Matte { get; }
-        PdfDictionary Header { get; }
+        IDictionary<PdfName, PdfDirectObject> Header { get; }
         PdfArray Decode { get; }
         SKBitmap Load(GraphicsState state);
     }

@@ -29,6 +29,7 @@
 
 using PdfClown.Objects;
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Bytes.Filters
 {
@@ -42,7 +43,7 @@ namespace PdfClown.Bytes.Filters
         /// <summary>
         /// Encodes the specified data.
         /// </summary>
-        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
+        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (data == null)
                 throw new ArgumentNullException("data");
@@ -60,7 +61,7 @@ namespace PdfClown.Bytes.Filters
         /// <summary>
         /// Decodes the specified data.
         /// </summary>
-        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
+        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (data == null)
                 throw new ArgumentNullException("data");

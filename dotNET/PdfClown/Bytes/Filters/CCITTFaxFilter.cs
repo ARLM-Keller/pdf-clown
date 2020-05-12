@@ -16,6 +16,7 @@
  */
 using PdfClown.Objects;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace PdfClown.Bytes.Filters
@@ -31,7 +32,7 @@ namespace PdfClown.Bytes.Filters
     public class CCITTFaxFilter : Filter
     {
 
-        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
+        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             // get decode parameters
             PdfDictionary decodeParms = parameters as PdfDictionary;
@@ -39,7 +40,7 @@ namespace PdfClown.Bytes.Filters
             // parse dimensions
             int cols = ((IPdfNumber)decodeParms[PdfName.Columns])?.IntValue ?? 1728;
             int rows = ((IPdfNumber)decodeParms[PdfName.Rows])?.IntValue ?? 0;
-            int height = ((IPdfNumber)(header[PdfName.Height] ?? header[PdfName.H]))?.IntValue ?? 0;
+            int height = ((IPdfNumber)(header?[PdfName.Height] ?? header?[PdfName.H]))?.IntValue ?? 0;
             if (rows > 0 && height > 0)
             {
                 // PDFBOX-771, PDFBOX-3727: rows in DecodeParms sometimes contains an incorrect value
@@ -121,7 +122,7 @@ namespace PdfClown.Bytes.Filters
         }
 
 
-        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
+        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             PdfDictionary decodeParms = parameters as PdfDictionary;
             int cols = ((IPdfNumber)decodeParms[PdfName.Columns]).IntValue;

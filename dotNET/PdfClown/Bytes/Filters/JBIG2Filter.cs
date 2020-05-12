@@ -25,6 +25,7 @@
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace PdfClown.Bytes.Filters
@@ -40,12 +41,12 @@ namespace PdfClown.Bytes.Filters
 
         #region interface
         #region public
-        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
+        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             return data;
         }
 
-        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
+        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             return data;
         }

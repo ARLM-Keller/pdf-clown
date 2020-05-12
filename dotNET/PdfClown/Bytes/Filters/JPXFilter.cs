@@ -18,6 +18,7 @@ using PdfClown.Bytes.Filters.Jpx;
 using PdfClown.Objects;
 using PdfClown.Util.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace PdfClown.Bytes.Filters
@@ -32,13 +33,13 @@ namespace PdfClown.Bytes.Filters
 
         #region interface
         #region public
-        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
+        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             var imageParams = header;
             //var width = imageParams.Resolve(PdfName.Width) as PdfInteger;
             //var height = imageParams.Resolve(PdfName.Height) as PdfInteger;
-            var bpp = imageParams.Resolve(PdfName.BitsPerComponent) as PdfInteger;
-            var flag = imageParams.Resolve(PdfName.ImageMask) as PdfBoolean;
+            var bpp = imageParams[PdfName.BitsPerComponent] as PdfInteger;
+            var flag = imageParams[PdfName.ImageMask] as PdfBoolean;
             var jpxImage = new JpxImage();
             jpxImage.Parse(data);
 
@@ -81,7 +82,7 @@ namespace PdfClown.Bytes.Filters
             return buffer;
         }
 
-        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
+        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             throw new NotSupportedException();
         }

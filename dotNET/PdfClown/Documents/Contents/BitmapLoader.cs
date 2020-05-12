@@ -56,7 +56,8 @@ namespace PdfClown.Documents.Contents
             return loader.Load();
         }
 
-        public static object ExtractImage(IImageObject imageObject, IBuffer data, PdfName filterItem, PdfDirectObject parameterItem, PdfDictionary header)
+        public static object ExtractImage(IImageObject imageObject, IBuffer data, PdfName filterItem,
+            PdfDirectObject parameterItem, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (filterItem.Equals(PdfName.DCTDecode)
                 || filterItem.Equals(PdfName.DCT))
@@ -93,13 +94,13 @@ namespace PdfClown.Documents.Contents
             return data;
         }
 
-        private static SKBitmap LoadJBIG(IBuffer data, PdfDirectObject parameters, PdfDictionary header)
+        private static SKBitmap LoadJBIG(IBuffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             var imageParams = header;
-            var width = imageParams.Resolve(PdfName.Width) as PdfInteger;
-            var height = imageParams.Resolve(PdfName.Height) as PdfInteger;
-            var bpp = imageParams.Resolve(PdfName.BitsPerComponent) as PdfInteger;
-            var flag = imageParams.Resolve(PdfName.ImageMask) as PdfBoolean;
+            var width = imageParams[PdfName.Width] as PdfInteger;
+            var height = imageParams[PdfName.Height] as PdfInteger;
+            var bpp = imageParams[PdfName.BitsPerComponent] as PdfInteger;
+            var flag = imageParams[PdfName.ImageMask] as PdfBoolean;
 
             using (var output = new MemoryStream())
             using (var input = new MemoryStream())
@@ -319,6 +320,10 @@ namespace PdfClown.Documents.Contents
             {
                 AlphaType = SKAlphaType.Premul,
             };
+            if (iccColorSpace != null)
+            {
+                info.ColorSpace = iccColorSpace.GetSKColorSpace();
+            }
             // create the buffer that will hold the pixels
             var raster = new int[info.Width * info.Height];//var bitmap = new SKBitmap();
             var components = new double[componentsCount];//TODO stackalloc

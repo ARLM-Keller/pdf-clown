@@ -71,7 +71,7 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public override Operation Header => (Operation)Objects[0];
 
-        PdfDictionary IImageObject.Header => null;
+        IDictionary<PdfName, PdfDirectObject> IImageObject.Header => ImageHeader;
 
         public InlineImageHeader ImageHeader => (InlineImageHeader)Header;
 

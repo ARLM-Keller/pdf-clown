@@ -27,6 +27,7 @@ using PdfClown.Bytes.Filters;
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Bytes
 {
@@ -99,9 +100,9 @@ namespace PdfClown.Bytes
           <param name="filter">Filter to use for decoding the buffer.</param>
           <param name="parameters">Decoding parameters.</param>
         */
-        void Decode(Filter filter, PdfDirectObject parameters, PdfDictionary header);
+        void Decode(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
 
-        IBuffer Extract(Filter filter, PdfDirectObject parameters, PdfDictionary header);
+        IBuffer Extract(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
 
         /**
           <summary>Deletes a byte chunk from the buffer.</summary>
@@ -121,7 +122,7 @@ namespace PdfClown.Bytes
           <param name="parameters">Encoding parameters.</param>
           <returns>Encoded buffer.</returns>
         */
-        byte[] Encode(Filter filter, PdfDirectObject parameters, PdfDictionary header);
+        byte[] Encode(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
 
         /**
           <summary>Gets the byte at a specified location.</summary>

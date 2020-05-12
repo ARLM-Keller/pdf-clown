@@ -31,6 +31,7 @@
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
@@ -50,7 +51,7 @@ namespace PdfClown.Bytes.Filters
 
         #region interface
         #region public
-        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
+        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             using (MemoryStream outputStream = new MemoryStream())
             using (MemoryStream inputStream = new MemoryStream(data, offset, length))
@@ -62,7 +63,7 @@ namespace PdfClown.Bytes.Filters
             }
         }
 
-        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, PdfDictionary header)
+        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             MemoryStream inputStream = new MemoryStream(data, offset, length);
             MemoryStream outputStream = new MemoryStream();
@@ -76,7 +77,7 @@ namespace PdfClown.Bytes.Filters
         #endregion
 
         #region private
-        private byte[] DecodePredictor(byte[] data, PdfDirectObject parameters, PdfDictionary header)
+        private byte[] DecodePredictor(byte[] data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (!(parameters is PdfDictionary))
                 return data;

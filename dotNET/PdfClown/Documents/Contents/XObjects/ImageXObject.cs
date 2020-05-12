@@ -105,6 +105,7 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public PdfDictionary Header => Stream.Header;
 
+        IDictionary<PdfName, PdfDirectObject> IImageObject.Header => Header;
         /**
           <summary>Gets the size of the image (in samples).</summary>
         */

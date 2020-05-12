@@ -212,7 +212,7 @@ namespace PdfClown.Documents.Contents.Fonts
         public Font(PdfDirectObject baseObject) : base(baseObject)
         {
             Initialize();
-            afmStandard14 = Standard14Fonts.GetAFM(Name); // may be null (it usually is)
+            afmStandard14 = Standard14Fonts.GetAFM(Name ?? "None"); // may be null (it usually is)
             fontDescriptor = LoadFontDescriptor();
             toUnicodeCMap = LoadUnicodeCmap();
             LatestFont = this;

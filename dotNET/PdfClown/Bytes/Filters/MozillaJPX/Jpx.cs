@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-using PdfClown.Documents.Contents.Fonts.CCF;
 using PdfClown.Util.Collections.Generic;
 using System;
 using System.Collections.Generic;
@@ -39,7 +38,7 @@ namespace PdfClown.Bytes.Filters.Jpx
         internal List<TileResultB> tiles;
         internal int width;
         internal int height;
-        internal ushort componentsCount;
+        internal int componentsCount;
         internal int bitsPerComponent;
 
         // eslint-disable-next-line no-shadow
@@ -206,14 +205,14 @@ namespace PdfClown.Bytes.Filters.Jpx
                         case 0xff51: // Image and tile size (SIZ)
                             length = ReadUint16(data, position);
                             var siz = new SIZ(
-                                Xsiz: ReadUint32(data, position + 4),
-                                Ysiz: ReadUint32(data, position + 8),
-                                XOsiz: ReadUint32(data, position + 12),
-                                YOsiz: ReadUint32(data, position + 16),
-                                XTsiz: ReadUint32(data, position + 20),
-                                YTsiz: ReadUint32(data, position + 24),
-                                XTOsiz: ReadUint32(data, position + 28),
-                                YTOsiz: ReadUint32(data, position + 32));
+                                Xsiz: (int)ReadUint32(data, position + 4),
+                                Ysiz: (int)ReadUint32(data, position + 8),
+                                XOsiz: (int)ReadUint32(data, position + 12),
+                                YOsiz: (int)ReadUint32(data, position + 16),
+                                XTsiz: (int)ReadUint32(data, position + 20),
+                                YTsiz: (int)ReadUint32(data, position + 24),
+                                XTOsiz: (int)ReadUint32(data, position + 28),
+                                YTOsiz: (int)ReadUint32(data, position + 32));
                             var componentsCount = ReadUint16(data, position + 36);
                             siz.Csiz = componentsCount;
                             var components = new List<Component>(componentsCount);
@@ -491,7 +490,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             this.componentsCount = context.SIZ.Csiz;
         }
 
-        void CalculateComponentDimensions(Component component, SIZ siz)
+        private void CalculateComponentDimensions(Component component, SIZ siz)
         {
             // Section B.2 Component mapping
             component.x0 = (int)Math.Ceiling((double)siz.XOsiz / component.XRsiz);
@@ -502,7 +501,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             component.height = component.y1 - component.y0;
         }
 
-        void CalculateTileGrids(Context context, List<Component> components)
+        private void CalculateTileGrids(Context context, List<Component> components)
         {
             var siz = context.SIZ;
             // Section B.3 Division into tile and tile-components
@@ -573,7 +572,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             return result;
         }
 
-        void buildPrecincts(Context context, Resolution resolution, Dimension dimensions)
+        void BuildPrecincts(Context context, Resolution resolution, Dimension dimensions)
         {
             // Section B.6 Division resolution to precincts
             var precinctWidth = 1 << dimensions.PPx;
@@ -597,13 +596,13 @@ namespace PdfClown.Bytes.Filters.Jpx
             var precinctHeightInSubband = 1 << (dimensions.PPy + (isZeroRes ? 0 : -1));
             var numprecinctswide =
               resolution.trx1 > resolution.trx0
-                ? Math.Ceiling((double)resolution.trx1 / precinctWidth) -
-                  Math.Floor((double)resolution.trx0 / precinctWidth)
+                ? (int)Math.Ceiling((double)resolution.trx1 / precinctWidth) -
+                  (int)Math.Floor((double)resolution.trx0 / precinctWidth)
                 : 0;
             var numprecinctshigh =
               resolution.try1 > resolution.try0
-                ? Math.Ceiling((double)resolution.try1 / precinctHeight) -
-                  Math.Floor((double)resolution.try0 / precinctHeight)
+                ? (int)Math.Ceiling((double)resolution.try1 / precinctHeight) -
+                  (int)Math.Floor((double)resolution.try0 / precinctHeight)
                 : 0;
             var numprecincts = numprecinctswide * numprecinctshigh;
 
@@ -618,7 +617,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                 );
         }
 
-        void BuildCodeblocks(Context context, SubBand subband, Dimension dimensions)
+        private void BuildCodeblocks(Context context, SubBand subband, Dimension dimensions)
         {
             // Section B.7 Division sub-band into code-blocks
             var xcb_ = dimensions.xcb_;
@@ -635,7 +634,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             var i = 0;
             var j = 0;
             var codeblock = (CodeBlock)null;
-            var precinctNumber = 0D;
+            var precinctNumber = 0;
             for (j = cby0; j < cby1; j++)
             {
                 for (i = cbx0; i < cbx1; i++)
@@ -657,8 +656,8 @@ namespace PdfClown.Bytes.Filters.Jpx
                     // Calculate precinct number for this codeblock, codeblock position
                     // should be relative to its subband, use actual dimension and position
                     // See comment about codeblock group width and height
-                    var pi = Math.Floor((double)(codeblock.tbx0_ - subband.tbx0) / precinctParameters.precinctWidthInSubband);
-                    var pj = Math.Floor((double)(codeblock.tby0_ - subband.tby0) / precinctParameters.precinctHeightInSubband);
+                    var pi = (int)Math.Floor((double)(codeblock.tbx0_ - subband.tbx0) / precinctParameters.precinctWidthInSubband);
+                    var pj = (int)Math.Floor((double)(codeblock.tby0_ - subband.tby0) / precinctParameters.precinctHeightInSubband);
                     precinctNumber = pi + pj * precinctParameters.numprecinctswide;
 
                     codeblock.precinctNumber = precinctNumber;
@@ -711,7 +710,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             subband.precincts = precincts;
         }
 
-        Packet CreatePacket(Resolution resolution, float precinctNumber, int layerNumber)
+        internal Packet CreatePacket(Resolution resolution, int precinctNumber, int layerNumber)
         {
             var precinctCodeblocks = new List<CodeBlock>();
             // Section B.10.8 Order of info in packet
@@ -734,7 +733,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             return new Packet(layerNumber, codeblocks: precinctCodeblocks);
         }
 
-        byte readInt8(byte[] data, int offset)
+        byte ReadInt8(byte[] data, int offset)
         {
             return (byte)((data[offset] << 24) >> 24);
         }
@@ -767,414 +766,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             return (int)Math.Ceiling(Math.Log(x, 2D));
         }
 
-        internal abstract class Iterator
-        {
-            public abstract Packet nextPacket();
-        }
-
-        internal class LayerResolutionComponentPositionIterator : Iterator
-        {
-            private int l;
-            private int r;
-            private int i;
-            private int k;
-            private JpxImage image;
-            private Context context;
-            private SIZ siz;
-            private int tileIndex;
-            private Tile tile;
-            private int layersCount;
-            private int componentsCount;
-            private int maxDecompositionLevelsCount;
-
-            public LayerResolutionComponentPositionIterator(JpxImage image, Context context)
-            {
-                this.image = image;
-                this.context = context;
-                siz = context.SIZ;
-                tileIndex = context.currentTile.index;
-                tile = context.tiles[tileIndex];
-                layersCount = tile.codingStyleDefaultParameters.layersCount;
-                componentsCount = siz.Csiz;
-                maxDecompositionLevelsCount = 0;
-                for (var q = 0; q < componentsCount; q++)
-                {
-                    maxDecompositionLevelsCount = Math.Max(
-                      maxDecompositionLevelsCount,
-                      tile.components[q].codingStyleParameters.decompositionLevelsCount
-                    );
-                }
-
-                l = 0;
-                r = 0;
-                i = 0;
-                k = 0;
-            }
-
-            public override Packet nextPacket()
-            {
-                // Section B.12.1.1 Layer-resolution-component-position
-                for (; l < layersCount; l++)
-                {
-                    for (; r <= maxDecompositionLevelsCount; r++)
-                    {
-                        for (; i < componentsCount; i++)
-                        {
-                            var component = tile.components[i];
-                            if (r > component.codingStyleParameters.decompositionLevelsCount)
-                            {
-                                continue;
-                            }
-
-                            var resolution = component.resolutions[r];
-                            var numprecincts = resolution.precinctParameters.numprecincts;
-                            for (; k < numprecincts;)
-                            {
-                                var packet = image.CreatePacket(resolution, k, l);
-                                k++;
-                                return packet;
-                            }
-                            k = 0;
-                        }
-                        i = 0;
-                    }
-                    r = 0;
-                }
-                throw new JpxError("Out of packets");
-            }
-        }
-
-        internal class ResolutionLayerComponentPositionIterator : Iterator
-        {
-            private JpxImage image;
-            private Context context;
-            private SIZ siz;
-            private int tileIndex;
-            private Tile tile;
-            private int layersCount;
-            private int componentsCount;
-            private int maxDecompositionLevelsCount;
-            private int r;
-            private int l;
-            private int i;
-            private int k;
-
-            public ResolutionLayerComponentPositionIterator(JpxImage image, Context context)
-            {
-                this.image = image;
-                this.context = context;
-                siz = context.SIZ;
-                tileIndex = context.currentTile.index;
-                tile = context.tiles[tileIndex];
-                layersCount = tile.codingStyleDefaultParameters.layersCount;
-                componentsCount = siz.Csiz;
-                maxDecompositionLevelsCount = 0;
-                for (var q = 0; q < componentsCount; q++)
-                {
-                    maxDecompositionLevelsCount = Math.Max(
-                      maxDecompositionLevelsCount,
-                      tile.components[q].codingStyleParameters.decompositionLevelsCount
-                    );
-                }
-
-                r = 0;
-                l = 0;
-                i = 0;
-                k = 0;
-            }
-            public override Packet nextPacket()
-            {
-                // Section B.12.1.2 Resolution-layer-component-position
-                for (; r <= maxDecompositionLevelsCount; r++)
-                {
-                    for (; l < layersCount; l++)
-                    {
-                        for (; i < componentsCount; i++)
-                        {
-                            var component = (Component)tile.components[i];
-                            if (r > component.codingStyleParameters.decompositionLevelsCount)
-                            {
-                                continue;
-                            }
-
-                            var resolution = component.resolutions[r];
-                            var numprecincts = resolution.precinctParameters.numprecincts;
-                            for (; k < numprecincts;)
-                            {
-                                var packet = image.CreatePacket(resolution, k, l);
-                                k++;
-                                return packet;
-                            }
-                            k = 0;
-                        }
-                        i = 0;
-                    }
-                    l = 0;
-                }
-                throw new JpxError("Out of packets");
-            }
-        }
-
-        internal class ResolutionPositionComponentLayerIterator : Iterator
-        {
-            private readonly JpxImage image;
-            private readonly Context context;
-            private SIZ siz;
-            private ushort tileIndex;
-            private Tile tile;
-            private ushort layersCount;
-            private ushort componentsCount;
-            private int l;
-            private int r;
-            private int c;
-            private int p;
-            private int maxDecompositionLevelsCount;
-            private int[] maxNumPrecinctsInLevel;
-
-            public ResolutionPositionComponentLayerIterator(JpxImage image, Context context)
-            {
-                this.image = image;
-                this.context = context;
-                siz = context.SIZ;
-                tileIndex = context.currentTile.index;
-                tile = context.tiles[tileIndex];
-                layersCount = tile.codingStyleDefaultParameters.layersCount;
-                componentsCount = siz.Csiz;
-                l = 0; r = 0; c = 0; p = 0;
-                maxDecompositionLevelsCount = 0;
-                for (c = 0; c < componentsCount; c++)
-                {
-                    var component = tile.components[c];
-                    maxDecompositionLevelsCount = Math.Max(
-                      maxDecompositionLevelsCount,
-                      component.codingStyleParameters.decompositionLevelsCount
-                    );
-                }
-                maxNumPrecinctsInLevel = new int[maxDecompositionLevelsCount + 1];
-                for (r = 0; r <= maxDecompositionLevelsCount; ++r)
-                {
-                    var maxNumPrecincts = 0D;
-                    for (c = 0; c < componentsCount; ++c)
-                    {
-                        var resolutions = tile.components[c].resolutions;
-                        if (r < resolutions.Count)
-                        {
-                            maxNumPrecincts = Math.Max(
-                              maxNumPrecincts,
-                              resolutions[r].precinctParameters.numprecincts
-                            );
-                        }
-                    }
-                    maxNumPrecinctsInLevel[r] = (int)maxNumPrecincts;
-                }
-                l = 0;
-                r = 0;
-                c = 0;
-                p = 0;
-            }
-
-            public override Packet nextPacket()
-            {
-                // Section B.12.1.3 Resolution-position-component-layer
-                for (; r <= maxDecompositionLevelsCount; r++)
-                {
-                    for (; p < maxNumPrecinctsInLevel[r]; p++)
-                    {
-                        for (; c < componentsCount; c++)
-                        {
-                            var component = tile.components[c];
-                            if (r > component.codingStyleParameters.decompositionLevelsCount)
-                            {
-                                continue;
-                            }
-                            var resolution = component.resolutions[r];
-                            var numprecincts = resolution.precinctParameters.numprecincts;
-                            if (p >= numprecincts)
-                            {
-                                continue;
-                            }
-                            for (; l < layersCount;)
-                            {
-                                var packet = image.CreatePacket(resolution, p, l);
-                                l++;
-                                return packet;
-                            }
-                            l = 0;
-                        }
-                        c = 0;
-                    }
-                    p = 0;
-                }
-                throw new JpxError("Out of packets");
-            }
-        }
-
-        internal class PositionComponentResolutionLayerIterator : Iterator
-        {
-            private readonly JpxImage image;
-            private readonly Context context;
-            private readonly SIZ siz;
-            private ushort tileIndex;
-            private Tile tile;
-            private ushort layersCount;
-            private ushort componentsCount;
-            private PrecinctSizes precinctsSizes;
-            private PrecinctSizes precinctsIterationSizes;
-            private int l;
-            private int r;
-            private int c;
-            private int px;
-            private int py;
-
-            public PositionComponentResolutionLayerIterator(JpxImage image, Context context)
-            {
-                this.image = image;
-                this.context = context;
-                siz = context.SIZ;
-                tileIndex = context.currentTile.index;
-                tile = context.tiles[tileIndex];
-                layersCount = tile.codingStyleDefaultParameters.layersCount;
-                componentsCount = siz.Csiz;
-                precinctsSizes = image.GetPrecinctSizesInImageScale(tile);
-                precinctsIterationSizes = precinctsSizes;
-                l = 0;
-                r = 0;
-                c = 0;
-                px = 0;
-                py = 0;
-            }
-
-            public override Packet nextPacket()
-            {
-                // Section B.12.1.4 Position-component-resolution-layer
-                for (; py < precinctsIterationSizes.maxNumHigh; py++)
-                {
-                    for (; px < precinctsIterationSizes.maxNumWide; px++)
-                    {
-                        for (; c < componentsCount; c++)
-                        {
-                            var component = tile.components[c];
-                            var decompositionLevelsCount =
-                              component.codingStyleParameters.decompositionLevelsCount;
-                            for (; r <= decompositionLevelsCount; r++)
-                            {
-                                var resolution = component.resolutions[r];
-                                var sizeInImageScale =
-                                  precinctsSizes.components[c].resolutions[r];
-                                var k = image.GetPrecinctIndexIfExist(
-                                  px,
-                                  py,
-                                  sizeInImageScale,
-                                  precinctsIterationSizes,
-                                  resolution
-                                );
-                                if (k == null)
-                                {
-                                    continue;
-                                }
-                                for (; l < layersCount;)
-                                {
-                                    var packet = image.CreatePacket(resolution, (float)k, l);
-                                    l++;
-                                    return packet;
-                                }
-                                l = 0;
-                            }
-                            r = 0;
-                        }
-                        c = 0;
-                    }
-                    px = 0;
-                }
-                throw new JpxError("Out of packets");
-            }
-        }
-
-        internal class ComponentPositionResolutionLayerIterator : Iterator
-        {
-            private readonly JpxImage image;
-            private readonly Context context;
-            private readonly SIZ siz;
-            private readonly ushort tileIndex;
-            private readonly Tile tile;
-            private readonly ushort layersCount;
-            private readonly ushort componentsCount;
-            private readonly PrecinctSizes precinctsSizes;
-            private int l;
-            private int r;
-            private int c;
-            private int px;
-            private int py;
-
-            public ComponentPositionResolutionLayerIterator(JpxImage image, Context context)
-            {
-                this.image = image;
-                this.context = context;
-                siz = context.SIZ;
-                tileIndex = context.currentTile.index;
-                tile = context.tiles[tileIndex];
-                layersCount = tile.codingStyleDefaultParameters.layersCount;
-                componentsCount = siz.Csiz;
-                precinctsSizes = image.GetPrecinctSizesInImageScale(tile);
-                l = 0;
-                r = 0;
-                c = 0;
-                px = 0;
-                py = 0;
-
-            }
-            public override Packet nextPacket()
-            {
-                // Section B.12.1.5 Component-position-resolution-layer
-                for (; c < componentsCount; ++c)
-                {
-                    var component = tile.components[c];
-                    var precinctsIterationSizes = precinctsSizes.components[c];
-                    var decompositionLevelsCount =
-                      component.codingStyleParameters.decompositionLevelsCount;
-                    for (; py < precinctsIterationSizes.maxNumHigh; py++)
-                    {
-                        for (; px < precinctsIterationSizes.maxNumWide; px++)
-                        {
-                            for (; r <= decompositionLevelsCount; r++)
-                            {
-                                var resolution = component.resolutions[r];
-                                var sizeInImageScale = precinctsIterationSizes.resolutions[r];
-                                var k = image.GetPrecinctIndexIfExist(
-                                  px,
-                                  py,
-                                  sizeInImageScale,
-                                  precinctsIterationSizes,
-                                  resolution
-                                );
-                                if (k == null)
-                                {
-                                    continue;
-                                }
-                                for (; l < layersCount;)
-                                {
-                                    var packet = image.CreatePacket(resolution, (float)k, l);
-                                    l++;
-                                    return packet;
-                                }
-                                l = 0;
-                            }
-                            r = 0;
-                        }
-                        px = 0;
-                    }
-                    py = 0;
-                }
-                throw new JpxError("Out of packets");
-            }
-        }
-
-        float? GetPrecinctIndexIfExist(
-            int pxIndex,
-            int pyIndex,
-            Size sizeInImageScale,
-            PrecinctSizes precinctIterationSizes,
-            Resolution resolution)
+        internal int? GetPrecinctIndexIfExist(int pxIndex, int pyIndex, Size sizeInImageScale, PrecinctSizes precinctIterationSizes, Resolution resolution)
         {
             var posX = pxIndex * precinctIterationSizes.minWidth;
             var posY = pyIndex * precinctIterationSizes.minHeight;
@@ -1188,27 +780,26 @@ namespace PdfClown.Bytes.Filters.Jpx
             var startPrecinctRowIndex =
               (posY / sizeInImageScale.width) *
               resolution.precinctParameters.numprecinctswide;
-            return (float)(posX / sizeInImageScale.height + startPrecinctRowIndex);
+            return (posX / sizeInImageScale.height + startPrecinctRowIndex);
         }
 
-        PrecinctSizes GetPrecinctSizesInImageScale(Tile tile)
+        internal PrecinctSizes GetPrecinctSizesInImageScale(Tile tile)
         {
             var componentsCount = tile.components.Count;
-            var minWidth = float.MaxValue;
-            var minHeight = float.MaxValue;
-            var maxNumWide = 0f;
-            var maxNumHigh = 0f;
+            var minWidth = int.MaxValue;
+            var minHeight = int.MaxValue;
+            var maxNumWide = 0;
+            var maxNumHigh = 0;
             var sizePerComponent = new Dictionary<int, PrecinctSizes>(componentsCount);
             for (var c = 0; c < componentsCount; c++)
             {
                 var component = tile.components[c];
-                var decompositionLevelsCount =
-                  component.codingStyleParameters.decompositionLevelsCount;
-                var sizePerResolution = new List<Size>(decompositionLevelsCount + 1);
-                var minWidthCurrentComponent = float.MaxValue;
-                var minHeightCurrentComponent = float.MaxValue;
-                var maxNumWideCurrentComponent = 0f;
-                var maxNumHighCurrentComponent = 0f;
+                var decompositionLevelsCount = component.codingStyleParameters.decompositionLevelsCount;
+                var sizePerResolution = new Dictionary<int, Size>(decompositionLevelsCount + 1);
+                var minWidthCurrentComponent = int.MaxValue;
+                var minHeightCurrentComponent = int.MaxValue;
+                var maxNumWideCurrentComponent = 0;
+                var maxNumHighCurrentComponent = 0;
                 var scale = 1;
                 for (var r = decompositionLevelsCount; r >= 0; --r)
                 {
@@ -1227,11 +818,11 @@ namespace PdfClown.Bytes.Filters.Jpx
                     );
                     maxNumWideCurrentComponent = Math.Max(
                       maxNumWideCurrentComponent,
-                      (float)resolution.precinctParameters.numprecinctswide
+                      resolution.precinctParameters.numprecinctswide
                     );
                     maxNumHighCurrentComponent = Math.Max(
                       maxNumHighCurrentComponent,
-                      (float)resolution.precinctParameters.numprecinctshigh
+                      resolution.precinctParameters.numprecinctshigh
                     );
                     sizePerResolution[r] = new Size(
                         width: widthCurrentResolution,
@@ -1260,7 +851,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                 );
         }
 
-        void BuildPackets(Context context)
+        private void BuildPackets(Context context)
         {
             var siz = context.SIZ;
             var tileIndex = context.currentTile.index;
@@ -1269,7 +860,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             // Creating resolutions and sub-bands for each component
             for (var c = 0; c < componentsCount; c++)
             {
-                var component = (Component)tile.components[c];
+                var component = tile.components[c];
                 var decompositionLevelsCount =
                   component.codingStyleParameters.decompositionLevelsCount;
                 // Section B.5 Resolution levels and sub-bands
@@ -1285,7 +876,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                         trx1: (int)Math.Ceiling((double)component.tcx1 / scale),
                         try1: (int)Math.Ceiling((double)component.tcy1 / scale),
                         resLevel: r);
-                    buildPrecincts(context, resolution, blocksDimensions);
+                    BuildPrecincts(context, resolution, blocksDimensions);
                     resolutions.Add(resolution);
 
                     var subband = (SubBand)null;
@@ -1370,7 +961,8 @@ namespace PdfClown.Bytes.Filters.Jpx
                     throw new JpxError($"Unsupported progression order { progressionOrder }");
             }
         }
-        int ParseTilePackets(Context context, byte[] data, int offset, int dataLength)
+
+        private int ParseTilePackets(Context context, byte[] data, int offset, int dataLength)
         {
             var position = 0;
             var buffer = 0;
@@ -1430,7 +1022,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                     skipNextBit = false;
                 }
             }
-            int readCodingpasses()
+            int ReadCodingpasses()
             {
                 if (readBits(1) == 0)
                 {
@@ -1466,7 +1058,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                     // Skip also marker segment length and packet sequence ID
                     skipBytes(4);
                 }
-                var packet = packetsIterator.nextPacket();
+                var packet = packetsIterator.NextPacket();
                 if (0 == readBits(1))
                 {
                     continue;
@@ -1483,8 +1075,6 @@ namespace PdfClown.Bytes.Filters.Jpx
                     var codeblockIncluded = false;
                     var firstTimeInclusion = false;
                     var valueReady = false;
-                    var inclusionTree = (InclusionTree)null;
-                    var zeroBitPlanesTree = (TagTree)null;
 
                     if (codeblock.included != null)
                     {
@@ -1493,6 +1083,9 @@ namespace PdfClown.Bytes.Filters.Jpx
                     else
                     {
                         // reading inclusion tree
+                        var inclusionTree = (InclusionTree)null;
+                        var zeroBitPlanesTree = (TagTree)null;
+
                         precinct = codeblock.precinct;
                         if (precinct.inclusionTree != null)
                         {
@@ -1503,7 +1096,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             // building inclusion and zero bit-planes trees
                             var width = precinct.cbxMax - precinct.cbxMin + 1;
                             var height = precinct.cbyMax - precinct.cbyMin + 1;
-                            inclusionTree = new InclusionTree(width, height, layerNumber);
+                            inclusionTree = new InclusionTree(width, height, (byte)layerNumber);
                             zeroBitPlanesTree = new TagTree(width, height);
                             precinct.inclusionTree = inclusionTree;
                             precinct.zeroBitPlanesTree = zeroBitPlanesTree;
@@ -1537,7 +1130,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                     }
                     if (firstTimeInclusion)
                     {
-                        zeroBitPlanesTree = precinct.zeroBitPlanesTree;
+                        var zeroBitPlanesTree = precinct.zeroBitPlanesTree;
                         zeroBitPlanesTree.Reset(codeblockColumn, codeblockRow);
                         while (true)
                         {
@@ -1556,7 +1149,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                         }
                         codeblock.zeroBitPlanes = zeroBitPlanesTree.value;
                     }
-                    var codingpasses = readCodingpasses();
+                    var codingpasses = ReadCodingpasses();
                     while (readBits(1) != 0)
                     {
                         codeblock.Lblock++;
@@ -1594,8 +1187,9 @@ namespace PdfClown.Bytes.Filters.Jpx
             }
             return position;
         }
-        void CopyCoefficients(float[] coefficients, int levelWidth, int levelHeight,
-            SubBand subband, float delta, int mb, bool reversible, bool segmentationSymbolUsed)
+
+        private void CopyCoefficients(double[] coefficients, int levelWidth, int levelHeight,
+            SubBand subband, double delta, int mb, bool reversible, bool segmentationSymbolUsed)
         {
             var x0 = subband.tbx0;
             var y0 = subband.tby0;
@@ -1618,15 +1212,6 @@ namespace PdfClown.Bytes.Filters.Jpx
                     continue;
                 }
 
-                var bitModel = new BitModel(
-                  blockWidth,
-                  blockHeight,
-                  codeblock.subbandType,
-                  (byte)codeblock.zeroBitPlanes,
-                  mb
-                );
-                var currentCodingpassType = 2; // first bit plane starts from cleanup
-
                 // collect data
                 var data = codeblock.data;
                 var totalLength = 0;
@@ -1639,6 +1224,14 @@ namespace PdfClown.Bytes.Filters.Jpx
                     totalLength += dataItem.end - dataItem.start;
                     codingpasses += dataItem.codingpasses;
                 }
+
+                if (totalLength == 0)
+                {
+                    continue;
+                }
+
+                var currentCodingpassType = 2; // first bit plane starts from cleanup
+
                 var encodedData = new byte[totalLength];
                 var position = 0;
                 for (j = 0, jj = data.Count; j < jj; j++)
@@ -1649,6 +1242,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                     position += chunk.Length;
                 }
                 // decoding the item
+                var bitModel = new BitModel(blockWidth, blockHeight, codeblock.subbandType, codeblock.zeroBitPlanes, mb);
                 var decoder = new ArithmeticDecoder(encodedData, 0, totalLength);
                 bitModel.SetDecoder(decoder);
 
@@ -1677,9 +1271,9 @@ namespace PdfClown.Bytes.Filters.Jpx
                 var sign = bitModel.coefficentsSign;
                 var magnitude = bitModel.coefficentsMagnitude;
                 var bitsDecoded = bitModel.bitsDecoded;
-                var magnitudeCorrection = reversible ? 0 : 0.5F;
+                var magnitudeCorrection = reversible ? 0 : 0.5D;
                 var k = 0;
-                var n = 0F;
+                var n = 0D;
                 var nb = 0;
                 position = 0;
                 // Do the interleaving of Section F.3.3 here, so we do not need
@@ -1717,7 +1311,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                 }
             }
         }
-        TileResultF TransformTile(Context context, Tile tile, int c)
+        private TileResultF TransformTile(Context context, Tile tile, int c)
         {
             var component = tile.components[c];
             var codingStyleParameters = component.codingStyleParameters;
@@ -1744,7 +1338,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                 var width = resolution.trx1 - resolution.trx0;
                 var height = resolution.try1 - resolution.try0;
                 // Allocate space for the whole sublevel.
-                var coefficients = new float[width * height];
+                var coefficients = new double[width * height];
                 for (int j = 0, jj = resolution.subbands.Count; j < jj; j++)
                 {
                     var mu = 0;
@@ -1768,7 +1362,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                     // calculate quantization coefficient (Section E.1.1.1)
                     var delta = reversible
                       ? 1
-                      : (float)Math.Pow(2, (precision + gainLog2 - epsilon) * (1 + mu / 2048));
+                      : (double)Math.Pow(2, (precision + gainLog2 - epsilon) * (1 + mu / 2048));
                     var mb = guardBits + epsilon - 1;
 
                     // In the first resolution level, copyCoefficients will fill the
@@ -1815,13 +1409,13 @@ namespace PdfClown.Bytes.Filters.Jpx
 
                 // Section G.2.2 Inverse multi component transform
                 var shift = 0;
-                var offset = 0F;
+                var offset = 0D;
                 var pos = 0;
                 var j = 0;
                 var jj = 0;
-                var y0 = 0F;
-                var y1 = 0F;
-                var y2 = 0F;
+                var y0 = 0D;
+                var y1 = 0D;
+                var y2 = 0D;
                 if (tile.codingStyleDefaultParameters.multipleComponentTransform)
                 {
                     var fourComponents = componentsCount == 4;
@@ -1834,7 +1428,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                     // all components have the same precision. With this in mind, we
                     // compute shift and offset only once.
                     shift = components[0].precision - 8;
-                    offset = (128 << shift) + 0.5F;
+                    offset = (128 << shift) + 0.5D;
 
                     var component0 = tile.components[0];
                     var alpha01 = componentsCount - 3;
@@ -1847,9 +1441,9 @@ namespace PdfClown.Bytes.Filters.Jpx
                             y0 = y0items[j] + offset;
                             y1 = y1items[j];
                             y2 = y2items[j];
-                            output[pos++] = (byte)((int)(y0 + 1.402 * y2) >> shift);
-                            output[pos++] = (byte)((int)(y0 - (0.34413 * y1 - 0.71414 * y2)) >> shift);
-                            output[pos++] = (byte)((int)(y0 + 1.772 * y1) >> shift);
+                            output[pos++] = ToByte((int)(y0 + 1.402 * y2) >> shift);
+                            output[pos++] = ToByte((int)(y0 - (0.34413 * y1 - 0.71414 * y2)) >> shift);
+                            output[pos++] = ToByte((int)(y0 + 1.772 * y1) >> shift);
                         }
                     }
                     else
@@ -1862,16 +1456,16 @@ namespace PdfClown.Bytes.Filters.Jpx
                             y2 = y2items[j];
                             var g = y0 - ((int)(y2 + y1) >> 2);
 
-                            output[pos++] = (byte)((int)(g + y2) >> shift);
-                            output[pos++] = (byte)((int)g >> shift);
-                            output[pos++] = (byte)((int)(g + y1) >> shift);
+                            output[pos++] = ToByte((int)(g + y2) >> shift);
+                            output[pos++] = ToByte((int)g >> shift);
+                            output[pos++] = ToByte((int)(g + y1) >> shift);
                         }
                     }
                     if (fourComponents)
                     {
                         for (j = 0, pos = 3; j < jj; j++, pos += 4)
                         {
-                            output[pos] = (byte)((int)(y3items[j] + offset) >> shift);
+                            output[pos] = ToByte((int)(y3items[j] + offset) >> shift);
                         }
                     }
                 }
@@ -1882,10 +1476,10 @@ namespace PdfClown.Bytes.Filters.Jpx
                     {
                         var items = transformedTiles[c].items;
                         shift = components[c].precision - 8;
-                        offset = (128 << shift) + 0.5F;
+                        offset = (128 << shift) + 0.5D;
                         for (pos = c, j = 0, jj = items.Length; j < jj; j++)
                         {
-                            output[pos] = (byte)((int)(items[j] + offset) >> shift);
+                            output[pos] = ToByte((int)(items[j] + offset) >> shift);
                             pos += componentsCount;
                         }
                     }
@@ -1893,6 +1487,11 @@ namespace PdfClown.Bytes.Filters.Jpx
                 resultImages.Add(result);
             }
             return resultImages;
+        }
+
+        byte ToByte(int value)
+        {
+            return value > 255 ? (byte)255 : value < 0 ? (byte)0 : (byte)value;
         }
 
         void InitializeTile(Context context, int tileIndex)
@@ -1919,304 +1518,405 @@ namespace PdfClown.Bytes.Filters.Jpx
 
     }
 
-    internal class CodeBlockData
+    internal abstract class Iterator
     {
-        internal readonly byte[] data;
-        internal readonly int start;
-        internal readonly int end;
-        internal readonly int codingpasses;
-
-        public CodeBlockData(byte[] data, int start, int end, int codingpasses)
-        {
-            this.data = data;
-            this.start = start;
-            this.end = end;
-            this.codingpasses = codingpasses;
-        }
+        public abstract Packet NextPacket();
     }
 
-    internal class PacketItem
+    internal class LayerResolutionComponentPositionIterator : Iterator
     {
-        internal readonly CodeBlock codeblock;
-        internal readonly int codingpasses;
-        internal readonly int dataLength;
+        private int l;
+        private int r;
+        private int i;
+        private int k;
+        private JpxImage image;
+        private Context context;
+        private SIZ siz;
+        private int tileIndex;
+        private Tile tile;
+        private int layersCount;
+        private int componentsCount;
+        private int maxDecompositionLevelsCount;
 
-        public PacketItem(CodeBlock codeblock, int codingpasses, int dataLength)
+        public LayerResolutionComponentPositionIterator(JpxImage image, Context context)
         {
-            this.codeblock = codeblock;
-            this.codingpasses = codingpasses;
-            this.dataLength = dataLength;
-        }
-    }
-
-    internal class PrecinctSizes
-    {
-        internal readonly float minWidth;
-        internal readonly float minHeight;
-        internal readonly float maxNumWide;
-        internal readonly float maxNumHigh;
-        internal List<Size> resolutions;
-        internal Dictionary<int, PrecinctSizes> components;
-
-        public PrecinctSizes(float minWidth, float minHeight, float maxNumWide, float maxNumHigh, Dictionary<int, PrecinctSizes> components = null, List<Size> resolutions = null)
-        {
-            this.components = components;
-            this.minWidth = minWidth;
-            this.minHeight = minHeight;
-            this.maxNumWide = maxNumWide;
-            this.maxNumHigh = maxNumHigh;
-            this.resolutions = resolutions;
-        }
-    }
-
-    internal class Coefficient
-    {
-        internal readonly int width;
-        internal readonly int height;
-        internal float[] items;
-
-        public Coefficient(int width, int height, float[] items)
-        {
-            this.width = width;
-            this.height = height;
-            this.items = items;
-        }
-    }
-
-    internal class Packet
-    {
-        internal readonly int layerNumber;
-        internal readonly List<CodeBlock> codeblocks;
-
-        public Packet(int layerNumber, List<CodeBlock> codeblocks)
-        {
-            this.layerNumber = layerNumber;
-            this.codeblocks = codeblocks;
-        }
-    }
-
-    internal class CodeblockParameters
-    {
-        internal readonly int codeblockWidth;
-        internal readonly int codeblockHeight;
-        internal readonly int numcodeblockwide;
-        internal readonly int numcodeblockhigh;
-
-        public CodeblockParameters(int codeblockWidth, int codeblockHeight, int numcodeblockwide, int numcodeblockhigh)
-        {
-            this.codeblockWidth = codeblockWidth;
-            this.codeblockHeight = codeblockHeight;
-            this.numcodeblockwide = numcodeblockwide;
-            this.numcodeblockhigh = numcodeblockhigh;
-        }
-    }
-
-    internal class Precinct
-    {
-        internal int cbxMin;
-        internal int cbyMin;
-        internal int cbxMax;
-        internal int cbyMax;
-        internal InclusionTree inclusionTree;
-        internal TagTree zeroBitPlanesTree;
-
-        public Precinct(int cbxMin, int cbyMin, int cbxMax, int cbyMax)
-        {
-            this.cbxMin = cbxMin;
-            this.cbyMin = cbyMin;
-            this.cbxMax = cbxMax;
-            this.cbyMax = cbyMax;
-        }
-    }
-
-    internal class CodeBlock
-    {
-        internal readonly int cbx;
-        internal readonly int cby;
-        internal readonly int tbx0;
-        internal readonly int tby0;
-        internal readonly int tbx1;
-        internal readonly int tby1;
-        internal int tbx0_;
-        internal int tby0_;
-        internal int tbx1_;
-        internal int tby1_;
-        internal double precinctNumber;
-        internal string subbandType;
-        internal int Lblock;
-        internal Precinct precinct;
-        internal bool? included;
-        internal List<CodeBlockData> data;
-        internal float zeroBitPlanes;
-
-        public CodeBlock(int cbx, int cby, int tbx0, int tby0, int tbx1, int tby1)
-        {
-            this.cbx = cbx;
-            this.cby = cby;
-            this.tbx0 = tbx0;
-            this.tby0 = tby0;
-            this.tbx1 = tbx1;
-            this.tby1 = tby1;
-        }
-
-    }
-
-    internal class PrecinctParameters
-    {
-        internal readonly int precinctWidth;
-        internal readonly int precinctHeight;
-        internal readonly double numprecinctswide;
-        internal readonly double numprecinctshigh;
-        internal readonly double numprecincts;
-        internal readonly int precinctWidthInSubband;
-        internal readonly int precinctHeightInSubband;
-
-        public PrecinctParameters(int precinctWidth, int precinctHeight, double numprecinctswide, double numprecinctshigh, double numprecincts, int precinctWidthInSubband, int precinctHeightInSubband)
-        {
-            this.precinctWidth = precinctWidth;
-            this.precinctHeight = precinctHeight;
-            this.numprecinctswide = numprecinctswide;
-            this.numprecinctshigh = numprecinctshigh;
-            this.numprecincts = numprecincts;
-            this.precinctWidthInSubband = precinctWidthInSubband;
-            this.precinctHeightInSubband = precinctHeightInSubband;
-        }
-    }
-
-    internal class SubBand
-    {
-        internal readonly string type;
-        internal readonly int tbx0;
-        internal readonly int tby0;
-        internal readonly int tbx1;
-        internal readonly int tby1;
-        internal readonly Resolution resolution;
-        internal CodeblockParameters codeblockParameters;
-        internal List<CodeBlock> codeblocks;
-        internal Dictionary<double, Precinct> precincts;
-
-        public SubBand(string type, int tbx0, int tby0, int tbx1, int tby1, Resolution resolution)
-        {
-            this.type = type;
-            this.tbx0 = tbx0;
-            this.tby0 = tby0;
-            this.tbx1 = tbx1;
-            this.tby1 = tby1;
-            this.resolution = resolution;
-        }
-    }
-
-    internal class Resolution
-    {
-        internal readonly int trx0;
-        internal readonly int try0;
-        internal readonly int trx1;
-        internal readonly int try1;
-        internal readonly int resLevel;
-        internal List<SubBand> subbands;
-        internal PrecinctParameters precinctParameters;
-
-        public Resolution(int trx0, int try0, int trx1, int try1, int resLevel)
-        {
-            this.trx0 = trx0;
-            this.try0 = try0;
-            this.trx1 = trx1;
-            this.try1 = try1;
-            this.resLevel = resLevel;
-        }
-    }
-
-    internal class Dimension
-    {
-        internal int PPx;
-        internal int PPy;
-        internal int xcb_;
-        internal int ycb_;
-
-        public Dimension()
-        {
-        }
-    }
-
-    internal class TagTree
-    {
-        internal List<Level> levels;
-        internal int currentLevel;
-        internal float value;
-
-        // eslint-disable-next-line no-shadow
-        public TagTree(int width, int height)
-        {
-            var levelsLength = JpxImage.log2(Math.Max(width, height)) + 1;
-            this.levels = new List<Level>();
-            for (var i = 0; i < levelsLength; i++)
+            this.image = image;
+            this.context = context;
+            siz = context.SIZ;
+            tileIndex = context.currentTile.index;
+            tile = context.tiles[tileIndex];
+            layersCount = tile.codingStyleDefaultParameters.layersCount;
+            componentsCount = siz.Csiz;
+            maxDecompositionLevelsCount = 0;
+            for (var q = 0; q < componentsCount; q++)
             {
-                var level = new Level(width, height, items: new float[0]);
-                this.levels.Add(level);
-                width = (int)Math.Ceiling((double)width / 2);
-                height = (int)Math.Ceiling((double)height / 2);
+                maxDecompositionLevelsCount = Math.Max(
+                  maxDecompositionLevelsCount,
+                  tile.components[q].codingStyleParameters.decompositionLevelsCount
+                );
             }
+
+            l = 0;
+            r = 0;
+            i = 0;
+            k = 0;
         }
 
-        public void Reset(int i, int j)
+        public override Packet NextPacket()
         {
-            var currentLevel = 0;
-            var value = 0F;
-            var level = (Level)null;
-            while (currentLevel < this.levels.Count)
+            // Section B.12.1.1 Layer-resolution-component-position
+            for (; l < layersCount; l++)
             {
-                level = this.levels[currentLevel];
-                var index = i + j * level.width;
-                if (level.items.Length > index)
+                for (; r <= maxDecompositionLevelsCount; r++)
                 {
-                    value = level.items[index];
-                    break;
+                    for (; i < componentsCount; i++)
+                    {
+                        var component = tile.components[i];
+                        if (r > component.codingStyleParameters.decompositionLevelsCount)
+                        {
+                            continue;
+                        }
+
+                        var resolution = component.resolutions[r];
+                        var numprecincts = resolution.precinctParameters.numprecincts;
+                        for (; k < numprecincts;)
+                        {
+                            var packet = image.CreatePacket(resolution, k, l);
+                            k++;
+                            return packet;
+                        }
+                        k = 0;
+                    }
+                    i = 0;
                 }
-                level.index = index;
-                i >>= 1;
-                j >>= 1;
-                currentLevel++;
+                r = 0;
             }
-            currentLevel--;
-            level = this.levels[currentLevel];
-            CheckBuffer(level);
-            level.items[level.index] = value;
-            this.currentLevel = currentLevel;
-            // delete this.value;
+            throw new JpxError("Out of packets");
         }
+    }
 
-        private static void CheckBuffer(Level level)
+    internal class ResolutionLayerComponentPositionIterator : Iterator
+    {
+        private JpxImage image;
+        private Context context;
+        private SIZ siz;
+        private int tileIndex;
+        private Tile tile;
+        private int layersCount;
+        private int componentsCount;
+        private int maxDecompositionLevelsCount;
+        private int r;
+        private int l;
+        private int i;
+        private int k;
+
+        public ResolutionLayerComponentPositionIterator(JpxImage image, Context context)
         {
-            if (level.items.Length < level.index + 1)
+            this.image = image;
+            this.context = context;
+            siz = context.SIZ;
+            tileIndex = context.currentTile.index;
+            tile = context.tiles[tileIndex];
+            layersCount = tile.codingStyleDefaultParameters.layersCount;
+            componentsCount = siz.Csiz;
+            maxDecompositionLevelsCount = 0;
+            for (var q = 0; q < componentsCount; q++)
             {
-                var temp = level.items;
-                level.items = new float[level.index + 1];
-                level.items.Set(temp, 0);
+                maxDecompositionLevelsCount = Math.Max(
+                  maxDecompositionLevelsCount,
+                  tile.components[q].codingStyleParameters.decompositionLevelsCount
+                );
             }
-        }
 
-        public void IncrementValue()
-        {
-            var level = this.levels[this.currentLevel];
-            level.items[level.index]++;
+            r = 0;
+            l = 0;
+            i = 0;
+            k = 0;
         }
-        public bool NextLevel()
+        public override Packet NextPacket()
         {
-            var currentLevel = this.currentLevel;
-            var level = this.levels[currentLevel];
-            var value = level.items[level.index];
-            currentLevel--;
-            if (currentLevel < 0)
+            // Section B.12.1.2 Resolution-layer-component-position
+            for (; r <= maxDecompositionLevelsCount; r++)
             {
-                this.value = value;
-                return false;
-            }
+                for (; l < layersCount; l++)
+                {
+                    for (; i < componentsCount; i++)
+                    {
+                        var component = (Component)tile.components[i];
+                        if (r > component.codingStyleParameters.decompositionLevelsCount)
+                        {
+                            continue;
+                        }
 
-            this.currentLevel = currentLevel;
-            level = this.levels[currentLevel];
-            CheckBuffer(level);
-            level.items[level.index] = value;
-            return true;
+                        var resolution = component.resolutions[r];
+                        var numprecincts = resolution.precinctParameters.numprecincts;
+                        for (; k < numprecincts;)
+                        {
+                            var packet = image.CreatePacket(resolution, k, l);
+                            k++;
+                            return packet;
+                        }
+                        k = 0;
+                    }
+                    i = 0;
+                }
+                l = 0;
+            }
+            throw new JpxError("Out of packets");
+        }
+    }
+
+    internal class ResolutionPositionComponentLayerIterator : Iterator
+    {
+        private readonly JpxImage image;
+        private readonly Context context;
+        private SIZ siz;
+        private ushort tileIndex;
+        private Tile tile;
+        private int layersCount;
+        private int componentsCount;
+        private int l;
+        private int r;
+        private int c;
+        private int p;
+        private int maxDecompositionLevelsCount;
+        private int[] maxNumPrecinctsInLevel;
+
+        public ResolutionPositionComponentLayerIterator(JpxImage image, Context context)
+        {
+            this.image = image;
+            this.context = context;
+            siz = context.SIZ;
+            tileIndex = context.currentTile.index;
+            tile = context.tiles[tileIndex];
+            layersCount = tile.codingStyleDefaultParameters.layersCount;
+            componentsCount = siz.Csiz;
+            l = 0; r = 0; c = 0; p = 0;
+            maxDecompositionLevelsCount = 0;
+            for (c = 0; c < componentsCount; c++)
+            {
+                var component = tile.components[c];
+                maxDecompositionLevelsCount = Math.Max(
+                  maxDecompositionLevelsCount,
+                  component.codingStyleParameters.decompositionLevelsCount
+                );
+            }
+            maxNumPrecinctsInLevel = new int[maxDecompositionLevelsCount + 1];
+            for (r = 0; r <= maxDecompositionLevelsCount; ++r)
+            {
+                var maxNumPrecincts = 0D;
+                for (c = 0; c < componentsCount; ++c)
+                {
+                    var resolutions = tile.components[c].resolutions;
+                    if (r < resolutions.Count)
+                    {
+                        maxNumPrecincts = Math.Max(
+                          maxNumPrecincts,
+                          resolutions[r].precinctParameters.numprecincts
+                        );
+                    }
+                }
+                maxNumPrecinctsInLevel[r] = (int)maxNumPrecincts;
+            }
+            l = 0;
+            r = 0;
+            c = 0;
+            p = 0;
+        }
+
+        public override Packet NextPacket()
+        {
+            // Section B.12.1.3 Resolution-position-component-layer
+            for (; r <= maxDecompositionLevelsCount; r++)
+            {
+                for (; p < maxNumPrecinctsInLevel[r]; p++)
+                {
+                    for (; c < componentsCount; c++)
+                    {
+                        var component = tile.components[c];
+                        if (r > component.codingStyleParameters.decompositionLevelsCount)
+                        {
+                            continue;
+                        }
+                        var resolution = component.resolutions[r];
+                        var numprecincts = resolution.precinctParameters.numprecincts;
+                        if (p >= numprecincts)
+                        {
+                            continue;
+                        }
+                        for (; l < layersCount;)
+                        {
+                            var packet = image.CreatePacket(resolution, p, l);
+                            l++;
+                            return packet;
+                        }
+                        l = 0;
+                    }
+                    c = 0;
+                }
+                p = 0;
+            }
+            throw new JpxError("Out of packets");
+        }
+    }
+
+    internal class PositionComponentResolutionLayerIterator : Iterator
+    {
+        private readonly JpxImage image;
+        private readonly Context context;
+        private readonly SIZ siz;
+        private readonly ushort tileIndex;
+        private readonly Tile tile;
+        private int layersCount;
+        private int componentsCount;
+        private PrecinctSizes precinctsSizes;
+        private PrecinctSizes precinctsIterationSizes;
+        private int l;
+        private int r;
+        private int c;
+        private int px;
+        private int py;
+
+        public PositionComponentResolutionLayerIterator(JpxImage image, Context context)
+        {
+            this.image = image;
+            this.context = context;
+            siz = context.SIZ;
+            tileIndex = context.currentTile.index;
+            tile = context.tiles[tileIndex];
+            layersCount = tile.codingStyleDefaultParameters.layersCount;
+            componentsCount = siz.Csiz;
+            precinctsSizes = image.GetPrecinctSizesInImageScale(tile);
+            precinctsIterationSizes = precinctsSizes;
+            l = 0;
+            r = 0;
+            c = 0;
+            px = 0;
+            py = 0;
+        }
+
+        public override Packet NextPacket()
+        {
+            // Section B.12.1.4 Position-component-resolution-layer
+            for (; py < precinctsIterationSizes.maxNumHigh; py++)
+            {
+                for (; px < precinctsIterationSizes.maxNumWide; px++)
+                {
+                    for (; c < componentsCount; c++)
+                    {
+                        var component = tile.components[c];
+                        var decompositionLevelsCount =
+                          component.codingStyleParameters.decompositionLevelsCount;
+                        for (; r <= decompositionLevelsCount; r++)
+                        {
+                            var resolution = component.resolutions[r];
+                            var sizeInImageScale =
+                              precinctsSizes.components[c].resolutions[r];
+                            var k = image.GetPrecinctIndexIfExist(
+                              px,
+                              py,
+                              sizeInImageScale,
+                              precinctsIterationSizes,
+                              resolution
+                            );
+                            if (k == null)
+                            {
+                                continue;
+                            }
+                            for (; l < layersCount;)
+                            {
+                                var packet = image.CreatePacket(resolution, (int)k, l);
+                                l++;
+                                return packet;
+                            }
+                            l = 0;
+                        }
+                        r = 0;
+                    }
+                    c = 0;
+                }
+                px = 0;
+            }
+            throw new JpxError("Out of packets");
+        }
+    }
+
+    internal class ComponentPositionResolutionLayerIterator : Iterator
+    {
+        private readonly JpxImage image;
+        private readonly Context context;
+        private readonly SIZ siz;
+        private readonly int tileIndex;
+        private readonly Tile tile;
+        private readonly int layersCount;
+        private readonly int componentsCount;
+        private readonly PrecinctSizes precinctsSizes;
+        private int l;
+        private int r;
+        private int c;
+        private int px;
+        private int py;
+
+        public ComponentPositionResolutionLayerIterator(JpxImage image, Context context)
+        {
+            this.image = image;
+            this.context = context;
+            siz = context.SIZ;
+            tileIndex = context.currentTile.index;
+            tile = context.tiles[tileIndex];
+            layersCount = tile.codingStyleDefaultParameters.layersCount;
+            componentsCount = siz.Csiz;
+            precinctsSizes = image.GetPrecinctSizesInImageScale(tile);
+            l = 0;
+            r = 0;
+            c = 0;
+            px = 0;
+            py = 0;
+
+        }
+        public override Packet NextPacket()
+        {
+            // Section B.12.1.5 Component-position-resolution-layer
+            for (; c < componentsCount; ++c)
+            {
+                var component = tile.components[c];
+                var precinctsIterationSizes = precinctsSizes.components[c];
+                var decompositionLevelsCount =
+                  component.codingStyleParameters.decompositionLevelsCount;
+                for (; py < precinctsIterationSizes.maxNumHigh; py++)
+                {
+                    for (; px < precinctsIterationSizes.maxNumWide; px++)
+                    {
+                        for (; r <= decompositionLevelsCount; r++)
+                        {
+                            var resolution = component.resolutions[r];
+                            var sizeInImageScale = precinctsIterationSizes.resolutions[r];
+                            var k = image.GetPrecinctIndexIfExist(
+                              px,
+                              py,
+                              sizeInImageScale,
+                              precinctsIterationSizes,
+                              resolution
+                            );
+                            if (k == null)
+                            {
+                                continue;
+                            }
+                            for (; l < layersCount;)
+                            {
+                                var packet = image.CreatePacket(resolution, (int)k, l);
+                                l++;
+                                return packet;
+                            }
+                            l = 0;
+                        }
+                        r = 0;
+                    }
+                    px = 0;
+                }
+                py = 0;
+            }
+            throw new JpxError("Out of packets");
         }
     }
 
@@ -2224,10 +1924,10 @@ namespace PdfClown.Bytes.Filters.Jpx
     {
         internal int width;
         internal int height;
-        internal float[] items;
+        internal byte[] items;
         internal int index;
 
-        public Level(int width, int height, float[] items)
+        public Level(int width, int height, byte[] items)
         {
             this.width = width;
             this.height = height;
@@ -2241,13 +1941,13 @@ namespace PdfClown.Bytes.Filters.Jpx
         private int currentLevel;
 
         // eslint-disable-next-line no-shadow
-        public InclusionTree(int width, int height, float defaultValue)
+        public InclusionTree(int width, int height, byte defaultValue)
         {
             var levelsLength = JpxImage.log2(Math.Max(width, height)) + 1;
             this.levels = new List<Level>();
             for (var i = 0; i < levelsLength; i++)
             {
-                var items = new float[width * height];
+                var items = new byte[width * height];
                 var jj = items.Length;
                 for (var j = 0; j < jj; j++)
                 {
@@ -2329,6 +2029,89 @@ namespace PdfClown.Bytes.Filters.Jpx
         }
     }
 
+    internal class TagTree
+    {
+        internal List<Level> levels;
+        internal int currentLevel;
+        internal byte value;
+
+        // eslint-disable-next-line no-shadow
+        public TagTree(int width, int height)
+        {
+            var levelsLength = JpxImage.log2(Math.Max(width, height)) + 1;
+            this.levels = new List<Level>();
+            for (var i = 0; i < levelsLength; i++)
+            {
+                var level = new Level(width, height, items: new byte[0]);
+                this.levels.Add(level);
+                width = (int)Math.Ceiling((double)width / 2D);
+                height = (int)Math.Ceiling((double)height / 2D);
+            }
+        }
+
+        public void Reset(int i, int j)
+        {
+            var currentLevel = 0;
+            byte value = 0;
+            var level = (Level)null;
+            while (currentLevel < this.levels.Count)
+            {
+                level = this.levels[currentLevel];
+                var index = i + j * level.width;
+                if (level.items.Length > index
+                    && level.items[index] != 0)
+                {
+                    value = level.items[index];
+                    break;
+                }
+                level.index = index;
+                i >>= 1;
+                j >>= 1;
+                currentLevel++;
+            }
+            currentLevel--;
+            level = this.levels[currentLevel];
+            CheckBuffer(level);
+            level.items[level.index] = value;
+            this.currentLevel = currentLevel;
+            // delete this.value;
+        }
+
+        private static void CheckBuffer(Level level)
+        {
+            if (level.items.Length < level.index + 1)
+            {
+                var temp = level.items;
+                level.items = new byte[level.index + 1];
+                level.items.Set(temp, 0);
+            }
+        }
+
+        public void IncrementValue()
+        {
+            var level = this.levels[this.currentLevel];
+            level.items[level.index]++;
+        }
+        public bool NextLevel()
+        {
+            var currentLevel = this.currentLevel;
+            var level = this.levels[currentLevel];
+            var value = level.items[level.index];
+            currentLevel--;
+            if (currentLevel < 0)
+            {
+                this.value = value;
+                return false;
+            }
+
+            this.currentLevel = currentLevel;
+            level = this.levels[currentLevel];
+            CheckBuffer(level);
+            level.items[level.index] = value;
+            return true;
+        }
+    }
+
     // Section D. Coefficient bit modeling
     public class BitModel
     {
@@ -2360,7 +2143,7 @@ namespace PdfClown.Bytes.Filters.Jpx
         internal byte[] contextLabelTable;
         internal byte[] neighborsSignificance;
         internal byte[] coefficentsSign;
-        internal byte[] coefficentsMagnitude;
+        internal ushort[] coefficentsMagnitude;
         internal byte[] processingFlags;
         internal byte[] bitsDecoded;
         internal ArithmeticDecoder decoder;
@@ -2406,7 +2189,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             //{
             //    coefficentsMagnitude = new byte[coefficientCount];
             //}
-            this.coefficentsMagnitude = new byte[coefficientCount];
+            this.coefficentsMagnitude = new ushort[coefficientCount];
             this.processingFlags = new byte[coefficientCount];
 
             var bitsDecoded = new byte[coefficientCount];
@@ -2420,6 +2203,10 @@ namespace PdfClown.Bytes.Filters.Jpx
             this.bitsDecoded = bitsDecoded;
 
             this.Reset();
+        }
+        byte ToByte(int value)
+        {
+            return value > 255 ? (byte)255 : value < 0 ? (byte)0 : (byte)value;
         }
 
         public void SetDecoder(ArithmeticDecoder decoder)
@@ -2517,7 +2304,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             break;
                         }
                         // clear processed flag first
-                        processingFlags[index] = (byte)(processingFlags[index] & processedInverseMask);
+                        processingFlags[index] = ToByte(processingFlags[index] & processedInverseMask);
 
                         if (0 != coefficentsMagnitude[index] ||
                           0 == neighborsSignificance[index])
@@ -2530,18 +2317,19 @@ namespace PdfClown.Bytes.Filters.Jpx
                         if (decision != 0)
                         {
                             var sign = this.DecodeSignBit(i, j, index);
-                            coefficentsSign[index] = (byte)sign;
+                            coefficentsSign[index] = ToByte(sign);
                             coefficentsMagnitude[index] = 1;
                             this.SetNeighborsSignificance(i, j, index);
-                            processingFlags[index] = (byte)(processingFlags[index] | firstMagnitudeBitMask);
+                            processingFlags[index] = ToByte(processingFlags[index] | firstMagnitudeBitMask);
                         }
                         bitsDecoded[index]++;
-                        processingFlags[index] = (byte)(processingFlags[index] | processedMask);
+                        processingFlags[index] = ToByte(processingFlags[index] | processedMask);
                     }
                 }
             }
         }
-        int DecodeSignBit(int row, int column, int index)
+
+        private int DecodeSignBit(int row, int column, int index)
         {
             var width = this.width;
             var height = this.height;
@@ -2650,16 +2438,16 @@ namespace PdfClown.Bytes.Filters.Jpx
                         var contextLabel = 16;
                         if ((processingFlags[index] & firstMagnitudeBitMask) != 0)
                         {
-                            processingFlags[index] = (byte)(processingFlags[index] ^ firstMagnitudeBitMask);
+                            processingFlags[index] = ToByte(processingFlags[index] ^ firstMagnitudeBitMask);
                             // first refinement
                             var significance = neighborsSignificance[index] & 127;
                             contextLabel = significance == 0 ? 15 : 14;
                         }
 
                         var bit = decoder.ReadBit(contexts, contextLabel);
-                        coefficentsMagnitude[index] = (byte)((coefficentsMagnitude[index] << 1) | bit);
+                        coefficentsMagnitude[index] = (ushort)((coefficentsMagnitude[index] << 1) | bit);
                         bitsDecoded[index]++;
-                        processingFlags[index] = (byte)(processingFlags[index] | processedMask);
+                        processingFlags[index] = ToByte(processingFlags[index] | processedMask);
                     }
                 }
             }
@@ -2727,10 +2515,10 @@ namespace PdfClown.Bytes.Filters.Jpx
                         }
 
                         sign = this.DecodeSignBit(i, j, index);
-                        coefficentsSign[index] = (byte)sign;
+                        coefficentsSign[index] = ToByte(sign);
                         coefficentsMagnitude[index] = 1;
                         this.SetNeighborsSignificance(i, j, index);
-                        processingFlags[index] = (byte)(processingFlags[index] | firstMagnitudeBitMask);
+                        processingFlags[index] = ToByte(processingFlags[index] | firstMagnitudeBitMask);
 
                         index = index0;
                         for (var i2 = i0; i2 <= i; i2++, index += width)
@@ -2755,10 +2543,10 @@ namespace PdfClown.Bytes.Filters.Jpx
                         if (decision == 1)
                         {
                             sign = this.DecodeSignBit(i, j, index);
-                            coefficentsSign[index] = (byte)sign;
+                            coefficentsSign[index] = ToByte(sign);
                             coefficentsMagnitude[index] = 1;
                             this.SetNeighborsSignificance(i, j, index);
-                            processingFlags[index] = (byte)(processingFlags[index] | firstMagnitudeBitMask);
+                            processingFlags[index] = ToByte(processingFlags[index] | firstMagnitudeBitMask);
                         }
                         bitsDecoded[index]++;
                     }
@@ -2797,7 +2585,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             return ll;
         }
 
-        public void Extend(float[] buffer, int offset, int size)
+        public void Extend(double[] buffer, int offset, int size)
         {
             // Section F.3.7 extending... using max extension of 4
             var i1 = offset - 1;
@@ -2842,7 +2630,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             llItems = ll.items = null;
 
             var bufferPadding = 4;
-            var rowBuffer = new float[width + 2 * bufferPadding];
+            var rowBuffer = new double[width + 2 * bufferPadding];
 
             // Section F.3.4 HOR_SR
             if (width == 1)
@@ -2852,7 +2640,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                 {
                     for (v = 0, k = 0; v < height; v++, k += width)
                     {
-                        items[k] = (byte)(items[k] * 0.5F);
+                        items[k] = items[k] * 0.5D;
                     }
                 }
             }
@@ -2878,10 +2666,10 @@ namespace PdfClown.Bytes.Filters.Jpx
             // 'numBuffers' items at a time and store them into the individual
             // buffers. The colBuffers should be small enough to fit into CPU cache.
             var numBuffers = 16;
-            var colBuffers = new List<float[]>();
+            var colBuffers = new List<double[]>();
             for (i = 0; i < numBuffers; i++)
             {
-                colBuffers.Add(new float[height + 2 * bufferPadding]);
+                colBuffers.Add(new double[height + 2 * bufferPadding]);
             }
             var b = 0;
             var currentBuffer = 0;
@@ -2895,7 +2683,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                 {
                     for (u = 0; u < width; u++)
                     {
-                        items[u] *= 0.5F;
+                        items[u] *= 0.5D;
                     }
                 }
             }
@@ -2940,7 +2728,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             return new Coefficient(width, height, items);
         }
 
-        public virtual void Filter(float[] x, int offset, int length)
+        public virtual void Filter(double[] x, int offset, int length)
         { }
     }
 
@@ -2954,7 +2742,7 @@ namespace PdfClown.Bytes.Filters.Jpx
         }
 
 
-        public override void Filter(float[] x, int offset, int length)
+        public override void Filter(double[] x, int offset, int length)
         {
             var len = length >> 1;
             offset = offset | 0;
@@ -2963,12 +2751,12 @@ namespace PdfClown.Bytes.Filters.Jpx
             var current = 0D;
             var next = 0D;
 
-            var alpha = -1.586134342059924D;
-            var beta = -0.052980118572961D;
-            var gamma = 0.882911075530934D;
-            var delta = 0.443506852043971D;
-            var K = 1.230174104914001D;
-            var K_ = 1 / K;
+            const double alpha = -1.586134342059924D;
+            const double beta = -0.052980118572961D;
+            const double gamma = 0.882911075530934D;
+            const double delta = 0.443506852043971D;
+            const double K = 1.230174104914001D;
+            const double K_ = 1 / K;
 
             // step 1 is combined with step 3
 
@@ -2976,7 +2764,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             j = offset - 3;
             for (n = len + 4; n-- != 0; j += 2)
             {
-                x[j] = (float)(x[j] * K_);
+                x[j] *= K_;
             }
 
             // step 1 & 3
@@ -2985,12 +2773,12 @@ namespace PdfClown.Bytes.Filters.Jpx
             for (n = len + 3; n-- != 0; j += 2)
             {
                 next = delta * x[j + 1];
-                x[j] = (float)(K * x[j] - current - next);
+                x[j] = K * x[j] - current - next;
                 if (n-- != 0)
                 {
                     j += 2;
                     current = delta * x[j + 1];
-                    x[j] = (float)(K * x[j] - current - next);
+                    x[j] = K * x[j] - current - next;
                 }
                 else
                 {
@@ -3004,12 +2792,12 @@ namespace PdfClown.Bytes.Filters.Jpx
             for (n = len + 2; n-- != 0; j += 2)
             {
                 next = gamma * x[j + 1];
-                x[j] = (float)(x[j] - (current + next));
+                x[j] -= current + next;
                 if (n-- != 0)
                 {
                     j += 2;
                     current = gamma * x[j + 1];
-                    x[j] = (float)(x[j] - (current + next));
+                    x[j] -= current + next;
                 }
                 else
                 {
@@ -3023,12 +2811,12 @@ namespace PdfClown.Bytes.Filters.Jpx
             for (n = len + 1; n-- != 0; j += 2)
             {
                 next = beta * x[j + 1];
-                x[j] = (float)(x[j] - (current + next));
+                x[j] -= current + next;
                 if (n-- != 0)
                 {
                     j += 2;
                     current = beta * x[j + 1];
-                    x[j] = (float)(x[j] - (current + next));
+                    x[j] -= current + next;
                 }
                 else
                 {
@@ -3044,12 +2832,12 @@ namespace PdfClown.Bytes.Filters.Jpx
                 for (n = len; n-- != 0; j += 2)
                 {
                     next = alpha * x[j + 1];
-                    x[j] = (float)(x[j] - (current + next));
+                    x[j] -= current + next;
                     if (n-- != 0)
                     {
                         j += 2;
                         current = alpha * x[j + 1];
-                        x[j] = (float)(x[j] - (current + next));
+                        x[j] -= current + next;
                     }
                     else
                     {
@@ -3069,7 +2857,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             //call(this);
         }
 
-        public override void Filter(float[] x, int offset, int length)
+        public override void Filter(double[] x, int offset, int length)
         {
             var len = length >> 1;
             offset = offset | 0;
@@ -3091,12 +2879,230 @@ namespace PdfClown.Bytes.Filters.Jpx
 
     //Classes
 
+    internal class CodeBlockData
+    {
+        internal readonly byte[] data;
+        internal readonly int start;
+        internal readonly int end;
+        internal readonly int codingpasses;
+
+        public CodeBlockData(byte[] data, int start, int end, int codingpasses)
+        {
+            this.data = data;
+            this.start = start;
+            this.end = end;
+            this.codingpasses = codingpasses;
+        }
+    }
+
+    internal class PacketItem
+    {
+        internal readonly CodeBlock codeblock;
+        internal readonly int codingpasses;
+        internal readonly int dataLength;
+
+        public PacketItem(CodeBlock codeblock, int codingpasses, int dataLength)
+        {
+            this.codeblock = codeblock;
+            this.codingpasses = codingpasses;
+            this.dataLength = dataLength;
+        }
+    }
+
+    internal class PrecinctSizes
+    {
+        internal readonly int minWidth;
+        internal readonly int minHeight;
+        internal readonly int maxNumWide;
+        internal readonly int maxNumHigh;
+        internal Dictionary<int, Size> resolutions;
+        internal Dictionary<int, PrecinctSizes> components;
+
+        public PrecinctSizes(int minWidth, int minHeight, int maxNumWide, int maxNumHigh, Dictionary<int, PrecinctSizes> components = null, Dictionary<int, Size> resolutions = null)
+        {
+            this.components = components;
+            this.minWidth = minWidth;
+            this.minHeight = minHeight;
+            this.maxNumWide = maxNumWide;
+            this.maxNumHigh = maxNumHigh;
+            this.resolutions = resolutions;
+        }
+    }
+
+    internal class Coefficient
+    {
+        internal readonly int width;
+        internal readonly int height;
+        internal double[] items;
+
+        public Coefficient(int width, int height, double[] items)
+        {
+            this.width = width;
+            this.height = height;
+            this.items = items;
+        }
+    }
+
+    internal class Packet
+    {
+        internal readonly int layerNumber;
+        internal readonly List<CodeBlock> codeblocks;
+
+        public Packet(int layerNumber, List<CodeBlock> codeblocks)
+        {
+            this.layerNumber = layerNumber;
+            this.codeblocks = codeblocks;
+        }
+    }
+
+    internal class CodeblockParameters
+    {
+        internal readonly int codeblockWidth;
+        internal readonly int codeblockHeight;
+        internal readonly int numcodeblockwide;
+        internal readonly int numcodeblockhigh;
+
+        public CodeblockParameters(int codeblockWidth, int codeblockHeight, int numcodeblockwide, int numcodeblockhigh)
+        {
+            this.codeblockWidth = codeblockWidth;
+            this.codeblockHeight = codeblockHeight;
+            this.numcodeblockwide = numcodeblockwide;
+            this.numcodeblockhigh = numcodeblockhigh;
+        }
+    }
+
+    internal class Precinct
+    {
+        internal int cbxMin;
+        internal int cbyMin;
+        internal int cbxMax;
+        internal int cbyMax;
+        internal InclusionTree inclusionTree;
+        internal TagTree zeroBitPlanesTree;
+
+        public Precinct(int cbxMin, int cbyMin, int cbxMax, int cbyMax)
+        {
+            this.cbxMin = cbxMin;
+            this.cbyMin = cbyMin;
+            this.cbxMax = cbxMax;
+            this.cbyMax = cbyMax;
+        }
+    }
+
+    internal class CodeBlock
+    {
+        internal readonly int cbx;
+        internal readonly int cby;
+        internal readonly int tbx0;
+        internal readonly int tby0;
+        internal readonly int tbx1;
+        internal readonly int tby1;
+        internal int tbx0_;
+        internal int tby0_;
+        internal int tbx1_;
+        internal int tby1_;
+        internal int precinctNumber;
+        internal string subbandType;
+        internal int Lblock;
+        internal Precinct precinct;
+        internal bool? included;
+        internal List<CodeBlockData> data;
+        internal byte zeroBitPlanes;
+
+        public CodeBlock(int cbx, int cby, int tbx0, int tby0, int tbx1, int tby1)
+        {
+            this.cbx = cbx;
+            this.cby = cby;
+            this.tbx0 = tbx0;
+            this.tby0 = tby0;
+            this.tbx1 = tbx1;
+            this.tby1 = tby1;
+        }
+    }
+
+    internal class PrecinctParameters
+    {
+        internal readonly int precinctWidth;
+        internal readonly int precinctHeight;
+        internal readonly int numprecinctswide;
+        internal readonly int numprecinctshigh;
+        internal readonly int numprecincts;
+        internal readonly int precinctWidthInSubband;
+        internal readonly int precinctHeightInSubband;
+
+        public PrecinctParameters(int precinctWidth, int precinctHeight, int numprecinctswide, int numprecinctshigh, int numprecincts, int precinctWidthInSubband, int precinctHeightInSubband)
+        {
+            this.precinctWidth = precinctWidth;
+            this.precinctHeight = precinctHeight;
+            this.numprecinctswide = numprecinctswide;
+            this.numprecinctshigh = numprecinctshigh;
+            this.numprecincts = numprecincts;
+            this.precinctWidthInSubband = precinctWidthInSubband;
+            this.precinctHeightInSubband = precinctHeightInSubband;
+        }
+    }
+
+    internal class SubBand
+    {
+        internal readonly string type;
+        internal readonly int tbx0;
+        internal readonly int tby0;
+        internal readonly int tbx1;
+        internal readonly int tby1;
+        internal readonly Resolution resolution;
+        internal CodeblockParameters codeblockParameters;
+        internal List<CodeBlock> codeblocks;
+        internal Dictionary<double, Precinct> precincts;
+
+        public SubBand(string type, int tbx0, int tby0, int tbx1, int tby1, Resolution resolution)
+        {
+            this.type = type;
+            this.tbx0 = tbx0;
+            this.tby0 = tby0;
+            this.tbx1 = tbx1;
+            this.tby1 = tby1;
+            this.resolution = resolution;
+        }
+    }
+
+    internal class Resolution
+    {
+        internal readonly int trx0;
+        internal readonly int try0;
+        internal readonly int trx1;
+        internal readonly int try1;
+        internal readonly int resLevel;
+        internal List<SubBand> subbands;
+        internal PrecinctParameters precinctParameters;
+
+        public Resolution(int trx0, int try0, int trx1, int try1, int resLevel)
+        {
+            this.trx0 = trx0;
+            this.try0 = try0;
+            this.trx1 = trx1;
+            this.try1 = try1;
+            this.resLevel = resLevel;
+        }
+    }
+
+    internal class Dimension
+    {
+        internal int PPx;
+        internal int PPy;
+        internal int xcb_;
+        internal int ycb_;
+
+        public Dimension()
+        {
+        }
+    }
+
     internal class Component
     {
         internal int precision;
         internal bool isSigned;
-        internal byte XRsiz;
-        internal byte YRsiz;
+        internal int XRsiz;
+        internal int YRsiz;
         internal int x0;
         internal int x1;
         internal int y0;
@@ -3116,7 +3122,7 @@ namespace PdfClown.Bytes.Filters.Jpx
         {
         }
 
-        public Component(int precision, bool isSigned, byte XRsiz, byte YRsiz)
+        public Component(int precision, bool isSigned, int XRsiz, int YRsiz)
         {
             this.precision = precision;
             this.isSigned = isSigned;
@@ -3131,9 +3137,9 @@ namespace PdfClown.Bytes.Filters.Jpx
         internal readonly int top;
         internal readonly int width;
         internal readonly int height;
-        internal readonly float[] items;
+        internal readonly double[] items;
 
-        public TileResultF(int left, int top, int width, int height, float[] items)
+        public TileResultF(int left, int top, int width, int height, double[] items)
         {
             this.left = left;
             this.top = top;
@@ -3173,20 +3179,20 @@ namespace PdfClown.Bytes.Filters.Jpx
         internal ushort index;
         internal int length;
         internal int dataEnd;
-        internal byte partIndex;
-        internal byte partsCount;
+        internal int partIndex;
+        internal int partsCount;
         internal Quantization QCD;
         internal Cod COD;
         internal Dictionary<int, Quantization> QCC;
         internal Dictionary<int, Cod> COC;
-        internal JpxImage.Iterator packetsIterator;
+        internal Iterator packetsIterator;
         internal Cod codingStyleDefaultParameters;
 
         public Tile()
         {
         }
 
-        public Tile(ushort index, int length, byte partIndex, byte partsCount)
+        public Tile(ushort index, int length, int partIndex, int partsCount)
         {
             this.index = index;
             this.length = length;
@@ -3264,9 +3270,9 @@ namespace PdfClown.Bytes.Filters.Jpx
         //}
 
         internal byte progressionOrder;
-        internal ushort layersCount;
+        internal int layersCount;
         internal bool multipleComponentTransform;
-        internal byte decompositionLevelsCount;
+        internal int decompositionLevelsCount;
         internal int xcb;
         internal int ycb;
         //TODO Enum
@@ -3298,35 +3304,19 @@ namespace PdfClown.Bytes.Filters.Jpx
         }
     }
 
-    internal class SubbandsGainLog
-    {
-        internal int LL;
-        internal int LH;
-        internal int HL;
-        internal int HH;
-
-        public SubbandsGainLog(int LL, int LH, int HL, int HH)
-        {
-            this.LL = LL;
-            this.LH = LH;
-            this.HL = HL;
-            this.HH = HH;
-        }
-    }
-
     internal class SIZ
     {
-        internal ushort Csiz;
-        internal uint Xsiz;
-        internal uint Ysiz;
-        internal uint XOsiz;
-        internal uint YOsiz;
-        internal uint XTsiz;
-        internal uint YTsiz;
-        internal uint XTOsiz;
-        internal uint YTOsiz;
+        internal int Csiz;
+        internal readonly int Xsiz;
+        internal readonly int Ysiz;
+        internal readonly int XOsiz;
+        internal readonly int YOsiz;
+        internal readonly int XTsiz;
+        internal readonly int YTsiz;
+        internal readonly int XTOsiz;
+        internal readonly int YTOsiz;
 
-        public SIZ(uint Xsiz, uint Ysiz, uint XOsiz, uint YOsiz, uint XTsiz, uint YTsiz, uint XTOsiz, uint YTOsiz)
+        public SIZ(int Xsiz, int Ysiz, int XOsiz, int YOsiz, int XTsiz, int YTsiz, int XTOsiz, int YTOsiz)
         {
             this.Xsiz = Xsiz;
             this.Ysiz = Ysiz;

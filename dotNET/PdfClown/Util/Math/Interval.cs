@@ -38,18 +38,10 @@ namespace PdfClown.Util.Math
         private T low = default(T);
         private bool lowInclusive;
 
-        public Interval(
-          T low,
-          T high
-          ) : this(low, high, true, true)
+        public Interval(T low, T high) : this(low, high, true, true)
         { }
 
-        public Interval(
-          T low,
-          T high,
-          bool lowInclusive,
-          bool highInclusive
-          )
+        public Interval(T low, T high, bool lowInclusive, bool highInclusive)
         {
             this.low = low;
             this.high = high;
@@ -61,9 +53,7 @@ namespace PdfClown.Util.Math
           <summary>Gets whether the specified value is contained within this interval.</summary>
           <param name="value">Value to check for containment.</param>
         */
-        public bool Contains(
-          T value
-          )
+        public bool Contains(T value)
         {
             int lowCompare = (low != null ? low.CompareTo(value) : -1);
             int highCompare = (high != null ? high.CompareTo(value) : 1);

@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-using FreeImageAPI;
 using PdfClown.Bytes.Filters.Jpx;
 using PdfClown.Objects;
 using PdfClown.Util.Collections.Generic;

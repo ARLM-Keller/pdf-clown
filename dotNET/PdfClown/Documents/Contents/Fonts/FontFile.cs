@@ -32,25 +32,25 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public string Subtype
         {
-            get => ((PdfName)Dictionary[PdfName.Subtype])?.StringValue;
+            get => ((PdfName)Dictionary.Resolve(PdfName.Subtype))?.StringValue;
             set => Dictionary[PdfName.Subtype] = new PdfName(value);
         }
 
         public int Length1
         {
-            get => ((PdfInteger)Dictionary[PdfName.Length1])?.IntValue ?? 0;
+            get => ((PdfInteger)Dictionary.Resolve(PdfName.Length1))?.IntValue ?? 0;
             set => Dictionary[PdfName.Length1] = new PdfInteger(value);
         }
 
         public int Length2
         {
-            get => ((PdfInteger)Dictionary[PdfName.Length2])?.IntValue ?? 0;
+            get => ((PdfInteger)Dictionary.Resolve(PdfName.Length2))?.IntValue ?? 0;
             set => Dictionary[PdfName.Length2] = new PdfInteger(value);
         }
 
         public int Length3
         {
-            get => ((PdfInteger)Dictionary[PdfName.Length3])?.IntValue ?? 0;
+            get => ((PdfInteger)Dictionary.Resolve(PdfName.Length3))?.IntValue ?? 0;
             set => Dictionary[PdfName.Length3] = new PdfInteger(value);
         }
 

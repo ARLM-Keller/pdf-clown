@@ -104,7 +104,25 @@ namespace PdfClown.Files
                 version = info.Version;
                 trailer = PrepareTrailer(info.Trailer);
                 indirectObjects = new IndirectObjects(this, info.XrefEntries);
-                document = new Document(trailer[PdfName.Root]);
+
+
+                var documentReference = trailer[PdfName.Root];
+                if (documentReference.Resolve() is PdfDictionary)
+                {
+                    document = new Document(documentReference);
+                }
+                else
+                {
+                    foreach (var inderectObject in indirectObjects)
+                    {
+                        var entry = inderectObject.Resolve();
+                        if (entry is PdfDictionary entryDictionary
+                            && entryDictionary[PdfName.Pages] != null)
+                        {
+                            document = new Document(entry.Reference);
+                        }
+                    }
+                }
                 Configuration.XRefMode = (PdfName.XRef.Equals(trailer[PdfName.Type])
                   ? XRefModeEnum.Compressed
                   : XRefModeEnum.Plain);

@@ -267,7 +267,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public string BaseFont
         {
-            get => ((PdfName)Dictionary[PdfName.BaseFont]).StringValue;
+            get => Dictionary.Resolve(PdfName.BaseFont)?.ToString();
             set => Dictionary[PdfName.BaseFont] = new PdfName(value);
         }
 

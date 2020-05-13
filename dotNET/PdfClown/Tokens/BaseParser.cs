@@ -99,6 +99,10 @@ namespace PdfClown.Tokens
                             MoveNext();
                             PdfDirectObject value = (PdfDirectObject)ParsePdfObject();
                             // Add the current entry to the dictionary!
+                            if (dictionary.ContainsKey(key))
+                            {
+                                key = new PdfName(key.StringValue + "Dublicat");
+                            }
                             dictionary[key] = value;
                         }
                         dictionary.Updateable = true;

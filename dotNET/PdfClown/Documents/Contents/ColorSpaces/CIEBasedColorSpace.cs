@@ -75,7 +75,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         /**
           <summary>Gets this color space's dictionary.</summary>
         */
-        protected override PdfDictionary Dictionary => (PdfDictionary)((PdfArray)BaseDataObject)[1];
+        protected override PdfDictionary Dictionary => (PdfDictionary)((PdfArray)BaseDataObject).Resolve(1);
+
         #endregion
         #endregion
         #endregion

@@ -38,7 +38,7 @@ namespace PdfClown.Viewer.WPF
         protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             base.OnElementPropertyChanged(sender, e);
-            if (e.PropertyName == SKScrollView.CursorProperty.PropertyName)
+            if (string.Equals(e.PropertyName, SKScrollView.CursorProperty.PropertyName, StringComparison.Ordinal))
             {
                 UpdateCursor();
             }

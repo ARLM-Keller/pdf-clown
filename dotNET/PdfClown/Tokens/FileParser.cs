@@ -131,7 +131,7 @@ namespace PdfClown.Tokens
             }
 
             PdfDataObject pdfObject = base.ParsePdfObject();
-            if (pdfObject is PdfDictionary)
+            if (pdfObject is PdfDictionary streamHeader)
             {
                 IInputStream stream = Stream;
                 int oldOffset = (int)stream.Position;
@@ -140,8 +140,6 @@ namespace PdfClown.Tokens
                 if ((TokenType == TokenTypeEnum.Keyword)
                   && Token.Equals(Keyword.BeginStream))
                 {
-                    PdfDictionary streamHeader = (PdfDictionary)pdfObject;
-
                     // Keep track of current position!
                     /*
                       NOTE: Indirect reference resolution is an outbound call which affects the stream pointer position,

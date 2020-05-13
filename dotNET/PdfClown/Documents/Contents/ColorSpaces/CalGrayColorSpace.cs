@@ -22,6 +22,12 @@
   redistributions retain the above copyright notice, license and disclaimer, along with
   this list of conditions.
 */
+/**
+ * Mozilla Pdf.js
+ * CalGrayCS: Based on "PDF Reference, Sixth Ed", p.245
+ *
+ * The default color is `new Float32Array([0])`.
+ */
 
 using PdfClown.Documents;
 using PdfClown.Objects;
@@ -39,12 +45,34 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class CalGrayColorSpace : CalColorSpace
     {
+        private double XW;
+        private double YW;
+        private double ZW;
+        private double XB;
+        private double YB;
+        private double ZB;
+        private double G;
         #region dynamic
         #region constructors
         // TODO:IMPL new element constructor!
 
         internal CalGrayColorSpace(PdfDirectObject baseObject) : base(baseObject)
-        { }
+        {
+            var gamma = Gamma[0];
+
+            // Translate arguments to spec variables.
+            var whitePoint = WhitePoint;
+            this.XW = whitePoint[0];
+            this.YW = whitePoint[1];
+            this.ZW = whitePoint[2];
+
+            var blackPoint = WhitePoint;
+            this.XB = blackPoint[0];
+            this.YB = blackPoint[1];
+            this.ZB = blackPoint[2];
+
+            this.G = gamma;
+        }
         #endregion
 
         #region interface
@@ -76,15 +104,36 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override SKColor GetSKColor(Color color, double? alpha = null)
         {
-            // FIXME: temporary hack
-            return SKColors.Black;
+            var grayColor = color as CalGrayColor;
+            return Calculate(grayColor.G, alpha);
         }
 
         public override SKColor GetSKColor(double[] components, double? alpha = null)
         {
-            // FIXME: temporary hack
-            return SKColors.Black;
+            return Calculate(components[0], alpha);
         }
+
+        private SKColor Calculate(double A, double? alpha = null)
+        {
+            // A represents a gray component of a calibrated gray space.
+            // A <---> AG in the spec
+            var AG = Math.Pow(A, G);
+            // Computes L as per spec. ( = cs.YW * AG )
+            // Except if other than default BlackPoint values are used.
+            var L = YW * AG;
+            // http://www.poynton.com/notes/colour_and_gamma/ColorFAQ.html, Ch 4.
+            // Convert values to rgb range [0, 255].
+            var val = ToByte(Math.Max(295.8 * Math.Pow(L, 0.333333333333333333) - 40.8, 0));
+            var skColor = new SKColor(val, val, val);
+
+            if (alpha != null)
+            {
+                skColor = skColor.WithAlpha((byte)(alpha * 255));
+            }
+            return skColor;
+        }
+
+
 
         #endregion
         #endregion

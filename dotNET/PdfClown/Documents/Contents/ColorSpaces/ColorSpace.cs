@@ -155,6 +155,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public abstract bool IsSpaceColor(Color value);
 
+        protected byte ToByte(double v)
+        {
+            return v > 255 ? (byte)255 : v < 0 ? (byte)0 : (byte)v;
+        }
+
         #endregion
         #endregion
         #endregion

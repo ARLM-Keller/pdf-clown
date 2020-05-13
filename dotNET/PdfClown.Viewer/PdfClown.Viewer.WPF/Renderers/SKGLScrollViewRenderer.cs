@@ -3,6 +3,7 @@ using PdfClown.Viewer.WPF;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using SkiaSharp.Views.WPF;
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
@@ -36,7 +37,7 @@ namespace PdfClown.Viewer.WPF
         protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             base.OnElementPropertyChanged(sender, e);
-            if (e.PropertyName == SKScrollView.CursorProperty.PropertyName)
+            if (string.Equals(e.PropertyName, SKScrollView.CursorProperty.PropertyName, StringComparison.Ordinal))
             {
                 UpdateCursor();
             }

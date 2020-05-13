@@ -44,6 +44,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private SKMatrix44 xyzD50 = SKMatrix44.CreateIdentity();
         private ICCProfile iccProfile;
         private SKColorSpaceTransferFn transfer;
+        private ColorSpace alternate;
         #region dynamic
         #region constructors
         //TODO:IMPL new element constructor!
@@ -64,92 +65,49 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         {
-            if (components.Count == 1)
-                return new DeviceGrayColor(components);
-            else if (components.Count == 3)
-                return new DeviceRGBColor(components); // FIXME:temporary hack...
-            else if (components.Count == 4)
-                return new DeviceCMYKColor(components);
-            return null;
+            return AlternateColorSpace.GetColor(components, context);
+
         }
 
         public override bool IsSpaceColor(Color color)
-        { return color is DeviceColor; }
+        { return AlternateColorSpace.IsSpaceColor(color); }
 
         public override SKColor GetSKColor(Color color, double? alpha = null)
         {
-            // GetIccProfile();
-            GetSKColorSpace();
-
-            var skColor = SKColors.Black;
-            // FIXME: temporary hack
-            if (color is DeviceRGBColor devRGB)
-            {
-                var point = XYZtoRGB((float)devRGB.R, (float)devRGB.G, (float)devRGB.B);
-                skColor = new SKColor(
-                   (byte)(point.X * 255),
-                   (byte)(point.Y * 255),
-                   (byte)(point.Z * 255));
-            }
-            else if (color is DeviceCMYKColor devCMYK)
-            {
-                //TODO
-
-            }
-            else if (color is DeviceGrayColor devGray)
-            {
-                var point = XYZtoRGB((float)devGray.G, (float)devGray.G, (float)devGray.G);
-                skColor = new SKColor(
-                   (byte)(point.X * 255),
-                   (byte)(point.Y * 255),
-                   (byte)(point.Z * 255));
-            }
-
-            if (alpha != null)
-            {
-                skColor = skColor.WithAlpha((byte)(alpha.Value * 255));
-            }
-            return skColor;
+            return AlternateColorSpace.GetSKColor(color, alpha);
         }
 
         public override SKColor GetSKColor(double[] components, double? alpha = null)
         {
-            var skColor = SKColors.Black;
-            if (components.Length == 3)
-            {
-                skColor = new SKColor(
-                   (byte)(components[0] * 255),
-                   (byte)(components[1] * 255),
-                   (byte)(components[2] * 255));
-            }
-            else if (components.Length == 4)
-            {
-                //TODO
-                skColor = new SKColor(
-                   (byte)(components[0] * 255),
-                   (byte)(components[1] * 255),
-                   (byte)(components[2] * 255));
-            }
-            else if (components.Length == 1)
-            {
-                skColor = new SKColor(
-                   (byte)(components[0] * 255),
-                   (byte)(components[0] * 255),
-                   (byte)(components[0] * 255));
-            }
-
-            if (alpha != null)
-            {
-                skColor = skColor.WithAlpha((byte)(alpha.Value * 255));
-            }
-            return skColor;
+            return AlternateColorSpace.GetSKColor(components, alpha);
         }
-
 
         public PdfStream Profile => (PdfStream)((PdfArray)BaseDataObject).Resolve(1);
 
         public PdfName Alternate => Profile?.Header.Resolve(PdfName.Alternate) as PdfName;
 
+        public ColorSpace AlternateColorSpace
+        {
+            get
+            {
+                if (alternate == null)
+                {
+                    var obj = Profile?.Header[PdfName.Alternate];
+                    if (obj == null)
+                    {
+                        switch (N)
+                        {
+                            case 1: obj = PdfName.DeviceGray; break;
+                            case 3: obj = PdfName.DeviceRGB; break;
+                            case 4: obj = PdfName.DeviceCMYK; break;
+                            default: obj = PdfName.DeviceN; break;
+                        }
+                    }
+                    alternate = ColorSpace.Wrap(obj);
+                }
+                return alternate;
+            }
+        }
         public int N => ((PdfInteger)Profile?.Header.Resolve(PdfName.N))?.RawValue ?? 0;
 
 

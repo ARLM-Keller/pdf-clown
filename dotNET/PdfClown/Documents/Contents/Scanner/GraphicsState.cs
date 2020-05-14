@@ -514,7 +514,7 @@ namespace PdfClown.Documents.Contents
             lineCap = LineCapEnum.Butt;
             lineDash = new LineDash();
             lineJoin = LineJoinEnum.Miter;
-            lineWidth = 1;
+            lineWidth = 0;
             miterLimit = 10;
             renderMode = TextRenderModeEnum.Fill;
             rise = 0;

@@ -93,7 +93,7 @@ namespace PdfClown.Documents.Contents.Fonts
               NOTE: Font structures are reified as complex objects, both IO- and CPU-intensive to load.
               So, it's convenient to retrieve them from a common cache whenever possible.
             */
-            if (baseObject.IndirectObject.File.Document.Cache.TryGetValue(baseObject, out var cache))
+            if (baseObject.File.Document.Cache.TryGetValue(baseObject, out var cache))
             { return (Font)cache; }
 
 

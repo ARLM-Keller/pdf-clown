@@ -124,10 +124,11 @@ namespace PdfClown.Documents.Contents.Objects
                                     ApplyMask(softMask, canvas, picture);
                                 }
                             }
-                        }                        
+                        }
                         else
                         {
-                            canvas.DrawBitmap(image, 0, 0, ImagePaint);
+                            using (var paint = state.CreateFillPaint())
+                                canvas.DrawBitmap(image, 0, 0, paint);
                         }
                     }
                 }

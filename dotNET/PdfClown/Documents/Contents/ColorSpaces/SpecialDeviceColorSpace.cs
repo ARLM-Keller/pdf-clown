@@ -49,6 +49,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           operators have no effect.</remarks>
         */
         public static readonly string NoneComponentName = (string)PdfName.None.Value;
+        private ColorSpace alternate;
+        private Function function;
         #endregion
         #endregion
 
@@ -66,30 +68,25 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets the alternate color space used in case any of the <see cref="ComponentNames">component names</see>
           in the color space do not correspond to a component available on the device.</summary>
         */
-        public ColorSpace AlternateSpace => ColorSpace.Wrap(((PdfArray)BaseDataObject)[2]);
+        public ColorSpace AlternateSpace => alternate ?? (alternate = ColorSpace.Wrap(((PdfArray)BaseDataObject)[2]));
 
         /**
           <summary>Gets the names of the color components.</summary>
         */
-        public abstract IList<string> ComponentNames
-        {
-            get;
-        }
+        public abstract IList<string> ComponentNames { get; }
 
         /**
           <summary>Gets the function to transform a tint value into color component values
           in the <see cref="AlternateSpace">alternate color space</see>.</summary>
         */
-        public Function TintFunction => Function.Wrap(((PdfArray)BaseDataObject)[3]);
+        public Function TintFunction => function ?? (function = Function.Wrap(((PdfArray)BaseDataObject)[3]));
 
-        public override SKColor GetSKColor(Color color, double? alfa)
+        public override SKColor GetSKColor(Color color, float? alpha)
         {
-            var alternateComponents = TintFunction.Calculate(color.Components.Select(p => ((IPdfNumber)p).RawValue).ToArray());
-            ColorSpace alternateSpace = AlternateSpace;
-            return alternateSpace.GetSKColor(alternateComponents, alfa);
+            return GetSKColor(color.Components.Select(p => ((IPdfNumber)p).FloatValue).ToArray(), alpha);
         }
 
-        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        public override SKColor GetSKColor(float[] components, float? alpha = null)
         {
             var alternateComponents = TintFunction.Calculate(components);
             ColorSpace alternateSpace = AlternateSpace;

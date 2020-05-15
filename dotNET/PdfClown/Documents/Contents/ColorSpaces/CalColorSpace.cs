@@ -47,7 +47,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         /**
           <summary>Gets the gamma of this color space.</summary>
         */
-        public abstract double[] Gamma
+        public abstract float[] Gamma
         {
             get;
         }

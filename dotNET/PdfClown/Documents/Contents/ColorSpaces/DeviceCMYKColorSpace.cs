@@ -72,13 +72,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override bool IsSpaceColor(Color color)
         { return color is DeviceCMYKColor; }
 
-        public override SKColor GetSKColor(Color color, double? alpha = null)
+        public override SKColor GetSKColor(Color color, float? alpha = null)
         {
             var cmykColor = (DeviceCMYKColor)color;
             return Calculate(cmykColor.C, cmykColor.M, cmykColor.Y, cmykColor.K, alpha);
         }
 
-        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        public override SKColor GetSKColor(float[] components, float? alpha = null)
         {
             return Calculate(components[0], components[1], components[2], components[3], alpha);
         }
@@ -90,7 +90,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         // from CMYK US Web Coated (SWOP) colorspace, and f_i is the corresponding
         // CMYK color conversion using the estimation below:
         //   f(A, B,.. N) = Acc+Bcm+Ccy+Dck+c+Fmm+Gmy+Hmk+Im+Jyy+Kyk+Ly+Mkk+Nk+255
-        SKColor Calculate(double c, double m, double y, double k, double? alpha = null)
+        SKColor Calculate(double c, double m, double y, double k, float? alpha = null)
         {
             var r =
               255 +

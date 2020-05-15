@@ -47,9 +47,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets the color corresponding to the specified components.</summary>
           <param name="components">Color components to convert.</param>
         */
-        public static SeparationColor Get(
-          PdfArray components
-          )
+        public static SeparationColor Get(PdfArray components)
         {
             return (components != null
               ? new SeparationColor(components)
@@ -82,7 +80,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         /**
           <summary>Gets/Sets the color intensity.</summary>
         */
-        public double Intensity
+        public float Intensity
         {
             get => GetComponentValue(0);
             set => SetComponentValue(0, value);

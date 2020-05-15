@@ -84,14 +84,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color DefaultColor => CalGrayColor.Default;
 
-        public override double[] Gamma
+        public override float[] Gamma
         {
             get
             {
                 IPdfNumber gammaObject = (IPdfNumber)Dictionary[PdfName.Gamma];
                 return (gammaObject == null
-                  ? new double[] { 1 }
-                  : new double[] { gammaObject.RawValue }
+                  ? new float[] { 1 }
+                  : new float[] { gammaObject.FloatValue }
                   );
             }
         }
@@ -102,18 +102,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override bool IsSpaceColor(Color color)
         { return color is CalGrayColor; }
 
-        public override SKColor GetSKColor(Color color, double? alpha = null)
+        public override SKColor GetSKColor(Color color, float? alpha = null)
         {
             var grayColor = color as CalGrayColor;
             return Calculate(grayColor.G, alpha);
         }
 
-        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        public override SKColor GetSKColor(float[] components, float? alpha = null)
         {
             return Calculate(components[0], alpha);
         }
 
-        private SKColor Calculate(double A, double? alpha = null)
+        private SKColor Calculate(double A, float? alpha = null)
         {
             // A represents a gray component of a calibrated gray space.
             // A <---> AG in the spec

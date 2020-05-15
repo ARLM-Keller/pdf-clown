@@ -72,7 +72,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override bool IsSpaceColor(Color color)
         { return color is DeviceGrayColor; }
 
-        public override SKColor GetSKColor(Color color, double? alpha = null)
+        public override SKColor GetSKColor(Color color, float? alpha = null)
         {
             var spaceColor = (DeviceGrayColor)color;
             var g = (byte)Math.Round(spaceColor.G * 255);
@@ -84,7 +84,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return skColor;
         }
 
-        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        public override SKColor GetSKColor(float[] components, float? alpha = null)
         {
             var g = (byte)Math.Round(components[0] * 255);
             var skColor = new SKColor(g, g, g);

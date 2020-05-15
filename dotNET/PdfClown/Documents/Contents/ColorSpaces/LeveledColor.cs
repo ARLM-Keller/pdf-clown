@@ -82,10 +82,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets the specified color component.</summary>
           <param name="index">Component index.</param>
         */
-        protected double GetComponentValue(int index)
-        { return ((IPdfNumber)Components[index]).RawValue; }
+        protected float GetComponentValue(int index)
+        { return ((IPdfNumber)Components[index]).FloatValue; }
 
-        protected void SetComponentValue(int index, double value)
+        protected void SetComponentValue(int index, float value)
         { Components[index] = PdfReal.Get(NormalizeComponent(value)); }
         #endregion
         #endregion

@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Functions
 
         #region interface
         #region public
-        public override double[] Calculate(double[] inputs)
+        public override float[] Calculate(float[] inputs)
         {
             var domains = Domains;
             var ranges = Ranges;
@@ -72,13 +72,13 @@ namespace PdfClown.Documents.Functions
             var encode = Encodes;
             var sampleCount = SampleCounts;
             var samples = GetSamples();
-            var sampleMax = Math.Pow(2, BitsPerSample) - 1;
+            var sampleMax = (float)Math.Pow(2, BitsPerSample) - 1;
             for (int i = 0; i < domains.Count; i++)
             {
                 var domain = domains[i];
                 inputs[i] = Math.Min(Math.Max(inputs[i], domain.Low), domain.High);
             }
-            var result = new double[ranges.Count * domains.Count];
+            var result = new float[ranges.Count * domains.Count];
 
             for (int d = 0; d < domains.Count; d++)
             {
@@ -86,10 +86,10 @@ namespace PdfClown.Documents.Functions
 
                 for (int r = 0; r < ranges.Count; r++)
                 {
-                    var e = linear(x, domains[d].Low, domains[d].High, encode[d].Low, encode[d].High);
+                    var e = Linear(x, domains[d].Low, domains[d].High, encode[d].Low, encode[d].High);
                     e = Math.Min(Math.Max(e, 0), sampleCount[d]);
                     e = samples[r][d][(int)e];
-                    e = linear(e, 0, sampleMax, decode[r].Low, decode[r].High);
+                    e = Linear(e, 0, sampleMax, decode[r].Low, decode[r].High);
                     result[d * ranges.Count + r] = Math.Min(Math.Max(e, ranges[r].Low), ranges[r].High);
                 }
             }
@@ -126,7 +126,7 @@ namespace PdfClown.Documents.Functions
         /**
           <summary>Gets the linear mapping of sample values into the ranges of the function's output values.</summary>
         */
-        public IList<Interval<double>> Decodes => GetIntervals<double>(PdfName.Decode, null);
+        public IList<Interval<float>> Decodes => GetIntervals<float>(PdfName.Decode, null);
 
         /**
           <summary>Gets the number of bits used to represent each sample.</summary>

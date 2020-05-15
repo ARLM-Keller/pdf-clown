@@ -35,6 +35,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using PdfClown.Bytes;
+using System.Linq;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
@@ -49,6 +50,7 @@ namespace PdfClown.Documents.Contents.XObjects
         private int? bitsPerComponent;
         private ImageXObject smask;
         private SKSize? size;
+        private float[] decode;
 
         #region constructors
         public ImageXObject(Document context, PdfStream baseDataObject) : base(context, baseDataObject)
@@ -142,9 +144,13 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public PdfStream Stream => BaseDataObject as PdfStream;
 
-        public PdfArray Matte => BaseDataObject.Header.Resolve(PdfName.Matte) as PdfArray;
+        public PdfArray Matte => (PdfArray)BaseDataObject.Header.Resolve(PdfName.Matte);
 
-        public PdfArray Decode => BaseDataObject.Header.Resolve(PdfName.Decode) as PdfArray;
+        public float[] Decode
+        {
+            get => decode ?? (decode = ((PdfArray)BaseDataObject.Header[PdfName.Decode])?.Select(p => ((IPdfNumber)p).FloatValue).ToArray());
+            set => BaseDataObject.Header[PdfName.Decode] = new PdfArray(value.Select(p => PdfInteger.Get((int)p)));
+        }
 
         public bool ImageMask => (BaseDataObject.Header.Resolve(PdfName.ImageMask) as PdfBoolean)?.BooleanValue ?? false;
 

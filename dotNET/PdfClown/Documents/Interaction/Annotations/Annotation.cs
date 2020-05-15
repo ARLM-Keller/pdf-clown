@@ -257,9 +257,9 @@ namespace PdfClown.Documents.Interaction.Annotations
          and border) but not to the popup window that appears when the annotation is opened.</remarks>
        */
         [PDF(VersionEnum.PDF14)]
-        public virtual double Alpha
+        public virtual float Alpha
         {
-            get => PdfSimpleObject<object>.GetDoubleValue(BaseDataObject[PdfName.CA]) ?? 1D;
+            get => ((IPdfNumber)BaseDataObject.Resolve(PdfName.CA))?.FloatValue ?? 1F;
             set
             {
                 BaseDataObject[PdfName.CA] = PdfReal.Get(value);
@@ -348,7 +348,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 Color = DeviceRGBColor.Get(value);
-                Alpha = value.Alpha / 255D;
+                Alpha = value.Alpha / 255F;
                 OnPropertyChanged();
             }
         }

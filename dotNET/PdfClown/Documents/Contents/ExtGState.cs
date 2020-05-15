@@ -89,6 +89,8 @@ namespace PdfClown.Documents.Contents
                     if (!AlphaShape)
                         state.FillAlpha = FillAlpha;
                 }
+                else if (parameterName.Equals(PdfName.AIS))
+                { state.AlphaIsShape = AlphaShape; }
                 else if (parameterName.Equals(PdfName.LC))
                 { state.LineCap = LineCap.Value; }
                 else if (parameterName.Equals(PdfName.D))
@@ -106,6 +108,10 @@ namespace PdfClown.Documents.Contents
                 else if (parameterName.Equals(PdfName.SMask))
                 {
                     state.SMask = SMask;
+                }
+                else
+                {
+
                 }
                 //TODO:extend supported parameters!!!
             }
@@ -166,12 +172,12 @@ namespace PdfClown.Documents.Contents
           [PDF:1.7:7.2.6].</summary>
         */
         [PDF(VersionEnum.PDF14)]
-        public double? FillAlpha
+        public float? FillAlpha
         {
             get
             {
                 var number = BaseDataObject[PdfName.ca] as IPdfNumber;
-                return number == null ? null : (double?)number.DoubleValue;
+                return number == null ? null : (float?)number.FloatValue;
             }
             set => BaseDataObject[PdfName.ca] = PdfReal.Get(value);
         }
@@ -182,12 +188,12 @@ namespace PdfClown.Documents.Contents
           [PDF:1.7:7.2.6].</summary>
         */
         [PDF(VersionEnum.PDF14)]
-        public double? StrokeAlpha
+        public float? StrokeAlpha
         {
             get
             {
                 var number = BaseDataObject[PdfName.CA] as IPdfNumber;
-                return number == null ? null : (double?)number.DoubleValue;
+                return number == null ? null : (float?)number.FloatValue;
             }
             set => BaseDataObject[PdfName.CA] = PdfReal.Get(value);
         }

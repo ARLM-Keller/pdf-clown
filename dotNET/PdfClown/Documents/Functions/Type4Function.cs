@@ -47,10 +47,10 @@ namespace PdfClown.Documents.Functions
 
         #region interface
         #region public
-        public override double[] Calculate(double[] inputs)
+        public override float[] Calculate(float[] inputs)
         {
             // FIXME: Auto-generated method stub
-            return new double[] { inputs[0], inputs[0], inputs[0], inputs[0] };
+            return new float[] { inputs[0], inputs[0], inputs[0], inputs[0] };
         }
         #endregion
         #endregion

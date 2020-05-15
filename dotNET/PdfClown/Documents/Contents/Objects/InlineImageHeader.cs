@@ -29,6 +29,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -40,6 +41,8 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class InlineImageHeader : Operation, IDictionary<PdfName, PdfDirectObject>
     {
+        private float[] decode;
+
         #region dynamic
         #region constructors
         // [FIX:0.0.4:2] Null operator.
@@ -86,10 +89,10 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        public PdfArray Decode
+        public float[] Decode
         {
-            get => ((PdfArray)this[PdfName.D]) ?? ((PdfArray)this[PdfName.Decode]);
-            set => this[PdfName.D] = value;
+            get => decode ?? (decode = (((PdfArray)this[PdfName.D]) ?? ((PdfArray)this[PdfName.Decode]))?.Select(p => ((IPdfNumber)p).FloatValue).ToArray());
+            set => this[PdfName.D] = new PdfArray(value.Select(p => PdfInteger.Get((int)p)));
         }
 
         public PdfDirectObject DecodeParms

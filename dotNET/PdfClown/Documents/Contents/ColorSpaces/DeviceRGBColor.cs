@@ -91,35 +91,35 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         #region interface
         #region public
-        public override object Clone(Document context)
-        { throw new NotImplementedException(); }
-
         /**
-          <summary>Gets/Sets the blue component.</summary>
+          <summary>Gets/Sets the red component.</summary>
         */
-        public double B
+        public float R
         {
-            get => GetComponentValue(2);
-            set => SetComponentValue(2, value);
+            get => GetComponentValue(0);
+            set => SetComponentValue(0, value);
         }
 
         /**
           <summary>Gets/Sets the green component.</summary>
         */
-        public double G
+        public float G
         {
             get => GetComponentValue(1);
             set => SetComponentValue(1, value);
         }
 
         /**
-          <summary>Gets/Sets the red component.</summary>
+          <summary>Gets/Sets the blue component.</summary>
         */
-        public double R
+        public float B
         {
-            get => GetComponentValue(0);
-            set => SetComponentValue(0, value);
+            get => GetComponentValue(2);
+            set => SetComponentValue(2, value);
         }
+
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
 
         #endregion
         #endregion

@@ -89,7 +89,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override bool IsSpaceColor(Color color)
         { return color is SeparationColor; }
-       
+
         #endregion
         #endregion
         #endregion

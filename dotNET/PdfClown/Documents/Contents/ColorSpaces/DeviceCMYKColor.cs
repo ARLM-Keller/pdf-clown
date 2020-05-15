@@ -85,28 +85,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         /**
           <summary>Gets/Sets the cyan component.</summary>
         */
-        public double C
+        public float C
         {
             get => GetComponentValue(0);
             set => SetComponentValue(0, value);
         }
 
-        public override object Clone(Document context)
-        { throw new NotImplementedException(); }
-
-        /**
-          <summary>Gets/Sets the black (key) component.</summary>
-        */
-        public double K
-        {
-            get => GetComponentValue(3);
-            set => SetComponentValue(3, value);
-        }
-
         /**
           <summary>Gets/Sets the magenta component.</summary>
         */
-        public double M
+        public float M
         {
             get => GetComponentValue(1);
             set => SetComponentValue(1, value);
@@ -115,11 +103,24 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         /**
           <summary>Gets/Sets the yellow component.</summary>
         */
-        public double Y
+        public float Y
         {
             get => GetComponentValue(2);
             set => SetComponentValue(2, value);
         }
+
+        /**
+          <summary>Gets/Sets the black (key) component.</summary>
+        */
+        public float K
+        {
+            get => GetComponentValue(3);
+            set => SetComponentValue(3, value);
+        }
+
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+
         #endregion
         #endregion
         #endregion

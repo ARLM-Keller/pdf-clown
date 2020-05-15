@@ -486,9 +486,11 @@ namespace PdfClown.Documents.Contents
                     || RenderMode == TextRenderModeEnum.StrokeClip
                     || RenderMode == TextRenderModeEnum.FillStrokeClip;
 
-        public double? StrokeAlpha { get; internal set; }
-        public double? FillAlpha { get; internal set; }
-        public SoftMask SMask { get; internal set; }
+        public float? StrokeAlpha { get; set; }
+        public float? FillAlpha { get; set; }
+        public bool AlphaIsShape { get; set; }
+
+        public SoftMask SMask { get; set; }
 
         #endregion
 
@@ -575,6 +577,9 @@ namespace PdfClown.Documents.Contents
             state.TextState = textState;
             state.wordSpace = wordSpace;
             state.SMask = SMask;
+            state.AlphaIsShape = AlphaIsShape;
+            state.FillAlpha = FillAlpha;
+            state.StrokeAlpha = StrokeAlpha;
         }
 
 

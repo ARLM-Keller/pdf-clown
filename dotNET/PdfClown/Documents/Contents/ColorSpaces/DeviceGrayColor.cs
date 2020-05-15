@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         #region dynamic
         #region constructors
-        public DeviceGrayColor(double g)
+        public DeviceGrayColor(float g)
             : this(new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(NormalizeComponent(g)) }))
         { }
 
@@ -81,7 +81,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         /**
           <summary>Gets/Sets the gray component.</summary>
         */
-        public double G
+        public float G
         {
             get => GetComponentValue(0);
             set => SetComponentValue(0, value);

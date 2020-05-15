@@ -65,9 +65,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         #region interface
         #region public
         /**
+          <summary>Gets/Sets the first component (L*).</summary>
+        */
+        public float L
+        {
+            get => GetComponentValue(0);
+            set => SetComponentValue(0, value);
+        }
+
+        /**
           <summary>Gets/Sets the second component (a*).</summary>
         */
-        public double A
+        public float A
         {
             get => GetComponentValue(1);
             set => SetComponentValue(1, value);
@@ -76,19 +85,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         /**
           <summary>Gets/Sets the third component (b*).</summary>
         */
-        public double B
+        public float B
         {
             get => GetComponentValue(2);
             set => SetComponentValue(2, value);
-        }
-
-        /**
-          <summary>Gets/Sets the first component (L*).</summary>
-        */
-        public double L
-        {
-            get => GetComponentValue(0);
-            set => SetComponentValue(0, value);
         }
 
         public override object Clone(Document context)

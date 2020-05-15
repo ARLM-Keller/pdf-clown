@@ -48,18 +48,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         #region dynamic
         #region constructors
-        public CalGrayColor(
-          double g
-          ) : this(
+        public CalGrayColor(double g) : this(
             new List<PdfDirectObject>(
               new PdfDirectObject[] { PdfReal.Get(NormalizeComponent(g)) }
               )
             )
         { }
 
-        internal CalGrayColor(
-          IList<PdfDirectObject> components
-          ) : base(
+        internal CalGrayColor(IList<PdfDirectObject> components)
+            : base(
             null, //TODO:colorspace?
             new PdfArray(components)
             )
@@ -68,19 +65,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         #region interface
         #region public
-        public override object Clone(
-          Document context
-          )
-        { throw new NotImplementedException(); }
-
         /**
           <summary>Gets/Sets the gray component.</summary>
         */
-        public double G
+        public float G
         {
             get => GetComponentValue(0);
             set => SetComponentValue(0, value);
         }
+
+        public override object Clone(Document context)
+        { throw new NotImplementedException(); }
+
         #endregion
         #endregion
         #endregion

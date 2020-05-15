@@ -72,12 +72,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override bool IsSpaceColor(Color color)
         { return AlternateColorSpace.IsSpaceColor(color); }
 
-        public override SKColor GetSKColor(Color color, double? alpha = null)
+        public override SKColor GetSKColor(Color color, float? alpha = null)
         {
             return AlternateColorSpace.GetSKColor(color, alpha);
         }
 
-        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        public override SKColor GetSKColor(float[] components, float? alpha = null)
         {
             return AlternateColorSpace.GetSKColor(components, alpha);
         }

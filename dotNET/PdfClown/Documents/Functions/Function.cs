@@ -125,7 +125,7 @@ namespace PdfClown.Documents.Functions
           to the specified input values.</summary>
           <param name="inputs">Input values.</param>
          */
-        public abstract double[] Calculate(double[] inputs);
+        public abstract float[] Calculate(float[] inputs);
 
         /**
           <summary>Gets the result of the calculation applied by this function
@@ -136,10 +136,10 @@ namespace PdfClown.Documents.Functions
         {
             IList<PdfDirectObject> outputs = new List<PdfDirectObject>();
             {
-                double[] inputValues = new double[inputs.Count];
+                float[] inputValues = new float[inputs.Count];
                 for (int index = 0, length = inputValues.Length; index < length; index++)
-                { inputValues[index] = ((IPdfNumber)inputs[index]).RawValue; }
-                double[] outputValues = Calculate(inputValues);
+                { inputValues[index] = ((IPdfNumber)inputs[index]).FloatValue; }
+                float[] outputValues = Calculate(inputValues);
                 for (int index = 0, length = outputValues.Length; index < length; index++)
                 { outputs.Add(PdfReal.Get(outputValues[index])); }
             }
@@ -150,7 +150,7 @@ namespace PdfClown.Documents.Functions
           <summary>Gets the (inclusive) domains of the input values.</summary>
           <remarks>Input values outside the declared domains are clipped to the nearest boundary value.</remarks>
         */
-        public IList<Interval<double>> Domains => GetIntervals<double>(PdfName.Domain, null);
+        public IList<Interval<float>> Domains => GetIntervals<float>(PdfName.Domain, null);
 
         /**
           <summary>Gets the number of input values (parameters) of this function.</summary>
@@ -175,7 +175,7 @@ namespace PdfClown.Documents.Functions
           if this entry is absent, no clipping is done.</remarks>
           <returns><code>null</code> in case of unbounded ranges.</returns>
         */
-        public IList<Interval<double>> Ranges => GetIntervals<double>(PdfName.Range, null);
+        public IList<Interval<float>> Ranges => GetIntervals<float>(PdfName.Range, null);
         #endregion
 
         #region protected
@@ -215,7 +215,7 @@ namespace PdfClown.Documents.Functions
         }
 
         //https://stackoverflow.com/questions/12838007/c-sharp-linear-interpolation
-        static public double linear(double x, double x0, double x1, double y0, double y1)
+        static public float Linear(float x, float x0, float x1, float y0, float y1)
         {
             if ((x1 - x0) == 0)
             {
@@ -224,11 +224,11 @@ namespace PdfClown.Documents.Functions
             return y0 + (x - x0) * ((y1 - y0) / (x1 - x0));
         }
 
-        public static double exponentialCalc(double x, double c0, double c1, double Exponent)
+        public static float ExponentialCalc(float x, float c0, float c1, float Exponent)
         {
-            return exponential(x, c0, c1, Math.Pow(x, Exponent));
+            return Exponential(x, c0, c1, (float)Math.Pow(x, Exponent));
         }
-        static public double exponential(double x, double c0, double c1, double inputN)
+        static public float Exponential(float x, float c0, float c1, float inputN)
         {
             return c0 + inputN * (c1 - c0);
         }

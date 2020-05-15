@@ -93,19 +93,19 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override bool IsSpaceColor(Color color)
         { return color is Pattern; }
 
-        public override SKColor GetSKColor(Color color, double? alpha = null)
+        public override SKColor GetSKColor(Color color, float? alpha = null)
         {
             // FIXME: Auto-generated method stub
             return SKColors.Black;
         }
 
-        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        public override SKColor GetSKColor(float[] components, float? alpha = null)
         {
             // FIXME: Auto-generated method stub
             return SKColors.Black;
         }
 
-        public override SKPaint GetPaint(Color color, double? alpha = null)
+        public override SKPaint GetPaint(Color color, float? alpha = null)
         {
             // FIXME: Auto-generated method stub
             if (color is TilingPattern pattern)

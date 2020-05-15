@@ -48,7 +48,7 @@ namespace PdfClown.Documents.Functions
 
         #region interface
         #region public
-        public override double[] Calculate(double[] inputs)
+        public override float[] Calculate(float[] inputs)
         {
             // FIXME: Auto-generated method stub
 
@@ -59,15 +59,15 @@ namespace PdfClown.Documents.Functions
           <summary>Gets the <see cref="Domains">domain</see> partition bounds whose resulting intervals
           are respectively applied to each <see cref="Functions">function</see>.</summary>
         */
-        public IList<double> DomainBounds
+        public IList<float> DomainBounds
         {
             get
             {
-                IList<double> domainBounds = new List<double>();
+                IList<float> domainBounds = new List<float>();
                 {
                     PdfArray domainBoundsObject = (PdfArray)Dictionary.Resolve(PdfName.Bounds);
                     foreach (PdfDirectObject domainBoundObject in domainBoundsObject)
-                    { domainBounds.Add(((IPdfNumber)domainBoundObject).RawValue); }
+                    { domainBounds.Add(((IPdfNumber)domainBoundObject).FloatValue); }
                 }
                 return domainBounds;
             }
@@ -77,7 +77,7 @@ namespace PdfClown.Documents.Functions
           <summary>Gets the mapping of each <see cref="DomainBounds">subdomain</see> into the domain
           of the corresponding <see cref="Functions">function</see>.</summary>
         */
-        public IList<Interval<double>> DomainEncodes => GetIntervals<double>(PdfName.Encode, null);
+        public IList<Interval<float>> DomainEncodes => GetIntervals<float>(PdfName.Encode, null);
 
         /**
           <summary>Gets the 1-input functions making up this stitching function.</summary>

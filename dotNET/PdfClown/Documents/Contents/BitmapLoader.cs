@@ -171,13 +171,13 @@ namespace PdfClown.Documents.Contents
         private bool indexed;
         private int componentsCount = 1;
         private int padding;
-        private double maximum;
-        private double min;
-        private double max;
-        private double interpolateConst;
+        private float maximum;
+        private float min;
+        private float max;
+        private float interpolateConst;
         private byte[] buffer;
         private bool imageMask;
-        private PdfArray decode;
+        private float[] decode;
         private IImageObject sMask;
         private BitmapLoader sMaskLoader;
         private int rowBits;
@@ -220,9 +220,9 @@ namespace PdfClown.Documents.Contents
             height = (int)image.Size.Height;
             bitsPerComponent = image.BitsPerComponent;
 
-            maximum = Math.Pow(2, bitsPerComponent) - 1;
-            min = 0D;
-            max = indexed ? maximum : 1D;
+            maximum = (float)Math.Pow(2, bitsPerComponent) - 1;
+            min = 0F;
+            max = indexed ? maximum : 1F;
             interpolateConst = (max - min) / maximum;
             sMask = image.SMask;
             if (sMask != null)
@@ -241,6 +241,14 @@ namespace PdfClown.Documents.Contents
                     iccColorSpace = indexedColorSpace.BaseSpace as ICCBasedColorSpace;
                 }
             }
+            if (decode == null)
+            {
+                decode = new float[componentsCount * 2];
+                for (int i = 0; i < componentsCount * 2; i++)
+                {
+                    decode[i] = i % 2;
+                }
+            }
             // calculate row padding
             padding = 0;
             rowBits = (int)width * componentsCount * bitsPerComponent;
@@ -252,7 +260,7 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        public void GetColor(int y, int x, int index, ref double[] components)
+        public void GetColor(int y, int x, int index, ref float[] components)
         {
             var componentIndex = index * componentsCount;
             if (bitsPerComponent == 1)
@@ -263,8 +271,10 @@ namespace PdfClown.Documents.Contents
                     var byteValue = buffer[byteIndex];
                     //if (emptyBytes)
                     //    byteIndex += y;
-                    var bitIndex = 7 - index % 8;
-                    var value = ((byteValue >> bitIndex) & 1) == 0 ? (byte)0 : (byte)1;
+                    var bitIndex = 7 - x % 8;
+                    var value = ((byteValue >> bitIndex) & 1) == 0
+                        ? decode[0] == 0 ? 0 : 1
+                        : decode[0] == 0 ? 1 : 0;
                     var interpolate = indexed ? value : min + (value * (interpolateConst));
                     components[i] = interpolate;
                     componentIndex++;
@@ -325,8 +335,8 @@ namespace PdfClown.Documents.Contents
             }
             // create the buffer that will hold the pixels
             var raster = new uint[info.Width * info.Height];//var bitmap = new SKBitmap();
-            var components = new double[componentsCount];//TODO stackalloc
-            var maskComponents = new double[componentsCount];//TODO stackalloc
+            var components = new float[componentsCount];//TODO stackalloc
+            var maskComponents = new float[componentsCount];//TODO stackalloc
 
             for (int y = 0; y < info.Height; y++)
             {
@@ -381,7 +391,7 @@ namespace PdfClown.Documents.Contents
             };
             // create the buffer that will hold the pixels
             var raster = new byte[info.Width * info.Height];
-            var components = new double[componentsCount];//TODO stackalloc
+            var components = new float[componentsCount];//TODO stackalloc
 
             for (int y = 0; y < info.Height; y++)
             {

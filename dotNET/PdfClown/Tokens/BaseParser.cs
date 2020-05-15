@@ -59,7 +59,7 @@ namespace PdfClown.Tokens
                 if (tokenType == TokenTypeEnum.Literal)
                 {
                     string literalToken = (string)Token;
-                    if (literalToken.StartsWith(Keyword.DatePrefix)) // Date.
+                    if (literalToken.StartsWith(Keyword.DatePrefix, StringComparison.Ordinal)) // Date.
                     {
                         /*
                           NOTE: Dates are a weak extension to the PostScript language.

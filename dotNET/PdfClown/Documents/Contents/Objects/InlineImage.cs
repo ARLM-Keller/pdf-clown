@@ -97,7 +97,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public IBuffer Data => ImageBody.Value;
 
-        public PdfArray Decode => ImageHeader.Decode;
+        public float[] Decode => ImageHeader.Decode;
 
         public PdfDirectObject Filter => ImageHeader.Filter;
 

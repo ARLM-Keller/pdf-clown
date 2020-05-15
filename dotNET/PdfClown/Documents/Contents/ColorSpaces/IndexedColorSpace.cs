@@ -61,15 +61,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets the base color space in which the values in the color table
           are to be interpreted.</summary>
         */
-        public ColorSpace BaseSpace
-        {
-            get
-            {
-                if (baseSpace == null)
-                { baseSpace = ColorSpace.Wrap(((PdfArray)BaseDataObject)[1]); }
-                return baseSpace;
-            }
-        }
+        public ColorSpace BaseSpace => baseSpace ?? (baseSpace = ColorSpace.Wrap(((PdfArray)BaseDataObject)[1]));
 
         public int BaseSpaceComponentCount => componentCount ?? (componentCount = baseSpace.ComponentCount).Value;
 
@@ -110,14 +102,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return baseColor;
         }
 
-        public SKColor GetBaseSKColor(double[] color)
+        public SKColor GetBaseSKColor(float[] color)
         {
             int colorIndex = (int)color[0];
             if (!baseSKColors.TryGetValue(colorIndex, out var baseColor))
             {
                 ColorSpace baseSpace = BaseSpace;
                 int componentCount = BaseSpaceComponentCount;
-                var components = new double[componentCount];
+                var components = new float[componentCount];
                 {
                     int componentValueIndex = colorIndex * componentCount;
                     byte[] baseComponentValues = BaseComponentValues;
@@ -126,7 +118,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                         var byteValue = componentValueIndex < baseComponentValues.Length
                             ? baseComponentValues[componentValueIndex]
                             : 0;
-                        var value = ((int)byteValue & 0xff) / 255d;
+                        var value = ((int)byteValue & 0xff) / 255F;
                         components[componentIndex] = value;
                         componentValueIndex++;
                     }
@@ -142,12 +134,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override bool IsSpaceColor(Color color)
         { return color is IndexedColor; }
 
-        public override SKColor GetSKColor(Color color, double? alfa = null)
+        public override SKColor GetSKColor(Color color, float? alpha = null)
         {
-            return BaseSpace.GetSKColor(GetBaseColor((IndexedColor)color), alfa);
+            return BaseSpace.GetSKColor(GetBaseColor((IndexedColor)color), alpha);
         }
 
-        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        public override SKColor GetSKColor(float[] components, float? alpha = null)
         {
             var color = GetBaseSKColor(components);
             if (alpha != null)
@@ -157,7 +149,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return color;
         }
 
-        public override SKPaint GetPaint(Color color, double? alpha = null)
+        public override SKPaint GetPaint(Color color, float? alpha = null)
         {
             return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color), alpha);
         }

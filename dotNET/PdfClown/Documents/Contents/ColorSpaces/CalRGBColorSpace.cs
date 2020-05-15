@@ -50,69 +50,69 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         // See http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html for these
         // matrices.
         // prettier-ignore
-        public static readonly double[] BRADFORD_SCALE_MATRIX = new double[]{
-          0.8951, 0.2664, -0.1614,
-          -0.7502, 1.7135, 0.0367,
-          0.0389, -0.0685, 1.0296 };
+        public static readonly float[] BRADFORD_SCALE_MATRIX = new float[]{
+          0.8951F, 0.2664F, -0.1614F,
+          -0.7502F, 1.7135F, 0.0367F,
+          0.0389F, -0.0685F, 1.0296F };
 
         // prettier-ignore
-        public static readonly double[] BRADFORD_SCALE_INVERSE_MATRIX = new double[]{
-          0.9869929, -0.1470543, 0.1599627,
-          0.4323053, 0.5183603, 0.0492912,
-          -0.0085287, 0.0400428, 0.9684867 };
+        public static readonly float[] BRADFORD_SCALE_INVERSE_MATRIX = new float[]{
+          0.9869929F, -0.1470543F, 0.1599627F,
+          0.4323053F, 0.5183603F, 0.0492912F,
+          -0.0085287F, 0.0400428F, 0.9684867F };
 
         // See http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html.
         // prettier-ignore
-        public static readonly double[] SRGB_D65_XYZ_TO_RGB_MATRIX = new double[]{
-          3.2404542, -1.5371385, -0.4985314,
-          -0.9692660, 1.8760108, 0.0415560,
-          0.0556434, -0.2040259, 1.0572252 };
+        public static readonly float[] SRGB_D65_XYZ_TO_RGB_MATRIX = new float[]{
+          3.2404542F, -1.5371385F, -0.4985314F,
+          -0.9692660F, 1.8760108F, 0.0415560F,
+          0.0556434F, -0.2040259F, 1.0572252F };
 
-        public static readonly double[] FLAT_WHITEPOINT_MATRIX = new double[] { 1, 1, 1 };
+        public static readonly float[] FLAT_WHITEPOINT_MATRIX = new float[] { 1, 1, 1 };
 
-        public static readonly double DECODE_L_CONSTANT = Math.Pow((8 + 16) / 116, 3) / 8.0;
+        public static readonly float DECODE_L_CONSTANT = (float)(Math.Pow((8 + 16) / 116, 3) / 8.0F);
 
-        static void MatrixProduct(double[] a, double[] b, double[] result)
+        static void MatrixProduct(float[] a, float[] b, float[] result)
         {
             result[0] = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
             result[1] = a[3] * b[0] + a[4] * b[1] + a[5] * b[2];
             result[2] = a[6] * b[0] + a[7] * b[1] + a[8] * b[2];
         }
 
-        static void ConvertToFlat(double[] sourceWhitePoint, double[] LMS, double[] result)
+        static void ConvertToFlat(float[] sourceWhitePoint, float[] LMS, float[] result)
         {
             result[0] = (LMS[0] * 1) / sourceWhitePoint[0];
             result[1] = (LMS[1] * 1) / sourceWhitePoint[1];
             result[2] = (LMS[2] * 1) / sourceWhitePoint[2];
         }
 
-        static void convertToD65(double[] sourceWhitePoint, double[] LMS, double[] result)
+        static void convertToD65(float[] sourceWhitePoint, float[] LMS, float[] result)
         {
-            const double D65X = 0.95047;
-            const double D65Y = 1;
-            const double D65Z = 1.08883;
+            const float D65X = 0.95047F;
+            const float D65Y = 1F;
+            const float D65Z = 1.08883F;
 
             result[0] = (LMS[0] * D65X) / sourceWhitePoint[0];
             result[1] = (LMS[1] * D65Y) / sourceWhitePoint[1];
             result[2] = (LMS[2] * D65Z) / sourceWhitePoint[2];
         }
 
-        static double SRGBTransferFunction(double color)
+        static float SRGBTransferFunction(float color)
         {
             // See http://en.wikipedia.org/wiki/SRGB.
             if (color <= 0.0031308)
             {
-                return AdjustToRange(0, 1, 12.92 * color);
+                return AdjustToRange(0, 1, 12.92F * color);
             }
-            return AdjustToRange(0, 1, Math.Pow((1 + 0.055) * color, (1 / 2.4)) - 0.055);
+            return AdjustToRange(0, 1, (float)(Math.Pow((1 + 0.055) * color, (1 / 2.4)) - 0.055F));
         }
 
-        static double AdjustToRange(double min, double max, double value)
+        static float AdjustToRange(float min, float max, float value)
         {
             return Math.Max(min, Math.Min(max, value));
         }
 
-        static double DecodeL(double L)
+        static float DecodeL(float L)
         {
             if (L < 0)
             {
@@ -120,12 +120,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
             if (L > 8.0)
             {
-                return Math.Pow((L + 16) / 116, 3);
+                return (float)Math.Pow((L + 16) / 116, 3);
             }
             return L * DECODE_L_CONSTANT;
         }
 
-        static void CompensateBlackPoint(double[] sourceBlackPoint, double[] XYZ_Flat, double[] result)
+        static void CompensateBlackPoint(float[] sourceBlackPoint, float[] XYZ_Flat, float[] result)
         {
             // In case the blackPoint is already the default blackPoint then there is
             // no need to do compensation.
@@ -170,7 +170,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             result[2] = XYZ_Flat[2] * Z_Scale + Z_Offset;
         }
 
-        static void NormalizeWhitePointToFlat(double[] sourceWhitePoint, double[] XYZ_In, double[] result)
+        static void NormalizeWhitePointToFlat(float[] sourceWhitePoint, float[] XYZ_In, float[] result)
         {
             // In case the whitePoint is already flat then there is no need to do
             // normalization.
@@ -185,18 +185,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             var LMS = result;
             MatrixProduct(BRADFORD_SCALE_MATRIX, XYZ_In, LMS);
 
-            var LMS_Flat = new double[3];
+            var LMS_Flat = new float[3];
             ConvertToFlat(sourceWhitePoint, LMS, LMS_Flat);
 
             MatrixProduct(BRADFORD_SCALE_INVERSE_MATRIX, LMS_Flat, result);
         }
 
-        static void NormalizeWhitePointToD65(double[] sourceWhitePoint, double[] XYZ_In, double[] result)
+        static void NormalizeWhitePointToD65(float[] sourceWhitePoint, float[] XYZ_In, float[] result)
         {
             var LMS = result;
             MatrixProduct(BRADFORD_SCALE_MATRIX, XYZ_In, LMS);
 
-            var LMS_D65 = new double[3];
+            var LMS_D65 = new float[3];
             convertToD65(sourceWhitePoint, LMS, LMS_D65);
 
             MatrixProduct(BRADFORD_SCALE_INVERSE_MATRIX, LMS_D65, result);
@@ -204,22 +204,22 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         #region dynamic
 
-        private double[] blackPoint;
-        private double[] whitePoint;
-        private double[] gamma;
-        private double[] matrix;
-        private double GR;
-        private double GG;
-        private double GB;
-        private double MXA;
-        private double MYA;
-        private double MZA;
-        private double MXB;
-        private double MYB;
-        private double MZB;
-        private double MXC;
-        private double MYC;
-        private double MZC;
+        private float[] blackPoint;
+        private float[] whitePoint;
+        private float[] gamma;
+        private float[] matrix;
+        private float GR;
+        private float GG;
+        private float GB;
+        private float MXA;
+        private float MYA;
+        private float MZA;
+        private float MXB;
+        private float MYB;
+        private float MZB;
+        private float MXC;
+        private float MYC;
+        private float MZC;
 
         #region constructors
         //TODO:IMPL new element constructor!
@@ -230,7 +230,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             whitePoint = WhitePoint;
             gamma = Gamma;
             var matrixData = (PdfArray)Dictionary.Resolve(PdfName.Matrix);
-            matrix = matrixData?.Select(p => ((IPdfNumber)p).RawValue).ToArray() ?? new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+            matrix = matrixData?.Select(p => ((IPdfNumber)p).FloatValue).ToArray() ?? new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
             // Translate arguments to spec variables.
             this.GR = gamma[0];
             this.GG = gamma[1];
@@ -257,14 +257,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color DefaultColor => CalRGBColor.Default;
 
-        public override double[] Gamma
+        public override float[] Gamma
         {
             get
             {
                 PdfArray gamma = (PdfArray)Dictionary[PdfName.Gamma];
                 return (gamma == null
-                  ? new double[] { 1, 1, 1 }
-                  : new double[] { ((IPdfNumber)gamma[0]).RawValue, ((IPdfNumber)gamma[1]).RawValue, ((IPdfNumber)gamma[2]).RawValue }
+                  ? new float[] { 1, 1, 1 }
+                  : new float[] { ((IPdfNumber)gamma[0]).FloatValue, ((IPdfNumber)gamma[1]).FloatValue, ((IPdfNumber)gamma[2]).FloatValue }
                   );
             }
         }
@@ -305,19 +305,19 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override bool IsSpaceColor(Color color)
         { return color is CalRGBColor; }
 
-        public override SKColor GetSKColor(Color color, double? alpha = null)
+        public override SKColor GetSKColor(Color color, float? alpha = null)
         {
             var calColor = (CalRGBColor)color;
             // FIXME: temporary hack
             return Calculate(calColor.R, calColor.G, calColor.B, alpha);
         }
 
-        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        public override SKColor GetSKColor(float[] components, float? alpha = null)
         {
             return Calculate(components[0], components[1], components[2], alpha);
         }
 
-        public SKColor Calculate(double a, double b, double c, double? alpha = null)
+        public SKColor Calculate(float a, float b, float c, float? alpha = null)
         {
             // A, B and C represent a red, green and blue components of a calibrated
             // rgb space.
@@ -341,21 +341,21 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             // The following calculations are based on this document:
             // http://www.adobe.com/content/dam/Adobe/en/devnet/photoshop/sdk/
             // AdobeBPC.pdf.
-            var XYZ = new double[3];
-            XYZ[0] = X;
-            XYZ[1] = Y;
-            XYZ[2] = Z;
-            var XYZ_Flat = new double[3];
+            var XYZ = new float[3];
+            XYZ[0] = (float)X;
+            XYZ[1] = (float)Y;
+            XYZ[2] = (float)Z;
+            var XYZ_Flat = new float[3];
 
             NormalizeWhitePointToFlat(whitePoint, XYZ, XYZ_Flat);
 
-            var XYZ_Black = new double[3];
+            var XYZ_Black = new float[3];
             CompensateBlackPoint(blackPoint, XYZ_Flat, XYZ_Black);
 
-            var XYZ_D65 = new double[3];
+            var XYZ_D65 = new float[3];
             NormalizeWhitePointToD65(FLAT_WHITEPOINT_MATRIX, XYZ_Black, XYZ_D65);
 
-            var SRGB = new double[3];
+            var SRGB = new float[3];
             MatrixProduct(SRGB_D65_XYZ_TO_RGB_MATRIX, XYZ_D65, SRGB);
 
             // Convert the values to rgb range [0, 255].

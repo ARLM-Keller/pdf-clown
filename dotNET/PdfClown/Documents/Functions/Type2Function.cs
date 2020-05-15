@@ -40,8 +40,7 @@ namespace PdfClown.Documents.Functions
       interpolation exponent}.</remarks>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class Type2Function
-      : Function
+    public sealed class Type2Function : Function
     {
         #region dynamic
         #region constructors
@@ -53,7 +52,7 @@ namespace PdfClown.Documents.Functions
 
         #region interface
         #region public
-        public override double[] Calculate(double[] inputs)
+        public override float[] Calculate(float[] inputs)
         {
             var n = Exponent;
             var c0 = C0;
@@ -66,50 +65,50 @@ namespace PdfClown.Documents.Functions
                 inputs[i] = Math.Min(Math.Max(inputs[i], domain.Low), domain.High);
             }
             var outCount = ranges?.Count ?? c0.Length;
-            var result = new double[outCount];
+            var result = new float[outCount];
             var x = inputs[0];
-            var inputN = Math.Pow(x, Exponent);
+            var inputN = (float)Math.Pow(x, Exponent);
             for (int i = 0; i < outCount; i++)
             {
                 var range = ranges?[i] ?? null;
                 var exponenta = n == 1
-                    ? linear(x, domains[0].Low, domains[0].High, c0[i], c1[i])
-                    : exponential(x, c0[i], c1[i], inputN);
-                result[i] = Math.Min(Math.Max(exponenta, range?.Low ?? 0D), range?.High ?? 1D);
+                    ? Linear(x, domains[0].Low, domains[0].High, c0[i], c1[i])
+                    : Exponential(x, c0[i], c1[i], inputN);
+                result[i] = Math.Min(Math.Max(exponenta, range?.Low ?? 0F), range?.High ?? 1F);
             }
-            return result;// new double[] { inputs[0], inputs[0], inputs[0], inputs[0] };
+            return result;// new float[] { inputs[0], inputs[0], inputs[0], inputs[0] };
         }
 
         /**
           <summary>Gets the output value pairs <code>(C0,C1)</code> for lower (<code>0.0</code>)
           and higher (<code>1.0</code>) input values.</summary>
         */
-        public IList<double[]> BoundOutputValues
+        public IList<float[]> BoundOutputValues
         {
             get
             {
-                IList<double[]> outputBounds;
+                IList<float[]> outputBounds;
                 {
                     PdfArray lowOutputBoundsObject = (PdfArray)Dictionary[PdfName.C0];
                     PdfArray highOutputBoundsObject = (PdfArray)Dictionary[PdfName.C1];
                     if (lowOutputBoundsObject == null)
                     {
-                        outputBounds = new List<double[]>();
-                        outputBounds.Add(new double[] { 0, 1 });
+                        outputBounds = new List<float[]>();
+                        outputBounds.Add(new float[] { 0, 1 });
                     }
                     else
                     {
-                        outputBounds = new List<double[]>();
+                        outputBounds = new List<float[]>();
                         IEnumerator<PdfDirectObject> lowOutputBoundsObjectIterator = lowOutputBoundsObject.GetEnumerator();
                         IEnumerator<PdfDirectObject> highOutputBoundsObjectIterator = highOutputBoundsObject.GetEnumerator();
                         while (lowOutputBoundsObjectIterator.MoveNext()
                           && highOutputBoundsObjectIterator.MoveNext())
                         {
                             outputBounds.Add(
-                              new double[]
+                              new float[]
                               {
-                  ((IPdfNumber)lowOutputBoundsObjectIterator.Current).RawValue,
-                  ((IPdfNumber)highOutputBoundsObjectIterator.Current).RawValue
+                                  ((IPdfNumber)lowOutputBoundsObjectIterator.Current).FloatValue,
+                                  ((IPdfNumber)highOutputBoundsObjectIterator.Current).FloatValue
                               }
                               );
                         }
@@ -122,9 +121,9 @@ namespace PdfClown.Documents.Functions
         /**
           <summary>Gets the interpolation exponent.</summary>
         */
-        public double Exponent => ((IPdfNumber)Dictionary[PdfName.N]).RawValue;
+        public float Exponent => ((IPdfNumber)Dictionary[PdfName.N]).FloatValue;
 
-        public double[] C0
+        public float[] C0
         {
             get
             {
@@ -132,16 +131,16 @@ namespace PdfClown.Documents.Functions
 
                 if (c0 == null)
                 {
-                    return new double[] { 0, 0 };
+                    return new float[] { 0, 0 };
                 }
-                var result = new double[c0.Count];
+                var result = new float[c0.Count];
                 for (int index = 0, length = c0.Count; index < length; index++)
-                { result[index] = ((IPdfNumber)c0[index]).RawValue; }
+                { result[index] = ((IPdfNumber)c0[index]).FloatValue; }
                 return result;
             }
         }
 
-        public double[] C1
+        public float[] C1
         {
             get
             {
@@ -149,11 +148,11 @@ namespace PdfClown.Documents.Functions
 
                 if (c1 == null)
                 {
-                    return new double[] { 1, 0 };
+                    return new float[] { 1, 0 };
                 }
-                var result = new double[c1.Count];
+                var result = new float[c1.Count];
                 for (int index = 0, length = c1.Count; index < length; index++)
-                { result[index] = ((IPdfNumber)c1[index]).RawValue; }
+                { result[index] = ((IPdfNumber)c1[index]).FloatValue; }
                 return result;
             }
         }

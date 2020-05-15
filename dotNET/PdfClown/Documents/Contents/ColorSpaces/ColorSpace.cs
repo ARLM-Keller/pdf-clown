@@ -130,7 +130,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets the rendering representation of the specified color value.</summary>
           <param name="color">Color value to convert into an equivalent rendering representation.</param>
         */
-        public virtual SKPaint GetPaint(Color color, double? alpha = null)
+        public virtual SKPaint GetPaint(Color color, float? alpha = null)
         {
             var skColor = GetSKColor(color, alpha);
             return new SKPaint
@@ -149,9 +149,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public abstract Color GetColor(IList<PdfDirectObject> components, IContentContext context);
 
-        public abstract SKColor GetSKColor(Color color, double? alpha = null);
+        public abstract SKColor GetSKColor(Color color, float? alpha = null);
 
-        public abstract SKColor GetSKColor(double[] components, double? alpha = null);
+        public abstract SKColor GetSKColor(float[] components, float? alpha = null);
 
         public abstract bool IsSpaceColor(Color value);
 

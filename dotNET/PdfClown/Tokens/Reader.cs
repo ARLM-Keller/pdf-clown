@@ -101,7 +101,7 @@ namespace PdfClown.Tokens
                     parser.Seek(sectionOffset);
 
                     PdfDictionary sectionTrailer;
-                    if (parser.GetToken(1).Equals(Keyword.XRef)) // XRef-table section.
+                    if (string.Equals(parser.GetToken(1)?.ToString(), Keyword.XRef, StringComparison.Ordinal)) // XRef-table section.
                     {
                         // Looping sequentially across the subsections inside the current xref-table section...
                         while (true)
@@ -114,7 +114,7 @@ namespace PdfClown.Tokens
                             // 1. First object number.
                             parser.MoveNext();
                             if ((parser.TokenType == PostScriptParser.TokenTypeEnum.Keyword)
-                                && parser.Token.Equals(Keyword.Trailer)) // XRef-table section ended.
+                                && string.Equals(parser.Token.ToString(), Keyword.Trailer, StringComparison.Ordinal)) // XRef-table section ended.
                                 break;
                             else if (parser.TokenType != PostScriptParser.TokenTypeEnum.Integer)
                                 throw new PostScriptParseException("Neither object number of the first object in this xref subsection nor end of xref section found.", parser);
@@ -148,9 +148,9 @@ namespace PdfClown.Tokens
                                 XRefEntry.UsageEnum usage;
                                 {
                                     string usageToken = (string)parser.GetToken(1);
-                                    if (usageToken.Equals(Keyword.InUseXrefEntry, StringComparison.Ordinal))
+                                    if (string.Equals(usageToken, Keyword.InUseXrefEntry, StringComparison.Ordinal))
                                         usage = XRefEntry.UsageEnum.InUse;
-                                    else if (usageToken.Equals(Keyword.FreeXrefEntry, StringComparison.Ordinal))
+                                    else if (string.Equals(usageToken, Keyword.FreeXrefEntry, StringComparison.Ordinal))
                                         usage = XRefEntry.UsageEnum.Free;
                                     else
                                         throw new PostScriptParseException("Invalid xref entry.", parser);

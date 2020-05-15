@@ -40,26 +40,26 @@ using SkiaSharp;
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     /**
-      <summary>CIE-based ABC double-transformation-stage color space, where A, B and C represent the
+      <summary>CIE-based ABC float-transformation-stage color space, where A, B and C represent the
       L*, a* and b* components of a CIE 1976 L*a*b* space [PDF:1.6:4.5.4].</summary>
     */
     [PDF(VersionEnum.PDF11)]
     public sealed class LabColorSpace : CIEBasedColorSpace
     {
         #region dynamic
-        private double[] blackPoint;
-        private double[] whitePoint;
-        private IList<Interval<double>> range;
-        private double XW;
-        private double YW;
-        private double ZW;
-        private double amin;
-        private double amax;
-        private double bmin;
-        private double bmax;
-        private double XB;
-        private double YB;
-        private double ZB;
+        private float[] blackPoint;
+        private float[] whitePoint;
+        private IList<Interval<float>> range;
+        private float XW;
+        private float YW;
+        private float ZW;
+        private float amin;
+        private float amax;
+        private float bmin;
+        private float bmax;
+        private float XB;
+        private float YB;
+        private float ZB;
         #region constructors
         //TODO:IMPL new element constructor!
 
@@ -97,7 +97,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             get
             {
-                IList<Interval<double>> ranges = Ranges;
+                IList<Interval<float>> ranges = Ranges;
                 return new LabColor(ranges[0].Low, ranges[1].Low, ranges[2].Low);
             }
         }
@@ -108,25 +108,25 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         to the nearest valid value.</remarks>
       */
         //TODO:generalize to all the color spaces!
-        public IList<Interval<double>> Ranges
+        public IList<Interval<float>> Ranges
         {
             get
             {
-                var ranges = new List<Interval<double>>();
+                var ranges = new List<Interval<float>>();
                 {
                     // 1. L* component.
-                    ranges.Add(new Interval<double>(0d, 100d));
+                    ranges.Add(new Interval<float>(0F, 100F));
 
                     PdfArray rangesObject = (PdfArray)Dictionary[PdfName.Range];
                     if (rangesObject == null)
                     {
                         // 2. a* component.
                         ranges.Add(
-                          new Interval<double>(-100d, 100d)
+                          new Interval<float>(-100F, 100F)
                           );
                         // 3. b* component.
                         ranges.Add(
-                          new Interval<double>(-100d, 100d)
+                          new Interval<float>(-100F, 100F)
                           );
                     }
                     else
@@ -135,9 +135,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                         for (int index = 0, length = rangesObject.Count; index < length; index += 2)
                         {
                             ranges.Add(
-                              new Interval<double>(
-                                ((IPdfNumber)rangesObject[index]).RawValue,
-                                ((IPdfNumber)rangesObject[index + 1]).RawValue
+                              new Interval<float>(
+                                ((IPdfNumber)rangesObject[index]).FloatValue,
+                                ((IPdfNumber)rangesObject[index + 1]).FloatValue
                                 )
                               );
                         }
@@ -153,21 +153,21 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override bool IsSpaceColor(Color color)
         { return color is LabColor; }
 
-        public override SKColor GetSKColor(Color color, double? alpha = null)
+        public override SKColor GetSKColor(Color color, float? alpha = null)
         {
             var labColor = (LabColor)color;
             return Calculate(labColor.L, labColor.A, labColor.B, null, alpha);
         }
 
-        public override SKColor GetSKColor(double[] components, double? alpha = null)
+        public override SKColor GetSKColor(float[] components, float? alpha = null)
         {
             return Calculate(components[0], components[1], components[2], null, alpha);
         }
 
         // Function g(x) from spec
-        private double FnG(double x)
+        private float FnG(float x)
         {
-            double result;
+            float result;
             if (x >= 6 / 29)
             {
                 result = x * x * x;
@@ -179,13 +179,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return result;
         }
 
-        private double Decode(double value, double high1, double low2, double high2)
+        private float Decode(float value, float high1, float low2, float high2)
         {
             return low2 + (value * (high2 - low2)) / high1;
         }
 
         // If decoding is needed maxVal should be 2^bits per component - 1.
-        public SKColor Calculate(double Ls, double As, double Bs, double? maxVal, double? alpha = null)
+        public SKColor Calculate(float Ls, float As, float Bs, float? maxVal, float? alpha = null)
         {
             // XXX: Lab input is in the range of [0, 100], [amin, amax], [bmin, bmax]
             // not the usual [0, 1]. If a command like setFillColor is used the src
@@ -195,9 +195,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             // Ls,as,bs <---> L*,a*,b* in the spec
             if (maxVal != null)
             {
-                Ls = Decode(Ls, (double)maxVal, 0, 100);
-                As = Decode(As, (double)maxVal, amin, amax);
-                Bs = Decode(Bs, (double)maxVal, bmin, bmax);
+                Ls = Decode(Ls, (float)maxVal, 0, 100);
+                As = Decode(As, (float)maxVal, amin, amax);
+                Bs = Decode(Bs, (float)maxVal, bmin, bmax);
             }
 
             // Adjust limits of 'as' and 'bs'
@@ -227,22 +227,22 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             var Y = YW * FnG(M);
             var Z = ZW * FnG(N);
 
-            double r, g, b;
+            float r, g, b;
             // Using different conversions for D50 and D65 white points,
             // per http://www.color.org/srgb.pdf
             if (ZW < 1)
             {
                 // Assuming D50 (X=0.9642, Y=1.00, Z=0.8249)
-                r = X * 3.1339 + Y * -1.617 + Z * -0.4906;
-                g = X * -0.9785 + Y * 1.916 + Z * 0.0333;
-                b = X * 0.072 + Y * -0.229 + Z * 1.4057;
+                r = X * 3.1339F + Y * -1.617F + Z * -0.4906F;
+                g = X * -0.9785F + Y * 1.916F + Z * 0.0333F;
+                b = X * 0.072F + Y * -0.229F + Z * 1.4057F;
             }
             else
             {
                 // Assuming D65 (X=0.9505, Y=1.00, Z=1.0888)
-                r = X * 3.2406 + Y * -1.5372 + Z * -0.4986;
-                g = X * -0.9689 + Y * 1.8758 + Z * 0.0415;
-                b = X * 0.0557 + Y * -0.204 + Z * 1.057;
+                r = X * 3.2406F + Y * -1.5372F + Z * -0.4986F;
+                g = X * -0.9689F + Y * 1.8758F + Z * 0.0415F;
+                b = X * 0.0557F + Y * -0.204F + Z * 1.057F;
             }
             // Convert the color values to the [0,255] range (clamping is automatic).
             var skColor = new SKColor(

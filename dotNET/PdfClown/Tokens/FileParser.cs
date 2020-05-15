@@ -100,7 +100,7 @@ namespace PdfClown.Tokens
                                 // 3. Reference keyword.
                                 base.MoveNext();
                                 if (TokenType == TokenTypeEnum.Keyword
-                                  && Token.Equals(Keyword.Reference))
+                                  && string.Equals(Token.ToString(), Keyword.Reference, StringComparison.Ordinal))
                                 { Token = new Reference(objectNumber, generationNumber); }
                             }
                             if (!(Token is Reference))
@@ -138,7 +138,7 @@ namespace PdfClown.Tokens
                 MoveNext();
                 // Is this dictionary the header of a stream object [PDF:1.6:3.2.7]?
                 if ((TokenType == TokenTypeEnum.Keyword)
-                  && Token.Equals(Keyword.BeginStream))
+                  && string.Equals(Token.ToString(), Keyword.BeginStream, StringComparison.Ordinal))
                 {
                     // Keep track of current position!
                     /*
@@ -180,11 +180,20 @@ namespace PdfClown.Tokens
             // Go to the beginning of the indirect object!
             Seek(xrefEntry.Offset);
             // Skip the indirect-object header!
-            MoveNext(4);
+            for (int i = 0; i < 4; i++)
+            {
+                MoveNext();
+                if (TokenType == TokenTypeEnum.Keyword
+                    && string.Equals(Token.ToString(), Keyword.BeginIndirectObject, StringComparison.Ordinal))
+                {
+                    MoveNext();
+                    break;
+                }
+            }
 
             // Empty indirect object?
             if (TokenType == TokenTypeEnum.Keyword
-                && Keyword.EndIndirectObject.Equals(Token))
+                && string.Equals(Token.ToString(), Keyword.EndIndirectObject, StringComparison.Ordinal))
                 return null;
 
             // Get the indirect data object!
@@ -215,6 +224,7 @@ namespace PdfClown.Tokens
             long streamLength = stream.Length;
             long position = streamLength;
             int chunkSize = (int)Math.Min(streamLength, EOFMarkerChunkSize);
+            string text = null;
             int index = -1;
             while (index < 0 && position > 0)
             {
@@ -229,7 +239,8 @@ namespace PdfClown.Tokens
                 stream.Seek(position);
 
                 // Get 'startxref' keyword position!
-                index = stream.ReadString(chunkSize).LastIndexOf(Keyword.StartXRef, StringComparison.Ordinal);
+                text = stream.ReadString(chunkSize);
+                index = text.LastIndexOf(Keyword.StartXRef, StringComparison.Ordinal);
             }
             if (index < 0)
                 throw new PostScriptParseException("'" + Keyword.StartXRef + "' keyword not found.", this);
@@ -241,8 +252,13 @@ namespace PdfClown.Tokens
             MoveNext();
             if (TokenType != TokenTypeEnum.Integer)
                 throw new PostScriptParseException("'" + Keyword.StartXRef + "' value invalid.", this);
-
-            return (int)Token;
+            var xrefPosition = (int)Token;
+            //Repair
+            if (xrefPosition > streamLength)
+            {
+                xrefPosition = (int)position + text.LastIndexOf("\n" + Keyword.XRef, StringComparison.Ordinal);
+            }
+            return xrefPosition;
         }
         #endregion
         #endregion

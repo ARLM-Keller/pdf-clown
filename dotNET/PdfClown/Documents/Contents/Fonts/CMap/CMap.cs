@@ -101,7 +101,7 @@ namespace PdfClown.Documents.Contents.Fonts
           <returns>null, in case no name matching occurs.</returns>
         */
         public static CMap Get(PdfName name)
-        { return Get((string)name.Value); }
+        { return Get(name.ToString()); }
 
         /**
           <summary>Gets the character map corresponding to the given name.</summary>

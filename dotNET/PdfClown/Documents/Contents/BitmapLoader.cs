@@ -288,7 +288,7 @@ namespace PdfClown.Documents.Contents
                     var byteValue = buffer[byteIndex];
                     //if (emptyBytes)
                     //    byteIndex += y;
-                    var bitIndex = 3 - index % 4;
+                    var bitIndex = 6-(x % 4)*2;
                     var value = ((byteValue >> bitIndex) & 0b11);
                     var interpolate = indexed ? value : min + (value * (interpolateConst));
                     components[i] = interpolate;

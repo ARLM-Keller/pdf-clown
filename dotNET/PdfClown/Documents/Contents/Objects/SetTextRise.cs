@@ -63,9 +63,9 @@ namespace PdfClown.Documents.Contents.Objects
           <summary>Gets/Sets the text rise, which is a number expressed in unscaled text space units.
           </summary>
         */
-        public double Value
+        public float Value
         {
-            get => ((IPdfNumber)operands[0]).RawValue;
+            get => ((IPdfNumber)operands[0]).FloatValue;
             set => operands[0] = PdfReal.Get(value);
         }
         #endregion

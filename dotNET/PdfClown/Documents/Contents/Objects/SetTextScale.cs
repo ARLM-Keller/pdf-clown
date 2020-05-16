@@ -57,15 +57,15 @@ namespace PdfClown.Documents.Contents.Objects
         #region interface
         #region public
         public override void Scan(GraphicsState state)
-        { state.Scale = Value / 100; }
+        { state.Scale = Value / 100F; }
 
         /**
           <summary>Gets/Sets the horizontal scale expressed as a percentage of the normal width.
           </summary>
         */
-        public double Value
+        public float Value
         {
-            get => ((IPdfNumber)operands[0]).RawValue;
+            get => ((IPdfNumber)operands[0]).FloatValue;
             set => operands[0] = PdfReal.Get(value);
         }
         #endregion

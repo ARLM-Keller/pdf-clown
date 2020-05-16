@@ -80,14 +80,14 @@ namespace PdfClown.Documents.Contents.Objects
         /**
           <summary>Gets/Sets the character spacing.</summary>
         */
-        public double? CharSpace
+        public float? CharSpace
         {
             get
             {
                 if (@operator.Equals(SimpleOperatorKeyword, StringComparison.Ordinal))
                     return null;
                 else
-                    return ((IPdfNumber)operands[1]).RawValue;
+                    return ((IPdfNumber)operands[1]).FloatValue;
             }
             set
             {
@@ -105,14 +105,14 @@ namespace PdfClown.Documents.Contents.Objects
         /**
           <summary>Gets/Sets the word spacing.</summary>
         */
-        public double? WordSpace
+        public float? WordSpace
         {
             get
             {
                 if (@operator.Equals(SimpleOperatorKeyword, StringComparison.Ordinal))
                     return null;
                 else
-                    return ((IPdfNumber)operands[0]).RawValue;
+                    return ((IPdfNumber)operands[0]).FloatValue;
             }
             set
             {

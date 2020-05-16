@@ -51,6 +51,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override void Scan(GraphicsState state)
         {
+            //TODO state.Save();
             state?.Scanner?.RenderContext?.Save();
         }
         #endregion

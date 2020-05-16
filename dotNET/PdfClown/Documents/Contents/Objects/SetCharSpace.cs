@@ -63,9 +63,9 @@ namespace PdfClown.Documents.Contents.Objects
         public override void Scan(GraphicsState state)
         { state.CharSpace = Value; }
 
-        public double Value
+        public float Value
         {
-            get => ((IPdfNumber)operands[0]).RawValue;
+            get => ((IPdfNumber)operands[0]).FloatValue;
             set => operands[0] = PdfReal.Get(value);
         }
         #endregion

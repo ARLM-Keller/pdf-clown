@@ -70,9 +70,9 @@ namespace PdfClown.Documents.Contents.Objects
         /**
           <summary>Gets/Sets the font size to be set.</summary>
         */
-        public double Size
+        public float Size
         {
-            get => ((IPdfNumber)operands[1]).RawValue;
+            get => ((IPdfNumber)operands[1]).FloatValue;
             set => operands[1] = PdfReal.Get(value);
         }
 

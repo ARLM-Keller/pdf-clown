@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
 
 using System;
@@ -66,27 +67,15 @@ namespace PdfClown.Documents.Contents.Objects
             set => this[PdfName.BPC] = new PdfInteger(value);
         }
 
-        public PdfName ColorSpace
+        public PdfDirectObject ColorSpaceObject
         {
-            get => (((PdfName)this[PdfName.CS]) ?? ((PdfName)this[PdfName.ColorSpace]));
-            set => this[PdfName.CS] = value;
+            get => this[PdfName.CS] ?? this[PdfName.ColorSpace];
         }
 
-        public PdfName FormatColorSpace
+        public ColorSpace ColorSpace
         {
-            get
-            {
-                var space = ColorSpace;
-                if (space == null)
-                {
-                    return PdfName.DeviceGray;
-                }
-                if (space.Equals(PdfName.G)) return PdfName.DeviceGray;
-                if (space.Equals(PdfName.RGB)) return PdfName.DeviceRGB;
-                if (space.Equals(PdfName.CMYK)) return PdfName.DeviceCMYK;
-                if (space.Equals(PdfName.I)) return PdfName.Indexed;
-                return space;
-            }
+            get => ColorSpaces.ColorSpace.Wrap(this[PdfName.CS] ?? this[PdfName.ColorSpace]);
+            set => this[PdfName.CS] = value.BaseObject;
         }
 
         public float[] Decode

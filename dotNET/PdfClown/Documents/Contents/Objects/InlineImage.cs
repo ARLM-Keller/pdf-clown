@@ -107,20 +107,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public ColorSpace ColorSpace
         {
-            get
-            {
-                var name = ImageHeader.FormatColorSpace;
-                if (name.Equals(PdfName.DeviceGray))
-                    return DeviceGrayColorSpace.Default;
-                else if (name.Equals(PdfName.DeviceRGB))
-                    return DeviceRGBColorSpace.Default;
-                else if (name.Equals(PdfName.DeviceCMYK))
-                    return DeviceCMYKColorSpace.Default;
-                else if (name.Equals(PdfName.Pattern))
-                    return PatternColorSpace.Default;
-                else
-                    return Context.Resources.ColorSpaces[name];
-            }
+            get { return ImageHeader.ColorSpace ?? Context.Resources.ColorSpaces[(PdfName)ImageHeader.ColorSpaceObject]; }
 
         }
 

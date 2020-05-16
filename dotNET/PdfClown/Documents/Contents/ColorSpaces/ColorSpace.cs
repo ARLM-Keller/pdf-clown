@@ -69,11 +69,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             PdfName name = (PdfName)(baseDataObject is PdfArray
               ? ((PdfArray)baseDataObject)[0]
               : baseDataObject);
-            if (name.Equals(PdfName.DeviceRGB))
+            if (name.Equals(PdfName.DeviceRGB)
+                || name.Equals(PdfName.RGB))
                 return new DeviceRGBColorSpace(baseObject);
-            else if (name.Equals(PdfName.DeviceCMYK))
+            else if (name.Equals(PdfName.DeviceCMYK)
+                || name.Equals(PdfName.CMYK))
                 return new DeviceCMYKColorSpace(baseObject);
-            else if (name.Equals(PdfName.DeviceGray))
+            else if (name.Equals(PdfName.DeviceGray)
+                || name.Equals(PdfName.G))
                 return new DeviceGrayColorSpace(baseObject);
             else if (name.Equals(PdfName.CalRGB))
                 return new CalRGBColorSpace(baseObject);
@@ -85,14 +88,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 return new LabColorSpace(baseObject);
             else if (name.Equals(PdfName.DeviceN))
                 return new DeviceNColorSpace(baseObject);
-            else if (name.Equals(PdfName.Indexed))
+            else if (name.Equals(PdfName.Indexed)
+                || name.Equals(PdfName.I))
                 return new IndexedColorSpace(baseObject);
             else if (name.Equals(PdfName.Pattern))
                 return new PatternColorSpace(baseObject);
             else if (name.Equals(PdfName.Separation))
                 return new SeparationColorSpace(baseObject);
             else
-                throw new NotSupportedException("Color space " + name + " unknown.");
+                return null;
+            //throw new NotSupportedException("Color space " + name + " unknown.");
         }
         #endregion
         #endregion
@@ -138,6 +143,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 Color = skColor,
                 Style = SKPaintStyle.Fill,
                 IsAntialias = true,
+                BlendMode = SKBlendMode.SrcOver
             };
         }
 

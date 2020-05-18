@@ -42,6 +42,9 @@ namespace PdfClown.Documents.Functions
     [PDF(VersionEnum.PDF13)]
     public sealed class Type2Function : Function
     {
+        private float[] _c0;
+        private float[] _c1;
+        private List<float[]> outputBounds;
         #region dynamic
         #region constructors
         //TODO:implement function creation!
@@ -87,7 +90,7 @@ namespace PdfClown.Documents.Functions
         {
             get
             {
-                IList<float[]> outputBounds;
+                if (outputBounds == null)
                 {
                     PdfArray lowOutputBoundsObject = (PdfArray)Dictionary[PdfName.C0];
                     PdfArray highOutputBoundsObject = (PdfArray)Dictionary[PdfName.C1];
@@ -127,16 +130,22 @@ namespace PdfClown.Documents.Functions
         {
             get
             {
-                var c0 = (PdfArray)Dictionary[PdfName.C0];
-
-                if (c0 == null)
+                if (_c0 == null)
                 {
-                    return new float[] { 0, 0 };
+                    var c0 = (PdfArray)Dictionary[PdfName.C0];
+
+                    if (c0 == null)
+                    {
+                        _c0 = new float[] { 0, 0 };
+                    }
+                    else
+                    {
+                        _c0 = new float[c0.Count];
+                        for (int index = 0, length = c0.Count; index < length; index++)
+                        { _c0[index] = ((IPdfNumber)c0[index]).FloatValue; }
+                    }
                 }
-                var result = new float[c0.Count];
-                for (int index = 0, length = c0.Count; index < length; index++)
-                { result[index] = ((IPdfNumber)c0[index]).FloatValue; }
-                return result;
+                return _c0;
             }
         }
 
@@ -144,16 +153,22 @@ namespace PdfClown.Documents.Functions
         {
             get
             {
-                var c1 = (PdfArray)Dictionary[PdfName.C1];
-
-                if (c1 == null)
+                if (_c1 == null)
                 {
-                    return new float[] { 1, 0 };
+                    var c1 = (PdfArray)Dictionary[PdfName.C1];
+
+                    if (c1 == null)
+                    {
+                        _c1 = new float[] { 1, 0 };
+                    }
+                    else
+                    {
+                        _c1 = new float[c1.Count];
+                        for (int index = 0, length = c1.Count; index < length; index++)
+                        { _c1[index] = ((IPdfNumber)c1[index]).FloatValue; }
+                    }
                 }
-                var result = new float[c1.Count];
-                for (int index = 0, length = c1.Count; index < length; index++)
-                { result[index] = ((IPdfNumber)c1[index]).FloatValue; }
-                return result;
+                return _c1;
             }
         }
 

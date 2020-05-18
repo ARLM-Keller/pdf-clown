@@ -27,6 +27,7 @@ using PdfClown.Objects;
 using PdfClown.Util.Math;
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Functions
@@ -40,6 +41,10 @@ namespace PdfClown.Documents.Functions
     [PDF(VersionEnum.PDF12)]
     public sealed class Type0Function : Function
     {
+        private IList<Interval<float>> decodes;
+        private IList<Interval<int>> encodes;
+        private List<int> sampleCounts;
+        private float[] samples;
         #region types
         public enum InterpolationOrderEnum
         {
@@ -66,48 +71,96 @@ namespace PdfClown.Documents.Functions
         #region public
         public override float[] Calculate(float[] inputs)
         {
+            //Mozilla Pdf.js
             var domains = Domains;
             var ranges = Ranges;
-            var decode = Decodes;
-            var encode = Encodes;
+            var decodes = Decodes ?? ranges;
+            var encodes = Encodes;
             var sampleCount = SampleCounts;
             var samples = GetSamples();
-            var sampleMax = (float)Math.Pow(2, BitsPerSample) - 1;
-            for (int i = 0; i < domains.Count; i++)
+            var sampleMax = (int)Math.Pow(2, BitsPerSample) - 1;
+            var n = ranges.Count;
+            var m = domains.Count;
+            var k = n;
+            var pos = 1;
+            var cubeVertices = 1 << m;
+            var cubeN = new float[cubeVertices];
+            var cubeVertex = new int[cubeVertices];
+
+            // Building the cube vertices: its part and sample index
+            // http://rjwagner49.com/Mathematics/Interpolation.pdf
+            for (var j = 0; j < cubeVertices; j++)
+            {
+                cubeN[j] = 1;
+            }
+
+            for (int i = 0; i < m; i++)
             {
                 var domain = domains[i];
-                inputs[i] = Math.Min(Math.Max(inputs[i], domain.Low), domain.High);
-            }
-            var result = new float[ranges.Count * domains.Count];
+                var encode = encodes[i];
+                var size = sampleCount[i];
+                var x = inputs[i];
+                x = Math.Min(Math.Max(x, domain.Low), domain.High);
+                var e = Linear(x, domain.Low, domain.High, encode.Low, encode.High);
+                e = Math.Min(Math.Max(e, 0), size - 1);
+                var eiMax = (int)Math.Floor(e);
+                var eiMin = (int)Math.Ceiling(e);
 
-            for (int d = 0; d < domains.Count; d++)
-            {
-                var x = inputs[d];
 
-                for (int r = 0; r < ranges.Count; r++)
+                // Adjusting the cube: N and vertex sample index
+                var e0 = e < size - 1 ? eiMax : e - 1; // e1 = e0 + 1;
+                var n0 = e0 + 1 - e; // (e1 - e) / (e1 - e0);
+                var n1 = e - e0; // (e - e0) / (e1 - e0);
+                var offset0 = e0 * k;
+                var offset1 = offset0 + k; // e1 * k
+                for (var j = 0; j < cubeVertices; j++)
                 {
-                    var e = Linear(x, domains[d].Low, domains[d].High, encode[d].Low, encode[d].High);
-                    e = Math.Min(Math.Max(e, 0), sampleCount[d]);
-                    e = samples[r][d][(int)e];
-                    e = Linear(e, 0, sampleMax, decode[r].Low, decode[r].High);
-                    result[d * ranges.Count + r] = Math.Min(Math.Max(e, ranges[r].Low), ranges[r].High);
+                    if ((j & pos) != 0)
+                    {
+                        cubeN[j] *= n1;
+                        cubeVertex[j] += (int)offset1;
+                    }
+                    else
+                    {
+                        cubeN[j] *= n0;
+                        cubeVertex[j] += (int)offset0;
+                    }
                 }
+                k *= size;
+                pos <<= 1;
             }
+
+            var result = new float[n];
+            for (int j = 0; j < n; j++)
+            {
+                var range = ranges[j];
+                var decode = decodes[j];
+
+                var r = 0F;
+
+                for (int i = 0; i < cubeVertices; i++)
+                {
+                    r += samples[cubeVertex[i] + j] * cubeN[i];
+                }
+
+                r = Linear(r, 0, 1, decode.Low, decode.High);
+                result[j] = Math.Min(Math.Max(r, range.Low), range.High);
+            }
+
             return result;
         }
 
         /**
           <summary>Gets the linear mapping of input values into the domain of the function's sample table.</summary>
         */
-        public IList<Interval<int>> Encodes => GetIntervals<int>(
+        public IList<Interval<int>> Encodes => encodes ?? (encodes = GetIntervals<int>(
                   PdfName.Encode,
                   delegate (IList<Interval<int>> intervals)
                   {
                       foreach (int sampleCount in SampleCounts)
                       { intervals.Add(new Interval<int>(0, sampleCount - 1)); }
                       return intervals;
-                  }
-                  );
+                  }));
 
         /**
           <summary>Gets the order of interpolation between samples.</summary>
@@ -126,7 +179,7 @@ namespace PdfClown.Documents.Functions
         /**
           <summary>Gets the linear mapping of sample values into the ranges of the function's output values.</summary>
         */
-        public IList<Interval<float>> Decodes => GetIntervals<float>(PdfName.Decode, null);
+        public IList<Interval<float>> Decodes => decodes ?? (decodes = GetIntervals<float>(PdfName.Decode, null));
 
         /**
           <summary>Gets the number of bits used to represent each sample.</summary>
@@ -140,8 +193,9 @@ namespace PdfClown.Documents.Functions
         {
             get
             {
-                List<int> sampleCounts = new List<int>();
+                if (sampleCounts == null)
                 {
+                    sampleCounts = new List<int>();
                     PdfArray sampleCountsObject = (PdfArray)Dictionary[PdfName.Size];
                     foreach (PdfDirectObject sampleCountObject in sampleCountsObject)
                     { sampleCounts.Add(((PdfInteger)sampleCountObject).RawValue); }
@@ -149,34 +203,49 @@ namespace PdfClown.Documents.Functions
                 return sampleCounts;
             }
         }
-        public List<List<List<int>>> GetSamples()
+        public float[] GetSamples()
         {
-            var ranges = Ranges;
-            var domains = Domains;
-            var sampleCounts = SampleCounts;
-            var samples = new List<List<List<int>>>();
-            var bytes = BitsPerSample / 8;
-            var stream = BaseDataObject as PdfStream;
-            var buffer = stream.GetBody(true) as Bytes.Buffer;
-            buffer.Seek(0);
-            for (var r = 0; r < ranges.Count; r++)
+            if (samples == null)
             {
-                var rangeList = new List<List<int>>();
-                samples.Add(rangeList);
-                for (var d = 0; d < domains.Count; d++)
+                var ranges = Ranges;
+                var domains = Domains;
+                var size = SampleCounts;
+                var outputSize = ranges.Count;
+                var bps = BitsPerSample;
+                var bytes = bps / 8;
+                var stream = BaseDataObject as PdfStream;
+                using (var buffer = stream.ExtractBody(true) as Bytes.Buffer)
                 {
-                    var domainList = new List<int>();
-                    rangeList.Add(domainList);
-                    for (var s = 0; s < sampleCounts[d]; s++)
+                    var length = 1;
+                    for (int i = 0, ii = size.Count; i < ii; i++)
                     {
-                        domainList.Add(buffer.ReadInt(bytes));
-                        //if (buffer.Position == buffer.Length - 1)
-                        //    break;
+                        length *= size[i];
                     }
+                    length *= outputSize;
+
+                    var array = new float[length];
+                    var codeSize = 0;
+                    var codeBuf = 0;
+                    // 32 is a valid bps so shifting won't work
+                    var sampleMul = 1.0 / (Math.Pow(2.0, bps) - 1);
+
+                    var strBytes = buffer.ReadBytes((length * bps + 7) / 8);
+                    var strIdx = 0;
+                    for (int i = 0; i < length; i++)
+                    {
+                        while (codeSize < bps)
+                        {
+                            codeBuf <<= 8;
+                            codeBuf |= strBytes[strIdx++];
+                            codeSize += 8;
+                        }
+                        codeSize -= bps;
+                        array[i] = (float)((codeBuf >> codeSize) * sampleMul);
+                        codeBuf &= (1 << codeSize) - 1;
+                    }
+                    samples = array;
                 }
-
             }
-
             return samples;
         }
 

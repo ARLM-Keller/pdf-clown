@@ -51,6 +51,8 @@ namespace PdfClown.Documents.Functions
         private const int FunctionType2 = 2;
         private const int FunctionType3 = 3;
         private const int FunctionType4 = 4;
+        private IList<Interval<float>> domains;
+        private IList<Interval<float>> ranges;
         #endregion
 
         #region interface
@@ -150,24 +152,17 @@ namespace PdfClown.Documents.Functions
           <summary>Gets the (inclusive) domains of the input values.</summary>
           <remarks>Input values outside the declared domains are clipped to the nearest boundary value.</remarks>
         */
-        public IList<Interval<float>> Domains => GetIntervals<float>(PdfName.Domain, null);
+        public IList<Interval<float>> Domains => domains ?? (domains = GetIntervals<float>(PdfName.Domain, null));
 
         /**
           <summary>Gets the number of input values (parameters) of this function.</summary>
         */
-        public int InputCount => ((PdfArray)Dictionary[PdfName.Domain]).Count / 2;
+        public int InputCount => (Domains?.Count ?? 2) / 2;
 
         /**
           <summary>Gets the number of output values (results) of this function.</summary>
         */
-        public int OutputCount
-        {
-            get
-            {
-                PdfArray rangesObject = (PdfArray)Dictionary[PdfName.Range];
-                return rangesObject == null ? 1 : rangesObject.Count / 2;
-            }
-        }
+        public int OutputCount => (Ranges?.Count ?? 2) / 2;
 
         /**
           <summary>Gets the (inclusive) ranges of the output values.</summary>
@@ -175,7 +170,7 @@ namespace PdfClown.Documents.Functions
           if this entry is absent, no clipping is done.</remarks>
           <returns><code>null</code> in case of unbounded ranges.</returns>
         */
-        public IList<Interval<float>> Ranges => GetIntervals<float>(PdfName.Range, null);
+        public IList<Interval<float>> Ranges => ranges ?? (ranges = GetIntervals<float>(PdfName.Range, null));
         #endregion
 
         #region protected

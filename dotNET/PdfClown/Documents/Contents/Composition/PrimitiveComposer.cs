@@ -802,8 +802,8 @@ namespace PdfClown.Documents.Contents.Composition
 
                 string[] textLines = value.Split('\n');
 
-                GraphicsState state = State;
-                fonts::Font font = state.Font;
+                var state = State;
+                var font = state.Font;
                 double fontSize = state.FontSize;
                 double lineHeight = font.GetLineHeight(fontSize);
                 double lineSpace = state.Lead < lineHeight ? 0 : state.Lead - lineHeight;

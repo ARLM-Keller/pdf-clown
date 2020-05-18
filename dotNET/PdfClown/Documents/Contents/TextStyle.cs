@@ -39,10 +39,10 @@ namespace PdfClown.Documents.Contents
         private readonly Color fillColor;
         private readonly ColorSpace fillColorSpace;
         private readonly Font font;
-        private readonly double fontSize;
+        private readonly float fontSize;
         private readonly TextRenderModeEnum renderMode;
-        private readonly double scaleX;
-        private readonly double scaleY;
+        private readonly float scaleX;
+        private readonly float scaleY;
         private readonly Color strokeColor;
         private readonly ColorSpace strokeColorSpace;
         #endregion
@@ -50,14 +50,14 @@ namespace PdfClown.Documents.Contents
         #region constructors
         public TextStyle(
           Font font,
-          double fontSize,
+          float fontSize,
           TextRenderModeEnum renderMode,
           Color strokeColor,
           ColorSpace strokeColorSpace,
           Color fillColor,
           ColorSpace fillColorSpace,
-          double scaleX,
-          double scaleY
+          float scaleX,
+          float scaleY
           )
         {
             this.font = font;
@@ -80,19 +80,19 @@ namespace PdfClown.Documents.Contents
 
         public Font Font => font;
 
-        public double FontSize => fontSize;
+        public float FontSize => fontSize;
 
         /**
           <exception cref="EncodeException"/>
         */
-        public double GetWidth(char textChar)
+        public float GetWidth(char textChar)
         { return font.GetWidth(textChar, fontSize) * scaleX / scaleY; }
 
         public TextRenderModeEnum RenderMode => renderMode;
 
-        public double ScaleX => scaleX;
+        public float ScaleX => scaleX;
 
-        public double ScaleY => scaleY;
+        public float ScaleY => scaleY;
 
         public Color StrokeColor => strokeColor;
 

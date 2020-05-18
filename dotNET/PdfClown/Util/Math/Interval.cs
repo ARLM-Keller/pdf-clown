@@ -98,5 +98,10 @@ namespace PdfClown.Util.Math
             get => lowInclusive;
             set => lowInclusive = value;
         }
+
+        public override string ToString()
+        {
+            return $"{Low} - {High}";
+        }
     }
 }

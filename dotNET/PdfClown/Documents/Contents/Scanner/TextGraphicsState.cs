@@ -24,6 +24,7 @@
 */
 
 using SkiaSharp;
+using fonts = PdfClown.Documents.Contents.Fonts;
 
 namespace PdfClown.Documents.Contents
 {
@@ -32,9 +33,12 @@ namespace PdfClown.Documents.Contents
         private SKMatrix tlm = SKMatrix.MakeIdentity();
         private SKMatrix tm = SKMatrix.MakeIdentity();
 
+        public TextGraphicsState()
+        {
+        }
         /**
-          <summary>Gets/Sets the current text line matrix [PDF:1.6:5.3].</summary>
-        */
+           <summary>Gets/Sets the current text line matrix [PDF:1.6:5.3].</summary>
+         */
         public SKMatrix Tlm
         {
             get => tlm;

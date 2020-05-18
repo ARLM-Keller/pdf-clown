@@ -84,7 +84,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                 Rectangle box = Wrap<Rectangle>(BaseDataObject[PdfName.R]);
                 return SKRect.Create(
                   (float)box.Left,
-                  (float)(Page.Box.Height - box.Top),
+                  (float)(Page.Box.Height - box.Bottom),
                   (float)box.Width,
                   (float)box.Height
                   );

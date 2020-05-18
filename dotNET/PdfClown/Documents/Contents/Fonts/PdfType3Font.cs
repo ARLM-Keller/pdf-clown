@@ -339,16 +339,17 @@ namespace PdfClown.Documents.Contents.Fonts
             return PdfType3CharProc.Wrap(baseObject, this);
         }
 
-        public override void DrawChar(SKCanvas context, SKPaint fill, SKPaint stroke, char textChar, int code, byte[] codeBytes)
+        public override SKPath DrawChar(SKCanvas context, SKPaint fill, SKPaint stroke, char textChar, int code, byte[] codeBytes)
         {
             var proc = GetCharProc(code);
             if (proc == null)
             {
                 Debug.WriteLine($"info: no Glyph for Code: {code}  Char: '{textChar}'");
-                return;
+                return null;
             }
             var picture = proc.Render();
             context.DrawPicture(picture, fill ?? stroke);
+            return null;
         }
         #endregion
         #endregion

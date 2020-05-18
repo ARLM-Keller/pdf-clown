@@ -595,7 +595,7 @@ namespace PdfClown.Documents.Contents.Composition
         {
             rowEnded = false;
 
-            GraphicsState state = baseComposer.State;
+            var state = baseComposer.State;
 
             double rowY = boundBox.Height;
             if (rowY > 0)
@@ -681,7 +681,7 @@ namespace PdfClown.Documents.Contents.Composition
                             objectXOffsets[index] = objectXOffsets[index - 1] + objects[index - 1].SpaceCount * wordSpace;
                         }
                     }
-                    currentRow.WordSpaceAdjustment.Value = wordSpace;
+                    currentRow.WordSpaceAdjustment.Value = (float)wordSpace;
                     break;
             }
 

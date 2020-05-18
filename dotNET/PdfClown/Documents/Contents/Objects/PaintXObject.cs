@@ -146,7 +146,7 @@ namespace PdfClown.Documents.Contents.Objects
                     }
                     else
                     {
-                        canvas.DrawPicture(picture, ImagePaint);
+                        canvas.DrawPicture(picture, state.CreateFillPaint());
                     }
 
                     foreach (var textString in formObject.Strings)

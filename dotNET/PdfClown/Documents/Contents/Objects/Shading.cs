@@ -28,6 +28,7 @@ using colorSpaces = PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
 
 using System.Collections.Generic;
+using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -65,6 +66,7 @@ namespace PdfClown.Documents.Contents.Objects
         public override void Scan(GraphicsState state)
         {
             var shading = GetResource(state.Scanner.ContentContext);
+            state.Shading = shading;
             base.Scan(state);
         }
         #endregion

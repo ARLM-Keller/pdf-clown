@@ -218,12 +218,12 @@ namespace PdfClown.Documents.Contents
         }
 
         [PDF(VersionEnum.PDF13)]
-        public double? FontSize
+        public float? FontSize
         {
             get
             {
                 PdfArray fontObject = (PdfArray)BaseDataObject[PdfName.Font];
-                return fontObject != null ? ((IPdfNumber)fontObject[1]).RawValue : (double?)null;
+                return fontObject != null ? ((IPdfNumber)fontObject[1]).FloatValue : (float?)null;
             }
             set
             {
@@ -281,23 +281,23 @@ namespace PdfClown.Documents.Contents
         }
 
         [PDF(VersionEnum.PDF13)]
-        public double? LineWidth
+        public float? LineWidth
         {
             get
             {
                 IPdfNumber lineWidthObject = (IPdfNumber)BaseDataObject[PdfName.LW];
-                return lineWidthObject != null ? lineWidthObject.RawValue : (double?)null;
+                return lineWidthObject != null ? lineWidthObject.FloatValue : (float?)null;
             }
             set => BaseDataObject[PdfName.LW] = PdfReal.Get(value);
         }
 
         [PDF(VersionEnum.PDF13)]
-        public double? MiterLimit
+        public float? MiterLimit
         {
             get
             {
                 IPdfNumber miterLimitObject = (IPdfNumber)BaseDataObject[PdfName.ML];
-                return miterLimitObject != null ? miterLimitObject.RawValue : (double?)null;
+                return miterLimitObject != null ? miterLimitObject.FloatValue : (float?)null;
             }
             set => BaseDataObject[PdfName.ML] = PdfReal.Get(value);
         }

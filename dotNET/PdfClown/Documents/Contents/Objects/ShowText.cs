@@ -120,7 +120,6 @@ namespace PdfClown.Documents.Contents.Objects
               TODO: I really dislike this solution -- it's a temporary hack until the event-driven
               parsing mechanism is implemented...
             */
-
             Font font = state.Font ?? Font.LatestFont;
             if (font == null)
                 return;
@@ -128,49 +127,48 @@ namespace PdfClown.Documents.Contents.Objects
             bool wordSpaceSupported = !(font is PdfType0Font);
             bool vertical = font.IsVertical;
 
-            double fontSize = state.FontSize;
-            double horizontalScaling = state.Scale;
-            double wordSpace = wordSpaceSupported ? state.WordSpace : 0;
-            double charSpace = state.CharSpace;
+            var fontSize = state.FontSize;
+            var horizontalScaling = state.Scale;
+            var wordSpace = wordSpaceSupported ? state.WordSpace : 0;
+            var charSpace = state.CharSpace;
             var charBBox = font.BoundingBox;
             SKMatrix fm = font.FontMatrix;
             SKMatrix ctm = state.Ctm;
             SKMatrix tm = state.TextState.Tm;
-
             //var encoding = font.GetEnoding();
             var context = state.Scanner.RenderContext;
 
             // put the text state parameters into matrix form
             var parameters = new SKMatrix(
-                (float)(fontSize * horizontalScaling), 0f, 0f,
-                0f, (float)fontSize, (float)state.Rise,
+                fontSize * horizontalScaling, 0f, 0f,
+                0f, fontSize, state.Rise,
                 0f, 0f, 1f);
 
             if (context != null)
             {
                 context.Save();
             }
-
+            var clip = context != null && state.RenderModeClip ? new SKPath() : null;
             var fill = context != null && state.RenderModeFill ? state.CreateFillPaint() : null;
             var stroke = context != null && state.RenderModeStroke ? state.CreateStrokePaint() : null;
 
             if (this is ShowTextToNextLine showTextToNextLine)
             {
-                double? newWordSpace = showTextToNextLine.WordSpace;
+                var newWordSpace = showTextToNextLine.WordSpace;
                 if (newWordSpace != null)
                 {
                     state.WordSpace = newWordSpace.Value;
                     if (wordSpaceSupported)
                     { wordSpace = newWordSpace.Value; }
                 }
-                double? newCharSpace = showTextToNextLine.CharSpace;
+                var newCharSpace = showTextToNextLine.CharSpace;
                 if (newCharSpace != null)
                 {
                     state.CharSpace = newCharSpace.Value;
                     charSpace = newCharSpace.Value;
                 }
                 tm = state.TextState.Tlm;
-                tm = tm.PreConcat(new SKMatrix { Values = new float[] { 1, 0, 0, 0, 1, (float)-state.Lead, 0, 0, 1 } });
+                state.TextState.Tlm = tm = tm.PreConcat(new SKMatrix { Values = new float[] { 1, 0, 0, 0, 1, (float)-state.Lead, 0, 0, 1 } });
             }
             else
             { tm = state.TextState.Tm; }
@@ -215,11 +213,15 @@ namespace PdfClown.Documents.Contents.Objects
                                 trm = trm.PreConcat(SKMatrix.MakeTranslation(v.X, v.Y));
                             }
                             trm = trm.PreConcat(fm);
-
+                            var usm = trm.PreConcat(SKMatrix.MakeScale(1, -1));
                             if (context != null && !(textChar == ' '))
                             {
                                 context.SetMatrix(trm);
-                                font.DrawChar(context, fill, stroke, textChar, code, codeBytes);
+                                var path = font.DrawChar(context, fill, stroke, textChar, code, codeBytes);
+                                if (clip != null && path != null)
+                                {
+                                    clip.AddPath(path, ref trm);
+                                }
                             }
 
                             var w = font.GetDisplacement(code);
@@ -232,8 +234,7 @@ namespace PdfClown.Documents.Contents.Objects
                                     : SKRect.Create(0, -charBBox.Bottom, width, charBBox.Height);
 
                                 var quad = new Quad(charBox);
-                                trm = trm.PreConcat(SKMatrix.MakeScale(1, -1));
-                                quad.Transform(ref trm);
+                                quad.Transform(ref usm);
                                 textScanner.ScanChar(textChar, quad);
                             }
                             /*
@@ -283,7 +284,14 @@ namespace PdfClown.Documents.Contents.Objects
             }
             state.TextState.Tm = tm;
             if (this is ShowTextToNextLine)
-            { state.TextState.Tlm = tm; }
+            {
+                //state.TextState.Tlm = tm; 
+            }
+
+            if (clip != null)
+            {
+                context.ClipPath(clip, SKClipOperation.Intersect, true);
+            }
         }
 
 

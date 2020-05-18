@@ -45,29 +45,37 @@ namespace PdfClown.Documents.Contents
         #region dynamic
         #region fields
         private IList<BlendModeEnum> blendMode;
-        private double charSpace;
         private SKMatrix ctm;
         private colors::Color fillColor;
         private colors::ColorSpace fillColorSpace;
-        private fonts::Font font;
-        private double fontSize;
-        private double lead;
+        private colors::Color strokeColor;
+        private colors::ColorSpace strokeColorSpace;
         private LineCapEnum lineCap;
         private LineDash lineDash;
         private LineJoinEnum lineJoin;
-        private double lineWidth;
-        private double miterLimit;
+        private float lineWidth;
+        private float miterLimit;
+
+        private fonts::Font font;
+        private float fontSize;
+
         private TextRenderModeEnum renderMode;
-        private double rise;
-        private double scale;
-        private colors::Color strokeColor;
-        private colors::ColorSpace strokeColorSpace;
-        private double wordSpace;
+        private float rise;
+        private float scale;
+
+        private float charSpace;
+        private float wordSpace;
+        private float lead;
+
         private TextGraphicsState textState;
         private ContentScanner scanner;
+        private static Stack<GraphicsState> stack;
         #endregion
 
         #region constructors
+        private GraphicsState()
+        { }
+
         internal GraphicsState(ContentScanner scanner)
         {
             this.scanner = scanner;
@@ -78,6 +86,92 @@ namespace PdfClown.Documents.Contents
         #region interface
         #region public
 
+        /**
+         <summary>Gets/Sets the current font [PDF:1.6:5.2].</summary>
+       */
+        public fonts::Font Font
+        {
+            get => font;
+            set => font = value;
+        }
+
+        /**
+          <summary>Gets/Sets the current font size [PDF:1.6:5.2].</summary>
+        */
+        public float FontSize
+        {
+            get => fontSize;
+            set => fontSize = value;
+        }
+
+        /**
+          <summary>Gets/Sets the current text rendering mode [PDF:1.6:5.2.5].</summary>
+        */
+        public TextRenderModeEnum RenderMode
+        {
+            get => renderMode;
+            set => renderMode = value;
+        }
+
+        /**
+          <summary>Gets/Sets the current text rise [PDF:1.6:5.2.6].</summary>
+        */
+        public float Rise
+        {
+            get => rise;
+            set => rise = value;
+        }
+
+        /**
+          <summary>Gets/Sets the current horizontal scaling [PDF:1.6:5.2.3], normalized to 1.</summary>
+        */
+        public float Scale
+        {
+            get => scale;
+            set => scale = value;
+        }
+
+        /**
+          <summary>Gets/Sets the current character spacing [PDF:1.6:5.2.1].</summary>
+        */
+        public float CharSpace
+        {
+            get => charSpace;
+            set => charSpace = value;
+        }
+
+        /**
+          <summary>Gets/Sets the current word spacing [PDF:1.6:5.2.2].</summary>
+        */
+        public float WordSpace
+        {
+            get => wordSpace;
+            set => wordSpace = value;
+        }
+
+        /**
+         <summary>Gets/Sets the current leading [PDF:1.6:5.2.4].</summary>
+       */
+        public float Lead
+        {
+            get => lead;
+            set => lead = value;
+        }
+
+        public bool RenderModeFill => RenderMode == TextRenderModeEnum.Fill
+                    || RenderMode == TextRenderModeEnum.FillStroke
+                    || RenderMode == TextRenderModeEnum.FillClip
+                    || RenderMode == TextRenderModeEnum.FillStrokeClip;
+
+        public bool RenderModeStroke => RenderMode == TextRenderModeEnum.Stroke
+                    || RenderMode == TextRenderModeEnum.FillStroke
+                    || RenderMode == TextRenderModeEnum.StrokeClip
+                    || RenderMode == TextRenderModeEnum.FillStrokeClip;
+
+        public bool RenderModeClip => RenderMode == TextRenderModeEnum.Clip
+                    || RenderMode == TextRenderModeEnum.FillClip
+                    || RenderMode == TextRenderModeEnum.StrokeClip
+                    || RenderMode == TextRenderModeEnum.FillStrokeClip;
 
         public TextGraphicsState TextState
         {
@@ -95,15 +189,6 @@ namespace PdfClown.Documents.Contents
         {
             get => blendMode;
             set => blendMode = value;
-        }
-
-        /**
-          <summary>Gets/Sets the current character spacing [PDF:1.6:5.2.1].</summary>
-        */
-        public double CharSpace
-        {
-            get => charSpace;
-            set => charSpace = value;
         }
 
         /**
@@ -134,26 +219,86 @@ namespace PdfClown.Documents.Contents
         }
 
         /**
-          <summary>Gets/Sets the current font [PDF:1.6:5.2].</summary>
+          <summary>Gets/Sets the current line cap style [PDF:1.6:4.3.2].</summary>
         */
-        public fonts::Font Font
+        public LineCapEnum LineCap
         {
-            get => font;
-            set => font = value;
+            get => lineCap;
+            set => lineCap = value;
         }
 
         /**
-          <summary>Gets/Sets the current font size [PDF:1.6:5.2].</summary>
+          <summary>Gets/Sets the current line dash pattern [PDF:1.6:4.3.2].</summary>
         */
-        public double FontSize
+        public LineDash LineDash
         {
-            get => fontSize;
-            set => fontSize = value;
+            get => lineDash;
+            set => lineDash = value;
         }
 
         /**
-          <summary>Gets the initial current transformation matrix.</summary>
+          <summary>Gets/Sets the current line join style [PDF:1.6:4.3.2].</summary>
         */
+        public LineJoinEnum LineJoin
+        {
+            get => lineJoin;
+            set => lineJoin = value;
+        }
+
+        /**
+          <summary>Gets/Sets the current line width [PDF:1.6:4.3.2].</summary>
+        */
+        public float LineWidth
+        {
+            get => lineWidth;
+            set => lineWidth = value;
+        }
+
+        /**
+          <summary>Gets/Sets the current miter limit [PDF:1.6:4.3.2].</summary>
+        */
+        public float MiterLimit
+        {
+            get => miterLimit;
+            set => miterLimit = value;
+        }
+
+        /**
+          <summary>Gets the scanner associated to this state.</summary>
+        */
+        public ContentScanner Scanner => scanner;
+
+        /**
+          <summary>Gets/Sets the current color for stroking operations [PDF:1.6:4.5.1].</summary>
+        */
+        public colors::Color StrokeColor
+        {
+            get => strokeColor;
+            set => strokeColor = value;
+        }
+
+        /**
+          <summary>Gets/Sets the current color space for stroking operations [PDF:1.6:4.5.1].</summary>
+        */
+        public colors::ColorSpace StrokeColorSpace
+        {
+            get => strokeColorSpace;
+            set => strokeColorSpace = value;
+        }
+
+        public float? StrokeAlpha { get; set; }
+
+        public float? FillAlpha { get; set; }
+
+        public bool AlphaIsShape { get; set; }
+
+        public SoftMask SMask { get; set; }
+
+        public colors.Shading Shading { get; internal set; }
+
+        /**
+  <summary>Gets the initial current transformation matrix.</summary>
+*/
         public SKMatrix GetInitialCtm()
         {
             return GetInitialMatrix(Scanner.ContentContext, Scanner.CanvasSize);
@@ -199,14 +344,14 @@ namespace PdfClown.Documents.Contents
             var paint = StrokeColorSpace?.GetPaint(StrokeColor, StrokeAlpha);
             if (paint != null)
             {
-                paint.TextSize = (float)FontSize;
-                paint.TextScaleX = (float)Scale;
+                //paint.TextSize = (float)FontSize;
+                //paint.TextScaleX = (float)Scale;
 
                 paint.Style = SKPaintStyle.Stroke;
-                paint.StrokeWidth = (float)LineWidth;
+                paint.StrokeWidth = LineWidth;
                 paint.StrokeCap = LineCap.ToSkia();
                 paint.StrokeJoin = LineJoin.ToSkia();
-                paint.StrokeMiter = (float)MiterLimit;
+                paint.StrokeMiter = MiterLimit;
 
                 LineDash?.Apply(paint);
 
@@ -226,8 +371,8 @@ namespace PdfClown.Documents.Contents
             var paint = FillColorSpace?.GetPaint(FillColor, FillAlpha);
             if (paint != null)
             {
-                paint.TextSize = (float)FontSize;
-                paint.TextScaleX = (float)Scale;
+                //paint.TextSize = (float)FontSize;
+                //paint.TextScaleX = (float)Scale;
 
                 if ((BlendMode?.Count ?? 0) > 0)
                 {
@@ -359,138 +504,25 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        /**
-          <summary>Gets/Sets the current leading [PDF:1.6:5.2.4].</summary>
-        */
-        public double Lead
+
+        public void Save()
         {
-            get => lead;
-            set => lead = value;
+            if (stack == null)
+            {
+                stack = new Stack<GraphicsState>();
+            }
+            var cloned = (GraphicsState)Clone();
+            stack.Push(cloned);
         }
 
-        /**
-          <summary>Gets/Sets the current line cap style [PDF:1.6:4.3.2].</summary>
-        */
-        public LineCapEnum LineCap
+        public void Restore()
         {
-            get => lineCap;
-            set => lineCap = value;
+            if (stack != null && stack.Count > 0)
+            {
+                var poped = stack.Pop();
+                poped.CopyTo(this);
+            }
         }
-
-        /**
-          <summary>Gets/Sets the current line dash pattern [PDF:1.6:4.3.2].</summary>
-        */
-        public LineDash LineDash
-        {
-            get => lineDash;
-            set => lineDash = value;
-        }
-
-        /**
-          <summary>Gets/Sets the current line join style [PDF:1.6:4.3.2].</summary>
-        */
-        public LineJoinEnum LineJoin
-        {
-            get => lineJoin;
-            set => lineJoin = value;
-        }
-
-        /**
-          <summary>Gets/Sets the current line width [PDF:1.6:4.3.2].</summary>
-        */
-        public double LineWidth
-        {
-            get => lineWidth;
-            set => lineWidth = value;
-        }
-
-        /**
-          <summary>Gets/Sets the current miter limit [PDF:1.6:4.3.2].</summary>
-        */
-        public double MiterLimit
-        {
-            get => miterLimit;
-            set => miterLimit = value;
-        }
-
-        /**
-          <summary>Gets/Sets the current text rendering mode [PDF:1.6:5.2.5].</summary>
-        */
-        public TextRenderModeEnum RenderMode
-        {
-            get => renderMode;
-            set => renderMode = value;
-        }
-
-        /**
-          <summary>Gets/Sets the current text rise [PDF:1.6:5.2.6].</summary>
-        */
-        public double Rise
-        {
-            get => rise;
-            set => rise = value;
-        }
-
-        /**
-          <summary>Gets/Sets the current horizontal scaling [PDF:1.6:5.2.3], normalized to 1.</summary>
-        */
-        public double Scale
-        {
-            get => scale;
-            set => scale = value;
-        }
-
-        /**
-          <summary>Gets the scanner associated to this state.</summary>
-        */
-        public ContentScanner Scanner => scanner;
-
-        /**
-          <summary>Gets/Sets the current color for stroking operations [PDF:1.6:4.5.1].</summary>
-        */
-        public colors::Color StrokeColor
-        {
-            get => strokeColor;
-            set => strokeColor = value;
-        }
-
-        /**
-          <summary>Gets/Sets the current color space for stroking operations [PDF:1.6:4.5.1].</summary>
-        */
-        public colors::ColorSpace StrokeColorSpace
-        {
-            get => strokeColorSpace;
-            set => strokeColorSpace = value;
-        }
-
-
-
-        /**
-          <summary>Gets/Sets the current word spacing [PDF:1.6:5.2.2].</summary>
-        */
-        public double WordSpace
-        {
-            get => wordSpace;
-            set => wordSpace = value;
-        }
-
-        public double HorizontalScale { get; set; }
-
-        public bool RenderModeFill => RenderMode == TextRenderModeEnum.Fill
-                    || RenderMode == TextRenderModeEnum.FillStroke
-                    || RenderMode == TextRenderModeEnum.FillClip
-                    || RenderMode == TextRenderModeEnum.FillStrokeClip;
-
-        public bool RenderModeStroke => RenderMode == TextRenderModeEnum.Stroke
-                    || RenderMode == TextRenderModeEnum.FillStroke
-                    || RenderMode == TextRenderModeEnum.StrokeClip
-                    || RenderMode == TextRenderModeEnum.FillStrokeClip;
-
-        public float? StrokeAlpha { get; set; }
-        public float? FillAlpha { get; set; }
-        public bool AlphaIsShape { get; set; }
-
-        public SoftMask SMask { get; set; }
 
         #endregion
 
@@ -506,27 +538,28 @@ namespace PdfClown.Documents.Contents
         {
             // State parameters initialization.
             blendMode = ExtGState.DefaultBlendMode;
-            charSpace = 0;
             Ctm = GetInitialCtm();
             fillColor = colors::DeviceGrayColor.Default;
             fillColorSpace = colors::DeviceGrayColorSpace.Default;
-            font = null;
-            fontSize = 0;
-            lead = 0;
+            strokeColor = colors::DeviceGrayColor.Default;
+            strokeColorSpace = colors::DeviceGrayColorSpace.Default;
             lineCap = LineCapEnum.Butt;
             lineDash = new LineDash();
             lineJoin = LineJoinEnum.Miter;
             lineWidth = 0;
             miterLimit = 10;
-            renderMode = TextRenderModeEnum.Fill;
+            font = null;
+            fontSize = 0;
             rise = 0;
             scale = 1;
-            strokeColor = colors::DeviceGrayColor.Default;
-            strokeColorSpace = colors::DeviceGrayColorSpace.Default;
-            TextState = new TextGraphicsState();
+            charSpace = 0;
             wordSpace = 0;
+            lead = 0;
+            renderMode = TextRenderModeEnum.Fill;
+            TextState = new TextGraphicsState();
             SMask = null;
-
+            StrokeAlpha = null;
+            FillAlpha = null;
             // Rendering context initialization.
             Scanner.RenderContext?.SetMatrix(ctm);
         }
@@ -536,17 +569,40 @@ namespace PdfClown.Documents.Contents
         */
         public object Clone()
         {
-            GraphicsState clone;
+            GraphicsState clone = new GraphicsState
             {
-                // Shallow copy.
-                clone = (GraphicsState)MemberwiseClone();
-
-                clone.TextState = new TextGraphicsState
+                scanner = scanner,
+                //Text
+                font = font,
+                fontSize = fontSize,
+                renderMode = renderMode,
+                rise = rise,
+                scale = scale,
+                charSpace = charSpace,
+                wordSpace = wordSpace,
+                lead = lead,
+                //Paint
+                blendMode = blendMode,
+                ctm = ctm,
+                fillColor = fillColor,
+                fillColorSpace = fillColorSpace,
+                strokeColor = colors::DeviceGrayColor.Default,
+                strokeColorSpace = colors::DeviceGrayColorSpace.Default,
+                lineCap = lineCap,
+                lineDash = lineDash,// != null ? new LineDash(lineDash.DashArray, lineDash.DashPhase),
+                lineJoin = lineJoin,
+                lineWidth = 0,
+                miterLimit = 10,
+                SMask = SMask,
+                AlphaIsShape = AlphaIsShape,
+                StrokeAlpha = StrokeAlpha,
+                FillAlpha = FillAlpha,
+                TextState = new TextGraphicsState
                 {
                     Tm = textState.Tm,
                     Tlm = textState.Tlm
-                };
-            }
+                }
+            };
             return clone;
         }
 
@@ -556,26 +612,28 @@ namespace PdfClown.Documents.Contents
         */
         public void CopyTo(GraphicsState state)
         {
-            state.blendMode = blendMode;
-            state.charSpace = charSpace;
             state.Ctm = ctm;
-            state.fillColor = fillColor;
-            state.fillColorSpace = fillColorSpace;
+            //Text
             state.font = font;
             state.fontSize = fontSize;
+            state.renderMode = renderMode;
+            state.rise = rise;
+            state.scale = scale;
+            state.charSpace = charSpace;
+            state.wordSpace = wordSpace;
             state.lead = lead;
+            //Paint
+            state.blendMode = blendMode;
+            state.fillColor = fillColor;
+            state.fillColorSpace = fillColorSpace;
+            state.strokeColor = strokeColor;
+            state.strokeColorSpace = strokeColorSpace;
             state.lineCap = lineCap;
             state.lineDash = lineDash;
             state.lineJoin = lineJoin;
             state.lineWidth = lineWidth;
             state.miterLimit = miterLimit;
-            state.renderMode = renderMode;
-            state.rise = rise;
-            state.scale = scale;
-            state.strokeColor = strokeColor;
-            state.strokeColorSpace = strokeColorSpace;
             state.TextState = textState;
-            state.wordSpace = wordSpace;
             state.SMask = SMask;
             state.AlphaIsShape = AlphaIsShape;
             state.FillAlpha = FillAlpha;

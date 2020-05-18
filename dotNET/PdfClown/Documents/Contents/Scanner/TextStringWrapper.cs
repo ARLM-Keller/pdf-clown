@@ -85,7 +85,7 @@ namespace PdfClown.Documents.Contents.Scanner
                 }
             }
         }
-        
+
         public override SKRect? Box => Quad?.GetBounds();
 
         public Quad? Quad

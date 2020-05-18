@@ -506,13 +506,13 @@ namespace PdfClown.Documents.Contents.Fonts
             return new SKPoint(GetWidth(code) / 1000, 0);
         }
 
-        public virtual void DrawChar(SKCanvas context, SKPaint fill, SKPaint stroke, char textChar, int code, byte[] codeBytes)
+        public virtual SKPath DrawChar(SKCanvas context, SKPaint fill, SKPaint stroke, char textChar, int code, byte[] codeBytes)
         {
             var path = GetNormalizedPath(code);
             if (path == null)
             {
                 Debug.WriteLine($"info: no Glyph for Code: {code}  Char: '{textChar}'");
-                return;
+                return null;
             }
 
             //if (!IsEmbedded && !IsVertical && !IsStandard14 && HasExplicitWidth(code))
@@ -536,6 +536,7 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 context.DrawPath(path, stroke);
             }
+            return path;
         }
 
         public virtual int ToUnicode(int code, GlyphMapping customGlyphList)
@@ -887,9 +888,9 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             return bbox != null && (
                 bbox.Left.CompareTo(0) != 0 ||
-                bbox.Bottom.CompareTo(0) != 0 ||
+                bbox.Top.CompareTo(0) != 0 ||
                 bbox.Right.CompareTo(0) != 0 ||
-                bbox.Top.CompareTo(0) != 0
+                bbox.Bottom.CompareTo(0) != 0
             );
         }
 

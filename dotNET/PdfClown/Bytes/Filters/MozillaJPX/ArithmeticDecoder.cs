@@ -227,8 +227,20 @@ namespace PdfClown.Bytes.Filters
             } while ((a & 0x8000) == 0);
             this.a = a;
 
-            contexts[pos] = (sbyte)((cx_index << 1) | cx_mps);
+            contexts[pos] = ToSByte((cx_index << 1) | cx_mps);
             return d;
+        }
+        sbyte ToSByte(int v)
+        {
+            if (v > 127)
+            {
+                return 127;
+            }
+            if (v < -127)
+            {
+                return -127;
+            }
+            return (sbyte)v;
         }
     }
 

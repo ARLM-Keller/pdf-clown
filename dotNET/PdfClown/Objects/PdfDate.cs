@@ -56,6 +56,7 @@ namespace PdfClown.Objects
         */
         public static DateTime? ToDate(string value)
         {
+            value = value.Trim();
             if (string.Equals(value, "D:", StringComparison.Ordinal))
                 return null;
             // 1. Normalization.
@@ -63,7 +64,7 @@ namespace PdfClown.Objects
             try
             {
                 int length = value.Length;
-                // Year (YYYY).
+                // Year (YYYY). 
                 dateBuilder.Append(value.Substring(2, 4)); // NOTE: Skips the "D:" prefix; Year is mandatory.
                 // Month (MM).
                 dateBuilder.Append(length < 8 ? "01" : value.Substring(6, 2));

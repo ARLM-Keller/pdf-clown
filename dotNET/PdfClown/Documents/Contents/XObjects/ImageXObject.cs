@@ -74,7 +74,7 @@ namespace PdfClown.Documents.Contents.XObjects
         /**
           <summary>Gets the number of bits per color component.</summary>
         */
-        public int BitsPerComponent => (bitsPerComponent ?? (bitsPerComponent = ((PdfInteger)BaseDataObject.Header[PdfName.BitsPerComponent]).RawValue)).Value;
+        public int BitsPerComponent => (bitsPerComponent ?? (bitsPerComponent = ((PdfInteger)BaseDataObject.Header[PdfName.BitsPerComponent])?.RawValue ?? 8)).Value;
 
         /**
           <summary>Gets the color space in which samples are specified.</summary>

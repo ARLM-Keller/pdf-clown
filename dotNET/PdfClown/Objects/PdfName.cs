@@ -702,6 +702,8 @@ namespace PdfClown.Objects
         {
             if (@object is PdfName objName)
                 return string.Equals(RawValue, objName.RawValue, StringComparison.Ordinal);
+            else if (@object is string objString)
+                return string.Equals(RawValue, objString, StringComparison.Ordinal);
             return base.Equals(@object);
         }
 

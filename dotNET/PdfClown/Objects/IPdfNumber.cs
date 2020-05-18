@@ -30,8 +30,7 @@ namespace PdfClown.Objects
     /**
       <summary>PDF number interface.</summary>
     */
-    public interface IPdfNumber
-      : IPdfSimpleObject<double>
+    public interface IPdfNumber : IPdfSimpleObject<double>, IComparable
     {
         /**
           <summary>Gets the double-precision floating-point representation of the value.</summary>

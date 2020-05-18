@@ -110,20 +110,6 @@ namespace PdfClown.Objects
 
         #region interface
         #region public
-        public override PdfObject Clone(File context)
-        { return this; } // NOTE: Simple objects are immutable.
-
-        public override bool Equals(object @object)
-        {
-            return base.Equals(@object)
-              || (@object != null
-                && @object.GetType().Equals(GetType())
-                && ((PdfSimpleObject<TValue>)@object).RawValue.Equals(RawValue));
-        }
-
-        public override int GetHashCode()
-        { return RawValue.GetHashCode(); }
-
         public sealed override PdfObject Parent
         {
             get => null;  // NOTE: As simple objects are immutable, no parent can be associated.
@@ -138,12 +124,6 @@ namespace PdfClown.Objects
             get => value;
             protected set => this.value = value;
         }
-
-        public override PdfObject Swap(PdfObject other)
-        { throw new NotSupportedException("Immutable object"); }
-
-        public override string ToString()
-        { return Value.ToString(); }
 
         public override bool Updateable
         {
@@ -174,6 +154,27 @@ namespace PdfClown.Objects
             get => false;
             set {/* NOOP */}
         }
+
+        public override PdfObject Clone(File context)
+        { return this; } // NOTE: Simple objects are immutable.
+
+        public override bool Equals(object @object)
+        {
+            return base.Equals(@object)
+              || (@object != null
+                && @object.GetType().Equals(GetType())
+                && ((PdfSimpleObject<TValue>)@object).RawValue.Equals(RawValue));
+        }
+
+        public override int GetHashCode()
+        { return RawValue.GetHashCode(); }
+
+        public override PdfObject Swap(PdfObject other)
+        { throw new NotSupportedException("Immutable object"); }
+
+        public override string ToString()
+        { return Value.ToString(); }
+
         #endregion
         #endregion
         #endregion

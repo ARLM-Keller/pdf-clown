@@ -50,21 +50,22 @@ namespace PdfClown.Objects
         {
             if (rectangle.Count > 3)
             {
-                if (rectangle[0].CompareTo(rectangle[2]) > 0)
+                if (rectangle.GetNumber(0).CompareTo(rectangle.GetNumber(2)) > 0)
                 {
-                    PdfDirectObject leftCoordinate = rectangle[2];
-                    rectangle[2] = rectangle[0];
-                    rectangle[0] = leftCoordinate;
+                    var leftCoordinate = rectangle.GetNumber(2);
+                    rectangle[2] = (PdfDirectObject)rectangle.GetNumber(0);
+                    rectangle[0] = (PdfDirectObject)leftCoordinate;
                 }
-                if (rectangle[1].CompareTo(rectangle[3]) > 0)
+                if (rectangle.GetNumber(1).CompareTo(rectangle.GetNumber(3)) > 0)
                 {
-                    PdfDirectObject bottomCoordinate = rectangle[3];
-                    rectangle[3] = rectangle[1];
-                    rectangle[1] = bottomCoordinate;
+                    var bottomCoordinate = rectangle.GetNumber(3);
+                    rectangle[3] = (PdfDirectObject)rectangle.GetNumber(1);
+                    rectangle[1] = (PdfDirectObject)bottomCoordinate;
                 }
             }
             return rectangle;
         }
+
         #endregion
         #endregion
         #endregion
@@ -97,32 +98,32 @@ namespace PdfClown.Objects
 
         #region interface
         #region public
-        public double Bottom
+        public double Top
         {
-            get => ((IPdfNumber)BaseDataObject[1]).RawValue;
+            get => BaseDataObject.GetNumber(1).RawValue;
             set => BaseDataObject[1] = PdfReal.Get(value);
         }
 
         public double Left
         {
-            get => ((IPdfNumber)BaseDataObject[0]).RawValue;
+            get => BaseDataObject.GetNumber(0).RawValue;
             set => BaseDataObject[0] = PdfReal.Get(value);
         }
 
         public double Right
         {
-            get => ((IPdfNumber)BaseDataObject[2]).RawValue;
+            get => BaseDataObject.GetNumber(2).RawValue;
             set => BaseDataObject[2] = PdfReal.Get(value);
         }
 
-        public double Top
+        public double Bottom
         {
-            get => ((IPdfNumber)BaseDataObject[3]).RawValue;
+            get => BaseDataObject.GetNumber(3).RawValue;
             set => BaseDataObject[3] = PdfReal.Get(value);
         }
 
         public SKRect ToRect()
-        { return SKRect.Create((float)X, (float)Y, (float)Width, (float)Height); }
+        { return new SKRect((float)Left, (float)Top, (float)Right, (float)Bottom); }
 
         public double Width
         {
@@ -132,8 +133,8 @@ namespace PdfClown.Objects
 
         public double Height
         {
-            get => (Top - Bottom);
-            set => Bottom = Top - value;
+            get => (Bottom - Top);
+            set => Top = Bottom - value;
         }
 
         public double X
@@ -144,8 +145,8 @@ namespace PdfClown.Objects
 
         public double Y
         {
-            get => Bottom;
-            set => Bottom = value;
+            get => Top;
+            set => Top = value;
         }
         #endregion
         #endregion

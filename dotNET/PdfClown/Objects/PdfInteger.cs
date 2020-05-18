@@ -63,6 +63,9 @@ namespace PdfClown.Objects
         public override int CompareTo(PdfDirectObject obj)
         { return PdfNumber.Compare(this, obj); }
 
+        public int CompareTo(object obj)
+        { return PdfNumber.Compare(this, obj); }
+
         public override bool Equals(object obj)
         { return PdfNumber.Equal(this, obj); }
 

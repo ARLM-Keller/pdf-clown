@@ -156,6 +156,22 @@ namespace PdfClown.Objects
             internal set => parent = value;
         }
 
+        public override bool Updateable
+        {
+            get => updateable;
+            set => updateable = value;
+        }
+
+        public override bool Updated
+        {
+            get => updated;
+            protected internal set => updated = value;
+        }
+
+        public IPdfNumber GetNumber(int index)
+        {
+            return (IPdfNumber)Resolve(index);
+        }
         /**
           <summary>Gets the dereferenced value corresponding to the given index.</summary>
           <remarks>This method takes care to resolve the value returned by
@@ -201,18 +217,6 @@ namespace PdfClown.Objects
                 buffer.Append("]");
             }
             return buffer.ToString();
-        }
-
-        public override bool Updateable
-        {
-            get => updateable;
-            set => updateable = value;
-        }
-
-        public override bool Updated
-        {
-            get => updated;
-            protected internal set => updated = value;
         }
 
         public override void WriteTo(IOutputStream stream, File context)

@@ -88,7 +88,7 @@ namespace PdfClown.Objects
         {
             protected set
             {
-                unicoded = (value.Length >= 2 && value[0] == (byte)254 && value[1] == (byte)255);
+                unicoded = value != null && (value.Length >= 2 && value[0] == (byte)254 && value[1] == (byte)255);
                 base.RawValue = value;
             }
         }

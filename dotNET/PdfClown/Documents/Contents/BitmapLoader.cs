@@ -65,11 +65,29 @@ namespace PdfClown.Documents.Contents
 
                 if (imageObject.SMask != null)
                 {
+                    var info = bitmap.Info;
                     BitmapLoader smaskLoader = new BitmapLoader(imageObject.SMask, null);
-
                     var smask = smaskLoader.LoadSKMask();
+                    //bitmap.InstallMaskPixels(smask); //Skia bug
+                    //vs
+                    for (int y = 0; y < info.Height; y++)
+                    {
+                        var row = y * info.Width;
+                        for (int x = 0; x < info.Width; x++)
+                        {
+                            var index = row + x;
+                            var alpha = smask.GetAddr8(x, y);
+                            if (smaskLoader.decode[0] == 1)
+                            {
+                                alpha = (byte)(255 - alpha);
+                            }
+                            var color = bitmap.GetPixel(x, y).WithAlpha(alpha);
+                            bitmap.SetPixel(x, y, color);
+                        }
+                    }
+                    smask.FreeImage();
 
-                    bitmap.InstallMaskPixels(smask);
+
                 }
                 return bitmap;
             }
@@ -231,8 +249,7 @@ namespace PdfClown.Documents.Contents
             }
             if (!imageMask)
             {
-
-                colorSpace = image.ColorSpace;
+                colorSpace = image.ColorSpace ?? DeviceRGBColorSpace.Default;
                 componentsCount = colorSpace.ComponentCount;
                 iccColorSpace = colorSpace as ICCBasedColorSpace;
                 if (colorSpace is IndexedColorSpace indexedColorSpace)
@@ -272,9 +289,11 @@ namespace PdfClown.Documents.Contents
                     //if (emptyBytes)
                     //    byteIndex += y;
                     var bitIndex = 7 - x % 8;
-                    var value = ((byteValue >> bitIndex) & 1) == 0
-                        ? decode[0] == 0 ? 0 : 1
-                        : decode[0] == 0 ? 1 : 0;
+                    var value = ((byteValue >> bitIndex) & 1) == 0 ? 0 : 1;
+                    if (decode[0] == 1)
+                    {
+                        value = value == 0 ? 1 : 0;
+                    }
                     var interpolate = indexed ? value : min + (value * (interpolateConst));
                     components[i] = interpolate;
                     componentIndex++;
@@ -288,8 +307,12 @@ namespace PdfClown.Documents.Contents
                     var byteValue = buffer[byteIndex];
                     //if (emptyBytes)
                     //    byteIndex += y;
-                    var bitIndex = 6-(x % 4)*2;
+                    var bitIndex = 6 - (x % 4) * 2;
                     var value = ((byteValue >> bitIndex) & 0b11);
+                    if (decode[0] == 1)
+                    {
+                        value = 3 - value;
+                    }
                     var interpolate = indexed ? value : min + (value * (interpolateConst));
                     components[i] = interpolate;
                     componentIndex++;
@@ -300,11 +323,17 @@ namespace PdfClown.Documents.Contents
                 for (int i = 0; i < componentsCount; i++)
                 {
                     var value = componentIndex < buffer.Length ? buffer[componentIndex] : 0;
+                    if (decode[0] == 1)
+                    {
+                        value = 255 - value;
+                    }
                     var interpolate = indexed ? value : min + (value * (interpolateConst));
                     components[i] = interpolate;
                     componentIndex++;
                 }
             }
+            else
+            { }
         }
 
         public SKBitmap Load()
@@ -446,10 +475,18 @@ namespace PdfClown.Documents.Contents
 
                         var bitIndex = 7 - x % 8;
                         value = ((byteValue >> bitIndex) & 1) == 0 ? (byte)0 : (byte)255;
+                        if (decode[0] == 1)
+                        {
+                            value = value == 0 ? (byte)255 : (byte)0;
+                        }
                     }
                     else
                     {
                         value = buffer[index];
+                        if (decode[0] == 1)
+                        {
+                            value = (byte)(255 - value);
+                        }
                     }
                     raster[index] = value;// (int)(uint)skColor.WithAlpha(value);
                 }

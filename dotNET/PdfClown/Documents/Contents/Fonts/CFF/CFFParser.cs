@@ -404,13 +404,14 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 // see PDFBOX-1522
                 sb.Append("0");
             }
-            if (sb.Length == 0)
+            var text = sb.ToString();
+            if (text.Length == 0 || text == "E-0")
             {
                 return 0f;
             }
             try
             {
-                return float.Parse(sb.ToString(), CultureInfo.InvariantCulture);
+                return float.Parse(sb.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture);
             }
             catch (Exception ex)
             {

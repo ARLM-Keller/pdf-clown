@@ -199,8 +199,15 @@ namespace PdfClown.Documents.Contents.XObjects
                     }
                     else
                     {
-                        var backgroundColorArray = mask.BackColor;
                         var colorSpace = Group.ColorSpace;
+
+                        var backgroundColorArray = (IList<PdfDirectObject>)mask.BackColor;
+                        if (backgroundColorArray == null)
+                        {
+                            backgroundColorArray = new List<PdfDirectObject>();
+                            for (int i = 0; i < colorSpace.ComponentCount; i++)
+                                backgroundColorArray.Add(new PdfReal(0));
+                        }
                         var backgroundColor = colorSpace.GetColor(backgroundColorArray, null);
                         var backgroundColorSK = colorSpace.GetSKColor(backgroundColor, 0);
 

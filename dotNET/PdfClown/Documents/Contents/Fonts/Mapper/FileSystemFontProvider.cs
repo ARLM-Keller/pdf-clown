@@ -208,7 +208,20 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 try
                 {
-                    // todo JH: we don't yet support loading CFF fonts from OTC collections
+                    if (file.Name.EndsWith(".ttc", StringComparison.OrdinalIgnoreCase))
+                    {
+                        //@SuppressWarnings("squid:S2095")
+                        // ttc not closed here because it is needed later when ttf is accessed,
+                        // e.g. rendering PDF with non-embedded font which is in ttc file in our font directory
+                        TrueTypeCollection ttc = new TrueTypeCollection(file);
+                        TrueTypeFont ttf = ttc.GetFontByName(postScriptName);
+                        if (ttf == null)
+                        {
+                            ttc.Dispose();
+                            throw new IOException("Font " + postScriptName + " not found in " + file);
+                        }
+                        return (OpenTypeFont)ttf;
+                    }
 
                     OTFParser parser = new OTFParser(false, true);
                     using (var stream = file.OpenRead())

@@ -128,13 +128,13 @@ namespace PdfClown.Bytes.Filters
 
         #region interface
         #region public
-        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             byte[] decodedBlock = new byte[4];
             byte[] encodedBlock = new byte[5];
             uint tuple = 0;
 
-            string dataString = Encoding.ASCII.GetString(data).Trim();
+            string dataString = Encoding.ASCII.GetString(data.GetBuffer()).Trim();
 
             // Stripping prefix and suffix...
             if (dataString.StartsWith(PrefixMark))
@@ -206,7 +206,7 @@ namespace PdfClown.Bytes.Filters
             return stream.ToArray();
         }
 
-        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             byte[] decodedBlock = new byte[4];
             byte[] encodedBlock = new byte[5];
@@ -219,7 +219,7 @@ namespace PdfClown.Bytes.Filters
 
             int count = 0;
             uint tuple = 0;
-            foreach (byte dataByte in data)
+            foreach (byte dataByte in data.GetBuffer())
             {
                 if (count >= decodedBlock.Length - 1)
                 {

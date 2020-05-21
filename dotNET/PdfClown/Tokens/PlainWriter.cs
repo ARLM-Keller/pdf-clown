@@ -53,17 +53,13 @@ namespace PdfClown.Tokens
 
         #region dynamic
         #region constructors
-        internal PlainWriter(
-          Files.File file,
-          IOutputStream stream
-          ) : base(file, stream)
+        internal PlainWriter(Files.File file, IOutputStream stream) : base(file, stream)
         { }
         #endregion
 
         #region interface
         #region protected
-        protected override void WriteIncremental(
-          )
+        protected override void WriteIncremental()
         {
             // 1. Original content (head, body and previous trailer).
             FileParser parser = file.Reader.Parser;
@@ -155,8 +151,7 @@ namespace PdfClown.Tokens
             WriteTrailer(startxref, xrefSize, parser);
         }
 
-        protected override void WriteLinearized(
-          )
+        protected override void WriteLinearized()
         { throw new NotImplementedException(); }
 
         protected override void WriteStandard()
@@ -220,11 +215,7 @@ namespace PdfClown.Tokens
         #endregion
 
         #region private
-        private StringBuilder AppendXRefEntry(
-          StringBuilder xrefBuilder,
-          PdfReference reference,
-          long offset
-          )
+        private StringBuilder AppendXRefEntry(StringBuilder xrefBuilder, PdfReference reference, long offset)
         {
             string usage;
             switch (reference.IndirectObject.XrefEntry.Usage)
@@ -250,12 +241,7 @@ namespace PdfClown.Tokens
           <param name="entryCount">Number of entries in the subsection.</param>
           <param name="xrefSubBuilder">Cross-reference subsection entries.</param>
         */
-        private StringBuilder AppendXRefSubsection(
-          StringBuilder xrefBuilder,
-          int firstObjectNumber,
-          int entryCount,
-          StringBuilder xrefSubBuilder
-          )
+        private StringBuilder AppendXRefSubsection(StringBuilder xrefBuilder, int firstObjectNumber, int entryCount, StringBuilder xrefSubBuilder)
         { return AppendXRefSubsectionIndexer(xrefBuilder, firstObjectNumber, entryCount).Append(xrefSubBuilder); }
 
         /**
@@ -264,11 +250,7 @@ namespace PdfClown.Tokens
           <param name="firstObjectNumber">Object number of the first object in the subsection.</param>
           <param name="entryCount">Number of entries in the subsection.</param>
         */
-        private StringBuilder AppendXRefSubsectionIndexer(
-          StringBuilder xrefBuilder,
-          int firstObjectNumber,
-          int entryCount
-          )
+        private StringBuilder AppendXRefSubsectionIndexer(StringBuilder xrefBuilder, int firstObjectNumber, int entryCount)
         { return xrefBuilder.Append(firstObjectNumber).Append(Symbol.Space).Append(entryCount).Append(Symbol.LineFeed); }
 
         /**
@@ -279,11 +261,7 @@ namespace PdfClown.Tokens
             as defined by the combination of the original section and all update sections.</param>
           <param name="parser">File parser.</param>
         */
-        private void WriteTrailer(
-          long startxref,
-          int xrefSize,
-          FileParser parser
-          )
+        private void WriteTrailer(long startxref, int xrefSize, FileParser parser)
         {
             // 1. Header.
             stream.Write(TrailerChunk);

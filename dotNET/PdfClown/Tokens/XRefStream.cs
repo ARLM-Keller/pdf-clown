@@ -40,9 +40,7 @@ namespace PdfClown.Tokens
       <summary>Cross-reference stream containing cross-reference information [PDF:1.6:3.4.7].</summary>
       <remarks>It is alternative to the classic cross-reference table.</remarks>
     */
-    public sealed class XRefStream
-      : PdfStream,
-        IDictionary<int, XRefEntry>
+    public sealed class XRefStream : PdfStream, IDictionary<int, XRefEntry>
     {
         #region static
         #region fields
@@ -82,20 +80,11 @@ namespace PdfClown.Tokens
         #endregion
 
         #region constructors
-        public XRefStream(
-          File file
-          ) : this(
-            new PdfDictionary(
-              new PdfName[]
-                {PdfName.Type},
-              new PdfDirectObject[]
-                {PdfName.XRef}
-              ),
-            new Bytes.Buffer()
-            )
+        public XRefStream(File file)
+            : this(new PdfDictionary(new PdfName[] { PdfName.Type }, new PdfDirectObject[] { PdfName.XRef }), new Bytes.Buffer())
         {
             PdfDictionary header = Header;
-            foreach (KeyValuePair<PdfName, PdfDirectObject> entry in file.Trailer)
+            foreach (var entry in file.Trailer)
             {
                 PdfName key = entry.Key;
                 if (key.Equals(PdfName.Root)
@@ -105,19 +94,14 @@ namespace PdfClown.Tokens
             }
         }
 
-        public XRefStream(
-          PdfDictionary header,
-          IBuffer body
-          ) : base(header, body)
+        public XRefStream(PdfDictionary header, IBuffer body)
+            : base(header, body)
         { }
         #endregion
 
         #region interface
         #region public
-        public override PdfObject Accept(
-          IVisitor visitor,
-          object data
-          )
+        public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
         /**
@@ -134,10 +118,7 @@ namespace PdfClown.Tokens
             }
         }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          File context
-          )
+        public override void WriteTo(IOutputStream stream, File context)
         {
             if (entries != null)
             { Flush(stream); }
@@ -146,36 +127,30 @@ namespace PdfClown.Tokens
         }
 
         #region IDictionary
-        public void Add(
-          int key,
-          XRefEntry value
-          )
-        { Entries.Add(key, value); }
+        public void Add(int key, XRefEntry value)
+        {
+            Entries.Add(key, value);
+        }
 
-        public bool ContainsKey(
-          int key
-          )
-        { return Entries.ContainsKey(key); }
+        public bool ContainsKey(int key)
+        {
+            return Entries.ContainsKey(key);
+        }
 
         public ICollection<int> Keys => Entries.Keys;
 
-        public bool Remove(
-          int key
-          )
-        { return Entries.Remove(key); }
+        public bool Remove(int key)
+        {
+            return Entries.Remove(key);
+        }
 
-        public XRefEntry this[
-          int key
-          ]
+        public XRefEntry this[int key]
         {
             get => Entries[key];
             set => Entries[key] = value;
         }
 
-        public bool TryGetValue(
-          int key,
-          out XRefEntry value
-          )
+        public bool TryGetValue(int key, out XRefEntry value)
         {
             if (ContainsKey(key))
             {
@@ -192,13 +167,12 @@ namespace PdfClown.Tokens
         public ICollection<XRefEntry> Values => Entries.Values;
 
         #region ICollection
-        void ICollection<KeyValuePair<int, XRefEntry>>.Add(
-          KeyValuePair<int, XRefEntry> entry
-          )
-        { Add(entry.Key, entry.Value); }
+        void ICollection<KeyValuePair<int, XRefEntry>>.Add(KeyValuePair<int, XRefEntry> entry)
+        {
+            Add(entry.Key, entry.Value);
+        }
 
-        public void Clear(
-          )
+        public void Clear()
         {
             if (entries == null)
             { entries = new SortedDictionary<int, XRefEntry>(); }
@@ -206,24 +180,21 @@ namespace PdfClown.Tokens
             { entries.Clear(); }
         }
 
-        bool ICollection<KeyValuePair<int, XRefEntry>>.Contains(
-          KeyValuePair<int, XRefEntry> entry
-          )
-        { return ((ICollection<KeyValuePair<int, XRefEntry>>)Entries).Contains(entry); }
+        bool ICollection<KeyValuePair<int, XRefEntry>>.Contains(KeyValuePair<int, XRefEntry> entry)
+        {
+            return ((ICollection<KeyValuePair<int, XRefEntry>>)Entries).Contains(entry);
+        }
 
-        public void CopyTo(
-          KeyValuePair<int, XRefEntry>[] entries,
-          int index
-          )
-        { Entries.CopyTo(entries, index); }
+        public void CopyTo(KeyValuePair<int, XRefEntry>[] entries, int index)
+        {
+            Entries.CopyTo(entries, index);
+        }
 
         public int Count => Entries.Count;
 
         public bool IsReadOnly => false;
 
-        public bool Remove(
-          KeyValuePair<int, XRefEntry> entry
-          )
+        public bool Remove(KeyValuePair<int, XRefEntry> entry)
         {
             XRefEntry value;
             if (TryGetValue(entry.Key, out value)
@@ -234,14 +205,16 @@ namespace PdfClown.Tokens
         }
 
         #region IEnumerable<KeyValuePair<int,XRefEntry>>
-        IEnumerator<KeyValuePair<int, XRefEntry>> IEnumerable<KeyValuePair<int, XRefEntry>>.GetEnumerator(
-          )
-        { return Entries.GetEnumerator(); }
+        IEnumerator<KeyValuePair<int, XRefEntry>> IEnumerable<KeyValuePair<int, XRefEntry>>.GetEnumerator()
+        {
+            return Entries.GetEnumerator();
+        }
 
         #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator(
-          )
-        { return ((IEnumerable<KeyValuePair<int, XRefEntry>>)this).GetEnumerator(); }
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable<KeyValuePair<int, XRefEntry>>)this).GetEnumerator();
+        }
         #endregion
         #endregion
         #endregion
@@ -261,18 +234,20 @@ namespace PdfClown.Tokens
                     if (body.Length > 0)
                     {
                         PdfDictionary header = Header;
-                        int size = (int)((PdfInteger)header[PdfName.Size]).Value;
+                        int size = header.GetInt(PdfName.Size);
                         int[] entryFieldSizes;
                         {
                             PdfArray entryFieldSizesObject = (PdfArray)header[PdfName.W];
                             entryFieldSizes = new int[entryFieldSizesObject.Count];
                             for (int index = 0, length = entryFieldSizes.Length; index < length; index++)
-                            { entryFieldSizes[index] = (int)((PdfInteger)entryFieldSizesObject[index]).Value; }
+                            { entryFieldSizes[index] = entryFieldSizesObject.GetInt(index); }
                         }
 
                         PdfArray subsectionBounds;
                         if (header.ContainsKey(PdfName.Index))
-                        { subsectionBounds = (PdfArray)header[PdfName.Index]; }
+                        {
+                            subsectionBounds = (PdfArray)header[PdfName.Index];
+                        }
                         else
                         {
                             subsectionBounds = new PdfArray();
@@ -291,12 +266,7 @@ namespace PdfClown.Tokens
                                 int start = ((PdfInteger)subsectionBoundIterator.Current).IntValue;
                                 subsectionBoundIterator.MoveNext();
                                 int count = ((PdfInteger)subsectionBoundIterator.Current).IntValue;
-                                for (
-                                  int entryIndex = start,
-                                    length = start + count;
-                                  entryIndex < length;
-                                  entryIndex++
-                                  )
+                                for (int entryIndex = start, length = start + count; entryIndex < length; entryIndex++)
                                 {
                                     int entryFieldType = (entryFieldSizes[0] == 0 ? 1 : body.ReadInt(entryFieldSizes[0]));
                                     switch (entryFieldType)
@@ -305,35 +275,21 @@ namespace PdfClown.Tokens
                                             {
                                                 int nextFreeObjectNumber = body.ReadInt(entryFieldSizes[1]);
                                                 int generation = body.ReadInt(entryFieldSizes[2]);
-                                                entries[entryIndex] = new XRefEntry(
-                                                  entryIndex,
-                                                  generation,
-                                                  nextFreeObjectNumber,
-                                                  XRefEntry.UsageEnum.Free
-                                                  );
+                                                entries[entryIndex] = new XRefEntry(entryIndex, generation, nextFreeObjectNumber, XRefEntry.UsageEnum.Free);
                                                 break;
                                             }
                                         case InUseEntryType:
                                             {
                                                 int offset = body.ReadInt(entryFieldSizes[1]);
                                                 int generation = body.ReadInt(entryFieldSizes[2]);
-                                                entries[entryIndex] = new XRefEntry(
-                                                  entryIndex,
-                                                  generation,
-                                                  offset,
-                                                  XRefEntry.UsageEnum.InUse
-                                                  );
+                                                entries[entryIndex] = new XRefEntry(entryIndex, generation, offset, XRefEntry.UsageEnum.InUse);
                                                 break;
                                             }
                                         case InUseCompressedEntryType:
                                             {
                                                 int streamNumber = body.ReadInt(entryFieldSizes[1]);
                                                 int innerNumber = body.ReadInt(entryFieldSizes[2]);
-                                                entries[entryIndex] = new XRefEntry(
-                                                  entryIndex,
-                                                  innerNumber,
-                                                  streamNumber
-                                                  );
+                                                entries[entryIndex] = new XRefEntry(entryIndex, innerNumber, streamNumber);
                                                 break;
                                             }
                                         default:
@@ -353,17 +309,15 @@ namespace PdfClown.Tokens
         /**
           <summary>Serializes the xref stream entries into the stream body.</summary>
         */
-        private void Flush(
-          IOutputStream stream
-          )
+        private void Flush(IOutputStream stream)
         {
             // 1. Body.
             PdfArray indexArray = new PdfArray();
             int[] entryFieldSizes = new int[]
               {
-          EntryField0Size,
-          GetFieldSize((int)stream.Length), // NOTE: We assume this xref stream is the last indirect object.
-          EntryField2Size
+                  EntryField0Size,
+                  GetFieldSize((int)stream.Length), // NOTE: We assume this xref stream is the last indirect object.
+                  EntryField2Size
               };
             {
                 // Get the stream buffer!

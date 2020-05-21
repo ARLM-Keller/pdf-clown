@@ -63,6 +63,7 @@ namespace PdfClown.Objects
           actual stream data.</summary>
         */
         private bool bodyResolved;
+        internal EncodeState encoded = EncodeState.None;
         #endregion
 
         #region constructors
@@ -395,5 +396,15 @@ unaware of such a facility.
         #endregion
         #endregion
         #endregion
+    }
+
+    public enum EncodeState
+    {
+        None,
+        Encoded,
+        Decoded,
+        Identity,
+        SkipXRef,
+        SkipMetadata,
     }
 }

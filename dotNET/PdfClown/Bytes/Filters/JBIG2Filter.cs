@@ -41,14 +41,14 @@ namespace PdfClown.Bytes.Filters
 
         #region interface
         #region public
-        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            return data;
+            return data.GetBuffer();
         }
 
-        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            return data;
+            return data.GetBuffer();
         }
         #endregion
 

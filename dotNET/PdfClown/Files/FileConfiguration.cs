@@ -42,9 +42,7 @@ namespace PdfClown.Files
         #endregion
 
         #region constructors
-        internal FileConfiguration(
-          File file
-          )
+        internal FileConfiguration(File file)
         {
             this.file = file;
 

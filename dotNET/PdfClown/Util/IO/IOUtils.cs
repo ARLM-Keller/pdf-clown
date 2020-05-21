@@ -70,8 +70,14 @@ namespace PdfClown.Util.IO
 
         public static byte[] Digest(this HashAlgorithm hash, byte[] bytes)
         {
-            hash.TransformFinalBlock(bytes, 0, bytes.Length);
-            return hash.Hash;
+            return Digest(hash, bytes, 0, bytes.Length);
+        }
+
+        public static byte[] Digest(this HashAlgorithm hash, byte[] bytes, int offcet, int count)
+        {
+            hash.TransformFinalBlock(bytes, offcet, count);
+            var digest = hash.Hash;
+            return digest;
         }
 
         public static byte[] DoFinal(this ICryptoTransform transform, byte[] bytes)

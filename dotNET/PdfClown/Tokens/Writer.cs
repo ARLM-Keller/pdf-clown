@@ -79,10 +79,7 @@ namespace PdfClown.Tokens
         #endregion
 
         #region constructors
-        protected Writer(
-          File file,
-          IOutputStream stream
-          )
+        protected Writer(File file, IOutputStream stream)
         {
             this.file = file;
             this.stream = stream;
@@ -142,8 +139,7 @@ namespace PdfClown.Tokens
         /**
           <summary>Serializes the beginning of the file [PDF:1.6:3.4.1].</summary>
         */
-        protected void WriteHeader(
-          )
+        protected void WriteHeader()
         {
             stream.Write(BOFChunk);
             stream.Write(file.Document.Version.ToString()); // NOTE: Document version represents the actual (possibly-overridden) file version.

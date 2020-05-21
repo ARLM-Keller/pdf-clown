@@ -52,7 +52,7 @@ namespace PdfClown.Bytes.Filters.Jpx
 
         public void Parse(byte[] data)
         {
-            var head = ReadUint16(data, 0);
+            var head = data.ReadUint16(0);
             // No box header, immediate start of codestream (SOC)
             if (head == 0xff4f)
             {
@@ -65,16 +65,16 @@ namespace PdfClown.Bytes.Filters.Jpx
             while (position < length)
             {
                 var headerSize = 8;
-                long lbox = ReadUint32(data, position);
-                var tbox = ReadUint32(data, position + 4);
+                long lbox = data.ReadUint32(position);
+                var tbox = data.ReadUint32(position + 4);
                 position += headerSize;
                 if (lbox == 1)
                 {
                     // XLBox: read UInt64 according to spec.
                     // JavaScript's int precision of 53 bit should be sufficient here.
                     lbox =
-                      ReadUint32(data, position) * 4294967296 +
-                      ReadUint32(data, position + 4);
+                      data.ReadUint32(position) * 4294967296 +
+                      data.ReadUint32(position + 4);
                     position += 8;
                     headerSize += 8;
                 }
@@ -99,7 +99,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                         if (method == 1)
                         {
                             // enumerated colorspace
-                            var colorspace = ReadUint32(data, position + 3);
+                            var colorspace = data.ReadUint32(position + 3);
                             switch (colorspace)
                             {
                                 case 16: // this indicates a sRGB colorspace
@@ -120,7 +120,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                         this.ParseCodestream(data, position, position + dataLength);
                         break;
                     case 0x6a502020: // 'jP\024\024'
-                        if (ReadUint32(data, position) != 0x0d0a870a)
+                        if (data.ReadUint32(position) != 0x0d0a870a)
                         {
                             Debug.WriteLine("warn: Invalid JP2 signature");
                         }
@@ -185,7 +185,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                 var position = start;
                 while (position + 1 < end)
                 {
-                    var code = ReadUint16(data, position);
+                    var code = data.ReadUint16(position);
                     position += 2;
 
                     var length = 0;
@@ -203,17 +203,17 @@ namespace PdfClown.Bytes.Filters.Jpx
                         case 0xffd9: // End of codestream (EOC)
                             break;
                         case 0xff51: // Image and tile size (SIZ)
-                            length = ReadUint16(data, position);
+                            length = data.ReadUint16(position);
                             var siz = new SIZ(
-                                Xsiz: (int)ReadUint32(data, position + 4),
-                                Ysiz: (int)ReadUint32(data, position + 8),
-                                XOsiz: (int)ReadUint32(data, position + 12),
-                                YOsiz: (int)ReadUint32(data, position + 16),
-                                XTsiz: (int)ReadUint32(data, position + 20),
-                                YTsiz: (int)ReadUint32(data, position + 24),
-                                XTOsiz: (int)ReadUint32(data, position + 28),
-                                YTOsiz: (int)ReadUint32(data, position + 32));
-                            var componentsCount = ReadUint16(data, position + 36);
+                                Xsiz: (int)data.ReadUint32(position + 4),
+                                Ysiz: (int)data.ReadUint32(position + 8),
+                                XOsiz: (int)data.ReadUint32(position + 12),
+                                YOsiz: (int)data.ReadUint32(position + 16),
+                                XTsiz: (int)data.ReadUint32(position + 20),
+                                YTsiz: (int)data.ReadUint32(position + 24),
+                                XTOsiz: (int)data.ReadUint32(position + 28),
+                                YTOsiz: (int)data.ReadUint32(position + 32));
+                            var componentsCount = data.ReadUint16(position + 36);
                             siz.Csiz = componentsCount;
                             var components = new List<Component>(componentsCount);
                             j = position + 38;
@@ -236,7 +236,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             context.COC = new Dictionary<int, Cod>();
                             break;
                         case 0xff5c: // Quantization default (QCD)
-                            length = ReadUint16(data, position);
+                            length = data.ReadUint16(position);
                             var qcd = new Quantization();
                             j = position + 2;
                             sqcd = data[j++];
@@ -289,7 +289,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             }
                             break;
                         case 0xff5d: // Quantization component (QCC)
-                            length = ReadUint16(data, position);
+                            length = data.ReadUint16(position);
                             var qcc = new Quantization();
                             j = position + 2;
                             ushort cqcc;
@@ -299,7 +299,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             }
                             else
                             {
-                                cqcc = ReadUint16(data, j);
+                                cqcc = data.ReadUint16(j);
                                 j += 2;
                             }
                             sqcd = data[j++];
@@ -351,7 +351,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             }
                             break;
                         case 0xff52: // Coding style default (COD)
-                            length = ReadUint16(data, position);
+                            length = data.ReadUint16(position);
                             var cod = new Cod();
                             j = position + 2;
                             var scod = data[j++];
@@ -361,7 +361,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             cod.ephMarkerUsed = 0 != (scod & 4);
 
                             cod.progressionOrder = data[j++];
-                            cod.layersCount = ReadUint16(data, j);
+                            cod.layersCount = data.ReadUint16(j);
                             j += 2;
                             cod.multipleComponentTransform = data[j++] != 0;
 
@@ -425,9 +425,9 @@ namespace PdfClown.Bytes.Filters.Jpx
                             }
                             break;
                         case 0xff90: // Start of tile-part (SOT)
-                            length = ReadUint16(data, position);
-                            tile = new Tile(index: ReadUint16(data, position + 2),
-                                            length: (int)ReadUint32(data, position + 4),
+                            length = data.ReadUint16(position);
+                            tile = new Tile(index: data.ReadUint16(position + 2),
+                                            length: (int)data.ReadUint32(position + 4),
                                             partIndex: data[position + 8],
                                             partsCount: data[position + 9]);
                             tile.dataEnd = tile.length + position - 2;
@@ -460,7 +460,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                         case 0xff57: // Packet length, main header (PLM)
                         case 0xff58: // Packet length, tile-part header (PLT)
                         case 0xff64: // Comment (COM)
-                            length = ReadUint16(data, position);
+                            length = data.ReadUint16(position);
                             // skipping content
                             break;
                         case 0xff53: // Coding style component (COC)
@@ -733,26 +733,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             return new Packet(layerNumber, codeblocks: precinctCodeblocks);
         }
 
-        byte ReadInt8(byte[] data, int offset)
-        {
-            return (byte)((data[offset] << 24) >> 24);
-        }
 
-        ushort ReadUint16(byte[] data, int offset)
-        {
-            return (ushort)((data[offset] << 8) | data[offset + 1]);
-        }
-
-        uint ReadUint32(byte[] data, int offset)
-        {
-            return (
-              ((uint)((data[offset] << 24) |
-                (data[offset + 1] << 16) |
-                (data[offset + 2] << 8) |
-                data[offset + 3])) >>
-              0
-            );
-        }
 
         // Calculate the base 2 logarithm of the number `x`. This differs from the
         // native function in the sense that it returns the ceiling value and that it
@@ -2643,13 +2624,13 @@ namespace PdfClown.Bytes.Filters.Jpx
             {
                 for (v = 0, k = 0; v < height; v++, k += width)
                 {
-                    var sub1 = items.CopyOfRange(k, k + width);
+                    var sub1 = items.SubArray(k, k + width);
                     rowBuffer.Set(sub1, bufferPadding);
 
                     this.Extend(rowBuffer, bufferPadding, width);
                     this.Filter(rowBuffer, bufferPadding, width);
 
-                    var sub2 = rowBuffer.CopyOfRange(bufferPadding, bufferPadding + width);
+                    var sub2 = rowBuffer.SubArray(bufferPadding, bufferPadding + width);
                     items.Set(sub2, k);
                 }
             }

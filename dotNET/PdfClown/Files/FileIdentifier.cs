@@ -78,13 +78,21 @@ namespace PdfClown.Files
           <summary>Gets the permanent identifier based on the contents of the file at the time it was
           originally created.</summary>
         */
-        public string BaseID => (string)((PdfString)BaseDataObject[0]).Value;
+        public PdfString BaseID
+        {
+            get => (PdfString)BaseDataObject[0];
+            set => BaseDataObject[0] = value;
+        }
 
         /**
           <summary>Gets the changing identifier based on the file's contents at the time it was last
           updated.</summary>
         */
-        public string VersionID => (string)((PdfString)BaseDataObject[1]).Value;
+        public PdfString VersionID
+        {
+            get => (PdfString)BaseDataObject[1];
+            set => BaseDataObject[1] = value;
+        }
 
         /**
           <summary>Computes a new version identifier based on the file's contents.</summary>

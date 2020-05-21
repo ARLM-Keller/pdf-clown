@@ -123,8 +123,8 @@ namespace PdfClown.Bytes
         private byte[] data;
 
         /**
- <summary>Number of bytes actually used in the buffer.</summary>
-*/
+          <summary>Number of bytes actually used in the buffer.</summary>
+        */
         private int length;
         /**
           <summary>Pointer position within the buffer.</summary>
@@ -135,6 +135,9 @@ namespace PdfClown.Bytes
 
         private bool dirty;
         private int mark;
+        private bool bitSkipNext;
+        private int bitBufferSize;
+        private int bitBuffer;
         #endregion
 
         #region constructors
@@ -213,13 +216,13 @@ namespace PdfClown.Bytes
 
         public void Decode(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            data = filter.Decode(data, 0, length, parameters, header);
+            data = filter.Decode(this, parameters, header);
             length = data.Length;
         }
 
         public IBuffer Extract(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            var data = filter.Decode(this.data, 0, this.length, parameters, header);
+            var data = filter.Decode(this, parameters, header);
             return new Buffer(data);
         }
 
@@ -232,7 +235,9 @@ namespace PdfClown.Bytes
         }
 
         public byte[] Encode(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
-        { return filter.Encode(data, 0, length, parameters, header); }
+        {
+            return filter.Encode(this, parameters, header);
+        }
 
         public int GetByte(int index)
         { return data[index]; }
@@ -316,7 +321,9 @@ namespace PdfClown.Bytes
         }
 
         public int Read(byte[] data)
-        { return Read(data, 0, data.Length); }
+        {
+            return Read(data, 0, data.Length);
+        }
 
         public int Read(byte[] data, int offset, int length)
         {
@@ -330,7 +337,9 @@ namespace PdfClown.Bytes
         }
 
         public int Read(sbyte[] data)
-        { return Read(data, 0, data.Length); }
+        {
+            return Read(data, 0, data.Length);
+        }
 
         public int Read(sbyte[] data, int offset, int length)
         {
@@ -419,6 +428,32 @@ namespace PdfClown.Bytes
                 buffer.Append((char)c);
             }
             return buffer.ToString();
+        }
+
+        public int ReadBits(int count)
+        {
+            while (bitBufferSize < count)
+            {
+                var b = data[position];
+                position++;
+                if (bitSkipNext)
+                {
+                    bitBuffer = (bitBuffer << 7) | b;
+                    bitBufferSize += 7;
+                    bitSkipNext = false;
+                }
+                else
+                {
+                    bitBuffer = (bitBuffer << 8) | b;
+                    bitBufferSize += 8;
+                }
+                if (b == 0xff)
+                {
+                    bitSkipNext = true;
+                }
+            }
+            bitBufferSize -= count;
+            return (int)(((uint)bitBuffer) >> bitBufferSize) & ((1 << count) - 1);
         }
 
         public short ReadShort()
@@ -553,6 +588,11 @@ namespace PdfClown.Bytes
 
         public void Write(IInputStream data)
         { Append(data); }
+
+        public int WriteBits(long data, int count)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
         #endregion
 

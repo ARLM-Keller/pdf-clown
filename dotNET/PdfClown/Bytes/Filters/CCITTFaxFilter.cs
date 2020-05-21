@@ -31,8 +31,7 @@ namespace PdfClown.Bytes.Filters
      */
     public class CCITTFaxFilter : Filter
     {
-
-        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             // get decode parameters
             PdfDictionary decodeParms = parameters as PdfDictionary;
@@ -80,7 +79,7 @@ namespace PdfClown.Bytes.Filters
                     type = TIFFExtension.COMPRESSION_CCITT_T6;
                 }
             }
-            using (var encoded = new MemoryStream(data))
+            using (var encoded = new MemoryStream(data.GetBuffer()))
             using (var s = new CCITTFaxDecoderStream(encoded, cols, type, TIFFExtension.FILL_LEFT_TO_RIGHT, tiffOptions))
                 ReadFromDecoderStream(s, decompressed);
 
@@ -121,20 +120,19 @@ namespace PdfClown.Bytes.Filters
             }
         }
 
-
-        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             PdfDictionary decodeParms = parameters as PdfDictionary;
             int cols = ((IPdfNumber)decodeParms[PdfName.Columns]).IntValue;
             int rows = ((IPdfNumber)decodeParms[PdfName.Rows]).IntValue;
 
-            using (var encoded = new MemoryStream(data))
+            using (var encoded = new MemoryStream())
             using (var ccittFaxEncoderStream = new CCITTFaxEncoderStream(encoded, cols, rows, TIFFExtension.FILL_LEFT_TO_RIGHT))
             {
-
-                foreach (var value in data)
+                int value;
+                while ((value = data.ReadByte()) > -1)
                 {
-                    ccittFaxEncoderStream.Write(value);
+                    ccittFaxEncoderStream.Write((byte)value);
                 }
                 return encoded.ToArray();
             }

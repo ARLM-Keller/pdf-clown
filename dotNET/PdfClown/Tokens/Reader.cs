@@ -70,8 +70,8 @@ namespace PdfClown.Tokens
         #endregion
 
         #region constructors
-        internal Reader(IInputStream stream, Files.File file)
-        { this.parser = new FileParser(stream, file); }
+        internal Reader(IInputStream stream, Files.File file, string password = null, System.IO.Stream keyStoreInputStream = null)
+        { this.parser = new FileParser(stream, file, password, keyStoreInputStream); }
 
         ~Reader()
         { Dispose(false); }
@@ -80,7 +80,9 @@ namespace PdfClown.Tokens
         #region interface
         #region public
         public override int GetHashCode()
-        { return parser.GetHashCode(); }
+        {
+            return parser.GetHashCode();
+        }
 
         public FileParser Parser => parser;
 
@@ -194,7 +196,13 @@ namespace PdfClown.Tokens
                     sectionOffset = (prevXRefOffset != null ? prevXRefOffset.IntValue : -1);
                 }
             }
+            //Prepare Decryption
             return new FileInfo(version, trailer, xrefEntries);
+        }
+
+        internal void PrepareDecryption()
+        {
+            parser.PrepareDecryption();
         }
 
         #region IDisposable

@@ -90,18 +90,19 @@ namespace PdfClown.Util.Collections.Generic
             return dest;
         }
 
-        public static T[] CopyOfRange<T>(this T[] src, int start, int end)
+        public static T[] CopyOf<T>(this T[] src, int length)
         {
-            var len = end - start;
-            var dest = new T[len];
-            Array.Copy(src, start, dest, 0, len);
+            var minLength = System.Math.Min(length, src.Length);
+            var dest = new T[length];
+            Array.Copy(src, 0, dest, 0, minLength);
             return dest;
         }
+
     }
 
     public static class BytesExtension
     {
-       
+
 
         public static byte[] CopyOfRange(this byte[] src, int start, int end)
         {

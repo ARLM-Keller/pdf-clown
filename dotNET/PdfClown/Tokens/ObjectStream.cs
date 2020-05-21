@@ -39,9 +39,7 @@ namespace PdfClown.Tokens
       to be compressed, thereby substantially reducing the size of PDF files.
       The objects in the stream are referred to as compressed objects.</remarks>
     */
-    public sealed class ObjectStream
-      : PdfStream,
-        IDictionary<int, PdfDataObject>
+    public sealed class ObjectStream : PdfStream, IDictionary<int, PdfDataObject>
     {
         #region types
         private sealed class ObjectEntry
@@ -51,24 +49,18 @@ namespace PdfClown.Tokens
 
             private FileParser parser;
 
-            private ObjectEntry(
-              FileParser parser
-              )
+            private ObjectEntry(FileParser parser)
             { this.parser = parser; }
 
-            public ObjectEntry(
-              int offset,
-              FileParser parser
-              ) : this(parser)
+            public ObjectEntry(int offset, FileParser parser)
+                : this(parser)
             {
                 this.dataObject = null;
                 this.offset = offset;
             }
 
-            public ObjectEntry(
-              PdfDataObject dataObject,
-              FileParser parser
-              ) : this(parser)
+            public ObjectEntry(PdfDataObject dataObject, FileParser parser)
+                : this(parser)
             {
                 this.dataObject = dataObject;
                 this.offset = -1; // Undefined -- to set on stream serialization.
@@ -101,24 +93,21 @@ namespace PdfClown.Tokens
         #endregion
 
         #region constructors
-        public ObjectStream(
-          ) : base(new PdfDictionary(new PdfName[] { PdfName.Type }, new PdfDirectObject[] { PdfName.ObjStm }))
+        public ObjectStream()
+            : base(new PdfDictionary(new PdfName[] { PdfName.Type }, new PdfDirectObject[] { PdfName.ObjStm }))
         { }
 
-        public ObjectStream(
-          PdfDictionary header,
-          IBuffer body
-          ) : base(header, body)
+        public ObjectStream(PdfDictionary header, IBuffer body)
+            : base(header, body)
         { }
         #endregion
 
         #region interface
         #region public
-        public override PdfObject Accept(
-          IVisitor visitor,
-          object data
-          )
-        { return visitor.Visit(this, data); }
+        public override PdfObject Accept(IVisitor visitor, object data)
+        {
+            return visitor.Visit(this, data);
+        }
 
         /**
           <summary>Gets/Sets the object stream extended by this one.</summary>
@@ -131,10 +120,7 @@ namespace PdfClown.Tokens
             set => Header[PdfName.Extends] = value.Reference;
         }
 
-        public override void WriteTo(
-          IOutputStream stream,
-          File context
-          )
+        public override void WriteTo(IOutputStream stream, File context)
         {
             if (entries != null)
             { Flush(stream); }
@@ -143,27 +129,24 @@ namespace PdfClown.Tokens
         }
 
         #region IDictionary
-        public void Add(
-          int key,
-          PdfDataObject value
-          )
-        { Entries.Add(key, new ObjectEntry(value, parser)); }
+        public void Add(int key, PdfDataObject value)
+        {
+            Entries.Add(key, new ObjectEntry(value, parser));
+        }
 
-        public bool ContainsKey(
-          int key
-          )
-        { return Entries.ContainsKey(key); }
+        public bool ContainsKey(int key)
+        {
+            return Entries.ContainsKey(key);
+        }
 
         public ICollection<int> Keys => Entries.Keys;
 
-        public bool Remove(
-          int key
-          )
-        { return Entries.Remove(key); }
+        public bool Remove(int key)
+        {
+            return Entries.Remove(key);
+        }
 
-        public PdfDataObject this[
-          int key
-          ]
+        public PdfDataObject this[int key]
         {
             get
             {
@@ -173,10 +156,7 @@ namespace PdfClown.Tokens
             set => Entries[key] = new ObjectEntry(value, parser);
         }
 
-        public bool TryGetValue(
-          int key,
-          out PdfDataObject value
-          )
+        public bool TryGetValue(int key, out PdfDataObject value)
         {
             value = this[key];
             return (value != null
@@ -195,13 +175,12 @@ namespace PdfClown.Tokens
         }
 
         #region ICollection
-        void ICollection<KeyValuePair<int, PdfDataObject>>.Add(
-          KeyValuePair<int, PdfDataObject> entry
-          )
-        { Add(entry.Key, entry.Value); }
+        void ICollection<KeyValuePair<int, PdfDataObject>>.Add(KeyValuePair<int, PdfDataObject> entry)
+        {
+            Add(entry.Key, entry.Value);
+        }
 
-        public void Clear(
-          )
+        public void Clear()
         {
             if (entries == null)
             { entries = new Dictionary<int, ObjectEntry>(); }
@@ -209,24 +188,21 @@ namespace PdfClown.Tokens
             { entries.Clear(); }
         }
 
-        bool ICollection<KeyValuePair<int, PdfDataObject>>.Contains(
-          KeyValuePair<int, PdfDataObject> entry
-          )
-        { return ((ICollection<KeyValuePair<int, PdfDataObject>>)Entries).Contains(entry); }
+        bool ICollection<KeyValuePair<int, PdfDataObject>>.Contains(KeyValuePair<int, PdfDataObject> entry)
+        {
+            return ((ICollection<KeyValuePair<int, PdfDataObject>>)Entries).Contains(entry);
+        }
 
-        public void CopyTo(
-          KeyValuePair<int, PdfDataObject>[] entries,
-          int index
-          )
-        { throw new NotImplementedException(); }
+        public void CopyTo(KeyValuePair<int, PdfDataObject>[] entries, int index)
+        {
+            throw new NotImplementedException();
+        }
 
         public int Count => Entries.Count;
 
         public bool IsReadOnly => false;
 
-        public bool Remove(
-          KeyValuePair<int, PdfDataObject> entry
-          )
+        public bool Remove(KeyValuePair<int, PdfDataObject> entry)
         {
             PdfDataObject value;
             if (TryGetValue(entry.Key, out value)
@@ -237,16 +213,14 @@ namespace PdfClown.Tokens
         }
 
         #region IEnumerable<KeyValuePair<int,PdfDataObject>>
-        IEnumerator<KeyValuePair<int, PdfDataObject>> IEnumerable<KeyValuePair<int, PdfDataObject>>.GetEnumerator(
-          )
+        IEnumerator<KeyValuePair<int, PdfDataObject>> IEnumerable<KeyValuePair<int, PdfDataObject>>.GetEnumerator()
         {
             foreach (int key in Keys)
             { yield return new KeyValuePair<int, PdfDataObject>(key, this[key]); }
         }
 
         #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator(
-          )
+        IEnumerator IEnumerable.GetEnumerator()
         { return ((IEnumerable<KeyValuePair<int, PdfDataObject>>)this).GetEnumerator(); }
         #endregion
         #endregion
@@ -268,12 +242,7 @@ namespace PdfClown.Tokens
                     {
                         parser = new FileParser(Body, File);
                         int baseOffset = ((PdfInteger)Header[PdfName.First]).IntValue;
-                        for (
-                          int index = 0,
-                            length = ((PdfInteger)Header[PdfName.N]).IntValue;
-                          index < length;
-                          index++
-                          )
+                        for (int index = 0, length = ((PdfInteger)Header[PdfName.N]).IntValue; index < length; index++)
                         {
                             int objectNumber = ((PdfInteger)parser.ParsePdfObject(1)).IntValue;
                             int objectOffset = baseOffset + ((PdfInteger)parser.ParsePdfObject(1)).IntValue;
@@ -288,9 +257,7 @@ namespace PdfClown.Tokens
         /**
           <summary>Serializes the object stream entries into the stream body.</summary>
         */
-        private void Flush(
-          IOutputStream stream
-          )
+        private void Flush(IOutputStream stream)
         {
             // 1. Body.
             int dataByteOffset;

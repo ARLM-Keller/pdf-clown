@@ -243,5 +243,27 @@ namespace PdfClown.Bytes.Filters
             return (sbyte)v;
         }
     }
+    public static class Extensions
+    {
+        public static byte ReadInt8(this byte[] data, int offset)
+        {
+            return (byte)((data[offset] << 24) >> 24);
+        }
 
+        public static ushort ReadUint16(this byte[] data, int offset)
+        {
+            return (ushort)((data[offset] << 8) | data[offset + 1]);
+        }
+
+        public static uint ReadUint32(this byte[] data, int offset)
+        {
+            return (
+              ((uint)((data[offset] << 24) |
+                (data[offset + 1] << 16) |
+                (data[offset + 2] << 8) |
+                data[offset + 3])) >>
+              0
+            );
+        }
+    }
 }

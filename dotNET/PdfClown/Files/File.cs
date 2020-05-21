@@ -35,6 +35,7 @@ using System.Collections;
 using System.Reflection;
 using System.Text;
 using System.IO;
+using PdfClown.Documents.Encryption;
 
 namespace PdfClown.Files
 {
@@ -105,6 +106,7 @@ namespace PdfClown.Files
                 trailer = PrepareTrailer(info.Trailer);
                 indirectObjects = new IndirectObjects(this, info.XrefEntries);
 
+                reader.PrepareDecryption();
 
                 var documentReference = trailer[PdfName.Root];
                 if (documentReference.Resolve() is PdfDictionary)
@@ -126,12 +128,6 @@ namespace PdfClown.Files
                 Configuration.XRefMode = (PdfName.XRef.Equals(trailer[PdfName.Type])
                   ? XRefModeEnum.Compressed
                   : XRefModeEnum.Plain);
-                if (trailer.ContainsKey(PdfName.Encrypt)) // Encrypted file.
-                {
-                    var encript = trailer.Resolve(PdfName.Encrypt);
-                    throw new NotImplementedException("Encrypted files are currently not supported.");
-
-                }
             }
             catch (Exception)
             {
@@ -147,21 +143,6 @@ namespace PdfClown.Files
         #region interface
         #region public
         /**
-          <summary>Gets/Sets the default cloner.</summary>
-        */
-        public Cloner Cloner
-        {
-            get
-            {
-                if (cloner == null)
-                { cloner = new Cloner(this); }
-
-                return cloner;
-            }
-            set => cloner = value;
-        }
-
-        /**
           <summary>Gets the file configuration.</summary>
         */
         public FileConfiguration Configuration => configuration;
@@ -171,13 +152,20 @@ namespace PdfClown.Files
         */
         public Document Document => document;
 
-        public override int GetHashCode()
-        { return hashCode; }
+        public PdfEncryption Encryption
+        {
+            get => PdfObjectWrapper.Wrap<PdfEncryption>(trailer[PdfName.Encrypt]);
+            set => trailer[PdfName.Encrypt] = value?.BaseDataObject;
+        }
 
         /**
           <summary>Gets the identifier of this file.</summary>
         */
-        public FileIdentifier ID => PdfObjectWrapper.Wrap<FileIdentifier>(Trailer[PdfName.ID]);
+        public FileIdentifier ID
+        {
+            get => PdfObjectWrapper.Wrap<FileIdentifier>(Trailer[PdfName.ID]);
+            set => Trailer[PdfName.ID] = value.BaseDataObject;
+        }
 
         /**
           <summary>Gets the indirect objects collection.</summary>
@@ -199,18 +187,41 @@ namespace PdfClown.Files
         */
         public Reader Reader => reader;
 
+
+        /**
+          <summary>Gets the file trailer.</summary>
+        */
+        public PdfDictionary Trailer => trailer;
+
+        /**
+          <summary>Gets whether the initial state of this file has been modified.</summary>
+        */
+        public bool Updated => indirectObjects.ModifiedObjects.Count > 0;
+
+        /**
+          <summary>Gets the file header version [PDF:1.6:3.4.1].</summary>
+          <remarks>This property represents just the original file version; to get the actual version,
+          use the <see cref="PdfClown.Documents.Document.Version">Document.Version</see> method.
+          </remarks>
+        */
+        public Version Version => version;
+
         /**
           <summary>Registers an <b>internal data object</b>.</summary>
         */
         public PdfReference Register(PdfDataObject obj)
-        { return indirectObjects.Add(obj).Reference; }
+        {
+            return indirectObjects.Add(obj).Reference;
+        }
 
         /**
           <summary>Serializes the file to the current file-system path using the <see
           cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
         */
         public void Save()
-        { Save(SerializationModeEnum.Standard); }
+        {
+            Save(SerializationModeEnum.Standard);
+        }
 
         /**
           <summary>Serializes the file to the current file-system path.</summary>
@@ -236,8 +247,10 @@ namespace PdfClown.Files
         */
         public void Save(string path, SerializationModeEnum mode)
         {
-            using (var outputStream = new System.IO.FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-            { Save(new Bytes.Stream(outputStream), mode); }
+            using (var outputStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+            {
+                Save(new Bytes.Stream(outputStream), mode);
+            }
         }
 
         /**
@@ -247,7 +260,9 @@ namespace PdfClown.Files
           <param name="mode">Serialization mode.</param>
         */
         public void Save(System.IO.Stream stream, SerializationModeEnum mode)
-        { Save(new Bytes.Stream(stream), mode); }
+        {
+            Save(new Bytes.Stream(stream), mode);
+        }
 
         /**
           <summary>Serializes the file to the specified stream.</summary>
@@ -277,29 +292,32 @@ namespace PdfClown.Files
             writer.Write(mode);
         }
 
-        /**
-          <summary>Gets the file trailer.</summary>
-        */
-        public PdfDictionary Trailer => trailer;
 
         /**
           <summary>Unregisters an internal object.</summary>
         */
         public void Unregister(PdfReference reference)
-        { indirectObjects.RemoveAt(reference.ObjectNumber); }
+        {
+            indirectObjects.RemoveAt(reference.ObjectNumber);
+        }
 
         /**
-          <summary>Gets whether the initial state of this file has been modified.</summary>
+          <summary>Gets/Sets the default cloner.</summary>
         */
-        public bool Updated => indirectObjects.ModifiedObjects.Count > 0;
+        public Cloner Cloner
+        {
+            get
+            {
+                if (cloner == null)
+                { cloner = new Cloner(this); }
 
-        /**
-          <summary>Gets the file header version [PDF:1.6:3.4.1].</summary>
-          <remarks>This property represents just the original file version; to get the actual version,
-          use the <see cref="PdfClown.Documents.Document.Version">Document.Version</see> method.
-          </remarks>
-        */
-        public Version Version => version;
+                return cloner;
+            }
+            set => cloner = value;
+        }
+
+        public override int GetHashCode()
+        { return hashCode; }
 
         #region IDisposable
         public void Dispose()
@@ -340,6 +358,7 @@ namespace PdfClown.Files
         { return (PdfDictionary)new ImplicitContainer(this, trailer).DataObject; }
 
         private string TempPath => (path == null ? null : path + ".tmp");
+
         #endregion
         #endregion
         #endregion

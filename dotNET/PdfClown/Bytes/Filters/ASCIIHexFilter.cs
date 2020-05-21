@@ -43,15 +43,16 @@ namespace PdfClown.Bytes.Filters
         /// <summary>
         /// Encodes the specified data.
         /// </summary>
-        public override byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (data == null)
                 throw new ArgumentNullException("data");
-
+            var dataBuffer = data.GetBuffer();
+            var length = dataBuffer.Length;
             byte[] bytes = new byte[2 * length];
-            for (int i = offset, j = 0; i < length; i++)
+            for (int i = 0, j = 0; i < length; i++)
             {
-                byte b = data[i];
+                byte b = dataBuffer[i];
                 bytes[j++] = (byte)((b >> 4) + ((b >> 4) < 10 ? (byte)'0' : (byte)('A' - 10)));
                 bytes[j++] = (byte)((b & 0xF) + ((b & 0xF) < 10 ? (byte)'0' : (byte)('A' - 10)));
             }
@@ -61,31 +62,32 @@ namespace PdfClown.Bytes.Filters
         /// <summary>
         /// Decodes the specified data.
         /// </summary>
-        public override byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (data == null)
                 throw new ArgumentNullException("data");
-
-            data = RemoveWhiteSpace(data, offset, length);
-            int count = data.Length;
+            var dataBuffer = data.GetBuffer();
+            var length = dataBuffer.Length;
+            dataBuffer = RemoveWhiteSpace(dataBuffer, 0, length);
+            int count = dataBuffer.Length;
             // Ignore EOD (end of data) character.
             // EOD can be anywhere in the stream, but makes sense only at the end of the stream.
-            if (count > 0 && data[count - 1] == '>')
+            if (count > 0 && dataBuffer[count - 1] == '>')
                 --count;
             if (count % 2 == 1)
             {
                 count++;
-                byte[] temp = data;
-                data = new byte[count];
-                temp.CopyTo(data, 0);
+                byte[] temp = dataBuffer;
+                dataBuffer = new byte[count];
+                temp.CopyTo(dataBuffer, 0);
             }
             count >>= 1;
             byte[] bytes = new byte[count];
             for (int i = 0, j = 0; i < count; i++)
             {
                 // Must support 0-9, A-F, a-f - "Any other characters cause an error."
-                byte hi = data[j++];
-                byte lo = data[j++];
+                byte hi = dataBuffer[j++];
+                byte lo = dataBuffer[j++];
                 if (hi >= 'a' && hi <= 'f')
                     hi -= 32;
                 if (lo >= 'a' && lo <= 'f')

@@ -25,6 +25,7 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents;
+using PdfClown.Documents.Encryption;
 using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util.Parsers;
@@ -64,12 +65,22 @@ namespace PdfClown.Tokens
         #region dynamic
         #region fields
         private Files.File file;
+        private PdfEncryption encryption;
+        private System.IO.Stream keyStoreInputStream;
+        private string password;
+        private string keyAlias;
+        private SecurityHandler securityHandler;
+        private AccessPermission accessPermission;
         #endregion
 
         #region constructors
-        internal FileParser(IInputStream stream, Files.File file)
+        internal FileParser(IInputStream stream, Files.File file, string password = null, System.IO.Stream keyStoreInputStream = null)
             : base(stream)
-        { this.file = file; }
+        {
+            this.file = file;
+            this.password = password;
+            this.keyStoreInputStream = keyStoreInputStream;
+        }
         #endregion
 
         #region interface
@@ -157,7 +168,7 @@ namespace PdfClown.Tokens
 
                     MoveNext(); // Postcondition (last token should be 'endstream' keyword).
 
-                    Object streamType = streamHeader[PdfName.Type];
+                    var streamType = streamHeader[PdfName.Type];
                     if (PdfName.ObjStm.Equals(streamType)) // Object stream [PDF:1.6:3.4.6].
                         return new ObjectStream(streamHeader, new Bytes.Buffer(data));
                     else if (PdfName.XRef.Equals(streamType)) // Cross-reference stream [PDF:1.6:3.4.7].
@@ -197,7 +208,13 @@ namespace PdfClown.Tokens
                 return null;
 
             // Get the indirect data object!
-            return ParsePdfObject();
+            var dataObject = ParsePdfObject();
+
+            if (securityHandler != null)
+            {
+                securityHandler.Decrypt(dataObject, xrefEntry.Number, xrefEntry.Generation);
+            }
+            return dataObject;
         }
 
         /**
@@ -260,6 +277,59 @@ namespace PdfClown.Tokens
             }
             return xrefPosition;
         }
+
+        /**
+         * Prepare for decryption.
+         * 
+         * @throws InvalidPasswordException If the password is incorrect.
+         * @throws IOException if something went wrong
+         */
+        public void PrepareDecryption()
+        {
+            if (encryption != null)
+            {
+                return;
+            }
+            encryption = file.Encryption;
+            if (encryption == null)
+            {
+                return;
+            }
+
+            try
+            {
+                DecryptionMaterial decryptionMaterial;
+                if (keyStoreInputStream != null)
+                {
+                    var ks = new Org.BouncyCastle.Pkcs.Pkcs12Store(keyStoreInputStream, password.ToCharArray());// KeyStore.getInstance("PKCS12");
+                    decryptionMaterial = new PublicKeyDecryptionMaterial(ks, keyAlias, password);
+                }
+                else
+                {
+                    decryptionMaterial = new StandardDecryptionMaterial(password);
+                }
+
+                securityHandler = encryption.SecurityHandler;
+                securityHandler.PrepareForDecryption(encryption, file.ID.BaseDataObject, decryptionMaterial);
+                accessPermission = securityHandler.CurrentAccessPermission;
+            }
+            catch (IOException e)
+            {
+                throw e;
+            }
+            catch (Org.BouncyCastle.Security.GeneralSecurityException e)
+            {
+                throw new IOException($"Error ({e.GetType().Name}) while creating security handler for decryption", e);
+            }
+            finally
+            {
+                if (keyStoreInputStream != null)
+                {
+                    keyStoreInputStream.Dispose();
+                }
+            }
+        }
+
         #endregion
         #endregion
         #endregion

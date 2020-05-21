@@ -45,6 +45,7 @@ namespace PdfClown.Bytes.Filters
         private static readonly Filter CCITTFaxDecode = new CCITTFaxFilter();
         private static readonly Filter JBIG2Decode = new JBIG2Filter();
         private static readonly Filter JPXDecode = new JPXFilter();
+        private static readonly Filter LZWFilter = new LZWFilter();
         #endregion
 
         #region interface
@@ -67,7 +68,7 @@ namespace PdfClown.Bytes.Filters
                 return FlateDecode;
             else if (name.Equals(PdfName.LZWDecode)
               || name.Equals(PdfName.LZW))
-                throw new NotImplementedException("LZWDecode");
+                return LZWFilter;
             else if (name.Equals(PdfName.ASCIIHexDecode)
               || name.Equals(PdfName.AHx))
                 return ASCIIHexFilter;
@@ -104,9 +105,9 @@ namespace PdfClown.Bytes.Filters
 
         #region interface
         #region public
-        public abstract byte[] Decode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
+        public abstract byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
 
-        public abstract byte[] Encode(byte[] data, int offset, int length, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
+        public abstract byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
         #endregion
         #endregion
         #endregion

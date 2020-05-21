@@ -38,6 +38,8 @@ namespace PdfClown.Util
         byte[] ToByteArray();
 
         byte[] GetBuffer();
+
+        void SetBuffer(byte[] data);
     }
 }
 

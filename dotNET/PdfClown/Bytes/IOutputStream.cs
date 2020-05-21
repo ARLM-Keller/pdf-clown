@@ -35,6 +35,8 @@ namespace PdfClown.Bytes
         */
         void Clear();
 
+        void Write(byte data);
+
         /**
           <summary>Writes a byte array into the stream.</summary>
           <param name="data">Byte array to write into the stream.</param>

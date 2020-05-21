@@ -25,16 +25,59 @@
 
 using System;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace PdfClown.Util.IO
 {
     /**
       <summary>IO utilities.</summary>
     */
-    public class IOUtils
+    public static class IOUtils
     {
         public static bool Exists(string path)
         { return Directory.Exists(path) || File.Exists(path); }
+
+        public static void Write(this Stream stream, byte[] bytes)
+        {
+            stream.Write(bytes, 0, bytes.Length);
+        }
+
+        public static void Reset(this MemoryStream stream)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            stream.SetLength(0);
+        }
+
+        public static void Update(this HashAlgorithm hash, byte oneByte)
+        {
+            Update(hash, new byte[] { oneByte });
+        }
+
+        public static void Update(this HashAlgorithm hash, byte[] bytes)
+        {
+            Update(hash, bytes, 0, bytes.Length);
+        }
+
+        public static void Update(this HashAlgorithm hash, byte[] bytes, int offcet, int count)
+        {
+            hash.TransformBlock(bytes, offcet, count, null, 0);
+        }
+
+        public static byte[] Digest(this HashAlgorithm hash)
+        {
+            return Digest(hash, Array.Empty<byte>());
+        }
+
+        public static byte[] Digest(this HashAlgorithm hash, byte[] bytes)
+        {
+            hash.TransformFinalBlock(bytes, 0, bytes.Length);
+            return hash.Hash;
+        }
+
+        public static byte[] DoFinal(this ICryptoTransform transform, byte[] bytes)
+        {
+            return transform.TransformFinalBlock(bytes, 0, bytes.Length);
+        }
     }
 }
 

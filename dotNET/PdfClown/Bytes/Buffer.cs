@@ -513,6 +513,13 @@ namespace PdfClown.Bytes
         {
             return data;
         }
+
+        public void SetBuffer(byte[] data)
+        {
+            this.data = data;
+            length = data.Length;
+            position = 0;
+        }
         #endregion
 
         #region IStream
@@ -531,6 +538,9 @@ namespace PdfClown.Bytes
         #region IOutputStream
         public void Clear()
         { SetLength(0); }
+
+        public void Write(byte data)
+        { Append(new byte[] { data }); }
 
         public void Write(byte[] data)
         { Append(data); }

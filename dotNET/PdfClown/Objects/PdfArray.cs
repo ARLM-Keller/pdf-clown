@@ -100,6 +100,56 @@ namespace PdfClown.Objects
                 && ((PdfArray)@object).items.Equals(items));
         }
 
+        public float GetFloat(int index, float def = 0)
+        {
+            return ((IPdfNumber)Resolve(index))?.FloatValue ?? def;
+        }
+
+        public void SetFloat(int index, float? value)
+        {
+            this[index] = PdfReal.Get(value);
+        }
+
+        public double GetDouble(int index, double def = 0)
+        {
+            return ((IPdfNumber)Resolve(index))?.RawValue ?? def;
+        }
+
+        public void SetDouble(int index, double? value)
+        {
+            this[index] = PdfReal.Get(value);
+        }
+
+        public int GetInt(int index, int def = 0)
+        {
+            return ((IPdfNumber)Resolve(index))?.IntValue ?? def;
+        }
+
+        public void SetInt(int index, int? value)
+        {
+            this[index] = PdfInteger.Get(value);
+        }
+
+        public bool GetBool(int index, bool def = false)
+        {
+            return ((PdfBoolean)Resolve(index))?.BooleanValue ?? def;
+        }
+
+        public void SetBool(int index, bool? value)
+        {
+            this[index] = PdfBoolean.Get(value);
+        }
+
+        public string GetName(int index, string def = null)
+        {
+            return ((PdfName)Resolve(index))?.StringValue ?? def;
+        }
+
+        public void SetName(int index, string value)
+        {
+            this[index] = PdfName.Get(value);
+        }
+
         /**
           <summary>Gets the value corresponding to the given index, forcing its instantiation as a direct
           object in case of missing entry.</summary>

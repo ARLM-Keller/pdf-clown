@@ -192,10 +192,19 @@ namespace PdfClown.Documents.Contents
             }
 
             public byte[] ToByteArray()
-            { return stream?.ToByteArray(); }
+            {
+                return stream?.ToByteArray();
+            }
 
             public byte[] GetBuffer()
-            { return stream?.GetBuffer(); }
+            {
+                return stream?.GetBuffer();
+            }
+
+            public void SetBuffer(byte[] data)
+            {
+                stream?.SetBuffer(data);
+            }
 
             /**
               <summary>Ensures stream availability, moving to the next stream in case the current one has

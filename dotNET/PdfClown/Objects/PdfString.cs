@@ -160,6 +160,9 @@ namespace PdfClown.Objects
         public byte[] GetBuffer()
         { return RawValue; }
 
+        public void SetBuffer(byte[] data)
+        { RawValue = data; }
+
         public override string ToString()
         {
             switch (serializationMode)

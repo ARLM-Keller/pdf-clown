@@ -10,6 +10,7 @@ namespace PdfClown.Tokens
         public static readonly text::Encoding UTF16BE = text::Encoding.BigEndianUnicode;
         public static readonly text::Encoding UTF16LE = text::Encoding.Unicode;
         public static readonly text::Encoding ASCII = text::Encoding.ASCII;
+        public static readonly text::Encoding UTF8 = text::Encoding.UTF8;
         private static bool registered;
 
         public static text::Encoding GetEnconding(string name)

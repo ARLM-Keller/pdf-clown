@@ -62,14 +62,14 @@ namespace PdfClown.Bytes
             set => byteOrder = value;
         }
 
-        public override int GetHashCode()
-        { return stream.GetHashCode(); }
-
         public long Position
         {
             get => stream.Position;
             set => stream.Position = value;
         }
+
+        public override int GetHashCode()
+        { return stream.GetHashCode(); }
 
         public int Read(byte[] data)
         { return stream.Read(data, 0, data.Length); }
@@ -200,6 +200,11 @@ namespace PdfClown.Bytes
         public void Clear()
         { stream.SetLength(0); }
 
+        public void Write(byte data)
+        {
+            var buffer = new byte[] { data };
+            stream.Write(buffer, 0, 1);
+        }
         public void Write(byte[] data)
         { stream.Write(data, 0, data.Length); }
 
@@ -238,8 +243,14 @@ namespace PdfClown.Bytes
 
         public byte[] GetBuffer()
         {
-            return null;
+            throw new NotSupportedException();
         }
+
+        public void SetBuffer(byte[] data)
+        {
+            throw new NotSupportedException();
+        }
+
         #endregion
         #endregion
         #endregion

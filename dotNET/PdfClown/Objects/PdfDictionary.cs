@@ -196,6 +196,56 @@ namespace PdfClown.Objects
             internal set => parent = value;
         }
 
+        public float GetFloat(PdfName key, float def = 0)
+        {
+            return ((IPdfNumber)Resolve(key))?.FloatValue ?? def;
+        }
+
+        public void SetFloat(PdfName key, float? value)
+        {
+            this[key] = PdfReal.Get(value);
+        }
+
+        public double GetDouble(PdfName key, double def = 0)
+        {
+            return ((IPdfNumber)Resolve(key))?.RawValue ?? def;
+        }
+
+        public void SetDouble(PdfName key, double? value)
+        {
+            this[key] = PdfReal.Get(value);
+        }
+
+        public int GetInt(PdfName key, int def = 0)
+        {
+            return ((IPdfNumber)Resolve(key))?.IntValue ?? def;
+        }
+
+        public void SetInt(PdfName key, int? value)
+        {
+            this[key] = PdfInteger.Get(value);
+        }
+
+        public bool GetBool(PdfName key, bool def = false)
+        {
+            return ((PdfBoolean)Resolve(key))?.BooleanValue ?? def;
+        }
+
+        public void SetBool(PdfName key, bool? value)
+        {
+            this[key] = PdfBoolean.Get(value);
+        }
+
+        public string GetName(PdfName key, string def = null)
+        {
+            return ((PdfName)Resolve(key))?.StringValue ?? def;
+        }
+
+        public void SetName(PdfName key, string value)
+        {
+            this[key] = PdfName.Get(value);
+        }
+
         /**
           <summary>Gets the dereferenced value corresponding to the given key.</summary>
           <remarks>This method takes care to resolve the value returned by <see cref="this[PdfName]">

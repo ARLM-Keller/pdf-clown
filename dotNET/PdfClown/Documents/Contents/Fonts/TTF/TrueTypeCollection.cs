@@ -19,6 +19,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 {
     using PdfClown.Documents.Interaction.Annotations;
     using System;
+    using System.Collections.Generic;
     using System.IO;
 
 
@@ -33,6 +34,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private readonly TTFDataStream stream;
         private int numFonts;
         private long[] fontOffsets;
+        private readonly Dictionary<int, TrueTypeFont> fontCache = new Dictionary<int, TrueTypeFont>();
 
         /**
          * Creates a new TrueTypeCollection from a .ttc file.
@@ -113,18 +115,22 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private TrueTypeFont GetFontAtIndex(int idx)
         {
-            stream.Seek(fontOffsets[idx]);
-            TTFParser parser;
-            if (stream.ReadTag().Equals("OTTO", StringComparison.Ordinal))
+            if (!fontCache.TryGetValue(idx, out var font))
             {
-                parser = new OTFParser(false, true);
+                stream.Seek(fontOffsets[idx]);
+                TTFParser parser;
+                if (stream.ReadTag().Equals("OTTO", StringComparison.Ordinal))
+                {
+                    parser = new OTFParser(false, true);
+                }
+                else
+                {
+                    parser = new TTFParser(false, true);
+                }
+                stream.Seek(fontOffsets[idx]);
+                font = parser.Parse(new TTCDataStream(stream));
             }
-            else
-            {
-                parser = new TTFParser(false, true);
-            }
-            stream.Seek(fontOffsets[idx]);
-            return parser.Parse(new TTCDataStream(stream));
+            return font;
         }
 
         /**

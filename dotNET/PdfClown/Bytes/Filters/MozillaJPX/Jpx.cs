@@ -33,7 +33,7 @@ namespace PdfClown.Bytes.Filters.Jpx
     public class JpxImage
     {
         // Table E.1
-        Dictionary<string, int> SubbandsGainLog2 = new Dictionary<string, int> { { "LL", 0 }, { "LH", 1 }, { "HL", 1 }, { "HH", 2 } };
+        Dictionary<string, int> SubbandsGainLog2 = new Dictionary<string, int>(StringComparer.Ordinal) { { "LL", 0 }, { "LH", 1 }, { "HL", 1 }, { "HH", 2 } };
         bool failOnCorruptedImage;
         internal List<TileResultB> tiles;
         internal int width;

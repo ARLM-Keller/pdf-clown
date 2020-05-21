@@ -32,7 +32,7 @@ namespace PdfClown.Documents.Contents.Fonts
      */
     public class PdfType1CFont : SimpleFont//,  PDVectorFont
     {
-        private readonly Dictionary<string, float> glyphHeights = new Dictionary<string, float>();
+        private readonly Dictionary<string, float> glyphHeights = new Dictionary<string, float>(StringComparer.Ordinal);
         private readonly SKMatrix fontMatrixTransform;
         private readonly CFFType1Font cffFont; // embedded font
         private readonly BaseFont genericFont; // embedded or system font for rendering

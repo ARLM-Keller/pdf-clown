@@ -1177,7 +1177,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     break;
                 default:
                     throw new NotSupportedException("Unsupported mesh type.");
-                    break;
             }
 
             if (patchMesh)

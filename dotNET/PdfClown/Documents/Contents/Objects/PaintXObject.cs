@@ -128,7 +128,9 @@ namespace PdfClown.Documents.Contents.Objects
                         else
                         {
                             using (var paint = state.CreateFillPaint())
+                            {
                                 canvas.DrawBitmap(image, 0, 0, paint);
+                            }
                         }
                     }
                 }
@@ -146,7 +148,10 @@ namespace PdfClown.Documents.Contents.Objects
                     }
                     else
                     {
-                        canvas.DrawPicture(picture, state.CreateFillPaint());
+                        using (var paint = state.CreateFillPaint())
+                        {
+                            canvas.DrawPicture(picture, paint);
+                        }
                     }
 
                     foreach (var textString in formObject.Strings)

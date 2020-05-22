@@ -80,6 +80,17 @@ namespace PdfClown.Bytes
         public int ReadByte()
         { return stream.ReadByte(); }
 
+        public int PeekByte()
+        {
+            var temp = Position;
+            var peek = ReadByte();
+            if (temp != Position)
+            {
+                stream.Seek(-1, SeekOrigin.Current);
+            }
+            return peek;
+        }
+
         public sbyte ReadSignedByte()
         { return (sbyte)stream.ReadByte(); }
 

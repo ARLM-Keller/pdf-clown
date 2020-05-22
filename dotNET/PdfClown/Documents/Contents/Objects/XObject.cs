@@ -68,6 +68,11 @@ namespace PdfClown.Documents.Contents.Objects
             get => Operation.Name;
             set => Operation.Name = value;
         }
+
+        public override void Scan(GraphicsState state)
+        {
+            base.Scan(state);
+        }
         #endregion
         #endregion
 

@@ -72,6 +72,8 @@ namespace PdfClown.Bytes
         */
         int ReadByte();
 
+        int PeekByte();
+
         /**
           <summary>Reads an integer.</summary>
           <remarks>This operation causes the stream pointer to advance after the read data.</remarks>

@@ -161,19 +161,13 @@ namespace PdfClown.Documents.Contents.Tokens
                 bytes::Buffer data = new bytes::Buffer();
                 while (true)
                 {
-                    int curByte1 = stream.ReadByte();
-                    if (curByte1 == -1)
+                    int curByte = stream.ReadByte();
+                    if (((char)curByte == 'E' && (char)stream.PeekByte() == 'I'))
+                    {
+                        stream.ReadByte();
                         break;
-                    int curByte2 = stream.ReadByte();
-                    if (curByte2 == -1)
-                        break;
-
-                    if (((char)curByte1 == 'E' && (char)curByte2 == 'I'))
-                        break;
-                    if (((char)curByte1 == ' ' && (char)curByte2 == 'E'))
-                        break;
-                    data.Append((byte)curByte1);
-                    data.Append((byte)curByte2);
+                    }
+                    data.Append((byte)curByte);
 
                 }
                 body = new InlineImageBody(data);

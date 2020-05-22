@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Contents.XObjects
             if (PdfName.Form.Equals(subtype))
                 return FormXObject.Wrap(baseObject);
             else if (PdfName.Image.Equals(subtype))
-                return new ImageXObject(baseObject);            
+                return new ImageXObject(baseObject);
             else
                 return null;
         }

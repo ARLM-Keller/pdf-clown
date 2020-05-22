@@ -123,6 +123,11 @@ namespace PdfClown.Documents.Contents
                 return EnsureStream() ? stream.ReadByte() : -1;
             }
 
+            public int PeekByte()
+            {
+                return EnsureStream() ? stream.PeekByte() : -1;
+            }
+
             public int ReadInt()
             { return stream.ReadInt(); }
 

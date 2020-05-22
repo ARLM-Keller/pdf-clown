@@ -374,6 +374,13 @@ namespace PdfClown.Bytes
             return data[position++];
         }
 
+        public int PeekByte()
+        {
+            if (position >= data.Length)
+                return -1;
+            return data[position];
+        }
+
         public int ReadInt()
         {
             int value = ConvertUtils.ByteArrayToInt(data, position, byteOrder);

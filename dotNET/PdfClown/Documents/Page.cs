@@ -586,7 +586,7 @@ namespace PdfClown.Documents
 
         public void OnSetCtm(SKMatrix ctm)
         {
-            
+
         }
         #endregion
         #endregion

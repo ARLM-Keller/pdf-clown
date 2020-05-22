@@ -115,10 +115,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             if (skColorSpace == null)
             {
-                skColorSpace = SKColorSpace.CreateIcc(Profile.GetBody(true).ToByteArray());
-                xyzD50 = skColorSpace.FromXyzD50();
-                skColorSpace.GetNumericalTransferFunction(out var spaceTransfer);
-                transfer = spaceTransfer.Invert();
+                skColorSpace = SKColorSpace.CreateIcc(Profile.GetBody(true).GetBuffer());
+                if (skColorSpace != null)
+                {
+                    xyzD50 = skColorSpace.FromXyzD50();
+                    skColorSpace.GetNumericalTransferFunction(out var spaceTransfer);
+                    transfer = spaceTransfer.Invert();
+                }
             }
             return skColorSpace;
         }
@@ -127,7 +130,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             if (iccProfile == null)
             {
-                iccProfile = ICCProfile.Load(Profile.GetBody(true).ToByteArray());
+                iccProfile = ICCProfile.Load(Profile.GetBody(true).GetBuffer());
 
             }
         }

@@ -29,7 +29,6 @@ using System.Security.Cryptography;
 
 namespace PdfClown.Documents.Encryption
 {
-
     /**
      * The standard security handler. This security handler protects document with password.
      * @see StandardProtectionPolicy to see how to protect document with this security handler.
@@ -39,8 +38,6 @@ namespace PdfClown.Documents.Encryption
      */
     public sealed class StandardSecurityHandler : SecurityHandler
     {
-
-
         /** Type of security handler. */
         public static readonly string FILTER = "Standard";
 
@@ -666,7 +663,6 @@ namespace PdfClown.Documents.Encryption
                 return ComputeEncryptedKeyRev56(password, isOwnerPassword, o, u, oe, ue, encRevision);
             }
             else
-
             {
                 return ComputeEncryptedKeyRev234(password, o, permissions, id, encryptMetadata, keyLengthInBytes, encRevision);
             }

@@ -145,12 +145,12 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error reading the data.
 		 */
-        private void EncryptData(long objectNumber, long genNumber, Stream data, Stream output, bool decrypt)
+        private bool EncryptData(long objectNumber, long genNumber, Stream data, Stream output, bool decrypt)
         {
             // Determine whether we're using Algorithm 1 (for RC4 and AES-128), or 1.A (for AES-256)
             if (useAES && encryptionKey.Length == 32)
             {
-                EncryptDataAES256(data, output, decrypt);
+                return EncryptDataAES256(data, output, decrypt);
             }
             else
             {
@@ -158,11 +158,11 @@ namespace PdfClown.Documents.Encryption
 
                 if (useAES)
                 {
-                    EncryptDataAESother(readonlyKey, data, output, decrypt);
+                    return EncryptDataAESother(readonlyKey, data, output, decrypt);
                 }
                 else
                 {
-                    EncryptDataRC4(readonlyKey, data, output);
+                    return EncryptDataRC4(readonlyKey, data, output);
                 }
             }
             //output.Flush();
@@ -215,10 +215,11 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error reading the data.
 		 */
-        protected void EncryptDataRC4(byte[] readonlyKey, Stream input, Stream output)
+        protected bool EncryptDataRC4(byte[] readonlyKey, Stream input, Stream output)
         {
             rc4.SetKey(readonlyKey);
             rc4.Write(input, output);
+            return true;
         }
 
         /**
@@ -230,10 +231,11 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error reading the data.
 		 */
-        protected void EncryptDataRC4(byte[] readonlyKey, byte[] input, Stream output)
+        protected bool EncryptDataRC4(byte[] readonlyKey, byte[] input, Stream output)
         {
             rc4.SetKey(readonlyKey);
             rc4.Write(input, output);
+            return true;
         }
 
 
@@ -247,13 +249,13 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error reading the data.
 		 */
-        private void EncryptDataAESother(byte[] readonlyKey, Stream data, Stream output, bool decrypt)
+        private bool EncryptDataAESother(byte[] readonlyKey, Stream data, Stream output, bool decrypt)
         {
             byte[] iv = new byte[16];
 
             if (!PrepareAESInitializationVector(decrypt, iv, data, output))
             {
-                return;
+                return false;
             }
 
             try
@@ -274,6 +276,7 @@ namespace PdfClown.Documents.Encryption
                     }
                     output.Write(decryptCipher.TransformFinalBlock(Array.Empty<byte>(), 0, 0));
                 }
+                return true;
             }
             catch (Exception exception)
             {
@@ -283,6 +286,7 @@ namespace PdfClown.Documents.Encryption
                 }
                 Debug.WriteLine("debug: A CryptographicException occurred when decrypting some stream data " + exception);
             }
+            return false;
         }
 
         /**
@@ -294,13 +298,13 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error reading the data.
 		 */
-        private void EncryptDataAES256(Stream data, Stream output, bool decrypt)
+        private bool EncryptDataAES256(Stream data, Stream output, bool decrypt)
         {
             byte[] iv = new byte[16];
 
             if (!PrepareAESInitializationVector(decrypt, iv, data, output))
             {
-                return;
+                return false;
             }
 
             try
@@ -325,6 +329,7 @@ namespace PdfClown.Documents.Encryption
                         }
                     }
                 }
+                return true;
             }
             catch (Exception exception)
             {
@@ -336,6 +341,7 @@ namespace PdfClown.Documents.Encryption
                 }
                 Debug.WriteLine("debug: A CryptographicException occurred when decrypting some stream data " + exception);
             }
+            return false;
         }
 
         private SymmetricAlgorithm CreateCipher(byte[] key, byte[] iv)
@@ -487,9 +493,11 @@ namespace PdfClown.Documents.Encryption
             using (var output = new MemoryStream())
             {
                 stream.encoded = EncodeState.Encoded;
-                EncryptData(objNum, genNum, encryptedStream, output, true /* decrypt */);
-                stream.GetBody(false).SetBuffer(output.ToArray());
-                stream.encoded = EncodeState.Decoded;
+                if (EncryptData(objNum, genNum, encryptedStream, output, true /* decrypt */))
+                {
+                    stream.GetBody(false).SetBuffer(output.ToArray());
+                    stream.encoded = EncodeState.Decoded;
+                }
             }
         }
 
@@ -509,8 +517,10 @@ namespace PdfClown.Documents.Encryption
             using (var encryptedStream = new MemoryStream(stream.GetBody(false).GetBuffer()))
             using (var output = new MemoryStream())
             {
-                EncryptData(objNum, genNum, encryptedStream, output, false /* encrypt */);
-                stream.GetBody(false).SetBuffer(output.ToArray());
+                if (EncryptData(objNum, genNum, encryptedStream, output, false /* encrypt */))
+                {
+                    stream.GetBody(false).SetBuffer(output.ToArray());
+                }
             }
         }
 
@@ -544,11 +554,7 @@ namespace PdfClown.Documents.Encryption
                     continue;
                 }
                 var value = entry.Value;
-                // within a dictionary only the following kind of Pdf objects have to be decrypted
-                if (value is PdfString || value is PdfArray || value is PdfDictionary)
-                {
-                    Decrypt(value, objNum, genNum);
-                }
+                Decrypt(value, objNum, genNum);
             }
         }
 
@@ -574,8 +580,10 @@ namespace PdfClown.Documents.Encryption
             {
                 try
                 {
-                    EncryptData(objNum, genNum, data, outputStream, true /* decrypt */);
-                    pdfString.SetBuffer(outputStream.ToArray());
+                    if (EncryptData(objNum, genNum, data, outputStream, true /* decrypt */))
+                    {
+                        pdfString.SetBuffer(outputStream.ToArray());
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -598,8 +606,10 @@ namespace PdfClown.Documents.Encryption
             using (var data = new MemoryStream(pdfString.GetBuffer()))
             using (var buffer = new MemoryStream())
             {
-                EncryptData(objNum, genNum, data, buffer, false /* encrypt */);
-                pdfString.SetBuffer(buffer.GetBuffer());
+                if (EncryptData(objNum, genNum, data, buffer, false /* encrypt */))
+                {
+                    pdfString.SetBuffer(buffer.GetBuffer());
+                }
             }
         }
 
@@ -616,7 +626,7 @@ namespace PdfClown.Documents.Encryption
         {
             for (int i = 0; i < array.Count; i++)
             {
-                Decrypt(array.Resolve(i), objNum, genNum);
+                Decrypt(array[i], objNum, genNum);
             }
         }
 

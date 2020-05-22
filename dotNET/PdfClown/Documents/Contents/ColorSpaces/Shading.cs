@@ -300,8 +300,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             {
                 var array = Dictionary[PdfName.Coords] as PdfArray;
                 var coords = new SKPoint3[] {
-                    new SKPoint3(((PdfReal)array[0]).FloatValue, ((PdfReal)array[1]).FloatValue, ((PdfReal)array[2]).FloatValue),
-                    new SKPoint3(((PdfReal)array[3]).FloatValue, ((PdfReal)array[4]).FloatValue, ((PdfReal)array[5]).FloatValue),
+                    new SKPoint3(array.GetFloat(0), array.GetFloat(1), array.GetFloat(2)),
+                    new SKPoint3(array.GetFloat(3), array.GetFloat(4), array.GetFloat(5)),
                 };
                 return coords;
             }

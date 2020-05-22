@@ -100,7 +100,7 @@ namespace PdfClown.Documents.Contents
                 }
             }
 
-            public long Position => basePosition + stream.Position;
+            public long Position => basePosition + (stream?.Position ?? 0);
 
             public int Read(byte[] data)
             { return Read(data, 0, data.Length); }

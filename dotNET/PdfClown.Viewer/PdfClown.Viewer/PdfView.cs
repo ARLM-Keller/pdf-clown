@@ -620,7 +620,8 @@ namespace PdfClown.Viewer
         private bool OnTouchText(PdfPagePicture picture, SKTouchEventArgs e)
         {
             var textSelectionChanged = false;
-            foreach (var textString in picture.Page.Strings)
+            var page = picture.Page;
+            foreach (var textString in page.Strings)
             {
                 foreach (var textChar in textString.TextChars)
                 {
@@ -643,7 +644,7 @@ namespace PdfClown.Viewer
             {
                 var firstCharIndex = startSelectionChar.TextString.TextChars.IndexOf(startSelectionChar);
                 var firstString = startSelectionChar.TextString;
-                var firstStringIndex = picture.Page.Strings.IndexOf(firstString);
+                var firstStringIndex = page.Strings.IndexOf(firstString);
                 var firstMiddle = startSelectionChar.Quad.Middle.Value;
                 var line = new SKLine(firstMiddle, CurrentPointerLocation);
                 TextSelection.Clear();
@@ -653,9 +654,9 @@ namespace PdfClown.Viewer
                 }
                 else
                 {
-                    for (int i = firstStringIndex == 0 ? 0 : firstStringIndex - 1; i < picture.Page.Strings.Count; i++)
+                    for (int i = firstStringIndex == 0 ? 0 : firstStringIndex - 1; i < page.Strings.Count; i++)
                     {
-                        var textString = picture.Page.Strings[i];
+                        var textString = page.Strings[i];
                         foreach (var textChar in textString.TextChars)
                         {
                             if (SKLine.FindIntersection(line, textChar.Quad, true) != null)

@@ -135,9 +135,8 @@ namespace PdfClown.Bytes
 
         private bool dirty;
         private int mark;
-        private bool bitSkipNext;
-        private int bitBufferSize;
-        private int bitBuffer;
+        private int bitShift = -1;
+        private byte currentByte;
         #endregion
 
         #region constructors
@@ -429,31 +428,26 @@ namespace PdfClown.Bytes
             }
             return buffer.ToString();
         }
-
-        public int ReadBits(int count)
+        public int ReadBit()
         {
-            while (bitBufferSize < count)
+            if (bitShift < 0)
             {
-                var b = data[position];
-                position++;
-                if (bitSkipNext)
-                {
-                    bitBuffer = (bitBuffer << 7) | b;
-                    bitBufferSize += 7;
-                    bitSkipNext = false;
-                }
-                else
-                {
-                    bitBuffer = (bitBuffer << 8) | b;
-                    bitBufferSize += 8;
-                }
-                if (b == 0xff)
-                {
-                    bitSkipNext = true;
-                }
+                currentByte = data[position++];
+                bitShift = 7;
             }
-            bitBufferSize -= count;
-            return (int)(((uint)bitBuffer) >> bitBufferSize) & ((1 << count) - 1);
+            var bit = (currentByte >> bitShift) & 1;
+            bitShift--;
+            return bit;
+        }
+
+        public uint ReadBits(int count)
+        {
+            var result = (uint)0;
+            for (int i = count - 1; i >= 0; i--)
+            {
+                result |= (uint)(ReadBit() << i);
+            }
+            return result;
         }
 
         public short ReadShort()

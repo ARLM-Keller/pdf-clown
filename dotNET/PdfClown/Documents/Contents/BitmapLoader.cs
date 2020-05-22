@@ -279,7 +279,6 @@ namespace PdfClown.Documents.Contents
 
         public void GetColor(int y, int x, int index, ref float[] components)
         {
-            var componentIndex = index * componentsCount;
             if (bitsPerComponent == 1)
             {
                 for (int i = 0; i < componentsCount; i++)
@@ -296,7 +295,6 @@ namespace PdfClown.Documents.Contents
                     }
                     var interpolate = indexed ? value : min + (value * (interpolateConst));
                     components[i] = interpolate;
-                    componentIndex++;
                 }
             }
             else if (bitsPerComponent == 2)
@@ -315,21 +313,84 @@ namespace PdfClown.Documents.Contents
                     }
                     var interpolate = indexed ? value : min + (value * (interpolateConst));
                     components[i] = interpolate;
-                    componentIndex++;
+                }
+            }
+            else if (bitsPerComponent == 4)
+            {
+                for (int i = 0; i < componentsCount; i++)
+                {
+                    var byteIndex = (rowBytes * y) + x / 2;
+                    var byteValue = buffer[byteIndex];
+                    //if (emptyBytes)
+                    //    byteIndex += y;
+                    var bitIndex = 4 - (x % 2) * 4;
+                    var value = ((byteValue >> bitIndex) & 0b1111);
+                    if (decode[0] == 1)
+                    {
+                        value = 3 - value;
+                    }
+                    var interpolate = indexed ? value : min + (value * (interpolateConst));
+                    components[i] = interpolate;
                 }
             }
             else if (bitsPerComponent == 8)
             {
+                var componentIndex = index * componentsCount;
                 for (int i = 0; i < componentsCount; i++)
                 {
-                    var value = componentIndex < buffer.Length ? buffer[componentIndex] : 0;
+                    var value = buffer[componentIndex];
                     if (decode[0] == 1)
                     {
-                        value = 255 - value;
+                        value = (byte)(255 - value);
                     }
                     var interpolate = indexed ? value : min + (value * (interpolateConst));
                     components[i] = interpolate;
                     componentIndex++;
+                }
+            }
+            else if (bitsPerComponent == 16)
+            {
+                var componentIndex = index * componentsCount * 2;
+                for (int i = 0; i < componentsCount; i++)
+                {
+                    var value = (buffer[componentIndex] << 8) + (buffer[componentIndex + 1] << 0);
+                    if (decode[0] == 1)
+                    {
+                        value = ushort.MaxValue - value;
+                    }
+                    var interpolate = indexed ? value : min + (value * (interpolateConst));
+                    components[i] = interpolate;
+                    componentIndex += 2;
+                }
+            }
+            else if (bitsPerComponent == 24)
+            {
+                var componentIndex = index * componentsCount * 3;
+                for (int i = 0; i < componentsCount; i++)
+                {
+                    var value = (buffer[componentIndex] << 16) | (buffer[componentIndex + 1] << 8) | (buffer[componentIndex + 1] << 0);
+                    if (decode[0] == 1)
+                    {
+                        value = ushort.MaxValue - value;
+                    }
+                    var interpolate = indexed ? value : min + (value * (interpolateConst));
+                    components[i] = interpolate;
+                    componentIndex += 3;
+                }
+            }
+            else if (bitsPerComponent == 32)
+            {
+                var componentIndex = index * componentsCount * 4;
+                for (int i = 0; i < componentsCount; i++)
+                {
+                    var value = (buffer[componentIndex] << 24) | (buffer[componentIndex + 1] << 16) | (buffer[componentIndex + 2] << 8) | (buffer[componentIndex + 3] << 0);
+                    if (decode[0] == 1)
+                    {
+                        value = ushort.MaxValue - value;
+                    }
+                    var interpolate = indexed ? value : min + (value * (interpolateConst));
+                    components[i] = interpolate;
+                    componentIndex += 4;
                 }
             }
             else

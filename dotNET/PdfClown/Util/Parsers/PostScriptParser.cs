@@ -480,6 +480,36 @@ namespace PdfClown.Util.Parsers
         }
 
         /**
+          <summary>Moves the pointer to first entires of specified key char sequence.</summary>
+          <returns>Whether the stream can be further read.</returns>
+        */
+        public bool SkipKey(string key)
+        {
+            int c;
+            int index = 0;
+            while (true)
+            {
+                c = stream.ReadByte();
+                if (c == -1)
+                    return false;
+                else if (c < char.MaxValue && (char)c == key[index])
+                {
+                    index++;
+                    if (index == key.Length)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    index = 0;
+                }
+            }
+            stream.Skip(-(key.Length + 1)); // Moves back to the first non-EOL character position (ready to read the next token).
+            return true;
+        }
+
+        /**
           <summary>Moves the pointer after the current whitespace sequence (that is just before the
           non-whitespace character following the whitespace sequence).</summary>
           <returns>Whether the stream can be further read.</returns>

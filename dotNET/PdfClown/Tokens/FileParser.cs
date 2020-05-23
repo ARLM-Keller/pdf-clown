@@ -158,9 +158,24 @@ namespace PdfClown.Tokens
                     */
                     long position = stream.Position;
                     // Get the stream length!
-                    int length = ((PdfInteger)streamHeader.Resolve(PdfName.Length)).IntValue;
+                    int length = streamHeader.GetInt(PdfName.Length, 0);
                     // Move to the stream data beginning!
                     stream.Seek(position); SkipEOL();
+                    if (length == 0)
+                    {
+                        System.Diagnostics.Debug.Write($"warning: Repair Stream Object missing {PdfName.Length} header parameter");
+                        position = stream.Position;
+                        if (SkipKey(Keyword.EndStream))
+                        {
+                            length = (int)(stream.Position - position);
+                            streamHeader[PdfName.Length] = PdfInteger.Get(length);
+                            stream.Seek(position);
+                        }
+                        else
+                        {
+                            throw new Exception($"Pdf Stream Object missing {Keyword.EndStream} Keyword");
+                        }
+                    }
 
                     // Copy the stream data to the instance!
                     byte[] data = new byte[length];
@@ -270,10 +285,18 @@ namespace PdfClown.Tokens
             if (TokenType != TokenTypeEnum.Integer)
                 throw new PostScriptParseException("'" + Keyword.StartXRef + "' value invalid.", this);
             var xrefPosition = (int)Token;
+
+            //TODO Coplete Repair
+            stream.Seek(xrefPosition);
+            MoveNext();
             //Repair
-            if (xrefPosition > streamLength)
+            if (xrefPosition > streamLength
+                || TokenType != TokenTypeEnum.Keyword
+                || !string.Equals(Token?.ToString(), Keyword.XRef, StringComparison.Ordinal))
             {
-                xrefPosition = (int)position + text.LastIndexOf("\n" + Keyword.XRef, StringComparison.Ordinal);
+                var refIndex = text.LastIndexOf("\n" + Keyword.XRef, StringComparison.Ordinal);
+                if (refIndex > 0)
+                    xrefPosition = (int)position + refIndex;
             }
             return xrefPosition;
         }

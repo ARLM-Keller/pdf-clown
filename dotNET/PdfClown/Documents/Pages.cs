@@ -65,6 +65,8 @@ namespace PdfClown.Documents
             */
             private Stack<int> levelIndexes = new Stack<int>();
 
+            private HashSet<PdfArray> containers = new HashSet<PdfArray>();
+
             /**
               <summary>Current child tree nodes.</summary>
             */
@@ -142,6 +144,9 @@ namespace PdfClown.Documents
                                 // Move downward!
                                 parent = kid;
                                 kids = (PdfArray)parent.Resolve(PdfName.Kids);
+                                if (containers.Contains(kids))
+                                    return false;
+                                containers.Add(kids);
                                 levelIndex = 0; // First node (new level).
                             }
                         }

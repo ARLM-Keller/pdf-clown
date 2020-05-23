@@ -228,7 +228,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public void OnSetCtm(SKMatrix ctm)
         {
-            
+
         }
         #endregion
 

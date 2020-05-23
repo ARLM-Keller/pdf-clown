@@ -121,7 +121,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             set => Dictionary[PdfName.AntiAlias] = PdfBoolean.Get(value);
         }
 
-        public virtual SKShader GetShader()
+        public virtual SKShader GetShader(SKMatrix sKMatrix)
         {
             return null;
         }
@@ -263,7 +263,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     );
         }
 
-        public override SKShader GetShader()
+        public override SKShader GetShader(SKMatrix sKMatrix)
         {
             var coords = Coords;
             var colorSpace = ColorSpace;
@@ -279,7 +279,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 colors[i] = colorSpace.GetSKColor(result, null);
             }
 
-            return SKShader.CreateLinearGradient(coords[0], coords[1], colors, domain, SKShaderTileMode.Clamp);
+            return SKShader.CreateLinearGradient(coords[0], coords[1], colors, domain, SKShaderTileMode.Clamp, sKMatrix);
         }
 
     }
@@ -351,7 +351,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     );
         }
 
-        public override SKShader GetShader()
+        public override SKShader GetShader(SKMatrix sKMatrix)
         {
             var coords = Coords;
             var colorSpace = ColorSpace;
@@ -369,7 +369,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
             return SKShader.CreateTwoPointConicalGradient(new SKPoint(coords[0].X, coords[0].Y), coords[0].Z,
                                                           new SKPoint(coords[1].X, coords[1].Y), coords[1].Z,
-                                                          colors, domain, SKShaderTileMode.Clamp);
+                                                          colors, domain, SKShaderTileMode.Clamp, sKMatrix);
         }
     }
 
@@ -461,9 +461,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
 
 
-        public override SKShader GetShader()
+        public override SKShader GetShader(SKMatrix matrix)
         {
-            return base.GetShader();
+            return base.GetShader(matrix);
         }
     }
 

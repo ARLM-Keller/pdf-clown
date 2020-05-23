@@ -28,6 +28,7 @@ using colorSpaces = PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
 
 using System.Collections.Generic;
+using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -82,7 +83,7 @@ namespace PdfClown.Documents.Contents.Objects
             {
                 var shading = GetShading(scanner.ContentContext);
                 var paint = state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha);
-                paint.Shader = shading?.GetShader();
+                paint.Shader = shading?.GetShader(SKMatrix.Identity);
                 scanner.RenderContext.DrawPaint(paint);
             }
         }

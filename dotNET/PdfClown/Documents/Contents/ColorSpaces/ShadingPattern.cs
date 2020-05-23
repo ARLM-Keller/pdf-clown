@@ -63,7 +63,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public SKShader GetShader()
         {
-            return Shading.GetShader();
+            return Shading.GetShader(SKMatrix);
         }
         #endregion
         #endregion

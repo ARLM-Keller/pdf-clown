@@ -654,8 +654,8 @@ namespace PdfClown.Viewer
                 }
                 else
                 {
-                    for (int i = firstStringIndex == 0 ? 0 : firstStringIndex - 1; i < page.Strings.Count; i++)
-                    {
+                    for (int i = firstStringIndex < 1 ? 0 : firstStringIndex - 1; i < page.Strings.Count; i++)
+                    { 
                         var textString = page.Strings[i];
                         foreach (var textChar in textString.TextChars)
                         {

@@ -417,11 +417,11 @@ namespace PdfClown.Documents.Contents
         {
             var info = new SKImageInfo(width, height)
             {
-                AlphaType = SKAlphaType.Premul,
+                AlphaType = SKAlphaType.Unpremul,
             };
             if (iccColorSpace != null)
             {
-                info.ColorSpace = iccColorSpace.GetSKColorSpace();
+                //info.ColorSpace = iccColorSpace.GetSKColorSpace();
             }
             // create the buffer that will hold the pixels
             var raster = new uint[info.Width * info.Height];//var bitmap = new SKBitmap();
@@ -476,7 +476,7 @@ namespace PdfClown.Documents.Contents
         {
             var info = new SKImageInfo(width, height)
             {
-                AlphaType = SKAlphaType.Opaque,
+                AlphaType = SKAlphaType.Unpremul,
                 ColorType = SKColorType.Gray8
             };
             // create the buffer that will hold the pixels
@@ -517,9 +517,8 @@ namespace PdfClown.Documents.Contents
             var info = new SKImageInfo(width, height)
             {
                 AlphaType = SKAlphaType.Opaque,
-                ColorType = SKColorType.Gray8
+                ColorType = SKColorType.Alpha8
             };
-            var skColor = state.FillColorSpace.GetSKColor(state.FillColor);
             var raster = new byte[info.Width * info.Height];
 
             for (int y = 0; y < info.Height; y++)
@@ -535,13 +534,13 @@ namespace PdfClown.Documents.Contents
                         var byteValue = buffer[byteIndex];
 
                         var bitIndex = 7 - x % 8;
-                        value = ((byteValue >> bitIndex) & 1) == 0 ? (byte)0 : (byte)255;
+                        value = ((byteValue >> bitIndex) & 1) == 0 ? (byte)255 : (byte)0;
                         if (decode[0] == 1)
                         {
                             value = value == 0 ? (byte)255 : (byte)0;
                         }
                     }
-                    else
+                    else if (bitsPerComponent == 8)
                     {
                         value = buffer[index];
                         if (decode[0] == 1)
@@ -549,35 +548,8 @@ namespace PdfClown.Documents.Contents
                             value = (byte)(255 - value);
                         }
                     }
-                    raster[index] = value;// (int)(uint)skColor.WithAlpha(value);
-                }
-            }
-
-            // get a pointer to the buffer, and give it to the bitmap
-            var ptr = GCHandle.Alloc(raster, GCHandleType.Pinned);
-            var bitmap = new SKBitmap();
-            bitmap.InstallPixels(info, ptr.AddrOfPinnedObject(), info.RowBytes, (addr, ctx) => ptr.Free(), null);
-
-            return bitmap;
-        }
-
-        public SKBitmap LoadAlpha()
-        {
-            var info = new SKImageInfo(width, height)
-            {
-                AlphaType = SKAlphaType.Opaque,
-                ColorType = SKColorType.Alpha8
-            };
-            var raster = new byte[info.Width * info.Height];
-
-            for (int y = 0; y < info.Height; y++)
-            {
-                var row = y * info.Width;
-                for (int x = 0; x < info.Width; x++)
-                {
-                    var index = (row + x);
-                    byte value = 0;
-                    value = index < buffer.Length ? buffer[index] : (byte)0;
+                    else
+                    { }
                     raster[index] = value;// (int)(uint)skColor.WithAlpha(value);
                 }
             }

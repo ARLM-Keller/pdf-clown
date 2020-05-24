@@ -107,8 +107,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public ColorSpace ColorSpace
         {
-            get { return ImageHeader.ColorSpace ?? Context.Resources.ColorSpaces[(PdfName)ImageHeader.ColorSpaceObject]; }
-
+            get => ImageHeader.ColorSpace ?? Context.Resources.ColorSpaces[(PdfName)ImageHeader.ColorSpaceObject];
         }
 
         public PdfArray Matte => null;
@@ -128,9 +127,31 @@ namespace PdfClown.Documents.Contents.Objects
                     matrix = matrix.PreConcat(Matrix);
                     matrix = matrix.PreConcat(SKMatrix.MakeTranslation(0, -size.Height));
                     canvas.SetMatrix(matrix);
-                    var rect = SKRect.Create(0, 0, size.Width, size.Height);
-                    var test = canvas.TotalMatrix.MapRect(rect);
-                    canvas.DrawBitmap(image, 0, 0, new SKPaint { FilterQuality = SKFilterQuality.Medium });
+
+                    if (ImageMask)
+                    {
+                        using (var paint = state.CreateFillPaint())
+                        {
+                            var r = paint.Color.Red / 255F;
+                            var g = paint.Color.Green / 255F;
+                            var b = paint.Color.Blue / 255F;
+                            var a = paint.Color.Alpha / 255F;
+                            paint.ColorFilter = SKColorFilter.CreateColorMatrix(
+                                new float[] {
+                                    r, 0, 0, 0, 0,
+                                    0, g, 0, 0, 0,
+                                    0, 0, b, 0, 0,
+                                    0, 0, 0, a, 0});
+                            canvas.DrawBitmap(image, 0, 0, paint);
+                        }
+                    }
+                    else
+                    {
+                        using (var paint = state.CreateFillPaint())
+                        {
+                            canvas.DrawBitmap(image, 0, 0, paint);
+                        }
+                    }
                 }
             }
         }

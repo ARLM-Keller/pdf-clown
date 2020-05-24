@@ -112,7 +112,24 @@ namespace PdfClown.Documents.Contents.Objects
                         imageMatrix = imageMatrix.PreConcat(SKMatrix.MakeTranslation(0, -size.Height));
                         canvas.Concat(ref imageMatrix);
 
-                        if (state.SMask is SoftMask softMask)
+                        if (imageObject.ImageMask)
+                        {
+                            using (var paint = state.CreateFillPaint())
+                            {
+                                var r = paint.Color.Red / 255F;
+                                var g = paint.Color.Green / 255F;
+                                var b = paint.Color.Blue / 255F;
+                                var a = paint.Color.Alpha / 255F;
+                                paint.ColorFilter = SKColorFilter.CreateColorMatrix(
+                                    new float[] {
+                                    r, 0, 0, 0, 0,
+                                    0, g, 0, 0, 0,
+                                    0, 0, b, 0, 0,
+                                    0, 0, 0, a, 0});
+                                canvas.DrawBitmap(image, 0, 0, paint);
+                            }
+                        }
+                        else if (state.SMask is SoftMask softMask)
                         {
                             using (var recorder = new SKPictureRecorder())
                             using (var recorderCanvas = recorder.BeginRecording(new SKRect(0, 0, image.Width, image.Height)))

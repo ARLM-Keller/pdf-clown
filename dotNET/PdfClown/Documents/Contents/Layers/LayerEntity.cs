@@ -35,8 +35,7 @@ namespace PdfClown.Documents.Contents.Layers
       <summary>Layer entity.</summary>
     */
     [PDF(VersionEnum.PDF15)]
-    public abstract class LayerEntity
-      : PropertyList
+    public abstract class LayerEntity : PropertyList
     {
         #region types
         /**

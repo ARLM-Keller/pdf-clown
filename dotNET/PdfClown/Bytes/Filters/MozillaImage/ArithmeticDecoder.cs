@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
 
 /* eslint no-var: error */
 namespace PdfClown.Bytes.Filters
@@ -26,7 +25,7 @@ namespace PdfClown.Bytes.Filters
      * The arithmetic decoder is used in conjunction with context models to decode
      * JPEG2000 and JBIG2 streams.
      */
-    public class ArithmeticDecoder
+    internal class ArithmeticDecoder
     {
         public struct Qe
         {
@@ -232,38 +231,7 @@ namespace PdfClown.Bytes.Filters
         }
         sbyte ToSByte(int v)
         {
-            if (v > 127)
-            {
-                return 127;
-            }
-            if (v < -127)
-            {
-                return -127;
-            }
             return (sbyte)v;
-        }
-    }
-    public static class Extensions
-    {
-        public static byte ReadInt8(this byte[] data, int offset)
-        {
-            return (byte)((data[offset] << 24) >> 24);
-        }
-
-        public static ushort ReadUint16(this byte[] data, int offset)
-        {
-            return (ushort)((data[offset] << 8) | data[offset + 1]);
-        }
-
-        public static uint ReadUint32(this byte[] data, int offset)
-        {
-            return (
-              ((uint)((data[offset] << 24) |
-                (data[offset + 1] << 16) |
-                (data[offset + 2] << 8) |
-                data[offset + 3])) >>
-              0
-            );
         }
     }
 }

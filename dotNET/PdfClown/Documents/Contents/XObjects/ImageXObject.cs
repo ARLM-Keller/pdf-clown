@@ -89,7 +89,7 @@ namespace PdfClown.Documents.Contents.XObjects
         {
             get
             {
-                SKSize size = Size;
+                var size = Size;
                 /*
                   NOTE: Image-space-to-user-space matrix is [1/w 0 0 1/h 0 0],
                   where w and h are the width and height of the image in samples [PDF:1.6:4.8.3].

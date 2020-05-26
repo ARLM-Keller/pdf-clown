@@ -735,18 +735,6 @@ namespace PdfClown.Bytes.Filters.Jpx
 
 
 
-        // Calculate the base 2 logarithm of the number `x`. This differs from the
-        // native function in the sense that it returns the ceiling value and that it
-        // returns 0 instead of `Infinity`/`NaN` for `x` values smaller than/equal to 0.
-        public static int log2(double x)
-        {
-            if (x <= 0)
-            {
-                return 0;
-            }
-            return (int)Math.Ceiling(Math.Log(x, 2D));
-        }
-
         internal int? GetPrecinctIndexIfExist(int pxIndex, int pyIndex, Size sizeInImageScale, PrecinctSizes precinctIterationSizes, Resolution resolution)
         {
             var posX = pxIndex * precinctIterationSizes.minWidth;
@@ -1077,7 +1065,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             // building inclusion and zero bit-planes trees
                             var width = precinct.cbxMax - precinct.cbxMin + 1;
                             var height = precinct.cbyMax - precinct.cbyMin + 1;
-                            inclusionTree = new InclusionTree(width, height, ToByte(layerNumber));
+                            inclusionTree = new InclusionTree(width, height, FiltersExtension.ToByte(layerNumber));
                             zeroBitPlanesTree = new TagTree(width, height);
                             precinct.inclusionTree = inclusionTree;
                             precinct.zeroBitPlanesTree = zeroBitPlanesTree;
@@ -1135,7 +1123,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                     {
                         codeblock.Lblock++;
                     }
-                    var codingpassesLog2 = log2(codingpasses);
+                    var codingpassesLog2 = FiltersExtension.Log2(codingpasses);
                     // rounding down log2
                     var bits =
                       (codingpasses < 1 << codingpassesLog2
@@ -1422,9 +1410,9 @@ namespace PdfClown.Bytes.Filters.Jpx
                             y0 = y0items[j] + offset;
                             y1 = y1items[j];
                             y2 = y2items[j];
-                            output[pos++] = ToByte((int)(y0 + 1.402D * y2) >> shift);
-                            output[pos++] = ToByte((int)(y0 - 0.34413D * y1 - 0.71414D * y2) >> shift);
-                            output[pos++] = ToByte((int)(y0 + 1.772D * y1) >> shift);
+                            output[pos++] = FiltersExtension.ToByte((int)(y0 + 1.402D * y2) >> shift);
+                            output[pos++] = FiltersExtension.ToByte((int)(y0 - 0.34413D * y1 - 0.71414D * y2) >> shift);
+                            output[pos++] = FiltersExtension.ToByte((int)(y0 + 1.772D * y1) >> shift);
                         }
                     }
                     else
@@ -1437,16 +1425,16 @@ namespace PdfClown.Bytes.Filters.Jpx
                             y2 = y2items[j];
                             var g = y0 - ((int)(y2 + y1) >> 2);
 
-                            output[pos++] = ToByte((int)(g + y2) >> shift);
-                            output[pos++] = ToByte((int)g >> shift);
-                            output[pos++] = ToByte((int)(g + y1) >> shift);
+                            output[pos++] = FiltersExtension.ToByte((int)(g + y2) >> shift);
+                            output[pos++] = FiltersExtension.ToByte((int)g >> shift);
+                            output[pos++] = FiltersExtension.ToByte((int)(g + y1) >> shift);
                         }
                     }
                     if (fourComponents)
                     {
                         for (j = 0, pos = 3; j < jj; j++, pos += 4)
                         {
-                            output[pos] = ToByte((int)(y3items[j] + offset) >> shift);
+                            output[pos] = FiltersExtension.ToByte((int)(y3items[j] + offset) >> shift);
                         }
                     }
                 }
@@ -1460,7 +1448,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                         offset = (128 << shift) + 0.5D;
                         for (pos = c, j = 0, jj = items.Length; j < jj; j++)
                         {
-                            output[pos] = ToByte((int)(items[j] + offset) >> shift);
+                            output[pos] = FiltersExtension.ToByte((int)(items[j] + offset) >> shift);
                             pos += componentsCount;
                         }
                     }
@@ -1468,13 +1456,6 @@ namespace PdfClown.Bytes.Filters.Jpx
                 resultImages.Add(result);
             }
             return resultImages;
-        }
-
-        internal static byte ToByte(int value)
-        {
-            if (value > 255 || value < 0)
-            { }
-            return value > 255 ? (byte)255 : value < 0 ? (byte)0 : (byte)value;
         }
 
         void InitializeTile(Context context, int tileIndex)
@@ -1926,7 +1907,7 @@ namespace PdfClown.Bytes.Filters.Jpx
         // eslint-disable-next-line no-shadow
         public InclusionTree(int width, int height, byte defaultValue)
         {
-            var levelsLength = JpxImage.log2(Math.Max(width, height)) + 1;
+            var levelsLength = FiltersExtension.Log2(Math.Max(width, height)) + 1;
             this.levels = new List<Level>();
             for (var i = 0; i < levelsLength; i++)
             {
@@ -1977,7 +1958,7 @@ namespace PdfClown.Bytes.Filters.Jpx
         public void IncrementValue(int stopValue)
         {
             var level = this.levels[this.currentLevel];
-            level.items[level.index] = JpxImage.ToByte(stopValue + 1);
+            level.items[level.index] = FiltersExtension.ToByte(stopValue + 1);
             this.PropagateValues();
         }
 
@@ -2020,7 +2001,7 @@ namespace PdfClown.Bytes.Filters.Jpx
         // eslint-disable-next-line no-shadow
         public TagTree(int width, int height)
         {
-            var levelsLength = JpxImage.log2(Math.Max(width, height)) + 1;
+            var levelsLength = FiltersExtension.Log2(Math.Max(width, height)) + 1;
             this.levels = new List<Level>();
             for (var i = 0; i < levelsLength; i++)
             {
@@ -2095,7 +2076,7 @@ namespace PdfClown.Bytes.Filters.Jpx
     }
 
     // Section D. Coefficient bit modeling
-    public class BitModel
+    internal class BitModel
     {
         public static readonly int UNIFORM_CONTEXT = 17;
         public static readonly int RUNLENGTH_CONTEXT = 18;
@@ -2104,22 +2085,23 @@ namespace PdfClown.Bytes.Filters.Jpx
         // vv - sum of Vi (0..2), and hh - sum of Hi (0..2)
         // prettier-ignore
         public static readonly byte[] LLAndLHContextsLabel = new byte[]{
-      0, 5, 8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 1, 6, 8, 0, 3, 7, 8, 0, 4,
-      7, 8, 0, 0, 0, 0, 0, 2, 6, 8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 2, 6,
-      8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 2, 6, 8, 0, 3, 7, 8, 0, 4, 7, 8
-    };
+            0, 5, 8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 1, 6, 8, 0, 3, 7, 8, 0, 4,
+            7, 8, 0, 0, 0, 0, 0, 2, 6, 8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 2, 6,
+            8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 2, 6, 8, 0, 3, 7, 8, 0, 4, 7, 8
+        };
         // prettier-ignore
         public static readonly byte[] HLContextLabel = new byte[]{
-      0, 3, 4, 0, 5, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 1, 3, 4, 0, 6, 7, 7, 0, 8,
-      8, 8, 0, 0, 0, 0, 0, 2, 3, 4, 0, 6, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 2, 3,
-      4, 0, 6, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 2, 3, 4, 0, 6, 7, 7, 0, 8, 8, 8
-    };
+            0, 3, 4, 0, 5, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 1, 3, 4, 0, 6, 7, 7, 0, 8,
+            8, 8, 0, 0, 0, 0, 0, 2, 3, 4, 0, 6, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 2, 3,
+            4, 0, 6, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 2, 3, 4, 0, 6, 7, 7, 0, 8, 8, 8
+        };
         // prettier-ignore
         public static readonly byte[] HHContextLabel = new byte[]{
-      0, 1, 2, 0, 1, 2, 2, 0, 2, 2, 2, 0, 0, 0, 0, 0, 3, 4, 5, 0, 4, 5, 5, 0, 5,
-      5, 5, 0, 0, 0, 0, 0, 6, 7, 7, 0, 7, 7, 7, 0, 7, 7, 7, 0, 0, 0, 0, 0, 8, 8,
-      8, 0, 8, 8, 8, 0, 8, 8, 8, 0, 0, 0, 0, 0, 8, 8, 8, 0, 8, 8, 8, 0, 8, 8, 8
-    };
+            0, 1, 2, 0, 1, 2, 2, 0, 2, 2, 2, 0, 0, 0, 0, 0, 3, 4, 5, 0, 4, 5, 5, 0, 5,
+            5, 5, 0, 0, 0, 0, 0, 6, 7, 7, 0, 7, 7, 7, 0, 7, 7, 7, 0, 0, 0, 0, 0, 8, 8,
+            8, 0, 8, 8, 8, 0, 8, 8, 8, 0, 0, 0, 0, 0, 8, 8, 8, 0, 8, 8, 8, 0, 8, 8, 8
+        };
+
         internal int width;
         internal int height;
         internal byte[] contextLabelTable;
@@ -2282,7 +2264,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             break;
                         }
                         // clear processed flag first
-                        processingFlags[index] = JpxImage.ToByte(processingFlags[index] & processedInverseMask);
+                        processingFlags[index] = FiltersExtension.ToByte(processingFlags[index] & processedInverseMask);
 
                         if (coefficentsMagnitude[index] != 0 ||
                           neighborsSignificance[index] == 0)
@@ -2295,13 +2277,13 @@ namespace PdfClown.Bytes.Filters.Jpx
                         if (decision != 0)
                         {
                             var sign = this.DecodeSignBit(i, j, index);
-                            coefficentsSign[index] = JpxImage.ToByte(sign);
+                            coefficentsSign[index] = FiltersExtension.ToByte(sign);
                             coefficentsMagnitude[index] = 1;
                             this.SetNeighborsSignificance(i, j, index);
-                            processingFlags[index] = JpxImage.ToByte(processingFlags[index] | firstMagnitudeBitMask);
+                            processingFlags[index] = FiltersExtension.ToByte(processingFlags[index] | firstMagnitudeBitMask);
                         }
                         bitsDecoded[index]++;
-                        processingFlags[index] = JpxImage.ToByte(processingFlags[index] | processedMask);
+                        processingFlags[index] = FiltersExtension.ToByte(processingFlags[index] | processedMask);
                     }
                 }
             }
@@ -2416,7 +2398,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                         var contextLabel = 16;
                         if ((processingFlags[index] & firstMagnitudeBitMask) != 0)
                         {
-                            processingFlags[index] = JpxImage.ToByte(processingFlags[index] ^ firstMagnitudeBitMask);
+                            processingFlags[index] = FiltersExtension.ToByte(processingFlags[index] ^ firstMagnitudeBitMask);
                             // first refinement
                             var significance = neighborsSignificance[index] & 127;
                             contextLabel = significance == 0 ? 15 : 14;
@@ -2425,7 +2407,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                         var bit = decoder.ReadBit(contexts, contextLabel);
                         coefficentsMagnitude[index] = (ushort)((coefficentsMagnitude[index] << 1) | bit);
                         bitsDecoded[index]++;
-                        processingFlags[index] = JpxImage.ToByte(processingFlags[index] | processedMask);
+                        processingFlags[index] = FiltersExtension.ToByte(processingFlags[index] | processedMask);
                     }
                 }
             }
@@ -2493,10 +2475,10 @@ namespace PdfClown.Bytes.Filters.Jpx
                         }
 
                         sign = this.DecodeSignBit(i, j, index);
-                        coefficentsSign[index] = JpxImage.ToByte(sign);
+                        coefficentsSign[index] = FiltersExtension.ToByte(sign);
                         coefficentsMagnitude[index] = 1;
                         this.SetNeighborsSignificance(i, j, index);
-                        processingFlags[index] = JpxImage.ToByte(processingFlags[index] | firstMagnitudeBitMask);
+                        processingFlags[index] = FiltersExtension.ToByte(processingFlags[index] | firstMagnitudeBitMask);
 
                         index = index0;
                         for (var i2 = i0; i2 <= i; i2++, index += width)
@@ -2519,10 +2501,10 @@ namespace PdfClown.Bytes.Filters.Jpx
                         if (decision == 1)
                         {
                             sign = this.DecodeSignBit(i, j, index);
-                            coefficentsSign[index] = JpxImage.ToByte(sign);
+                            coefficentsSign[index] = FiltersExtension.ToByte(sign);
                             coefficentsMagnitude[index] = 1;
                             this.SetNeighborsSignificance(i, j, index);
-                            processingFlags[index] = JpxImage.ToByte(processingFlags[index] | firstMagnitudeBitMask);
+                            processingFlags[index] = FiltersExtension.ToByte(processingFlags[index] | firstMagnitudeBitMask);
                         }
                         bitsDecoded[index]++;
                     }

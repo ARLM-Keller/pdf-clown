@@ -80,14 +80,7 @@ namespace PdfClown.Documents.Contents.Objects
         /**
           <summary>Gets the image size.</summary>
         */
-        public SKSize Size
-        {
-            get
-            {
-                InlineImageHeader header = ImageHeader;
-                return new SKSize(header.Width, header.Height);
-            }
-        }
+        public SKSize Size => new SKSize(ImageHeader.Width, ImageHeader.Height);
 
         public SKMatrix Matrix => SKMatrix.MakeScale(1F / ImageHeader.Width, -1F / ImageHeader.Height);
 
@@ -130,18 +123,9 @@ namespace PdfClown.Documents.Contents.Objects
 
                     if (ImageMask)
                     {
-                        using (var paint = state.CreateFillPaint())
+                        using (var paint = new SKPaint())
                         {
-                            var r = paint.Color.Red / 255F;
-                            var g = paint.Color.Green / 255F;
-                            var b = paint.Color.Blue / 255F;
-                            var a = paint.Color.Alpha / 255F;
-                            paint.ColorFilter = SKColorFilter.CreateColorMatrix(
-                                new float[] {
-                                    r, 0, 0, 0, 0,
-                                    0, g, 0, 0, 0,
-                                    0, 0, b, 0, 0,
-                                    0, 0, 0, a, 0});
+                            paint.Color = state.GetFillColor() ?? SKColors.Black;
                             canvas.DrawBitmap(image, 0, 0, paint);
                         }
                     }

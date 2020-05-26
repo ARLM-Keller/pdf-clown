@@ -22,6 +22,7 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes.Filters.JBig;
 using PdfClown.Objects;
 
 using System;
@@ -43,7 +44,29 @@ namespace PdfClown.Bytes.Filters
         #region public
         public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            return data.GetBuffer();
+            var jbig2Image = new Jbig2Image();
+
+            var chunks = new List<ImageChunk>();
+            if (parameters is PdfDictionary parametersDict)
+            {
+                var globalsStream = parametersDict.Resolve(PdfName.JBIG2Globals);
+                if (globalsStream is PdfStream pdfStream)
+                {
+                    var globals = pdfStream.ExtractBody(true).GetBuffer();
+                    chunks.Add(new ImageChunk(data: globals, start: 0, end: globals.Length));
+                }
+            }
+            var buffer = data.GetBuffer();
+            chunks.Add(new ImageChunk(data: buffer, start: 0, end: buffer.Length));
+            var imageData = jbig2Image.ParseChunks(chunks);
+            var dataLength = imageData.Length;
+
+            // JBIG2 had black as 1 and white as 0, inverting the colors
+            for (var i = 0; i < dataLength; i++)
+            {
+                imageData[i] ^= 0xff;
+            }
+            return imageData;
         }
 
         public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
@@ -57,4 +80,6 @@ namespace PdfClown.Bytes.Filters
         #endregion
         #endregion
     }
+
+
 }

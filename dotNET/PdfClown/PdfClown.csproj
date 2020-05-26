@@ -21,9 +21,6 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Bytes\Filters\MozillaImage\jbig2.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Remove="Assets\Comment.svg" />
@@ -513,9 +510,6 @@
     <EmbeddedResource Include="Assets\Paragraph.svg" />
     <EmbeddedResource Include="Assets\PushPin.svg" />
     <EmbeddedResource Include="Assets\Tag.svg" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Bytes\Filters\MozillaImage\Jbig2.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Portable.BouncyCastle" Version="1.8.6.7" />

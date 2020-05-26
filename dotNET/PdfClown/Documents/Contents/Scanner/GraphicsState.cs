@@ -338,6 +338,10 @@ namespace PdfClown.Documents.Contents
             initialCtm = initialCtm.PreConcat(SKMatrix.MakeTranslation(-contentBox.Left, -contentBox.Top)); //TODO: verify minimum coordinates!
             return initialCtm;
         }
+        public SKColor? GetStrokeColor()
+        {
+            return StrokeColorSpace?.GetSKColor(StrokeColor, StrokeAlpha);
+        }
 
         public SKPaint CreateStrokePaint()
         {
@@ -364,6 +368,11 @@ namespace PdfClown.Documents.Contents
                 }
             }
             return paint;
+        }
+
+        public SKColor? GetFillColor()
+        {
+            return FillColorSpace?.GetSKColor(FillColor, FillAlpha);
         }
 
         public SKPaint CreateFillPaint()

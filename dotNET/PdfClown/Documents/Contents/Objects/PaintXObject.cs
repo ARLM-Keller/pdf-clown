@@ -101,7 +101,7 @@ namespace PdfClown.Documents.Contents.Objects
             try
             {
                 canvas.Save();
-                if (xObject is xObjects.ImageXObject imageObject)
+                if (xObject is ImageXObject imageObject)
                 {
                     var image = imageObject.Load(state);
                     if (image != null)
@@ -114,18 +114,9 @@ namespace PdfClown.Documents.Contents.Objects
 
                         if (imageObject.ImageMask)
                         {
-                            using (var paint = state.CreateFillPaint())
+                            using (var paint = new SKPaint())
                             {
-                                var r = paint.Color.Red / 255F;
-                                var g = paint.Color.Green / 255F;
-                                var b = paint.Color.Blue / 255F;
-                                var a = paint.Color.Alpha / 255F;
-                                paint.ColorFilter = SKColorFilter.CreateColorMatrix(
-                                    new float[] {
-                                    r, 0, 0, 0, 0,
-                                    0, g, 0, 0, 0,
-                                    0, 0, b, 0, 0,
-                                    0, 0, 0, a, 0});
+                                paint.Color = state.GetFillColor() ?? SKColors.Black;
                                 canvas.DrawBitmap(image, 0, 0, paint);
                             }
                         }
@@ -151,7 +142,7 @@ namespace PdfClown.Documents.Contents.Objects
                         }
                     }
                 }
-                else if (xObject is xObjects.FormXObject formObject)
+                else if (xObject is FormXObject formObject)
                 {
                     var picture = formObject.Render();
 

@@ -91,10 +91,10 @@ namespace PdfClown.Documents.Contents
                 }
                 return bitmap;
             }
-            //else if (filterItem.Equals(PdfName.JBIG2Decode))
-            //{
-            //    return LoadJBIG(data, parameterItem, imageObject.Header);
-            //}
+            else if (filterItem.Equals(PdfName.JBIG2Decode))
+            {
+                return Bytes.Buffer.Extract(data, filterItem, parameterItem, imageObject.Header);
+            }
             else if (filterItem.Equals(PdfName.JPXDecode))
             {
                 return Bytes.Buffer.Extract(data, filterItem, parameterItem, imageObject.Header);
@@ -141,30 +141,6 @@ namespace PdfClown.Documents.Contents
         //        input.Flush();
         //        input.Position = 0;
         //        FREE_IMAGE_FORMAT format = FreeImage.GetFileTypeFromStream(input);
-        //        var bmp = FreeImage.LoadFromStream(input);
-        //        if (bmp.IsNull)
-        //        {
-        //            return null;
-        //        }
-        //        FreeImage.SaveToStream(bmp, output, FREE_IMAGE_FORMAT.FIF_JPEG, FREE_IMAGE_SAVE_FLAGS.JPEG_OPTIMIZE);
-        //        FreeImage.Unload(bmp);
-        //        output.Flush();
-        //        output.Position = 0;
-        //        return SKBitmap.Decode(output);
-        //    }
-        //}
-
-        //public static SKBitmap LoadJPEG2000(IBuffer jpegStream, PdfDirectObject parameters, PdfDictionary header)
-        //{
-        //    var imageParams = header;
-        //    var width = imageParams.Resolve(PdfName.Width) as PdfInteger;
-        //    var height = imageParams.Resolve(PdfName.Height) as PdfInteger;
-        //    var bpp = imageParams.Resolve(PdfName.BitsPerComponent) as PdfInteger;
-        //    var flag = imageParams.Resolve(PdfName.ImageMask) as PdfBoolean;
-
-        //    using (var output = new MemoryStream())
-        //    using (var input = new MemoryStream(jpegStream.GetBuffer()))
-        //    {
         //        var bmp = FreeImage.LoadFromStream(input);
         //        if (bmp.IsNull)
         //        {
@@ -516,7 +492,7 @@ namespace PdfClown.Documents.Contents
         {
             var info = new SKImageInfo(width, height)
             {
-                AlphaType = SKAlphaType.Opaque,
+                AlphaType = SKAlphaType.Unpremul,
                 ColorType = SKColorType.Alpha8
             };
             var raster = new byte[info.Width * info.Height];

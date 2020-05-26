@@ -61,6 +61,15 @@ namespace PdfClown.Documents.Contents
             if (filterItem.Equals(PdfName.DCTDecode)
                 || filterItem.Equals(PdfName.DCT))
             {
+                //using (var stream = new MemoryStream(data.GetBuffer()))
+                //using (var skiaData = SKData.Create(stream))
+                //using (var codec = SKCodec.Create(skiaData))
+                //{
+                //    var sizei = codec.GetScaledDimensions(0.5f);
+                //    var nearest = new SKImageInfo(sizei.Width, sizei.Height);
+                //    bitmap = SKBitmap.Decode(codec, nearest);
+                //}
+
                 SKBitmap bitmap = SKBitmap.Decode(data.GetBuffer());
 
                 if (imageObject.SMask != null)
@@ -433,15 +442,7 @@ namespace PdfClown.Documents.Contents
             // get a pointer to the buffer, and give it to the bitmap
             var handler = GCHandle.Alloc(raster, GCHandleType.Pinned);
             var ptr = handler.AddrOfPinnedObject();
-            //var bitmap = (SKBitmap)null;
-            //using (var skiaData = SKData.Create(ptr, raster.Length))
-            //using (var codec = SKCodec.Create(skiaData))
-            //{
-            //    var sizei = codec.GetScaledDimensions(0.5f);
-            //    var nearest = new SKImageInfo(sizei.Width, sizei.Height);
-            //    bitmap = SKBitmap.Decode(codec, nearest);
-            //    handler.Free();
-            //}
+
             var bitmap = new SKBitmap();
             bitmap.InstallPixels(info, ptr, info.RowBytes, (addr, ctx) => handler.Free(), null);
 

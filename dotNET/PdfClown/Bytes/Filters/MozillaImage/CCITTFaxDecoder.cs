@@ -110,7 +110,7 @@ namespace PdfClown.Bytes.Filters.CCITT
           new []{1, twoDimVert0}, new []{1, twoDimVert0},
           new []{1, twoDimVert0}, new []{1, twoDimVert0},
           new []{1, twoDimVert0}, new []{1, twoDimVert0 }
-    };
+        };
 
         // prettier-ignore
         static readonly int[][] whiteTable1 = new int[][]{
@@ -133,7 +133,7 @@ namespace PdfClown.Bytes.Filters.CCITT
           new []{12, 2432},                             // 11101
           new []{12, 2496},                             // 11110
           new []{12, 2560}                              // 11111
-    };
+        };
 
         // prettier-ignore
         static readonly int[][] whiteTable2 = new int[][]{
@@ -464,7 +464,8 @@ namespace PdfClown.Bytes.Filters.CCITT
           new []{2, 2}, new []{2, 2}, new []{2, 2}, new []{2, 2},
           new []{2, 2}, new []{2, 2}, new []{2, 2}, new []{2, 2 }
         };
-        private Reader source;
+
+        private Bytes.Buffer source;
         private bool eof;
         private int encoding;
         private bool eoline;
@@ -489,7 +490,7 @@ namespace PdfClown.Bytes.Filters.CCITT
          * @param {Object} [options] - Decoding options.
          */
         // eslint-disable-next-line no-shadow
-        public CCITTFaxDecoder(Reader source, FaxParams options)
+        public CCITTFaxDecoder(Bytes.Buffer source, CCITTFaxParams options)
         {
             this.source = source;
             eof = false;
@@ -1182,7 +1183,7 @@ namespace PdfClown.Bytes.Filters.CCITT
             int c;
             while (inputBits < n)
             {
-                if ((c = source.Next()) == -1)
+                if ((c = source.ReadByte()) == -1)
                 {
                     if (inputBits == 0)
                     {

@@ -223,6 +223,8 @@ namespace PdfClown.Objects
         public static readonly PdfName Encode = new PdfName("Encode");
         public static readonly PdfName EncodedByteAlign = new PdfName("EncodedByteAlign");
         public static readonly PdfName Encoding = new PdfName("Encoding");
+        public static readonly PdfName EndOfBlock = new PdfName("EndOfBlock");
+        public static readonly PdfName EndOfLine = new PdfName("EndOfLine");
         public static readonly PdfName Encrypt = new PdfName("Encrypt");
         public static readonly PdfName EncryptMetadata = new PdfName("EncryptMetadata");
         public static readonly PdfName Event = new PdfName("Event");

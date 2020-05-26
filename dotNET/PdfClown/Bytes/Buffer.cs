@@ -126,6 +126,7 @@ namespace PdfClown.Bytes
           <summary>Number of bytes actually used in the buffer.</summary>
         */
         private int length;
+
         /**
           <summary>Pointer position within the buffer.</summary>
         */
@@ -158,11 +159,23 @@ namespace PdfClown.Bytes
             this.length = data.Length;
         }
 
+        public Buffer(byte[] data, int start, int end)
+        {
+            //unsafe mode;
+            this.data = data;
+            this.position = start;
+            this.length = end - start;
+        }
+
         public Buffer(System.IO.Stream data) : this((int)data.Length)
-        { Append(data); }
+        {
+            Append(data);
+        }
 
         public Buffer(string data) : this()
-        { Append(data); }
+        {
+            Append(data);
+        }
         #endregion
 
         #region interface
@@ -177,7 +190,9 @@ namespace PdfClown.Bytes
         }
 
         public IBuffer Append(byte[] data)
-        { return Append(data, 0, data.Length); }
+        {
+            return Append(data, 0, data.Length);
+        }
 
         public IBuffer Append(byte[] data, int offset, int length)
         {
@@ -189,10 +204,14 @@ namespace PdfClown.Bytes
         }
 
         public IBuffer Append(string data)
-        { return Append(Encoding.Pdf.Encode(data)); }
+        {
+            return Append(Encoding.Pdf.Encode(data));
+        }
 
         public IBuffer Append(IInputStream data)
-        { return Append(data.ToByteArray(), 0, (int)data.Length); }
+        {
+            return Append(data.ToByteArray(), 0, (int)data.Length);
+        }
 
         public IBuffer Append(System.IO.Stream data)
         {
@@ -316,7 +335,7 @@ namespace PdfClown.Bytes
         public long Position
         {
             get => position;
-            private set => position = (int)value;
+            set => position = (int)value;
         }
 
         public int Read(byte[] data)
@@ -435,6 +454,12 @@ namespace PdfClown.Bytes
             }
             return buffer.ToString();
         }
+
+        public void ByteAlign()
+        {
+            this.bitShift = -1;
+        }
+
         public int ReadBit()
         {
             if (bitShift < 0)

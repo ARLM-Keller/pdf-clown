@@ -16,7 +16,7 @@
 /* eslint no-var: error */
 namespace PdfClown.Bytes.Filters
 {
-    internal class FaxParams
+    internal class CCITTFaxParams
     {
         internal int K;
         internal int Columns;
@@ -26,13 +26,24 @@ namespace PdfClown.Bytes.Filters
         internal bool EndOfLine;
         internal bool EncodedByteAlign;
 
-        public FaxParams(int K, int Columns, int Rows, bool BlackIs1, bool EndOfBlock)
+        public CCITTFaxParams(int K, int columns, int rows, bool blackIs1, bool endOfBlock)
         {
             this.K = K;
-            this.Columns = Columns;
-            this.Rows = Rows;
-            this.BlackIs1 = BlackIs1;
-            this.EndOfBlock = EndOfBlock;
+            this.Columns = columns;
+            this.Rows = rows;
+            this.BlackIs1 = blackIs1;
+            this.EndOfBlock = endOfBlock;
+        }
+
+        public CCITTFaxParams(int K, bool endOfLine, bool encodedByteAlign, int columns, int rows, bool endOfBlock, bool blackIs1)
+        {
+            this.K = K;
+            this.EndOfLine = endOfLine;
+            this.EncodedByteAlign = encodedByteAlign;
+            this.Columns = columns;
+            this.Rows = rows;
+            this.EndOfBlock = endOfBlock;
+            this.BlackIs1 = blackIs1;
         }
     }
 }

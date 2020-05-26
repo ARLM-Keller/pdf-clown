@@ -365,7 +365,7 @@ namespace PdfClown.Bytes.Filters.JBig
         {
             if (mmr)
             {
-                var input = new Reader(decodingContext.data, decodingContext.start, decodingContext.end);
+                var input = new Bytes.Buffer(decodingContext.data, decodingContext.start, decodingContext.end);
                 return DecodeMMRBitmap(input, width, height, false);
             }
 
@@ -624,7 +624,7 @@ namespace PdfClown.Bytes.Filters.JBig
         // 6.5.5 Decoding the symbol dictionary
         static List<Dictionary<int, byte[]>> DecodeSymbolDictionary(bool huffman, bool refinement, List<Dictionary<int, byte[]>> symbols, int numberOfNewSymbols,
            int numberOfExportedSymbols, HuffmanTables huffmanTables, int templateIndex, List<Point> at, int refinementTemplateIndex,
-           List<Point> refinementAt, DecodingContext decodingContext, Reader huffmanInput)
+           List<Point> refinementAt, DecodingContext decodingContext, Bytes.Buffer huffmanInput)
         {
             if (huffman && refinement)
             {
@@ -735,12 +735,12 @@ namespace PdfClown.Bytes.Filters.JBig
                     else
                     {
                         // MMR collective bitmap
-                        var originalEnd = huffmanInput.end;
-                        var bitmapEnd = huffmanInput.position + bitmapSize;
-                        huffmanInput.end = (int)bitmapEnd;
+                        var originalL = (int)huffmanInput.Length;
+                        var bitmapL = (int)bitmapSize;
+                        huffmanInput.SetLength(bitmapL);
                         collectiveBitmap = DecodeMMRBitmap(huffmanInput, totalWidth, currentHeight, false);
-                        huffmanInput.end = originalEnd;
-                        huffmanInput.position = (int)bitmapEnd;
+                        huffmanInput.SetLength(originalL);
+                        huffmanInput.Position += bitmapL;
                     }
                     var numberOfSymbolsDecoded = symbolWidths.Count;
                     if (firstSymbol == numberOfSymbolsDecoded - 1)
@@ -806,7 +806,7 @@ namespace PdfClown.Bytes.Filters.JBig
         static Dictionary<int, byte[]> DecodeTextRegion(bool huffman, bool refinement, int width, int height,
           byte defaultPixelValue, int? numberOfSymbolInstances, int stripSize, List<Dictionary<int, byte[]>> inputSymbols, int symbolCodeLength,
           bool transposed, int dsOffset, int referenceCorner, int combinationOperator, HuffmanTables huffmanTables,
-          int refinementTemplateIndex, List<Point> refinementAt, DecodingContext decodingContext, int logStripSize, Reader huffmanInput)
+          int refinementTemplateIndex, List<Point> refinementAt, DecodingContext decodingContext, int logStripSize, Bytes.Buffer huffmanInput)
         {
             if (huffman && refinement)
             {
@@ -856,7 +856,7 @@ namespace PdfClown.Bytes.Filters.JBig
                     if (stripSize > 1)
                     {
                         currentT = (int)(huffman
-                          ? huffmanInput.ReadBits(logStripSize)
+                          ? (int)huffmanInput.ReadBits(logStripSize)
                           : DecodeInteger(contextCache, "IAIT", decoder));
                     }
                     var t = stripSize * stripT + currentT;
@@ -1060,13 +1060,13 @@ namespace PdfClown.Bytes.Filters.JBig
             }
             // Annex C. Gray-scale Image Decoding Procedure.
             var grayScaleBitPlanes = new Dictionary<int, Dictionary<int, byte[]>>();
-            Reader mmrInput = null;
+            Bytes.Buffer mmrInput = null;
             Dictionary<int, byte[]> bitmap;
             if (mmr)
             {
                 // MMR bit planes are in one continuous stream. Only EOFB codes indicate
                 // the end of each bitmap, so EOFBs must be decoded.
-                mmrInput = new Reader(decodingContext.data, decodingContext.start, decodingContext.end);
+                mmrInput = new Bytes.Buffer(decodingContext.data, decodingContext.start, decodingContext.end);
             }
             for (i = bitsPerValue - 1; i >= 0; i--)
             {
@@ -1699,11 +1699,11 @@ namespace PdfClown.Bytes.Filters.JBig
             public void OnSymbolDictionary(SymbolDictionary dictionary, int currentSegment, List<int> referredSegments, byte[] data, int start, int end)
             {
                 HuffmanTables huffmanTables = null;
-                Reader huffmanInput = null;
+                Bytes.Buffer huffmanInput = null;
                 if (dictionary.huffman)
                 {
                     huffmanTables = GetSymbolDictionaryHuffmanTables(dictionary, referredSegments, this.customTables);
-                    huffmanInput = new Reader(data, start, end);
+                    huffmanInput = new Bytes.Buffer(data, start, end);
                 }
 
                 // Combines exported symbols from all referred segments
@@ -1736,7 +1736,7 @@ namespace PdfClown.Bytes.Filters.JBig
             {
                 var regionInfo = region.info;
                 HuffmanTables huffmanTables = null;
-                Reader huffmanInput = null;
+                Bytes.Buffer huffmanInput = null;
 
                 // Combines exported symbols from all referred segments
                 var symbols = this.symbols;
@@ -1753,7 +1753,7 @@ namespace PdfClown.Bytes.Filters.JBig
                 var symbolCodeLength = FiltersExtension.Log2(inputSymbols.Count);
                 if (region.huffman)
                 {
-                    huffmanInput = new Reader(data, start, end);
+                    huffmanInput = new Bytes.Buffer(data, start, end);
                     huffmanTables = GetTextRegionHuffmanTables(
                       region,
                       referredSegments,
@@ -1902,7 +1902,7 @@ namespace PdfClown.Bytes.Filters.JBig
                 }
             }
 
-            public int? DecodeNode(Reader reader)
+            public int? DecodeNode(Bytes.Buffer reader)
             {
                 if (this.isLeaf)
                 {
@@ -1910,7 +1910,7 @@ namespace PdfClown.Bytes.Filters.JBig
                     {
                         return null;
                     }
-                    var htOffset = reader.ReadBits(this.rangeLength);
+                    var htOffset = (int)reader.ReadBits(this.rangeLength);
                     return this.rangeLow + (this.isLowerRange ? -htOffset : htOffset);
                 }
                 var node = this.children[reader.ReadBit()];
@@ -1944,7 +1944,7 @@ namespace PdfClown.Bytes.Filters.JBig
                 }
             }
 
-            public int? Decode(Reader reader)
+            public int? Decode(Bytes.Buffer reader)
             {
                 return this.rootNode.DecodeNode(reader);
             }
@@ -1998,7 +1998,7 @@ namespace PdfClown.Bytes.Filters.JBig
             var flags = data[start];
             var lowestValue = data.ReadUint32(start + 1) & 0xffffffff;
             var highestValue = data.ReadUint32(start + 5) & 0xffffffff;
-            var reader = new Reader(data, start + 9, end);
+            var reader = new Bytes.Buffer(data, start + 9, end);
 
             var prefixSizeBits = ((flags >> 1) & 7) + 1;
             var rangeSizeBits = ((flags >> 4) & 7) + 1;
@@ -2010,31 +2010,29 @@ namespace PdfClown.Bytes.Filters.JBig
             // Normal table lines
             do
             {
-                prefixLength = reader.ReadBits(prefixSizeBits);
-                rangeLength = reader.ReadBits(rangeSizeBits);
+                prefixLength = (int)reader.ReadBits(prefixSizeBits);
+                rangeLength = (int)reader.ReadBits(rangeSizeBits);
                 lines.Add(new HuffmanLine(currentRangeLow, prefixLength, rangeLength, 0));
                 currentRangeLow += 1 << rangeLength;
             } while (currentRangeLow < highestValue);
 
             // Lower range table line
-            prefixLength = reader.ReadBits(prefixSizeBits);
+            prefixLength = (int)reader.ReadBits(prefixSizeBits);
             lines.Add(new HuffmanLine((int)lowestValue - 1, prefixLength, 32, 0, "lower"));
 
             // Upper range table line
-            prefixLength = reader.ReadBits(prefixSizeBits);
+            prefixLength = (int)reader.ReadBits(prefixSizeBits);
             lines.Add(new HuffmanLine((int)highestValue, prefixLength, 32, 0));
 
             if ((flags & 1) != 0)
             {
                 // Out-of-band table line
-                prefixLength = reader.ReadBits(prefixSizeBits);
+                prefixLength = (int)reader.ReadBits(prefixSizeBits);
                 lines.Add(new HuffmanLine(prefixLength, 0));
             }
 
             return new HuffmanTable(lines, false);
         }
-
-
 
         static HuffmanTable GetStandardTable(int number)
         {
@@ -2320,7 +2318,7 @@ namespace PdfClown.Bytes.Filters.JBig
             throw new Jbig2Error("can't find custom Huffman table");
         }
 
-        static HuffmanTables GetTextRegionHuffmanTables(TextRegion textRegion, List<int> referredTo, Dictionary<int, HuffmanTable> customTables, int numberOfSymbols, Reader reader)
+        static HuffmanTables GetTextRegionHuffmanTables(TextRegion textRegion, List<int> referredTo, Dictionary<int, HuffmanTable> customTables, int numberOfSymbols, Bytes.Buffer reader)
         {
             // 7.4.3.1.7 Symbol ID Huffman table decoding
 
@@ -2328,7 +2326,7 @@ namespace PdfClown.Bytes.Filters.JBig
             var codes = new List<HuffmanLine>();
             for (var i = 0; i <= 34; i++)
             {
-                var codeLength = reader.ReadBits(4);
+                var codeLength = (int)reader.ReadBits(4);
                 codes.Add(new HuffmanLine(i, codeLength, 0, 0));
             }
             // Assign Huffman codes for RUNCODEs.
@@ -2350,15 +2348,15 @@ namespace PdfClown.Bytes.Filters.JBig
                             {
                                 throw new Jbig2Error("no previous value in symbol ID table");
                             }
-                            numberOfRepeats = reader.ReadBits(2) + 3;
+                            numberOfRepeats = (int)reader.ReadBits(2) + 3;
                             repeatedLength = codes[i - 1].prefixLength;
                             break;
                         case 33:
-                            numberOfRepeats = reader.ReadBits(3) + 3;
+                            numberOfRepeats = (int)reader.ReadBits(3) + 3;
                             repeatedLength = 0;
                             break;
                         case 34:
-                            numberOfRepeats = reader.ReadBits(7) + 11;
+                            numberOfRepeats = (int)reader.ReadBits(7) + 11;
                             repeatedLength = 0;
                             break;
                         default:
@@ -2494,7 +2492,7 @@ namespace PdfClown.Bytes.Filters.JBig
             return HuffmanTables.CreateDelta(tableDeltaHeight, tableDeltaWidth, tableBitmapSize, tableAggregateInstances);
         }
 
-        static Dictionary<int, byte[]> ReadUncompressedBitmap(Reader reader, int width, int height)
+        static Dictionary<int, byte[]> ReadUncompressedBitmap(Bytes.Buffer reader, int width, int height)
         {
             var bitmap = new Dictionary<int, byte[]>();
             for (var y = 0; y < height; y++)
@@ -2510,11 +2508,11 @@ namespace PdfClown.Bytes.Filters.JBig
             return bitmap;
         }
 
-        static Dictionary<int, byte[]> DecodeMMRBitmap(Reader input, int width, int height, bool endOfBlock)
+        static Dictionary<int, byte[]> DecodeMMRBitmap(Bytes.Buffer input, int width, int height, bool endOfBlock)
         {
             // MMR is the same compression algorithm as the PDF filter
             // CCITTFaxDecode with /K -1.
-            var paramss = new FaxParams(K: -1, Columns: width, Rows: height, BlackIs1: true, EndOfBlock: endOfBlock);
+            var paramss = new CCITTFaxParams(K: -1, columns: width, rows: height, blackIs1: true, endOfBlock: endOfBlock);
             var decoder = new CCITTFaxDecoder(input, paramss);
             var bitmap = new Dictionary<int, byte[]>();
             int currentByte = 0;

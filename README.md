@@ -1,7 +1,7 @@
 # Pdf-Clown
 https://sourceforge.net/projects/clown/ mirror
 
-# Fork Task
+## Fork Task
 
 - Pdf visualization by [SkiaSharp](https://github.com/mono/SkiaSharp).
 - UI integration by [Xamarin.Forms](https://github.com/xamarin/Xamarin.Forms).
@@ -9,28 +9,38 @@ https://sourceforge.net/projects/clown/ mirror
 ## Status
 
 - Rendering Pdf on Xamarin.Forms 'SkiaSharp.SKCanvas'
-  - Basic painting reguire just replace System.Drawing by SkiaSharp, thanks to author Stefano Chizzolini
-  - Tiling Pattern by [mattleibow](https://github.com/mattleibow) and [Gillibald](https://github.com/Gillibald)
-  - XObject alfa mask by [wrappa](https://github.com/warappa)
+  - Basic painting reguired just replace System.Drawing by SkiaSharp, thanks to author Stefano Chizzolini
+  - New mandatory features of SkiaSharp(for Tiling, Image Mask, Gradient and Patch shaders) by [mattleibow](https://github.com/mattleibow)
+  - XObject Masking by [wrappa](https://github.com/warappa)
+- Change Code formatting
 - Rendering Annotations(except 3D)
-- Several Xamarin.Forms frontends (Android, iOS, UWP and WPF )
-- Move project to .net standard
+- Move project to .net standard 2.0
+- Several Xamarin.Forms frontends (Android, iOS, UWP and WPF)
 - Performance improvements
   - Strings comparison
-  - Remove reflections invocation
+  - Suppress reflections invocation
   - DOM cache
-- Fonts by integrate [Apache PdfBox Project](https://pdfbox.apache.org/) from [mirror](https://github.com/apache/pdfbox).
-  - Translated from java to C#
+- Fonts and Encryption by integrate [Apache PdfBox Project](https://pdfbox.apache.org/) from [mirror](https://github.com/apache/pdfbox).
+  - Source code translated from java to C#
   - Full Fonts processing & text rendering engine
   - CCITTFax and other fixes of Images loading engine
+  - Decrypt PDF
+  - LZWFilter
+- Images and ColorSpaces by integrate [Mozilla Pdf.js](https://github.com/mozilla/pdf.js)
+  - Source code translated from js to C#
+  - JPX, CCITTFax, JBIG2 - decoding
+  - Function Type 0
 
 ## TODO
 
-- Images
-  - Add support for custome bits ber component ranges
-  - For specific formats(tiff, fax, jbig2) port [mozilla pdf viewer](https://github.com/mozilla/pdf.js) image loading engine(from js to c#).
-  - Some performance & scale & memory improvements for large images
-- CMYK Color Space - add ICC Profile for monitors
-- Encrypted PDF (take basic solution from PDF Sharp)
-- Move buffered IO to use Spans
+- Rendering
+  - Move from SKPicture to to SKImage with rescan on each scale change, without in-memory bitmaps caching(maybe file cache or redecoding)
+  - Possible GL context with SKImage
+  - Decoding optimization
+- Encryption.
+  - Encrypt not tested
+  - Public key Certificat - requer completly rework PdfBox solution
+- Function type 4 (PdfBox or Pdf.js)
+- Patch Shaders (PdfBox or Pdf.js)
+- Move buffered IO to use Span\<byte\>
 - Check regressions on PDF creation(fonts embeding, text postions, cache collision).

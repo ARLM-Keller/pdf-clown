@@ -18,15 +18,15 @@ namespace PdfClown.Bytes.Filters
 {
     internal class ImageChunk
     {
-        internal byte[] data;
-        internal int start;
-        internal int end;
+        internal byte[] Data;
+        internal int Start;
+        internal int End;
 
         public ImageChunk(byte[] data, int start, int end)
         {
-            this.data = data;
-            this.start = start;
-            this.end = end;
+            this.Data = data;
+            this.Start = start;
+            this.End = end;
         }
     }
 }

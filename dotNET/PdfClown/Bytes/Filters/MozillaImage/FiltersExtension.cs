@@ -54,8 +54,6 @@ namespace PdfClown.Bytes.Filters
 
         public static byte ToByte(int v)
         {
-            if (v > 255 || v < 0)
-            { }
             return v > 255 ? (byte)255 : v < 0 ? (byte)0 : (byte)v;
         }
 

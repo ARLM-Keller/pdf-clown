@@ -58,10 +58,10 @@ namespace PdfClown.Bytes.Filters
                 for (var k = 0; k < tileCount; k++)
                 {
                     var tileComponents = jpxImage.tiles[k];
-                    var tileWidth = tileComponents.width;
-                    var tileHeight = tileComponents.height;
-                    var tileLeft = tileComponents.left;
-                    var tileTop = tileComponents.top;
+                    var tileWidth = tileComponents.Width;
+                    var tileHeight = tileComponents.Height;
+                    var tileLeft = tileComponents.Left;
+                    var tileTop = tileComponents.Top;
 
                     var src = tileComponents.items;
                     var srcPosition = 0;

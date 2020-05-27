@@ -234,7 +234,7 @@ namespace PdfClown.Documents.Contents
             }
             if (!imageMask)
             {
-                colorSpace = image.ColorSpace ?? DeviceRGBColorSpace.Default;
+                colorSpace = image.ColorSpace ?? DeviceGrayColorSpace.Default;
                 componentsCount = colorSpace.ComponentCount;
                 iccColorSpace = colorSpace as ICCBasedColorSpace;
                 if (colorSpace is IndexedColorSpace indexedColorSpace)

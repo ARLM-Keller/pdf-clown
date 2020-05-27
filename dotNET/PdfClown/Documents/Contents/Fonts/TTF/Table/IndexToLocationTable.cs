@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using System.Diagnostics;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
@@ -64,6 +65,43 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 throw new IOException("Could not get head table");
             }
             int numGlyphs = ttf.NumberOfGlyphs;
+            //Mozilla Pdf.js Repair
+            if (head.IndexToLocFormat < SHORT_OFFSETS || head.IndexToLocFormat > LONG_OFFSETS)
+            {
+                int locaLength = (int)this.Length;
+                Debug.WriteLine("info: Attempting to fix invalid indexToLocFormat in head table: " + head.IndexToLocFormat);
+
+                // The value of indexToLocFormat should be 0 if the loca table
+                // consists of short offsets, and should be 1 if the loca table
+                // consists of long offsets.
+                //
+                // The number of entries in the loca table should be numGlyphs + 1.
+                //
+                // Using this information, we can work backwards to deduce if the
+                // size of each offset in the loca table, and thus figure out the
+                // appropriate value for indexToLocFormat.
+
+                var numGlyphsPlusOne = numGlyphs + 1;
+                if (locaLength == numGlyphsPlusOne << 1)
+                {
+                    // 0x0000 indicates the loca table consists of short offsets
+                    //data[50] = 0;
+                    //data[51] = 0;
+                    head.IndexToLocFormat = SHORT_OFFSETS;
+                }
+                else if (locaLength == numGlyphsPlusOne << 2)
+                {
+                    // 0x0001 indicates the loca table consists of long offsets
+                    //data[50] = 0;
+                    //data[51] = 1;
+                    head.IndexToLocFormat = LONG_OFFSETS;
+                }
+                else
+                {
+                    Debug.WriteLine("warning: Could not fix indexToLocFormat: " + head.IndexToLocFormat);
+                }
+            }
+
             offsets = new long[numGlyphs + 1];
             for (int i = 0; i < numGlyphs + 1; i++)
             {

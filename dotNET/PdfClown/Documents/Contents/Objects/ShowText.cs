@@ -214,7 +214,7 @@ namespace PdfClown.Documents.Contents.Objects
                             }
                             trm = trm.PreConcat(fm);
                             var usm = trm.PreConcat(SKMatrix.MakeScale(1, -1));
-                            if (context != null && !(textChar == ' '))
+                            if (context != null && !(codeBytes.Length == 1 && textChar == ' '))
                             {
                                 context.SetMatrix(trm);
                                 var path = font.DrawChar(context, fill, stroke, textChar, code, codeBytes);

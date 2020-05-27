@@ -27,7 +27,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
      */
     public class OpenTypeFont : TrueTypeFont
     {
-        private bool isPostScript;
+        private bool? isPostScript;
 
         /**
          * Constructor. Clients should use the OTFParser to create a new OpenTypeFont object.
@@ -88,7 +88,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public bool IsPostScript
         {
-            get => tables.ContainsKey(CFFTable.TAG);
+            get => isPostScript ?? (isPostScript = tables.ContainsKey(CFFTable.TAG)).Value;
         }
 
         /**

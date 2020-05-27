@@ -226,11 +226,11 @@ namespace PdfClown.Documents.Contents.Fonts
                     OTFParser parser = new OTFParser(false, true);
                     using (var stream = file.OpenRead())
                     {
-                        OpenTypeFont otf = parser.Parse(stream);
+                        var otf = parser.Parse(stream);
 #if DEBUG
                         Debug.WriteLine($"debug: Loaded {postScriptName} from {file}");
 #endif
-                        return otf;
+                        return (OpenTypeFont)otf;
                     }
                 }
                 catch (IOException e)
@@ -546,13 +546,13 @@ namespace PdfClown.Documents.Contents.Fonts
                 if (ttfFile.Name.EndsWith(".otf", StringComparison.OrdinalIgnoreCase))
                 {
                     OTFParser parser = new OTFParser(false, true);
-                    OpenTypeFont otf = parser.Parse(ttfFile.FullName);
+                    var otf = parser.Parse(ttfFile.FullName);
                     AddTrueTypeFontImpl(otf, ttfFile);
                 }
                 else
                 {
                     TTFParser parser = new TTFParser(false, true);
-                    TrueTypeFont ttf = parser.Parse(ttfFile.FullName);
+                    var ttf = parser.Parse(ttfFile.FullName);
                     AddTrueTypeFontImpl(ttf, ttfFile);
                 }
             }

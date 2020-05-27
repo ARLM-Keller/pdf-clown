@@ -50,26 +50,6 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public OTFParser(bool isEmbedded, bool parseOnDemand) : base(isEmbedded, parseOnDemand)
         { }
 
-        public new OpenTypeFont Parse(string file)
-        {
-            return (OpenTypeFont)base.Parse(file);
-        }
-
-        public new OpenTypeFont Parse(Stream file)
-        {
-            return (OpenTypeFont)base.Parse(file);
-        }
-
-        public new OpenTypeFont Parse(Bytes.IInputStream data)
-        {
-            return (OpenTypeFont)base.Parse(data);
-        }
-
-        public new OpenTypeFont Parse(TTFDataStream raf)
-        {
-            return (OpenTypeFont)base.Parse(raf);
-        }
-
         public override TrueTypeFont NewFont(TTFDataStream raf)
         {
             return new OpenTypeFont(raf);

@@ -66,9 +66,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @return A TrueType font.
          * @ If there is an error parsing the TrueType font.
          */
-        public TrueTypeFont Parse(string ttfFile)
+        public TrueTypeFont Parse(string ttfFile, string fontName = null)
         {
-            return Parse(new FileStream(ttfFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+            return Parse(new FileStream(ttfFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), fontName);
         }
 
         /**
@@ -78,12 +78,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @return A TrueType font.
          * @ If there is an error parsing the TrueType font.
          */
-        public TrueTypeFont Parse(Stream ttfFile)
+        public TrueTypeFont Parse(Stream ttfFile, string fontName = null)
         {
             var raf = new MemoryTTFDataStream(ttfFile);
             try
             {
-                return Parse(raf);
+                return Parse(raf, fontName);
             }
             catch (IOException ex)
             {
@@ -100,9 +100,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @return A TrueType font.
          * @ If there is an error parsing the TrueType font.
          */
-        public TrueTypeFont Parse(Bytes.IInputStream inputStream)
+        public TrueTypeFont Parse(Bytes.IInputStream inputStream, string fontName = null)
         {
-            return Parse(new MemoryTTFDataStream(inputStream));
+            return Parse(new MemoryTTFDataStream(inputStream), fontName);
         }
 
         /**
@@ -112,10 +112,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @return A TrueType font.
          * @ If there is an error parsing the TrueType font.
          */
-        public TrueTypeFont ParseEmbedded(Bytes.Buffer inputStream)
+        public TrueTypeFont ParseEmbedded(Bytes.Buffer inputStream, string fontName = null)
         {
             this.isEmbedded = true;
-            return Parse(new MemoryTTFDataStream(inputStream));
+            return Parse(new MemoryTTFDataStream(inputStream), fontName);
         }
 
         /**
@@ -125,8 +125,20 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @return A TrueType font.
          * @ If there is an error parsing the TrueType font.
          */
-        public TrueTypeFont Parse(TTFDataStream raf)
+        public TrueTypeFont Parse(TTFDataStream raf, string fontName = null)
         {
+            if (string.Equals(raf.ReadString(4), TrueTypeCollection.TAG, StringComparison.Ordinal))
+            {
+                raf.Seek(raf.CurrentPosition - 4);
+                TrueTypeCollection fontCollection = new TrueTypeCollection(raf);
+
+                var nameFont = fontCollection.GetFontByName(fontName);
+                if (nameFont == null)
+                    nameFont = fontCollection.GetFontAtIndex(0);
+                return nameFont;
+            }
+            raf.Seek(raf.CurrentPosition - 4);
+
             TrueTypeFont font = NewFont(raf);
             font.Version = raf.Read32Fixed();
             int numberOfTables = raf.ReadUnsignedShort();

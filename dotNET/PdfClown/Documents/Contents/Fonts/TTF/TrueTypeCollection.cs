@@ -31,6 +31,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
      */
     public class TrueTypeCollection : IDisposable
     {
+        public static readonly string TAG = "ttcf";
         private readonly TTFDataStream stream;
         private int numFonts;
         private long[] fontOffsets;
@@ -113,7 +114,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        private TrueTypeFont GetFontAtIndex(int idx)
+        public TrueTypeFont GetFontAtIndex(int idx)
         {
             if (!fontCache.TryGetValue(idx, out var font))
             {
@@ -151,7 +152,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 }
             }
             return null;
-        }
+        }        
 
         /**
          * Implement the callback method to call {@link TrueTypeCollection#processAllFonts(TrueTypeFontProcessor)}.

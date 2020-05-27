@@ -107,10 +107,9 @@ namespace PdfClown.Documents.Contents.Fonts
                     {
                         // embedded OTF or TTF
                         OTFParser otfParser = new OTFParser(true);
-                        OpenTypeFont otf = otfParser.Parse((Bytes.Buffer)stream.BaseDataObject.ExtractBody(true));
-                        ttfFont = otf;
+                        ttfFont = otfParser.Parse((Bytes.Buffer)stream.BaseDataObject.ExtractBody(true), fd.FontName);
 
-                        if (otf.IsPostScript)
+                        if (ttfFont is OpenTypeFont otf && otf.IsPostScript)
                         {
                             // PDFBOX-3344 contains PostScript outlines instead of TrueType
                             fontIsDamaged = true;

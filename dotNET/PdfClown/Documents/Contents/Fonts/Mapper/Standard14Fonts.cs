@@ -124,7 +124,7 @@ namespace PdfClown.Documents.Contents.Fonts
 		 */
         public static FontMetrics GetAFM(string baseName)
         {
-            return StandardAFMMapping.TryGetValue(baseName, out var fontMetrics) ? fontMetrics : null;
+            return baseName == null ? null : StandardAFMMapping.TryGetValue(baseName, out var fontMetrics) ? fontMetrics : null;
         }
 
         /**

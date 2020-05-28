@@ -69,8 +69,8 @@ namespace PdfClown.Documents.Contents.Tokens
                 return new Text(ParseContentObjects());
             else if (operation is SaveGraphicsState) // Local graphics state.
                 return new LocalGraphicsState(ParseContentObjects());
-            else if (operation is BeginMarkedContent) // Marked-content sequence.
-                return new MarkedContent((BeginMarkedContent)operation, ParseContentObjects());
+            //else if (operation is BeginMarkedContent) // Marked-content sequence.
+            //    return new MarkedContent((BeginMarkedContent)operation, ParseContentObjects());
             else if (operation is BeginInlineImage) // Inline image.
                 return ParseInlineImage();
             else // Single operation.
@@ -89,7 +89,7 @@ namespace PdfClown.Documents.Contents.Tokens
                 // Multiple-operation graphics object end?
                 if (contentObject is EndText // Text.
                   || contentObject is RestoreGraphicsState // Local graphics state.
-                  || contentObject is EndMarkedContent // End marked-content sequence.
+              //    || contentObject is EndMarkedContent // End marked-content sequence.
                   || contentObject is EndInlineImage) // Inline image.
                     return contentObjects;
 

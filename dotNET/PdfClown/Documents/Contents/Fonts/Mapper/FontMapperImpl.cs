@@ -167,11 +167,11 @@ namespace PdfClown.Documents.Contents.Fonts
          */
         public void AddSubstitute(string match, string replace)
         {
-            if (!substitutes.ContainsKey(match))
+            if (!substitutes.TryGetValue(match, out var list))
             {
-                substitutes.Add(match, new List<string>());
+                substitutes.Add(match, list = new List<string>());
             }
-            substitutes[match].Add(replace);
+            list.Add(replace);
         }
 
         /**

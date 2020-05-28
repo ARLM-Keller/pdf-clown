@@ -31,8 +31,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'End text object' operation [PDF:1.6:5.3].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class EndText
-      : Operation
+    public sealed class EndText : Operation
     {
         #region static
         #region fields
@@ -44,8 +43,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         #region dynamic
         #region constructors
-        private EndText(
-          ) : base(OperatorKeyword)
+        private EndText() : base(OperatorKeyword)
         { }
         #endregion
         #endregion

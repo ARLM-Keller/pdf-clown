@@ -339,37 +339,34 @@ namespace PdfClown.Documents.Contents.Fonts
 */
         protected virtual void ReadEncoding()
         {
-            var encoding = EncodingData;
-            if (encoding != null)
+            var encodingName = EncodingData;
+            if (encodingName is PdfName pdfName)
             {
-                if (encoding is PdfName encodingName)
+                this.encoding = Encoding.Get(pdfName);
+                if (this.encoding == null)
                 {
-                    this.encoding = Encoding.Get(encodingName);
-                    if (this.encoding == null)
-                    {
-                        Debug.WriteLine("warn: Unknown encoding: " + encodingName.StringValue);
-                        this.encoding = ReadEncodingFromFont(); // fallback
-                    }
-                }
-                else if (encoding is PdfDictionary encodingDict)
-                {
-                    Encoding builtIn = null;
-                    bool symbolic = Symbolic;
-                    bool isFlaggedAsSymbolic = symbolic;
-
-                    PdfName baseEncoding = (PdfName)encodingDict.Resolve(PdfName.BaseEncoding);
-
-                    bool hasValidBaseEncoding = baseEncoding != null && Encoding.Get(baseEncoding) != null;
-
-                    if (!hasValidBaseEncoding && isFlaggedAsSymbolic)
-                    {
-                        builtIn = ReadEncodingFromFont();
-                    }
-
-                    this.encoding = new DictionaryEncoding(encodingDict, !symbolic, builtIn);
+                    Debug.WriteLine("warn: Unknown encoding: " + pdfName.StringValue);
+                    this.encoding = ReadEncodingFromFont(); // fallback
                 }
             }
-            else
+            else if (encodingName is PdfDictionary encodingDict)
+            {
+                Encoding builtIn = null;
+                bool symbolic = Symbolic;
+                bool isFlaggedAsSymbolic = symbolic;
+
+                PdfName baseEncoding = (PdfName)encodingDict.Resolve(PdfName.BaseEncoding);
+
+                bool hasValidBaseEncoding = baseEncoding != null && Encoding.Get(baseEncoding) != null;
+
+                if (!hasValidBaseEncoding && isFlaggedAsSymbolic)
+                {
+                    builtIn = ReadEncodingFromFont();
+                }
+
+                this.encoding = new DictionaryEncoding(encodingDict, !symbolic, builtIn);
+            }
+            else if (encodingName == null)
             {
                 this.encoding = ReadEncodingFromFont();
             }

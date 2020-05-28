@@ -159,7 +159,7 @@ namespace PdfClown.Documents.Contents.Fonts
             standard encoding;
           * glyph index: internal identifier of the graphical representation of a character.
         */
-        protected CMap toUnicodeCMap;
+        private CMap toUnicodeCMap;
         protected FontMetrics afmStandard14;
         protected FontDescriptor fontDescriptor;
         protected readonly Dictionary<int, float> codeToWidthMap;
@@ -212,7 +212,7 @@ namespace PdfClown.Documents.Contents.Fonts
         public Font(PdfDirectObject baseObject) : base(baseObject)
         {
             Initialize();
-            afmStandard14 = Standard14Fonts.GetAFM(Name ?? "None"); // may be null (it usually is)
+            afmStandard14 = Standard14Fonts.GetAFM(Name); // may be null (it usually is)
             fontDescriptor = LoadFontDescriptor();
             toUnicodeCMap = LoadUnicodeCmap();
             LatestFont = this;
@@ -491,7 +491,6 @@ namespace PdfClown.Documents.Contents.Fonts
         */
         public virtual bool Symbolic { get => false; }
 
-        public CMap CMap => toUnicodeCMap;
 
         /**
          * Returns the displacement vector (w0, w1) in text space, for the given character.

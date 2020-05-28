@@ -60,6 +60,11 @@ namespace PdfClown.Documents.Contents.Objects
         protected override string PropertyListOperator => PropertyListOperatorKeyword;
 
         protected override string SimpleOperator => SimpleOperatorKeyword;
+
+        public override void Scan(GraphicsState state)
+        {
+            base.Scan(state);
+        }
         #endregion
         #endregion
         #endregion

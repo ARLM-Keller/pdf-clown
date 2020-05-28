@@ -1129,11 +1129,7 @@ namespace PdfClown.Documents.Contents.Composition
 
         private objects::MarkedContent BeginMarkedContent_(PdfName tag, PdfName propertyListName)
         {
-            return (objects::MarkedContent)Begin(
-              new objects::MarkedContent(
-                new objects::BeginMarkedContent(tag, propertyListName)
-                )
-              );
+            return (objects::MarkedContent)Begin(new objects::MarkedContent(new objects::BeginMarkedContent(tag, propertyListName)));
         }
 
         /**

@@ -186,6 +186,7 @@ namespace PdfClown.Documents.Contents.Fonts
         #region fields
         private bool isCMapPredefined;
         private bool isDescendantCJK;
+        private CMap cMap;
         private CMap cMapUCS2;
         private PdfCIDFontType2Embedder embedder;
         private GsubData gsubData;
@@ -294,7 +295,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public override bool IsVertical
         {
-            get => toUnicodeCMap.WMode == 1;
+            get => cMap.WMode == 1;
         }
 
         public override bool IsEmbedded
@@ -337,10 +338,9 @@ namespace PdfClown.Documents.Contents.Fonts
             get => CIDFont.IsDamaged;
         }
 
-        public CMap CMapUCS2
-        {
-            get => cMapUCS2;
-        }
+        public CMap CMapUCS2 => cMapUCS2;
+
+        public CMap CMap => cMap;
 
         public GsubData GsubData
         {
@@ -499,8 +499,8 @@ namespace PdfClown.Documents.Contents.Fonts
             if (encoding is PdfName encodingName)
             {
                 // predefined CMap
-                toUnicodeCMap = CMap.Get(encodingName);
-                if (toUnicodeCMap != null)
+                cMap = CMap.Get(encodingName);
+                if (cMap != null)
                 {
                     isCMapPredefined = true;
                 }
@@ -512,12 +512,12 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             else if (encoding != null)
             {
-                toUnicodeCMap = CMap.Get(encoding);
-                if (toUnicodeCMap == null)
+                cMap = CMap.Get(encoding);
+                if (cMap == null)
                 {
                     throw new IOException("Missing required CMap");
                 }
-                else if (!toUnicodeCMap.HasCIDMappings)
+                else if (!cMap.HasCIDMappings)
                 {
                     Debug.WriteLine("warning Invalid Encoding CMap in font " + Name);
                 }
@@ -549,12 +549,13 @@ namespace PdfClown.Documents.Contents.Fonts
                          "Korea1".Equals(ros.Ordering, StringComparison.OrdinalIgnoreCase));
             }
 
-
+            var name = encoding as PdfName;
             // if the font is composite and uses a predefined cmap (excluding Identity-H/V)
             // or whose descendant CIDFont uses the Adobe-GB1, Adobe-CNS1, Adobe-Japan1, or
             // Adobe-Korea1 character collection:
-
-            if ((isCMapPredefined && !(PdfName.IdentityH.Equals(toUnicodeCMap.CMapName) || PdfName.IdentityV.Equals(toUnicodeCMap.CMapName))) || isDescendantCJK)
+            if (isCMapPredefined
+                && !(PdfName.IdentityH.Equals(name) || PdfName.IdentityV.Equals(name))
+                || isDescendantCJK)
             {
                 // a) Dictionary the character code to a CID using the font's CMap
                 // b) Obtain the ROS from the font's CIDSystemInfo
@@ -568,9 +569,9 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     strName = $"{ros.Registry}-{ros.Ordering}-{ros.Supplement}";
                 }
-                else if (encoding is PdfName encodingName2)
+                else if (name != null)
                 {
-                    strName = encodingName2.StringValue;
+                    strName = name.ToString();
                 }
 
                 // try to find the corresponding Unicode (UC2) CMap
@@ -582,6 +583,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
             }
         }
+
 
         #endregion
 

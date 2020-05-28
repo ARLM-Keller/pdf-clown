@@ -149,6 +149,12 @@ namespace PdfClown.Documents.Contents.Objects
 
         protected abstract string SimpleOperator
         { get; }
+
+        public override void Scan(GraphicsState state)
+        {
+            base.Scan(state);
+        }
+
         #endregion
         #endregion
         #endregion

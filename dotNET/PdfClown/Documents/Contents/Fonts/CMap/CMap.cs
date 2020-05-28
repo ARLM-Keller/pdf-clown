@@ -250,6 +250,7 @@ namespace PdfClown.Documents.Contents.Fonts
         public int ReadCode(Bytes.IInputStream input, out byte[] bytes)
         {
             bytes = new byte[maxCodeLength];
+            var temp = input.Position + minCodeLength;
             input.Read(bytes, 0, minCodeLength);
             for (int i = minCodeLength - 1; i < maxCodeLength; i++)
             {
@@ -266,8 +267,12 @@ namespace PdfClown.Documents.Contents.Fonts
                     bytes[byteCount] = (byte)input.ReadByte();
                 }
             }
+            if (temp < input.Position)
+            {
+                input.Skip(temp - input.Position);
+            }
             MissCode(bytes);
-            return 0;
+            return ConvertUtils.ByteArrayToNumber(bytes, 0, minCodeLength, ByteOrderEnum.BigEndian);
         }
 
         private void MissCode(byte[] bytes)

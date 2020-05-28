@@ -72,10 +72,7 @@ namespace PdfClown.Documents.Contents.Fonts
         */
         public Encoding Encoding
         {
-            get
-            {
-                return encoding;
-            }
+            get => encoding;
         }
 
         /**

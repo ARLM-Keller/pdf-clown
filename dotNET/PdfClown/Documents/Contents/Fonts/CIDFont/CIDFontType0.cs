@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 using PdfClown.Documents.Contents.Fonts.CCF;
+using PdfClown.Documents.Contents.Fonts.Type1;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
@@ -63,13 +64,14 @@ namespace PdfClown.Documents.Contents.Fonts
             : base(fontDictionary, parent)
         {
             FontDescriptor fd = FontDescriptor;
+            FontFile fontFile = null;
             byte[] bytes = null;
             if (fd != null)
             {
-                var ff3Stream = fd.FontFile3;
-                if (ff3Stream != null)
+                fontFile = fd.FontFile3 ?? fd.FontFile;
+                if (fontFile != null)
                 {
-                    bytes = ff3Stream.BaseDataObject.ExtractBody(true).ToByteArray();
+                    bytes = fontFile.BaseDataObject.ExtractBody(true).GetBuffer();
                 }
             }
 
@@ -79,7 +81,21 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 // PDFBOX-2642 contains a corrupt PFB font instead of a CFF
                 Debug.WriteLine("warn: Found PFB but expected embedded CFF font " + fd.FontName);
-                fontIsDamaged = true;
+
+                try
+                {
+                    t1Font = PdfType1Font.LoadType1Font(fontFile);
+                }
+                catch (DamagedFontException e)
+                {
+                    Debug.WriteLine($"warn: Can't read damaged embedded Type1 font {fd.FontName} {e}");
+                    fontIsDamaged = true;
+                }
+                catch (IOException e)
+                {
+                    Debug.WriteLine($"error: Can't read the embedded Type1 font {fd.FontName} {e}");
+                    fontIsDamaged = true;
+                }
             }
             else if (bytes != null)
             {
@@ -107,6 +123,16 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     cidFont = null;
                     t1Font = cffFont;
+                }
+                cid2gid = ReadCIDToGIDMap();
+                isEmbedded = true;
+                isDamaged = false;
+            }
+            else if (t1Font != null)
+            {
+                if (t1Font is Type1Font type1Font)
+                {
+                    cidFont = null;
                 }
                 cid2gid = ReadCIDToGIDMap();
                 isEmbedded = true;
@@ -152,6 +178,8 @@ namespace PdfClown.Documents.Contents.Fonts
             fontMatrixTransform = FontMatrix;
             fontMatrixTransform = fontMatrixTransform.PostConcat(SKMatrix.MakeScale(1000, 1000));
         }
+
+        public override BaseFont GenericFont => cidFont ?? t1Font;
 
         public override SKMatrix FontMatrix
         {
@@ -259,6 +287,28 @@ namespace PdfClown.Documents.Contents.Fonts
             get => cidFont ?? t1Font;
         }
 
+        public override bool IsEmbedded
+        {
+            get => isEmbedded;
+        }
+
+        public override bool IsDamaged
+        {
+            get => isDamaged;
+        }
+
+        public override float AverageFontWidth
+        {
+            get
+            {
+                if (avgWidth == null)
+                {
+                    avgWidth = GetAverageCharacterWidth();
+                }
+                return (float)avgWidth;
+            }
+        }
+
         /**
          * Returns the Type 2 charstring for the given CID, or null if the substituted font does not
          * contain Type 2 charstrings.
@@ -288,6 +338,10 @@ namespace PdfClown.Documents.Contents.Fonts
          */
         private string GetGlyphName(int code)
         {
+            if (t1Font is Type1Font type1Font)
+            {
+                return parent.Encoding.GetName(code);
+            }
             int unicodes = parent.ToUnicode(code);
             if (unicodes < 0)
             {
@@ -304,7 +358,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 // PDFBOX-4093: despite being a type 0 font, there is a CIDToGIDMap
                 cid = cid2gid[cid];
             }
-            Type2CharString charstring = GetType2CharString(cid);
+            var charstring = GetType2CharString(cid);
             if (charstring != null)
             {
                 return charstring.Path;
@@ -372,6 +426,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 return cid;
             }
         }
+
         public override int ReadCode(Bytes.IInputStream input, out byte[] bytes)
         {
             throw new NotSupportedException();
@@ -411,16 +466,6 @@ namespace PdfClown.Documents.Contents.Fonts
             return p.X;
         }
 
-        public override bool IsEmbedded
-        {
-            get => isEmbedded;
-        }
-
-        public override bool IsDamaged
-        {
-            get => isDamaged;
-        }
-
         public override float GetHeight(int code)
         {
             int cid = CodeToCID(code);
@@ -431,18 +476,6 @@ namespace PdfClown.Documents.Contents.Fonts
                 glyphHeights[cid] = height;
             }
             return height;
-        }
-
-        public override float AverageFontWidth
-        {
-            get
-            {
-                if (avgWidth == null)
-                {
-                    avgWidth = GetAverageCharacterWidth();
-                }
-                return (float)avgWidth;
-            }
         }
 
         // todo: this is a replacement for FontMetrics method

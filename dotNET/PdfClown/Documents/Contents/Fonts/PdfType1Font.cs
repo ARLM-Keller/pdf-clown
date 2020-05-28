@@ -164,35 +164,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     try
                     {
-                        var stream = fontFile.BaseDataObject;
-                        int length1 = fontFile.Length1;
-                        int length2 = fontFile.Length2;
-
-                        // repair Length1 and Length2 if necessary
-                        byte[] bytes = stream.ExtractBody(true).GetBuffer();
-                        length1 = RepairLength1(bytes, length1);
-                        length2 = RepairLength2(bytes, length1, length2);
-
-                        if (bytes.Length > 0 && (bytes[0] & 0xff) == PFB_START_MARKER)
-                        {
-                            // some bad files embed the entire PFB, see PDFBOX-2607
-                            t1 = Type1Font.CreateWithPFB(bytes);
-                        }
-                        else
-                        {
-                            // the PFB embedded as two segments back-to-back
-                            byte[] segment1 = new byte[length1];
-                            Array.Copy(bytes, 0, segment1, 0, length1);
-
-                            byte[] segment2 = new byte[length2];
-                            Array.Copy(bytes, length1, segment2, 0, length2);
-
-                            // empty streams are simply ignored
-                            if (length1 > 0 && length2 > 0)
-                            {
-                                t1 = Type1Font.CreateWithSegments(segment1, segment2);
-                            }
-                        }
+                        t1 = LoadType1Font(fontFile);
                     }
                     catch (DamagedFontException e)
                     {
@@ -228,6 +200,43 @@ namespace PdfClown.Documents.Contents.Fonts
             ReadEncoding();
             fontMatrixTransform = FontMatrix;
             fontMatrixTransform = fontMatrixTransform.PreConcat(SKMatrix.CreateScale(1000, 1000));
+        }
+
+        internal static Type1Font LoadType1Font(FontFile fontFile)
+        {
+            Type1Font t1 = null;
+
+            var stream = fontFile.BaseDataObject;
+            int length1 = fontFile.Length1;
+            int length2 = fontFile.Length2;
+
+            // repair Length1 and Length2 if necessary
+            byte[] bytes = stream.ExtractBody(true).GetBuffer();
+            length1 = RepairLength1(bytes, length1);
+            length2 = RepairLength2(bytes, length1, length2);
+
+            if (bytes.Length > 0 && (bytes[0] & 0xff) == PFB_START_MARKER)
+            {
+                // some bad files embed the entire PFB, see PDFBOX-2607
+                t1 = Type1Font.CreateWithPFB(bytes);
+            }
+            else
+            {
+                // the PFB embedded as two segments back-to-back
+                byte[] segment1 = new byte[length1];
+                Array.Copy(bytes, 0, segment1, 0, length1);
+
+                byte[] segment2 = new byte[length2];
+                Array.Copy(bytes, length1, segment2, 0, length2);
+
+                // empty streams are simply ignored
+                if (length1 > 0 && length2 > 0)
+                {
+                    t1 = Type1Font.CreateWithSegments(segment1, segment2);
+                }
+            }
+
+            return t1;
         }
 
         public PdfType1Font(Document context, string baseFont) : base(context, baseFont)
@@ -311,7 +320,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @param length1 Length1 from the Type 1 stream
          * @return repaired Length1 value
          */
-        private int RepairLength1(byte[] bytes, int length1)
+        internal static int RepairLength1(byte[] bytes, int length1)
         {
             // scan backwards from the end of the first segment to find 'exec'
             int offset = Math.Max(0, length1 - 4);
@@ -329,7 +338,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
             if (length1 - offset != 0 && offset > 0)
             {
-                Debug.WriteLine($"warn: Ignored invalid Length1 {length1} for Type 1 font {Name}");
+                Debug.WriteLine($"warn: Ignored invalid Length1 {length1} for Type 1 font");
                 return offset;
             }
 
@@ -371,12 +380,12 @@ namespace PdfClown.Documents.Contents.Fonts
          * @param length2 Length2 from the Type 1 stream
          * @return repaired Length2 value
          */
-        private int RepairLength2(byte[] bytes, int length1, int length2)
+        internal static int RepairLength2(byte[] bytes, int length1, int length2)
         {
             // repair Length2 if necessary
             if (length2 < 0 || length2 > bytes.Length - length1)
             {
-                Debug.WriteLine($"warn: Ignored invalid Length2 {length2} for Type 1 font {Name}");
+                Debug.WriteLine($"warn: Ignored invalid Length2 {length2} for Type 1 font");
                 return bytes.Length - length1;
             }
             return length2;

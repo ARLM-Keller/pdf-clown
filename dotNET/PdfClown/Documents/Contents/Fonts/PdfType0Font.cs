@@ -191,6 +191,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private GsubData gsubData;
         private ICmapLookup cmapLookup;
         private TrueTypeFont ttf;
+        private Encoding encoding;
         #endregion
 
         #region constructors       
@@ -250,6 +251,11 @@ namespace PdfClown.Documents.Contents.Fonts
 
         #region interface
         #region protected
+
+        public Encoding Encoding
+        {
+            get => encoding;
+        }
 
         public PdfArray DescendantFonts
         {
@@ -502,6 +508,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     throw new Exception("Missing required CMap");
                 }
+                this.encoding = Encoding.Get(encodingName);
             }
             else if (encoding != null)
             {
@@ -514,8 +521,23 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     Debug.WriteLine("warning Invalid Encoding CMap in font " + Name);
                 }
+                if (encoding is PdfDictionary dictionary)
+                {
+                    this.encoding = new DictionaryEncoding(dictionary);
+                }
             }
-
+            if (this.encoding == null)
+            {
+                if (CIDFont?.GenericFont is IEncodedFont encodedFont)
+                {
+                    this.encoding = Type1Encoding.FromFontBox(encodedFont.Encoding);
+                }
+                else
+                {
+                    // default (only happens with TTFs)
+                    this.encoding = StandardEncoding.Instance;
+                }
+            }
             // check if the descendant font is CJK
             var ros = CIDFont.CIDSystemInfo;
             if (ros != null)

@@ -37,17 +37,29 @@ namespace PdfClown.Documents.Contents.Fonts
         public static CIDFont WrapFont(PdfDirectObject pdfObject, PdfType0Font PdfType0Font)
         {
             if (pdfObject.Wrapper is CIDFont cidFont)
+            {
                 return cidFont;
+            }
             else if (pdfObject.Reference?.Wrapper is CIDFont cidFontRef)
+            {
                 return cidFontRef;
+            }
+
             var pdfDictionary = (PdfDictionary)pdfObject.Resolve();
             var subType = (PdfName)pdfDictionary[PdfName.Subtype];
             if (subType.Equals(PdfName.CIDFontType0))
+            {
                 cidFont = new CIDFontType0(pdfObject, PdfType0Font);
+            }
             else if (subType.Equals(PdfName.CIDFontType2))
+            {
                 cidFont = new CIDFontType2(pdfObject, PdfType0Font);
+            }
             else
+            {
                 throw new NotSupportedException();
+            }
+
             return cidFont;
         }
 
@@ -102,12 +114,6 @@ namespace PdfClown.Documents.Contents.Fonts
             set => Dictionary[PdfName.BaseFont] = value?.BaseObject;
         }
 
-        public override FontDescriptor FontDescriptor
-        {
-            get => fontDescriptor ?? (fontDescriptor = Wrap<FontDescriptor>(Dictionary[PdfName.FontDescriptor]));
-            set => Dictionary[PdfName.FontDescriptor] = value?.BaseObject;
-        }
-
         public int DefaultWidth
         {
             get => defaultWidth ?? (defaultWidth = ((PdfInteger)Dictionary[PdfName.DW])?.IntValue ?? 1000).Value;
@@ -149,6 +155,8 @@ namespace PdfClown.Documents.Contents.Fonts
         }
 
         public override bool WillBeSubset => false;
+
+        public abstract BaseFont GenericFont { get; }
 
         private void ReadWidths()
         {

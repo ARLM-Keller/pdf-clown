@@ -94,7 +94,9 @@ namespace PdfClown.Documents.Contents.Fonts
         }
 
         public virtual string GetName(int key)
-        { return codeToName.TryGetValue(key, out var name) ? name : null; }
+        {
+            return codeToName.TryGetValue(key, out var name) ? name : null;
+        }
         #endregion
 
         #region protected

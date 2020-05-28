@@ -90,16 +90,8 @@ namespace PdfClown.Documents.Contents.Fonts
                 FontFile stream = null;
                 if (fd != null)
                 {
-                    stream = fd.FontFile2;
-                    if (stream == null)
-                    {
-                        stream = fd.FontFile3;
-                    }
-                    if (stream == null)
-                    {
-                        // Acrobat looks in FontFile too, even though it is not in the spec, see PDFBOX-2599
-                        stream = fd.FontFile;
-                    }
+                    // Acrobat looks in FontFile too, even though it is not in the spec, see PDFBOX-2599
+                    stream = fd.FontFile2 ?? fd.FontFile3 ?? fd.FontFile;
                 }
                 if (stream != null)
                 {
@@ -154,6 +146,8 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             return ttfFont;
         }
+
+        public override BaseFont GenericFont => ttf;
 
         public override bool IsEmbedded
         {

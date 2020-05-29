@@ -234,7 +234,19 @@ namespace PdfClown.Documents.Contents
             }
             if (!imageMask)
             {
-                colorSpace = image.ColorSpace ?? DeviceGrayColorSpace.Default;
+                colorSpace = image.ColorSpace;
+                if (colorSpace == null)
+                {
+                    var bitPerColor = (buffer.Length * 8) / width / height;
+                    var sizeComponentCount = bitPerColor / bitsPerComponent;
+                    if (sizeComponentCount < 3)
+                        colorSpace = DeviceGrayColorSpace.Default;
+                    else if(sizeComponentCount == 3)
+                        colorSpace = DeviceRGBColorSpace.Default;
+                    else
+                        colorSpace = DeviceCMYKColorSpace.Default;
+                }
+
                 componentsCount = colorSpace.ComponentCount;
                 iccColorSpace = colorSpace as ICCBasedColorSpace;
                 if (colorSpace is IndexedColorSpace indexedColorSpace)

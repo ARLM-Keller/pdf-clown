@@ -251,7 +251,7 @@ namespace PdfClown.Documents.Contents
         public float LineWidth
         {
             get => lineWidth;
-            set => lineWidth = value;
+            set => lineWidth = value < 1 ? 0 : value;
         }
 
         /**

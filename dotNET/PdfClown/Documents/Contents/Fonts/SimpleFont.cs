@@ -267,7 +267,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 string nameInAFM = Encoding.GetName(code);
 
                 // the Adobe AFMs don't include .notdef, but Acrobat uses 250, test with PDFBOX-2334
-                if (".notdef".Equals(nameInAFM, StringComparison.Ordinal))
+                if (nameInAFM == null || ".notdef".Equals(nameInAFM, StringComparison.Ordinal))
                 {
                     return 250f;
                 }

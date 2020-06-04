@@ -58,62 +58,49 @@ namespace PdfClown.Documents.Contents
         public static object ExtractImage(IImageObject imageObject, IBuffer data, PdfName filterItem,
             PdfDirectObject parameterItem, IDictionary<PdfName, PdfDirectObject> header)
         {
-            if (filterItem.Equals(PdfName.DCTDecode)
-                || filterItem.Equals(PdfName.DCT))
-            {
-                //using (var stream = new MemoryStream(data.GetBuffer()))
-                //using (var skiaData = SKData.Create(stream))
-                //using (var codec = SKCodec.Create(skiaData))
-                //{
-                //    var sizei = codec.GetScaledDimensions(0.5f);
-                //    var nearest = new SKImageInfo(sizei.Width, sizei.Height);
-                //    bitmap = SKBitmap.Decode(codec, nearest);
-                //}
-
-                SKBitmap bitmap = SKBitmap.Decode(data.GetBuffer());
-
-                if (imageObject.SMask != null)
-                {
-                    var info = bitmap.Info;
-                    BitmapLoader smaskLoader = new BitmapLoader(imageObject.SMask, null);
-                    var smask = smaskLoader.LoadSKMask();
-                    //bitmap.InstallMaskPixels(smask); //Skia bug
-                    //vs
-                    for (int y = 0; y < info.Height; y++)
-                    {
-                        var row = y * info.Width;
-                        for (int x = 0; x < info.Width; x++)
-                        {
-                            var index = row + x;
-                            var alpha = smask.GetAddr8(x, y);
-                            if (smaskLoader.decode[0] == 1)
-                            {
-                                alpha = (byte)(255 - alpha);
-                            }
-                            var color = bitmap.GetPixel(x, y).WithAlpha(alpha);
-                            bitmap.SetPixel(x, y, color);
-                        }
-                    }
-                    smask.FreeImage();
+            //using (var stream = new MemoryStream(data.GetBuffer()))
+            //using (var skiaData = SKData.Create(stream))
+            //using (var codec = SKCodec.Create(skiaData))
+            //{
+            //    var sizei = codec.GetScaledDimensions(0.5f);
+            //    var nearest = new SKImageInfo(sizei.Width, sizei.Height);
+            //    bitmap = SKBitmap.Decode(codec, nearest);
+            //}
 
 
-                }
-                return bitmap;
-            }
-            else if (filterItem.Equals(PdfName.JBIG2Decode))
-            {
-                return Bytes.Buffer.Extract(data, filterItem, parameterItem, imageObject.Header);
-            }
-            else if (filterItem.Equals(PdfName.JPXDecode))
-            {
-                return Bytes.Buffer.Extract(data, filterItem, parameterItem, imageObject.Header);
-            }
-            else if (filterItem.Equals(PdfName.CCITTFaxDecode)
-                || filterItem.Equals(PdfName.CCF))
-            {
-                return Bytes.Buffer.Extract(data, filterItem, parameterItem, imageObject.Header);
-            }
-            else if (filterItem != null)
+            //if (filterItem.Equals(PdfName.DCTDecode)
+            //    || filterItem.Equals(PdfName.DCT))
+            //{
+            //    SKBitmap bitmap = SKBitmap.Decode(data.GetBuffer());
+
+            //    if (imageObject.SMask != null)
+            //    {
+            //        var info = bitmap.Info;
+            //        BitmapLoader smaskLoader = new BitmapLoader(imageObject.SMask, null);
+            //        var smask = smaskLoader.LoadSKMask();
+            //        //bitmap.InstallMaskPixels(smask); //Skia bug
+            //        //vs
+            //        for (int y = 0; y < info.Height; y++)
+            //        {
+            //            var row = y * info.Width;
+            //            for (int x = 0; x < info.Width; x++)
+            //            {
+            //                var index = row + x;
+            //                var alpha = smask.GetAddr8(x, y);
+            //                if (smaskLoader.decode[0] == 1)
+            //                {
+            //                    alpha = (byte)(255 - alpha);
+            //                }
+            //                var color = bitmap.GetPixel(x, y).WithAlpha(alpha);
+            //                bitmap.SetPixel(x, y, color);
+            //            }
+            //        }
+            //        smask.FreeImage();
+            //    }
+            //    return bitmap;
+            //}
+
+            if (filterItem != null)
             {
                 return Bytes.Buffer.Extract(data, filterItem, parameterItem, imageObject.Header);
             }
@@ -235,13 +222,13 @@ namespace PdfClown.Documents.Contents
             if (!imageMask)
             {
                 colorSpace = image.ColorSpace;
-                if (colorSpace == null)
+                if (colorSpace == null)// || (image.Filter?.Equals(PdfName.DCTDecode) ?? false) || (image.Filter?.Equals(PdfName.DCT) ?? false))
                 {
                     var bitPerColor = (buffer.Length * 8) / width / height;
                     var sizeComponentCount = bitPerColor / bitsPerComponent;
                     if (sizeComponentCount < 3)
                         colorSpace = DeviceGrayColorSpace.Default;
-                    else if(sizeComponentCount == 3)
+                    else if (sizeComponentCount == 3)
                         colorSpace = DeviceRGBColorSpace.Default;
                     else
                         colorSpace = DeviceCMYKColorSpace.Default;

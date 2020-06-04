@@ -52,6 +52,11 @@ namespace PdfClown.Bytes.Filters
             return (int)Math.Ceiling(Math.Log(x, 2D));
         }
 
+        public static byte ToByte(double v)
+        {
+            return v > 255 ? (byte)255 : v < 0 ? (byte)0 : (byte)v;
+        }
+
         public static byte ToByte(int v)
         {
             return v > 255 ? (byte)255 : v < 0 ? (byte)0 : (byte)v;

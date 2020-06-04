@@ -152,7 +152,8 @@ namespace PdfClown.Documents
                         }
                         else
                         {
-                            throw new Exception($"TODO Support type {kidObject.GetType()} in page enumeration!");
+                            return false;
+                            //throw new Exception($"TODO Support type {kidObject.GetType()} in page enumeration!");
                         }
                     }
                 }

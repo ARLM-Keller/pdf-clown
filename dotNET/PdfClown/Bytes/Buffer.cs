@@ -88,7 +88,7 @@ namespace PdfClown.Bytes
             }
             if (filter is PdfName) // Single filter.
             {
-                buffer = buffer.Extract(Filter.Get((PdfName)filter), (PdfDictionary)parameters, header);
+                buffer = buffer.Extract(Filter.Get((PdfName)filter), parameters, header);
             }
             else // Multiple filters.
             {

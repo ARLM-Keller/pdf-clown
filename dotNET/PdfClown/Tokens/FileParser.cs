@@ -161,7 +161,7 @@ namespace PdfClown.Tokens
                     int length = streamHeader.GetInt(PdfName.Length, 0);
                     // Move to the stream data beginning!
                     stream.Seek(position); SkipEOL();
-                    if (length == 0)
+                    if (length <= 0)
                     {
                         System.Diagnostics.Debug.Write($"warning: Repair Stream Object missing {PdfName.Length} header parameter");
                         position = stream.Position;
@@ -176,7 +176,8 @@ namespace PdfClown.Tokens
                             throw new Exception($"Pdf Stream Object missing {Keyword.EndStream} Keyword");
                         }
                     }
-
+                    if (length < 0)
+                        length = 0;
                     // Copy the stream data to the instance!
                     byte[] data = new byte[length];
                     stream.Read(data);

@@ -48,11 +48,11 @@ namespace PdfClown.Viewer
         private float oldScale = 1;
         private float scale = 1;
         private readonly float indent = 10;
-        private SKMatrix CurrentWindowScaleMatrix;
-        private SKMatrix CurrentNavigationMatrix;
-        private SKMatrix CurrentPictureMatrix;
+        private SKMatrix CurrentWindowScaleMatrix = SKMatrix.Identity;
+        private SKMatrix CurrentNavigationMatrix = SKMatrix.Identity;
+        private SKMatrix CurrentPictureMatrix = SKMatrix.Identity;
         private SKPoint CurrentLocation;
-        private SKMatrix CurrentViewMatrix;
+        private SKMatrix CurrentViewMatrix = SKMatrix.Identity;
         private SKRect CurrentArea;
         private PdfPagePicture CurrentPicture;
 
@@ -62,7 +62,7 @@ namespace PdfClown.Viewer
         private SKRect currentAnnotationTextBounds;
         private SKPoint CurrentMoveLocation;
         private SKPoint? PressedCursorLocation;
-        private SKMatrix InvertPictureMatrix;
+        private SKMatrix InvertPictureMatrix = SKMatrix.Identity;
         private SKPoint CurrentPointerLocation;
         private string selectedString;
         private Quad? selectedQuad;
@@ -655,7 +655,7 @@ namespace PdfClown.Viewer
                 else
                 {
                     for (int i = firstStringIndex < 1 ? 0 : firstStringIndex - 1; i < page.Strings.Count; i++)
-                    { 
+                    {
                         var textString = page.Strings[i];
                         foreach (var textChar in textString.TextChars)
                         {

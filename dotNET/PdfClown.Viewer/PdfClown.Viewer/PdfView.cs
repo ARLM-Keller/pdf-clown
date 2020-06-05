@@ -70,7 +70,6 @@ namespace PdfClown.Viewer
 
         public PdfView()
         {
-            PaintContent += OnPaintContent;
         }
 
         public float ScaleContent
@@ -380,7 +379,7 @@ namespace PdfClown.Viewer
             CurrentWindowScaleMatrix = SKMatrix.MakeScale(XScaleFactor, YScaleFactor);
         }
 
-        protected virtual void OnPaintContent(object sender, SKPaintSurfaceEventArgs e)
+        protected override void OnPaintContent(SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
             canvas.Clear(BackgroundColor.ToSKColor());

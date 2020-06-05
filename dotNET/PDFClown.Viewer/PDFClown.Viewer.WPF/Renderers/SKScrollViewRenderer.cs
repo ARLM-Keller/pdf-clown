@@ -98,7 +98,7 @@ namespace PdfClown.Viewer.WPF
         }
 
         private void OnControlLoaded(object sender, RoutedEventArgs e)
-        {
+        {            
             Control.Loaded -= OnControlLoaded;
             Control.MouseWheel += OnControlMouseWheel;
             Control.PreviewKeyDown += OnControlKeyDown;
@@ -128,7 +128,6 @@ namespace PdfClown.Viewer.WPF
                     Mouse.Capture(Control);
                 }
             }
-
         }
 
         private static KeyModifiers GetModifiers()

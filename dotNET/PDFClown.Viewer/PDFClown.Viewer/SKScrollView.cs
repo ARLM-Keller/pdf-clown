@@ -468,11 +468,11 @@ namespace PdfClown.Viewer
 
             base.OnPaintSurface(e);
 
-            if (!IsVisible)
-                return;
+            //if (!IsVisible)
+            //    return;
 
             canvas.Save();
-            PaintContent?.Invoke(this, e);
+            OnPaintContent(e);
             canvas.Restore();
 
             if (VerticalScrollBarVisible)
@@ -515,6 +515,11 @@ namespace PdfClown.Viewer
                 canvas.DrawRect(valueBound, bottonPaint);
             }
             PaintOver?.Invoke(this, e);
+        }
+
+        protected virtual void OnPaintContent(SKPaintSurfaceEventArgs e)
+        {
+            PaintContent?.Invoke(this, e);
         }
 
         public SKRect GetVerticalScrollBounds()

@@ -129,7 +129,7 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 foreach (string name in GetPostScriptNames(info.PostScriptName))
                 {
-                    map.Add(name, info);
+                    map[name] = info;
                 }
             }
             return map;

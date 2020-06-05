@@ -41,9 +41,7 @@ namespace PdfClown.Samples.CLI
         /**
           <summary>Populates a PDF file with contents.</summary>
         */
-        private void Populate(
-          Document document
-          )
+        private void Populate(Document document)
         {
             // Initialize a new page!
             Page page = new Page(document);

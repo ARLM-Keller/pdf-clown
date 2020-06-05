@@ -93,8 +93,8 @@ namespace PdfClown.Documents.Contents
         private IList<ContentObject> objects;
 
         /**
-Parent level.
-*/
+          Parent level.
+        */
         private ContentScanner parentLevel;
         /**
           Current graphics state.

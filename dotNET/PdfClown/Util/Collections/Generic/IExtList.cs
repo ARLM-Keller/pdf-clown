@@ -30,8 +30,7 @@ namespace PdfClown.Util.Collections.Generic
     /**
       <summary>Extension list interface.</summary>
     */
-    public interface IExtList<T>
-      : IExtCollection<T>
+    public interface IExtList<T> : IExtCollection<T>
     {
         /**
           <summary>Creates a shallow copy of a range of items in the source list.</summary>
@@ -39,10 +38,7 @@ namespace PdfClown.Util.Collections.Generic
           <param name="count">Number of items to copy.</param>
           <returns>Shallow copy of the specified range of items.</returns>
         */
-        IList<T> GetRange(
-          int index,
-          int count
-          );
+        IList<T> GetRange(int index, int count);
 
         /**
           <summary>Creates a shallow copy of a slice of items in the source list.</summary>
@@ -50,10 +46,7 @@ namespace PdfClown.Util.Collections.Generic
           <param name="toIndex">Higher item (exclusive) of the copy.</param>
           <returns>Shallow copy of the specified slice of items.</returns>
         */
-        IList<T> GetSlice(
-          int fromIndex,
-          int toIndex
-          );
+        IList<T> GetSlice(int fromIndex, int toIndex);
 
         /**
           <summary>Inserts all of the specified-collection's items at the specified position
@@ -61,10 +54,7 @@ namespace PdfClown.Util.Collections.Generic
           <param name="index">Insertion position.</param>
           <param name="items">Collection of items to insert.</param>
         */
-        void InsertAll<TVar>(
-          int index,
-          ICollection<TVar> items
-          )
-          where TVar : T;
+        void InsertAll<TVar>(int index, ICollection<TVar> items)
+            where TVar : T;
     }
 }

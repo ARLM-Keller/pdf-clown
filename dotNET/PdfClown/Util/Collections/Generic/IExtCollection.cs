@@ -37,18 +37,14 @@ namespace PdfClown.Util.Collections.Generic
           <summary>Appends all of the specified-collection's items to the end of the list.</summary>
           <param name="items">Collection of items to append.</param>
         */
-        void AddAll<TVar>(
-          ICollection<TVar> items
-          )
+        void AddAll<TVar>(ICollection<TVar> items)
           where TVar : T;
 
         /**
           <summary>Removes all of the specified-collection's items from the list.</summary>
           <param name="items">Collection of items to remove.</param>
         */
-        void RemoveAll<TVar>(
-          ICollection<TVar> items
-          )
+        void RemoveAll<TVar>(ICollection<TVar> items)
           where TVar : T;
 
         /**
@@ -58,8 +54,6 @@ namespace PdfClown.Util.Collections.Generic
           to remove.</param>
           <returns>The number of items removed from the collection.</returns>
         */
-        int RemoveAll(
-          Predicate<T> match
-          );
+        int RemoveAll(Predicate<T> match);
     }
 }

@@ -382,7 +382,7 @@ namespace PdfClown.Viewer
         protected override void OnPaintContent(SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
-            canvas.Clear(BackgroundColor.ToSKColor());
+            
             canvas.SetMatrix(CurrentViewMatrix);
             foreach (var pdfPicture in pictures)
             {

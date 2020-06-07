@@ -464,7 +464,8 @@ namespace PdfClown.Viewer
             YScaleFactor = (float)(e.Info.Height / Height);
 
             canvas.Scale(XScaleFactor, YScaleFactor);
-            canvas.Clear();
+            canvas.Clear(BackgroundColor.ToSKColor());
+            //canvas.Clear();
 
             base.OnPaintSurface(e);
 

@@ -566,7 +566,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public string CodeToName(int code)
         {
-            string name = Encoding.GetName(code);
+            string name = Encoding.GetName(code) ?? ".notdef";
             return GetNameInFont(name);
         }
 

@@ -25,31 +25,6 @@ namespace PdfClown.Viewer
         public static readonly BindableProperty TargetProperty = BindableProperty.Create(nameof(Target), typeof(SKGLScrollView), typeof(SKGLScrollView), null,
             propertyChanged: (bidable, oldValue, newValue) => ((SKGLScrollView)bidable).OnTargetChanged((SKGLScrollView)oldValue, (SKGLScrollView)newValue));
 
-        public static SkiaSharp.Extended.Svg.SKSvg GetCache(string imageName)
-        {
-            if (string.IsNullOrEmpty(imageName))
-                return null;
-            if (!SvgImage.SvgCache.TryGetValue(imageName, out var svg))
-            {
-                var assemply = typeof(SKScrollView).Assembly;
-                var keyName = $"{assemply.GetName().Name}.Assets.{imageName}.svg";
-                using (var stream = assemply.GetManifestResourceStream(keyName))
-                {
-                    if (stream != null)
-                    {
-                        svg = new SkiaSharp.Extended.Svg.SKSvg();
-                        svg.Load(stream);
-                        SvgImage.SvgCache[imageName] = svg;
-                    }
-                    else
-                    {
-                        SvgImage.SvgCache[imageName] = null;
-                    }
-                }
-            }
-            return svg;
-        }
-
         public const int step = 16;
         private const string ahScroll = "VerticalScrollAnimation";
         private SKPoint nullLocation;
@@ -60,10 +35,10 @@ namespace PdfClown.Viewer
         private double hsWidth;
         private double kWidth;
         private double kHeight;
-        private readonly SkiaSharp.Extended.Svg.SKSvg upSvg = GetCache("caret-up");
-        private readonly SkiaSharp.Extended.Svg.SKSvg downSvg = GetCache("caret-down");
-        private readonly SkiaSharp.Extended.Svg.SKSvg leftSvg = GetCache("caret-left");
-        private readonly SkiaSharp.Extended.Svg.SKSvg rightSvg = GetCache("caret-right");
+        private readonly SvgImage upSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-up");
+        private readonly SvgImage downSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-down");
+        private readonly SvgImage leftSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-left");
+        private readonly SvgImage rightSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-right");
         private bool verticalHovered;
         private bool нorizontalHovered;
         private Thickness verticalPadding = new Thickness(0, 0, 0, step);
@@ -479,13 +454,11 @@ namespace PdfClown.Viewer
                 {
                     var upBound = GetUpBounds();
                     canvas.DrawRect(upBound, bottonPaint);
-                    var upMatrix = SvgImage.GetMatrix(upSvg, upBound, 0.5F);
-                    canvas.DrawPicture(upSvg.Picture, ref upMatrix, svgPaint);
+                    SvgImage.DrawImage(canvas, upSvg, svgPaint, upBound, 0.5F);
 
                     var downBound = GetDownBounds();
                     canvas.DrawRect(downBound, bottonPaint);
-                    var downMatrix = SvgImage.GetMatrix(downSvg, downBound, 0.5F);
-                    canvas.DrawPicture(downSvg.Picture, ref downMatrix, svgPaint);
+                    SvgImage.DrawImage(canvas, downSvg, svgPaint, downBound, 0.5F);
                 }
                 var valueBound = GetVerticalValueBounds();
                 valueBound.Inflate(-1, -1);
@@ -499,13 +472,11 @@ namespace PdfClown.Viewer
                 {
                     var leftBound = GetLeftBounds();
                     canvas.DrawRect(leftBound, bottonPaint);
-                    var leftMatrix = SvgImage.GetMatrix(leftSvg, leftBound, 0.5F);
-                    canvas.DrawPicture(leftSvg.Picture, ref leftMatrix, svgPaint);
+                    SvgImage.DrawImage(canvas, leftSvg, svgPaint, leftBound, 0.5F);
 
                     var rightBound = GetRightBounds();
                     canvas.DrawRect(rightBound, bottonPaint);
-                    var rightMatrix = SvgImage.GetMatrix(downSvg, rightBound, 0.5F);
-                    canvas.DrawPicture(rightSvg.Picture, ref rightMatrix, svgPaint);
+                    SvgImage.DrawImage(canvas, rightSvg, svgPaint, rightBound, 0.5F);
                 }
                 var valueBound = GetHorizontalValueBounds();
                 valueBound.Inflate(-1, -1);

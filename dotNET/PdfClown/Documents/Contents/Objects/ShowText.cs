@@ -131,7 +131,9 @@ namespace PdfClown.Documents.Contents.Objects
             var horizontalScaling = state.Scale;
             var wordSpace = wordSpaceSupported ? state.WordSpace : 0;
             var charSpace = state.CharSpace;
-            var charBBox = font.BoundingBox;
+            var charAscent = (float)font.GetAscent(fontSize);
+            var charDescent = (float)font.GetDescent(fontSize);
+            var charHeight = (float)font.GetLineHeight(fontSize);
             SKMatrix fm = font.FontMatrix;
             SKMatrix ctm = state.Ctm;
             SKMatrix tm = state.TextState.Tm;
@@ -142,6 +144,10 @@ namespace PdfClown.Documents.Contents.Objects
             var parameters = new SKMatrix(
                 fontSize * horizontalScaling, 0f, 0f,
                 0f, fontSize, state.Rise,
+                0f, 0f, 1f);
+            var uparameters = new SKMatrix(
+                1f, 0f, 0f,
+                0f, 1f, state.Rise,
                 0f, 0f, 1f);
 
             if (context != null)
@@ -199,10 +205,8 @@ namespace PdfClown.Documents.Contents.Objects
                             }
                             //NOTE: The text rendering matrix is recomputed before each glyph is painted
                             // during a text-showing operation.
-                            SKMatrix trm = parameters;// ctm;
-                            trm = trm.PostConcat(tm);
-                            trm = trm.PostConcat(ctm);
-
+                            SKMatrix trm = parameters.PostConcat(tm).PostConcat(ctm);
+                            SKMatrix utm = uparameters.PostConcat(tm).PostConcat(ctm);
                             // get glyph's position vector if this is vertical text
                             // changes to vertical text should be tested with PDFBOX-2294 and PDFBOX-1422
                             if (vertical)
@@ -211,9 +215,10 @@ namespace PdfClown.Documents.Contents.Objects
                                 var v = font.GetPositionVector(code);
                                 // apply the position vector to the horizontal origin to get the vertical origin
                                 trm = trm.PreConcat(SKMatrix.MakeTranslation(v.X, v.Y));
+                                utm = utm.PreConcat(SKMatrix.MakeTranslation(v.X, v.Y));
                             }
                             trm = trm.PreConcat(fm);
-                            var usm = trm.PreConcat(SKMatrix.MakeScale(1, -1));
+
                             if (context != null && !(codeBytes.Length == 1 && textChar == ' '))
                             {
                                 context.SetMatrix(trm);
@@ -225,18 +230,6 @@ namespace PdfClown.Documents.Contents.Objects
                             }
 
                             var w = font.GetDisplacement(code);
-
-                            if (textScanner != null)
-                            {
-                                var width = font.GetWidth(code);
-                                var charBox = vertical
-                                    ? SKRect.Create(charBBox.Right, 0, width, charBBox.Height)
-                                    : SKRect.Create(0, -charBBox.Bottom, width, charBBox.Height);
-
-                                var quad = new Quad(charBox);
-                                quad.Transform(ref usm);
-                                textScanner.ScanChar(textChar, quad);
-                            }
                             /*
                               NOTE: After the glyph is painted, the text matrix is updated
                               according to the glyph displacement and any applicable spacing parameter.
@@ -244,16 +237,29 @@ namespace PdfClown.Documents.Contents.Objects
                             // calculate the combined displacements
                             float tx;
                             float ty;
+                            SKRect charBox;
                             if (vertical)
                             {
                                 tx = 0;
                                 ty = (float)(w.Y * fontSize + charSpace + wordSpacing);
+                                var fw = font.GetWidth(code)/1000;
+                                charBox = SKRect.Create(0, ty, fw, charHeight);
                             }
                             else
                             {
                                 tx = (float)((w.X * fontSize + charSpace + wordSpacing) * horizontalScaling);
                                 ty = 0;
+                                charBox = SKRect.Create(0, -charAscent, tx, charHeight);
                             }
+
+                            if (textScanner != null)
+                            {
+                                utm = utm.PreConcat(SKMatrix.CreateScale(1, -1));
+                                var quad = new Quad(charBox);
+                                quad.Transform(ref utm);
+                                textScanner.ScanChar(textChar, quad);
+                            }
+
                             tm = tm.PreConcat(SKMatrix.MakeTranslation(tx, ty));
                         }
                     }

@@ -48,7 +48,9 @@ namespace PdfClown.Objects
           <summary>Gets the object equivalent to the given value.</summary>
         */
         public static PdfDate Get(DateTime? value)
-        { return value.HasValue ? new PdfDate(value.Value) : null; }
+        {
+            return value.HasValue ? new PdfDate(value.Value) : null;
+        }
 
         /**
           <summary>Converts a PDF date literal into its corresponding date.</summary>
@@ -98,29 +100,28 @@ namespace PdfClown.Objects
         #endregion
 
         #region private
-        private static string Format(
-          DateTime value
-          )
-        { return ("D:" + value.ToString(FormatString).Replace(':', '\'') + "'"); }
+        private static string Format(DateTime value)
+        {
+            return ("D:" + value.ToString(FormatString).Replace(':', '\'') + "'");
+        }
         #endregion
         #endregion
         #endregion
 
         #region dynamic
         #region constructors
-        public PdfDate(
-          DateTime value
-          )
-        { Value = value; }
+        public PdfDate(DateTime value)
+        {
+            Value = value;
+        }
         #endregion
 
         #region interface
         #region public
-        public override PdfObject Accept(
-          IVisitor visitor,
-          object data
-          )
-        { return visitor.Visit(this, data); }
+        public override PdfObject Accept(IVisitor visitor, object data)
+        {
+            return visitor.Visit(this, data);
+        }
 
         public override SerializationModeEnum SerializationMode
         {

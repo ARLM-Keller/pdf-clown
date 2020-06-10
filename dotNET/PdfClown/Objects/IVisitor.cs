@@ -67,10 +67,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfDataObject obj,
-          object data
-          );
+        PdfObject Visit(PdfDataObject obj, object data);
 
         /**
           <summary>Visits a date object.</summary>
@@ -78,10 +75,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfDate obj,
-          object data
-          );
+        PdfObject Visit(PdfDate obj, object data);
 
         /**
           <summary>Visits an object dictionary.</summary>
@@ -89,10 +83,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfDictionary obj,
-          object data
-          );
+        PdfObject Visit(PdfDictionary obj, object data);
 
         /**
           <summary>Visits an indirect object.</summary>
@@ -100,10 +91,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfIndirectObject obj,
-          object data
-          );
+        PdfObject Visit(PdfIndirectObject obj, object data);
 
         /**
           <summary>Visits an integer-number object.</summary>
@@ -111,10 +99,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfInteger obj,
-          object data
-          );
+        PdfObject Visit(PdfInteger obj, object data);
 
         /**
           <summary>Visits a name object.</summary>
@@ -122,10 +107,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfName obj,
-          object data
-          );
+        PdfObject Visit(PdfName obj, object data);
 
         /**
           <summary>Visits a real-number object.</summary>
@@ -133,10 +115,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfReal obj,
-          object data
-          );
+        PdfObject Visit(PdfReal obj, object data);
 
         /**
           <summary>Visits a reference object.</summary>
@@ -144,10 +123,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfReference obj,
-          object data
-          );
+        PdfObject Visit(PdfReference obj, object data);
 
         /**
           <summary>Visits a stream object.</summary>
@@ -155,10 +131,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfStream obj,
-          object data
-          );
+        PdfObject Visit(PdfStream obj, object data);
 
         /**
           <summary>Visits a string object.</summary>
@@ -166,10 +139,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfString obj,
-          object data
-          );
+        PdfObject Visit(PdfString obj, object data);
 
         /**
           <summary>Visits a text string object.</summary>
@@ -177,10 +147,7 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          PdfTextString obj,
-          object data
-          );
+        PdfObject Visit(PdfTextString obj, object data);
 
         /**
           <summary>Visits a cross-reference stream object.</summary>
@@ -188,9 +155,6 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Visit(
-          XRefStream obj,
-          object data
-          );
+        PdfObject Visit(XRefStream obj, object data);
     }
 }

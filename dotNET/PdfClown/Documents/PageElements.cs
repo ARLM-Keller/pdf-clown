@@ -48,11 +48,15 @@ namespace PdfClown.Documents
         #region constructors
         internal PageElements(PdfDirectObject baseObject, Page page)
             : base(baseObject)
-        { this.page = page; }
+        {
+            this.page = page;
+        }
 
         internal PageElements(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject, Page page)
             : base(itemWrapper, baseObject)
-        { this.page = page; }
+        {
+            this.page = page;
+        }
         #endregion
 
         #region interface
@@ -64,7 +68,9 @@ namespace PdfClown.Documents
         }
 
         public override object Clone(Document context)
-        { throw new NotSupportedException(); }
+        {
+            throw new NotSupportedException();
+        }
 
         public override void Insert(int index, TItem @object)
         {

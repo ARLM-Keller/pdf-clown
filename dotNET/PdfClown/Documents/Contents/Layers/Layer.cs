@@ -163,7 +163,9 @@ namespace PdfClown.Documents.Contents.Layers
           </summary>
         */
         public override bool Delete()
-        { return Delete(false); }
+        {
+            return Delete(false);
+        }
 
         /**
           <summary>Deletes this layer, removing also its references from the document.</summary>

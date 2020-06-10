@@ -79,7 +79,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         #region interface
         #region public
-        //TODO:remove?
+        //TODO:remove? - one dependency
         public ColorSpace ColorSpace => colorSpace;
 
         /**

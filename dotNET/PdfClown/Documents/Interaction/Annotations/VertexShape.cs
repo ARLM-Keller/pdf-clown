@@ -42,7 +42,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     public abstract class VertexShape : Shape
     {
         private SKPoint[] points;
-        private Dictionary<int, IndexControlPoint> cache = new Dictionary<int, IndexControlPoint>();
+        private Dictionary<int, IndexControlPoint> controlPoints = new Dictionary<int, IndexControlPoint>();
         #region dynamic
         #region constructors
         protected VertexShape(Page page, SKRect box, string text, PdfName subtype)
@@ -87,7 +87,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                     points = value;
                 }
                 var pageMatrix = InvertPageMatrix;
-                PdfArray verticesObject = new PdfArray();
+                PdfArray verticesObject = Vertices ?? new PdfArray();
+                verticesObject.Clear();
                 float pageHeight = Page.Box.Height;
                 foreach (SKPoint vertex in value)
                 {
@@ -95,7 +96,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     verticesObject.Add(PdfReal.Get(mappedPoint.X));
                     verticesObject.Add(PdfReal.Get(mappedPoint.Y));
                 }
-
+                RefreshBox();
                 Vertices = verticesObject;
             }
         }
@@ -113,7 +114,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 Points[index] = value;
                 Points = points;
-                RefreshBox();
             }
         }
 
@@ -139,19 +139,58 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     points[points.Length - 1] = value;
                     Points = points;
-                    RefreshBox();
                 }
             }
         }
 
-        public void AddPoint(SKPoint point)
+        public IndexControlPoint FirstControlPoint => GetControlPoint(0);
+
+        public IndexControlPoint LastControlPoint => GetControlPoint(Points.Length - 1);
+
+        public IndexControlPoint GetControlPoint(int index)
+        {
+            return controlPoints.TryGetValue(index, out var controlPoint) ? controlPoint
+                                : (controlPoints[index] = new IndexControlPoint { Annotation = this, Index = index });
+        }
+
+        public IndexControlPoint InsertPoint(int index, SKPoint point)
         {
             var oldVertices = Points;
             var newVertices = new SKPoint[oldVertices.Length + 1];
-            Array.Copy(oldVertices, newVertices, oldVertices.Length);
-            newVertices[newVertices.Length - 1] = point;
+
+            Array.Copy(oldVertices, 0, newVertices, 0, index);
+            newVertices[index] = point;
+            if ((oldVertices.Length - 1) > index)
+            {
+                Array.Copy(oldVertices, index, newVertices, index + 1, (oldVertices.Length - 1) - index);
+            }
             Points = newVertices;
+            return GetControlPoint(index);
         }
+
+        public IndexControlPoint AddPoint(SKPoint point)
+        {
+            return InsertPoint(Points.Length, point);
+        }
+
+        public bool RemovePoint(int index)
+        {
+            if (index > -1 && index < Points.Length)
+            {
+                var oldVertices = Points;
+                var newVertices = new SKPoint[oldVertices.Length - 1];
+                Array.Copy(oldVertices, 0, newVertices, 0, index);
+                if ((oldVertices.Length - 1) > index)
+                {
+                    Array.Copy(oldVertices, index + 1, newVertices, index, (oldVertices.Length - 1) - index);
+                }
+                Points = newVertices;
+                controlPoints.Remove(index);
+                return true;
+            }
+            return false;
+        }
+
 
         public override void RefreshBox()
         {
@@ -160,7 +199,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             foreach (SKPoint point in Points)
             {
                 if (box == SKRect.Empty)
-                { box = SKRect.Create(point.X, point.Y, 0, 0); }
+                { box = SKRect.Create(point.X, point.Y, 10, 10); }
                 else
                 { box.Add(point); }
 
@@ -197,16 +236,17 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override IEnumerable<ControlPoint> GetControlPoints()
         {
-            for (int i = 0; i < Points.Length; i++)
-            {
-                yield return cache.TryGetValue(i, out var controlPoint) ? controlPoint
-                    : (cache[i] = new IndexControlPoint { Annotation = this, Index = i });
-            }
             foreach (var cpBase in GetDefaultControlPoint())
             {
                 yield return cpBase;
             }
+            for (int i = 0; i < Points.Length; i++)
+            {
+                yield return GetControlPoint(i);
+            }
         }
+
+
         #endregion
         #endregion
         #endregion

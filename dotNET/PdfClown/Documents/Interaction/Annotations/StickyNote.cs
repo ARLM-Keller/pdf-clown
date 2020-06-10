@@ -111,7 +111,9 @@ namespace PdfClown.Documents.Interaction.Annotations
           <summary>Gets the code corresponding to the given value.</summary>
         */
         private static PdfName ToCode(IconTypeEnum value)
-        { return IconTypeEnumCodes[value]; }
+        {
+            return IconTypeEnumCodes[value];
+        }
 
         /**
           <summary>Gets the icon type corresponding to the given value.</summary>
@@ -149,8 +151,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => ToIconTypeEnum((PdfName)BaseDataObject[PdfName.Name]);
             set
             {
+                var oldValue = IconType;
                 BaseDataObject[PdfName.Name] = (value != DefaultIconType ? ToCode(value) : null);
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -159,15 +162,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public bool IsOpen
         {
-            get
-            {
-                PdfBoolean openObject = (PdfBoolean)BaseDataObject[PdfName.Open];
-                return openObject != null ? openObject.BooleanValue : DefaultOpen;
-            }
+            get => BaseDataObject.GetBool(PdfName.Open, DefaultOpen);
             set
             {
+                var oldValue = IsOpen;
                 BaseDataObject[PdfName.Open] = (value != DefaultOpen ? PdfBoolean.Get(value) : null);
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 

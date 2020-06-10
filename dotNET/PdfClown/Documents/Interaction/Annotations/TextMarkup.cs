@@ -99,7 +99,9 @@ namespace PdfClown.Documents.Interaction.Annotations
           <summary>Gets the code corresponding to the given value.</summary>
         */
         private static PdfName ToCode(MarkupTypeEnum value)
-        { return MarkupTypeEnumCodes[value]; }
+        {
+            return MarkupTypeEnumCodes[value];
+        }
 
         /**
           <summary>Gets the markup type corresponding to the given value.</summary>
@@ -125,7 +127,9 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region interface
         private static float GetMarkupBoxMargin(float boxHeight)
-        { return boxHeight * .25f; }
+        {
+            return boxHeight * .25f;
+        }
         #endregion
         #endregion
 
@@ -287,12 +291,12 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region private
         /*
-          TODO: refresh should happen just before serialization, on document event (e.g. OnWrite())
+          TODO: refresh should happen for every Annotation with overwrite\remove check 
         */
         private void RefreshAppearance()
         {
             FormXObject normalAppearance;
-            SKRect box = Rect;
+            SKRect box = Rect.ToRect();
             {
                 AppearanceStates normalAppearances = Appearance.Normal;
                 normalAppearance = normalAppearances[null];

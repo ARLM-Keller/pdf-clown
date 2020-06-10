@@ -168,16 +168,24 @@ NOTE: Fail fast if the referenced indirect object is undefined.
         }
 
         public override string ToString()
-        { return IndirectReference; }
+        {
+            return IndirectReference;
+        }
 
         public override void WriteTo(IOutputStream stream, File context)
-        { stream.Write(IndirectReference); }
+        {
+            stream.Write(IndirectReference);
+        }
 
         public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
+        {
+            return visitor.Visit(this, data);
+        }
 
         public override PdfDataObject Resolve()
-        { return DataObject; }
+        {
+            return DataObject;
+        }
 
         public override int CompareTo(PdfDirectObject obj)
         {

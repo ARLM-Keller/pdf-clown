@@ -154,13 +154,17 @@ namespace PdfClown.Objects
           context.</summary>
         */
         public virtual PdfObject Clone(File context)
-        { return Clone(context.Cloner); }
+        { 
+            return Clone(context.Cloner); 
+        }
 
         /**
           <summary>Creates a deep copy of this object using the specified cloner.</summary>
         */
         public virtual PdfObject Clone(Cloner cloner)
-        { return Accept(cloner, null); }
+        { 
+            return Accept(cloner, null); 
+        }
 
         /**
           <summary>Gets the indirect object containing this object.</summary>

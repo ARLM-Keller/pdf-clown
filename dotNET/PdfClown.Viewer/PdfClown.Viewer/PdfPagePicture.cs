@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PdfClown.Tools;
+using PdfClown.Documents.Contents.Entities;
 
 namespace PdfClown.Viewer
 {
@@ -19,12 +20,11 @@ namespace PdfClown.Viewer
         private SKPicture picture;
         public SKMatrix Matrix = SKMatrix.MakeIdentity();
         private Page page;
+        private SKImage image;
 
         public PdfPagePicture()
         {
         }
-
-        public List<Annotation> Annotations { get; private set; }
 
         public SKPicture GetPicture(SKCanvasView canvasView)
         {
@@ -37,6 +37,20 @@ namespace PdfClown.Viewer
                 }
             }
             return picture;
+        }
+
+        public SKImage GetImage(SKCanvasView canvasView, SKSizeI size)
+        {
+            var picture = GetPicture(canvasView);
+            if (picture == null)
+            {
+                return null;
+            }
+            if (image == null)
+            {
+                image = SKImage.FromPicture(picture, size);
+            }
+            return image;
         }
 
         private void Paint(SKCanvasView canvasView)
@@ -74,27 +88,7 @@ namespace PdfClown.Viewer
         public Page Page
         {
             get => page;
-            set
-            {
-                page = value;
-                Annotations = new List<Annotation>();
-                foreach (var annotation in Page.Annotations)
-                {
-                    if (annotation == null || annotation.Page == null)
-                        continue;
-                    if (!Annotations.Contains(annotation))
-                    {
-                        Annotations.Add(annotation);
-                    }
-                    if (annotation is Popup popup)
-                    {
-                        if (popup.Markup != null && !Annotations.Contains(popup.Markup))
-                        {
-                            Annotations.Add(popup.Markup);
-                        }
-                    }
-                }
-            }
+            set => page = value;
         }
 
         public SKSize Size { get; set; }

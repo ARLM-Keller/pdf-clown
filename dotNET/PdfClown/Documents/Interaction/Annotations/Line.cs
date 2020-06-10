@@ -328,8 +328,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-
-
         public override void RefreshBox()
         {
             Appearance.Normal[null] = null;

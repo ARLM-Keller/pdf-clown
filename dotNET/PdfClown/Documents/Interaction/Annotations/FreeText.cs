@@ -214,8 +214,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => Wrap<BorderEffect>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
             set
             {
+                var oldValue = (BorderEffect)null;
                 BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -227,8 +228,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => JustificationEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.Q]);
             set
             {
+                var oldValue = Justification;
                 BaseDataObject[PdfName.Q] = value != DefaultJustification ? value.GetCode() : null;
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -250,6 +252,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             set
             {
+                var oldValue = Line;
                 BaseDataObject[PdfName.CL] = PdfObjectWrapper.GetBaseObject(value);
                 if (value != null)
                 {
@@ -260,7 +263,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     Type = TypeEnum.Callout;
                     value.FreeText = this;
                 }
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -276,8 +279,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             set
             {
+                var oldValue = LineEndStyle;
                 EnsureLineEndStylesObject()[1] = value.GetName();
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -293,8 +297,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             set
             {
+                var oldValue = LineStartStyle;
                 EnsureLineEndStylesObject()[0] = value.GetName();
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -333,18 +338,19 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 if (textBox == null)
                 {
-                    var bounds = Rect;
+                    var bounds = Rect.ToRect();
                     var diff = (PdfArray)BaseDataObject[PdfName.RD];
                     textBox = PageMatrix.MapRect(new SKRect(
-                        bounds.Left + (((IPdfNumber)diff?[0])?.FloatValue ?? 0F),
-                        bounds.Top + (((IPdfNumber)diff?[1])?.FloatValue ?? 0F),
-                        bounds.Right - (((IPdfNumber)diff?[2])?.FloatValue ?? 0F),
-                        bounds.Bottom - (((IPdfNumber)diff?[3])?.FloatValue ?? 0F)));
+                        bounds.Left + (diff?.GetFloat(0) ?? 0F),
+                        bounds.Top + (diff?.GetFloat(1) ?? 0F),
+                        bounds.Right - (diff?.GetFloat(2) ?? 0F),
+                        bounds.Bottom - (diff?.GetFloat(3) ?? 0F)));
                 }
                 return textBox.Value;
             }
             set
             {
+                var oldValue = TextBox;
                 textBox = value;
                 var mapped = InvertPageMatrix.MapRect(value);
                 var bounds = Rect;
@@ -353,7 +359,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     PdfReal.Get(mapped.Top - bounds.Top),
                     PdfReal.Get(bounds.Right - mapped.Right),
                     PdfReal.Get(bounds.Bottom - mapped.Bottom));
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 

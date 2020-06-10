@@ -94,7 +94,9 @@ namespace PdfClown.Documents.Interaction.Annotations
           <summary>Gets the code corresponding to the given value.</summary>
         */
         private static PdfName ToCode(IconTypeEnum value)
-        { return IconTypeEnumCodes[value]; }
+        {
+            return IconTypeEnumCodes[value];
+        }
 
         /**
           <summary>Gets the icon type corresponding to the given value.</summary>
@@ -116,9 +118,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         #region constructors
         public FileAttachment(Page page, SKRect box, string text, FileSpecification dataFile)
             : base(page, PdfName.FileAttachment, box, text)
-        { DataFile = dataFile; }
+        {
+            DataFile = dataFile;
+        }
 
-        internal FileAttachment(PdfDirectObject baseObject) : base(baseObject)
+        internal FileAttachment(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
         #endregion
 
@@ -132,8 +137,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => ToIconTypeEnum((PdfName)BaseDataObject[PdfName.Name]);
             set
             {
+                var oldvalue = IconType;
                 BaseDataObject[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;
-                OnPropertyChanged();
+                OnPropertyChanged(oldvalue, value);
             }
         }
 
@@ -143,8 +149,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => FileSpecification.Wrap(BaseDataObject[PdfName.FS]);
             set
             {
+                var oldValue = DataFile;
                 BaseDataObject[PdfName.FS] = value.BaseObject;
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 

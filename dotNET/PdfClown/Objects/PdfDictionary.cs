@@ -278,6 +278,26 @@ namespace PdfClown.Objects
             this[key] = PdfName.Get(value);
         }
 
+        internal string GetText(PdfName key)
+        {
+            return ((PdfString)Resolve(key))?.StringValue;
+        }
+
+        internal void SetText(PdfName key, string value)
+        {
+            this[key] = PdfTextString.Get(value);
+        }
+
+        public DateTime? GetDate(PdfName key)
+        {
+            return Resolve(key) is PdfDate date ? (DateTime?)date.Value : null;
+        }
+
+        public void SetDate(PdfName key, DateTime? value)
+        {
+            this[key] = PdfDate.Get(value);
+        }
+
         /**
           <summary>Gets the dereferenced value corresponding to the given key.</summary>
           <remarks>This method takes care to resolve the value returned by <see cref="this[PdfName]">
@@ -459,6 +479,8 @@ namespace PdfClown.Objects
             get => virtual_;
             set => virtual_ = value;
         }
+
+
         #endregion
         #endregion
         #endregion

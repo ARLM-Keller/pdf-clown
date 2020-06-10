@@ -47,7 +47,9 @@ namespace PdfClown.Objects
           <param name="wrapper">Object to extract the base from.</param>
         */
         public static PdfDirectObject GetBaseObject(PdfObjectWrapper wrapper)
-        { return wrapper?.BaseObject; }
+        {
+            return wrapper?.BaseObject;
+        }
 
         public static PdfDictionary TryGetDictionary(PdfDataObject baseDataObject)
         {
@@ -117,7 +119,9 @@ namespace PdfClown.Objects
           the default object cloner.</summary>
         */
         public virtual object Clone(Document context)
-        { return Clone(context.File.Cloner); }
+        {
+            return Clone(context.File.Cloner);
+        }
 
         /**
           <summary>Gets a clone of the object, registered using the specified object cloner.</summary>
@@ -126,6 +130,14 @@ namespace PdfClown.Objects
         {
             PdfObjectWrapper clone = (PdfObjectWrapper)base.MemberwiseClone();
             clone.BaseObject = (PdfDirectObject)BaseObject.Clone(cloner);
+            if (clone.BaseObject.Reference?.Wrapper == this)
+                clone.BaseObject.Reference.Wrapper = clone;
+            if (clone.BaseObject.Reference?.AlternateWrapper == this)
+                clone.BaseObject.Reference.AlternateWrapper = clone;
+            if (clone.BaseObject.Wrapper == this)
+                clone.BaseObject.Wrapper = clone;
+            if (clone.BaseObject.AlternateWrapper == this)
+                clone.BaseObject.AlternateWrapper = clone;
             return clone;
         }
 
@@ -147,7 +159,9 @@ namespace PdfClown.Objects
           <returns>Whether the object was removed from its document context.</returns>
         */
         public virtual bool Delete()
-        { return baseObject.Delete(); }
+        {
+            return baseObject.Delete();
+        }
 
         /**
           <summary>Gets the document context.</summary>
@@ -167,10 +181,14 @@ namespace PdfClown.Objects
         public File File => baseObject.File;
 
         public override int GetHashCode()
-        { return baseObject.GetHashCode(); }
+        {
+            return baseObject.GetHashCode();
+        }
 
         public override string ToString()
-        { return $"{GetType().Name} {{{(BaseObject is PdfReference ? (PdfObject)BaseObject.DataContainer : BaseObject)}}}"; }
+        {
+            return $"{GetType().Name} {{{(BaseObject is PdfReference ? (PdfObject)BaseObject.DataContainer : BaseObject)}}}";
+        }
 
         #region IPdfObjectWrapper
         public virtual PdfDirectObject BaseObject
@@ -380,7 +398,9 @@ namespace PdfClown.Objects
           <summary>Gets whether the underlying data object is concrete.</summary>
         */
         public bool Exists()
-        { return !BaseDataObject.Virtual; }
+        {
+            return !BaseDataObject.Virtual;
+        }
 
         /**
           <summary>Gets/Sets the metadata associated to this object.</summary>

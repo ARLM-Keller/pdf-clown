@@ -97,10 +97,14 @@ namespace PdfClown.Objects
 
         #region constructors
         public PdfString(byte[] rawValue)
-        { RawValue = rawValue; }
+        {
+            RawValue = rawValue;
+        }
 
         public PdfString(string value)
-        { Value = value; }
+        {
+            Value = value;
+        }
 
         public PdfString(byte[] rawValue, SerializationModeEnum serializationMode)
         {
@@ -121,7 +125,9 @@ namespace PdfClown.Objects
         #region interface
         #region public
         public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
+        {
+            return visitor.Visit(this, data);
+        }
 
         public override int CompareTo(PdfDirectObject obj)
         {
@@ -155,13 +161,19 @@ namespace PdfClown.Objects
         public string StringValue => (string)Value;
 
         public byte[] ToByteArray()
-        { return (byte[])RawValue.Clone(); }
+        {
+            return (byte[])RawValue.Clone();
+        }
 
         public byte[] GetBuffer()
-        { return RawValue; }
+        {
+            return RawValue;
+        }
 
         public void SetBuffer(byte[] data)
-        { RawValue = data; }
+        {
+            RawValue = data;
+        }
 
         public override string ToString()
         {

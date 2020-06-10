@@ -40,6 +40,7 @@ using System.Runtime.CompilerServices;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Util.Math.Geom;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 //using System.Diagnostics;
 
 namespace PdfClown.Documents.Interaction.Annotations
@@ -51,11 +52,13 @@ namespace PdfClown.Documents.Interaction.Annotations
     public abstract class Annotation : PdfObjectWrapper<PdfDictionary>, ILayerable, INotifyPropertyChanged
     {
         private Page page;
+        private SKColor? color;
         private SKRect? boxCache;
         protected BottomRightControlPoint cpBottomRight;
         protected BottomLeftControlPoint cpBottomLeft;
         protected TopRightControlPoint cpTopRight;
         protected TopLeftControlPoint cpTopLeft;
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         #region types
@@ -232,8 +235,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => Interaction.Actions.Action.Wrap(BaseDataObject[PdfName.A]);
             set
             {
+                var oldValue = Action;
                 BaseDataObject[PdfName.A] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -246,8 +250,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => CommonAnnotationActions.Wrap(this, BaseDataObject.Get<PdfDictionary>(PdfName.AA));
             set
             {
+                var oldValue = (AnnotationActions)null;
                 BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -259,11 +264,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF14)]
         public virtual float Alpha
         {
-            get => ((IPdfNumber)BaseDataObject.Resolve(PdfName.CA))?.FloatValue ?? 1F;
+            get => BaseDataObject.GetFloat(PdfName.CA, 1F);
             set
             {
-                BaseDataObject[PdfName.CA] = PdfReal.Get(value);
-                OnPropertyChanged();
+                var oldValue = Alpha;
+                BaseDataObject.SetFloat(PdfName.CA, value);
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -276,8 +282,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => Wrap<Appearance>(BaseDataObject.Get<PdfDictionary>(PdfName.AP));
             set
             {
+                var oldValue = (Appearance)null;
                 BaseDataObject[PdfName.AP] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -290,21 +297,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => Wrap<Border>(BaseDataObject.Get<PdfDictionary>(PdfName.BS));
             set
             {
+                var oldValue = (Border)null;
                 BaseDataObject[PdfName.BS] = PdfObjectWrapper.GetBaseObject(value);
                 if (value != null)
                 { BaseDataObject.Remove(PdfName.Border); }
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
-        }
-
-        protected SKMatrix PageMatrix
-        {
-            get => Page?.RotateMatrix ?? GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0);
-        }
-
-        protected SKMatrix InvertPageMatrix
-        {
-            get => Page?.InRotateMatrix ?? (GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0).TryInvert(out var inverted) ? inverted : SKMatrix.MakeIdentity());
         }
 
         /**
@@ -313,19 +311,25 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public virtual SKRect Box
         {
-            get => boxCache ?? (boxCache = PageMatrix.MapRect(Rect)).Value;// SKRect.Create(quad.Location, bounds.Size);
+            get => boxCache ?? (boxCache = PageMatrix.MapRect(Rect?.ToRect() ?? SKRect.Empty)).Value;
             set
             {
+                var oldValue = Box;
                 boxCache = value;
-                Rect = InvertPageMatrix.MapRect(value);
-                OnPropertyChanged();
+                Rect = new Objects.Rectangle(InvertPageMatrix.MapRect(value));
+                OnPropertyChanged(oldValue, value);
             }
         }
 
-        public virtual SKRect Rect
+        public virtual Objects.Rectangle Rect
         {
-            get => Wrap<Objects.Rectangle>(BaseDataObject[PdfName.Rect]).ToRect();
-            set => BaseDataObject[PdfName.Rect] = new Objects.Rectangle(value).BaseDataObject;
+            get => Wrap<Objects.Rectangle>(BaseDataObject[PdfName.Rect]);
+            set
+            {
+                var oldValue = Rect;
+                BaseDataObject[PdfName.Rect] = value.BaseDataObject;
+                OnPropertyChanged(oldValue, value);
+            }
         }
 
         /**
@@ -337,19 +341,22 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => DeviceColor.Get((PdfArray)BaseDataObject[PdfName.C]);
             set
             {
+                var oldValue = Color;
                 BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
         public virtual SKColor SKColor
         {
-            get => DeviceColorSpace.CalcSKColor(Color, Alpha);
+            get => color ?? (color = DeviceColorSpace.CalcSKColor(Color, Alpha)).Value;
             set
             {
+                var oldValue = SKColor;
+                color = value;
                 Color = DeviceRGBColor.Get(value);
                 Alpha = value.Alpha / 255F;
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -359,17 +366,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF11)]
         public virtual FlagsEnum Flags
         {
-            get
-            {
-                PdfInteger flagsObject = (PdfInteger)BaseDataObject[PdfName.F];
-                return flagsObject == null
-                  ? 0
-                  : (FlagsEnum)Enum.ToObject(typeof(FlagsEnum), flagsObject.RawValue);
-            }
+            get => (FlagsEnum)BaseDataObject.GetInt(PdfName.F);
             set
             {
-                BaseDataObject[PdfName.F] = PdfInteger.Get((int)value);
-                OnPropertyChanged();
+                var oldValue = Flags;
+                BaseDataObject.SetInt(PdfName.F, (int)value);
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -379,18 +381,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF11)]
         public virtual DateTime? ModificationDate
         {
-            get
-            {
-                /*
-                  NOTE: Despite PDF date being the preferred format, loose formats are tolerated by the spec.
-                */
-                PdfDirectObject modificationDateObject = BaseDataObject[PdfName.M];
-                return (DateTime?)(modificationDateObject is PdfDate ? ((PdfDate)modificationDateObject).Value : null);
-            }
+            //NOTE: Despite PDF date being the preferred format, loose formats are tolerated by the spec.
+            get => BaseDataObject.GetDate(PdfName.M);
             set
             {
-                BaseDataObject[PdfName.M] = PdfDate.Get(value);
-                OnPropertyChanged();
+                var oldValue = ModificationDate;
+                BaseDataObject.SetDate(PdfName.M, value);
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -401,11 +398,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF14)]
         public virtual string Name
         {
-            get => (string)PdfSimpleObject<Object>.GetValue(BaseDataObject[PdfName.NM]);
+            get => BaseDataObject.GetText(PdfName.NM);
             set
             {
-                BaseDataObject[PdfName.NM] = PdfTextString.Get(value);
-                OnPropertyChanged();
+                var oldValue = Name;
+                BaseDataObject.SetText(PdfName.NM, value);
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -418,6 +416,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => page ?? (page = Wrap<Page>(BaseDataObject[PdfName.P]));
             set
             {
+                page = null;
                 var oldPage = Page;
                 if (oldPage == value)
                 {
@@ -431,7 +430,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     page.Annotations.Add(this);
                     //Debug.WriteLine($"Move to page {page}");
                 }
-                OnPropertyChanged();
+                OnPropertyChanged(oldPage, value);
             }
         }
 
@@ -444,8 +443,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => (Flags & FlagsEnum.Print) == FlagsEnum.Print;
             set
             {
+                var oldValue = Printable;
                 Flags = EnumUtils.Mask(Flags, FlagsEnum.Print, value);
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -456,12 +456,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public virtual string Text
         {
-            get => (string)PdfSimpleObject<Object>.GetValue(BaseDataObject[PdfName.Contents]);
+            get => BaseDataObject.GetText(PdfName.Contents);
             set
             {
-                BaseDataObject[PdfName.Contents] = PdfTextString.Get(value);
+                var oldValue = Text;
+                BaseDataObject.SetText(PdfName.Contents, value);
                 ModificationDate = DateTime.Now;
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -471,12 +472,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public virtual string Subject
         {
-            get => (string)PdfSimpleObject<Object>.GetValue(BaseDataObject[PdfName.Subj]);
+            get => BaseDataObject.GetText(PdfName.Subj);
             set
             {
-                BaseDataObject[PdfName.Subj] = PdfTextString.Get(value);
+                var oldValue = Subject;
+                BaseDataObject.SetText(PdfName.Subj, value);
                 ModificationDate = DateTime.Now;
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -489,10 +491,36 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => (Flags & FlagsEnum.Hidden) != FlagsEnum.Hidden;
             set
             {
+                var oldValue = Visible;
                 Flags = EnumUtils.Mask(Flags, FlagsEnum.Hidden, !value);
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
+
+        #region ILayerable
+        [PDF(VersionEnum.PDF15)]
+        public virtual LayerEntity Layer
+        {
+            get => (LayerEntity)PropertyList.Wrap(BaseDataObject[PdfName.OC]);
+            set
+            {
+                var oldValue = (LayerEntity)null;
+                BaseDataObject[PdfName.OC] = value != null ? value.Membership.BaseObject : null;
+                OnPropertyChanged(oldValue, value);
+            }
+        }
+        #endregion
+
+        protected SKMatrix PageMatrix
+        {
+            get => Page?.RotateMatrix ?? GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0);
+        }
+
+        protected SKMatrix InvertPageMatrix
+        {
+            get => Page?.InRotateMatrix ?? (GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0).TryInvert(out var inverted) ? inverted : SKMatrix.MakeIdentity());
+        }
+
 
         public SKPoint TopLeftPoint
         {
@@ -543,31 +571,31 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public override bool Delete()
         {
-            // Shallow removal (references):
-            // * reference on page
-            Page?.Annotations.Remove(this);
+            Remove();
 
             // Deep removal (indirect object).
             return base.Delete();
         }
 
-
-        #region ILayerable
-        [PDF(VersionEnum.PDF15)]
-        public virtual LayerEntity Layer
+        public virtual void Remove()
         {
-            get => (LayerEntity)PropertyList.Wrap(BaseDataObject[PdfName.OC]);
-            set
-            {
-                BaseDataObject[PdfName.OC] = value != null ? value.Membership.BaseObject : null;
-                OnPropertyChanged();
-            }
+            // Shallow removal (references):
+            // * reference on page
+            Page?.Annotations.Remove(this);
         }
 
+
         public virtual bool ShowToolTip => true;
+
+        public virtual bool AllowDrag => true;
+
+        public virtual bool AllowSize => true;
+
         public bool IsNew { get; set; }
 
-        #endregion
+        public List<Annotation> Replies { get; set; } = new List<Annotation>();
+
+
         #endregion
 
         #region private
@@ -596,7 +624,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         protected virtual void DrawAppearance(SKCanvas canvas, FormXObject appearance)
         {
-            var bounds = Rect;
+            var bounds = Rect.ToRect();
             var appearanceBounds = appearance.Box;
             var picture = appearance.Render();
 
@@ -637,10 +665,15 @@ namespace PdfClown.Documents.Interaction.Annotations
             return matrix.MapRect(box);
         }
 
-        protected void OnPropertyChanged([CallerMemberName]string propertyName = "")
+        protected void OnPropertyChanged(object oldValue, object newValue, [CallerMemberName] string propertyName = "")
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new DetailedPropertyChangedEventArgs(oldValue, newValue, propertyName));
         }
+
+        //protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
+        //{
+        //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        //}
 
         public virtual void RefreshBox()
         { }
@@ -662,6 +695,18 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
     }
 
+    public class DetailedPropertyChangedEventArgs : PropertyChangedEventArgs
+    {
+        public DetailedPropertyChangedEventArgs(object oldValue, object newValue, string propertyName)
+            : base(propertyName)
+        {
+            OldValue = oldValue;
+            NewValue = newValue;
+        }
+
+        public object OldValue { get; }
+        public object NewValue { get; }
+    }
 
     public abstract class ControlPoint
     {

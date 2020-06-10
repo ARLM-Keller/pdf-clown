@@ -58,10 +58,15 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region dynamic
         #region constructors
-        protected Markup(Page page, PdfName subtype, SKRect box, string text) : base(page, subtype, box, text)
-        { CreationDate = DateTime.Now; }
+        protected Markup(Page page, PdfName subtype, SKRect box, string text)
+            : base(page, subtype, box, text)
+        {
+            CreationDate = DateTime.Now;
+        }
 
-        protected Markup(PdfDirectObject baseObject) : base(baseObject) { }
+        protected Markup(PdfDirectObject baseObject)
+            : base(baseObject)
+        { }
         #endregion
 
         #region interface
@@ -76,12 +81,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF11)]
         public override string Author
         {
-            get => (string)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.T]);
+            get => BaseDataObject.GetText(PdfName.T);
             set
             {
-                BaseDataObject[PdfName.T] = PdfTextString.Get(value);
+                var oldValue = Author;
+                BaseDataObject.SetText(PdfName.T, value);
                 ModificationDate = DateTime.Now;
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -91,15 +97,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public override DateTime? CreationDate
         {
-            get
-            {
-                PdfDirectObject creationDateObject = BaseDataObject[PdfName.CreationDate];
-                return creationDateObject is PdfDate ? (DateTime?)((PdfDate)creationDateObject).Value : null;
-            }
+            get => BaseDataObject.GetDate(PdfName.CreationDate);
             set
             {
+                var oldValue = CreationDate;
                 BaseDataObject[PdfName.CreationDate] = PdfDate.Get(value);
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -115,8 +118,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => Annotation.Wrap(BaseDataObject[PdfName.IRT]);
             set
             {
+                var oldValue = InReplyTo;
                 BaseDataObject[PdfName.IRT] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -131,9 +135,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => (Popup)Annotation.Wrap(BaseDataObject[PdfName.Popup]);
             set
             {
-                value.Markup = this;
+                var oldValue = Popup;
+                if (value != null)
+                {
+                    value.Markup = this;
+                }
                 BaseDataObject[PdfName.Popup] = value.BaseObject;
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -147,8 +155,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => ReplyTypeEnumExtension.Get((PdfName)BaseDataObject[PdfName.RT]).Value;
             set
             {
+                var oldValue = ReplyType;
                 BaseDataObject[PdfName.RT] = value.GetCode();
-                OnPropertyChanged();
+                OnPropertyChanged(oldValue, value);
             }
         }
 
@@ -164,8 +173,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => (PdfName)BaseDataObject[PdfName.IT];
             set
             {
+                var oldvalue = TypeBase;
                 BaseDataObject[PdfName.IT] = value;
-                OnPropertyChanged();
+                OnPropertyChanged(oldvalue, value);
             }
         }
 

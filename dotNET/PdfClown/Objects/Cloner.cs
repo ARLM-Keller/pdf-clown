@@ -38,18 +38,17 @@ namespace PdfClown.Objects
     /**
       <summary>Object cloner.</summary>
     */
-    public class Cloner
-      : Visitor
+    public class Cloner : Visitor
     {
         #region types
         public class Filter
         {
             private readonly String name;
 
-            public Filter(
-              String name
-              )
-            { this.name = name; }
+            public Filter(String name)
+            {
+                this.name = name;
+            }
 
             /**
               <summary>Notifies a complete clone operation on an object.</summary>
@@ -57,12 +56,10 @@ namespace PdfClown.Objects
               <param name="source">Source object.</param>
               <param name="clone">Clone object.</param>
             */
-            public virtual void AfterClone(
-              Cloner cloner,
-              PdfObject source,
-              PdfObject clone
-              )
-            {/* NOOP */}
+            public virtual void AfterClone(Cloner cloner, PdfObject source, PdfObject clone)
+            {
+                /* NOOP */
+            }
 
             /**
               <summary>Notifies a complete clone operation on a dictionary entry.</summary>
@@ -72,14 +69,10 @@ namespace PdfClown.Objects
               <param name="key">Entry key within the parent.</param>
               <param name="value">Clone value.</param>
             */
-            public virtual void AfterClone(
-              Cloner cloner,
-              PdfDictionary source,
-              PdfDictionary clone,
-              PdfName key,
-              PdfDirectObject value
-              )
-            {/* NOOP */}
+            public virtual void AfterClone(Cloner cloner, PdfDictionary source, PdfDictionary clone, PdfName key, PdfDirectObject value)
+            {
+                /* NOOP */
+            }
 
             /**
               <summary>Notifies a complete clone operation on an array item.</summary>
@@ -89,14 +82,10 @@ namespace PdfClown.Objects
               <param name="index">Item index within the parent.</param>
               <param name="item">Clone item.</param>
             */
-            public virtual void AfterClone(
-              Cloner cloner,
-              PdfArray source,
-              PdfArray clone,
-              int index,
-              PdfDirectObject item
-              )
-            {/* NOOP */}
+            public virtual void AfterClone(Cloner cloner, PdfArray source, PdfArray clone, int index, PdfDirectObject item)
+            {
+                /* NOOP */
+            }
 
             /**
               <summary>Notifies a starting clone operation on a dictionary entry.</summary>
@@ -107,14 +96,10 @@ namespace PdfClown.Objects
               <param name="value">Source value.</param>
               <returns>Whether the clone operation can be fulfilled.</returns>
             */
-            public virtual bool BeforeClone(
-              Cloner cloner,
-              PdfDictionary source,
-              PdfDictionary clone,
-              PdfName key,
-              PdfDirectObject value
-              )
-            { return true; }
+            public virtual bool BeforeClone(Cloner cloner, PdfDictionary source, PdfDictionary clone, PdfName key, PdfDirectObject value)
+            {
+                return true;
+            }
 
             /**
               <summary>Notifies a starting clone operation on an array item.</summary>
@@ -125,33 +110,25 @@ namespace PdfClown.Objects
               <param name="item">Source item.</param>
               <returns>Whether the clone operation can be fulfilled.</returns>
             */
-            public virtual bool BeforeClone(
-              Cloner cloner,
-              PdfArray source,
-              PdfArray clone,
-              int index,
-              PdfDirectObject item
-              )
-            { return true; }
+            public virtual bool BeforeClone(Cloner cloner, PdfArray source, PdfArray clone, int index, PdfDirectObject item)
+            {
+                return true;
+            }
 
             /**
               <summary>Gets whether this filter can deal with the given object.</summary>
               <param name="cloner">Object cloner.</param>
               <param name="source">Source object.</param>
             */
-            public virtual bool Matches(
-              Cloner cloner,
-              PdfObject source
-              )
-            { return true; }
+            public virtual bool Matches(Cloner cloner, PdfObject source)
+            {
+                return true;
+            }
 
             public string Name => name;
 
-            protected void CloneNamedObject<T>(
-              Cloner cloner,
-              PdfDirectObject source,
-              PdfString name
-              ) where T : PdfObjectWrapper
+            protected void CloneNamedObject<T>(Cloner cloner, PdfDirectObject source, PdfString name)
+                where T : PdfObjectWrapper
             {
                 // Resolve the named object source!
                 T namedObjectSource = source.File.Document.ResolveName<T>(name);
@@ -163,20 +140,12 @@ namespace PdfClown.Objects
             }
         }
 
-        private class ActionFilter
-          : Filter
+        private class ActionFilter : Filter
         {
-            public ActionFilter(
-              ) : base("Action")
+            public ActionFilter() : base("Action")
             { }
 
-            public override void AfterClone(
-              Cloner cloner,
-              PdfDictionary source,
-              PdfDictionary clone,
-              PdfName key,
-              PdfDirectObject value
-              )
+            public override void AfterClone(Cloner cloner, PdfDictionary source, PdfDictionary clone, PdfName key, PdfDirectObject value)
             {
                 if (PdfName.D.Equals(key))
                 {
@@ -186,10 +155,7 @@ namespace PdfClown.Objects
                 }
             }
 
-            public override bool Matches(
-              Cloner cloner,
-              PdfObject source
-              )
+            public override bool Matches(Cloner cloner, PdfObject source)
             {
                 if (source is PdfDictionary)
                 {
@@ -201,20 +167,12 @@ namespace PdfClown.Objects
             }
         }
 
-        private class AnnotationsFilter
-          : Filter
+        private class AnnotationsFilter : Filter
         {
-            public AnnotationsFilter(
-              ) : base("Annots")
+            public AnnotationsFilter() : base("Annots")
             { }
 
-            public override void AfterClone(
-              Cloner cloner,
-              PdfArray source,
-              PdfArray clone,
-              int index,
-              PdfDirectObject item
-              )
+            public override void AfterClone(Cloner cloner, PdfArray source, PdfArray clone, int index, PdfDirectObject item)
             {
                 PdfDictionary annotation = (PdfDictionary)item.Resolve();
                 if (annotation.ContainsKey(PdfName.FT))
@@ -227,10 +185,7 @@ namespace PdfClown.Objects
                 }
             }
 
-            public override bool Matches(
-              Cloner cloner,
-              PdfObject source
-              )
+            public override bool Matches(Cloner cloner, PdfObject source)
             {
                 if (source is PdfArray)
                 {
@@ -250,18 +205,12 @@ namespace PdfClown.Objects
             }
         }
 
-        private class PageFilter
-          : Filter
+        private class PageFilter : Filter
         {
-            public PageFilter(
-              ) : base("Page")
+            public PageFilter() : base("Page")
             { }
 
-            public override void AfterClone(
-              Cloner cloner,
-              PdfObject source,
-              PdfObject clone
-              )
+            public override void AfterClone(Cloner cloner, PdfObject source, PdfObject clone)
             {
                 /*
                   NOTE: Inheritable attributes have to be consolidated into the cloned page dictionary in
@@ -280,19 +229,12 @@ namespace PdfClown.Objects
                 }
             }
 
-            public override bool BeforeClone(
-              Cloner cloner,
-              PdfDictionary source,
-              PdfDictionary clone,
-              PdfName key,
-              PdfDirectObject value
-              )
-            { return !PdfName.Parent.Equals(key); }
+            public override bool BeforeClone(Cloner cloner, PdfDictionary source, PdfDictionary clone, PdfName key, PdfDirectObject value)
+            {
+                return !PdfName.Parent.Equals(key);
+            }
 
-            public override bool Matches(
-              Cloner cloner,
-              PdfObject source
-              )
+            public override bool Matches(Cloner cloner, PdfObject source)
             {
                 return source is PdfDictionary
                   && PdfName.Page.Equals(((PdfDictionary)source)[PdfName.Type]);
@@ -327,10 +269,10 @@ namespace PdfClown.Objects
         #endregion
 
         #region constructors
-        public Cloner(
-          File context
-          )
-        { Context = context; }
+        public Cloner(File context)
+        {
+            Context = context;
+        }
         #endregion
 
         #region interface
@@ -349,16 +291,12 @@ namespace PdfClown.Objects
 
         public IList<Filter> Filters => filters;
 
-        public override PdfObject Visit(
-          ObjectStream obj,
-          object data
-          )
-        { throw new NotSupportedException(); }
+        public override PdfObject Visit(ObjectStream obj, object data)
+        {
+            throw new NotSupportedException();
+        }
 
-        public override PdfObject Visit(
-          PdfArray obj,
-          object data
-          )
+        public override PdfObject Visit(PdfArray obj, object data)
         {
             Filter cloneFilter = MatchFilter(obj);
             PdfArray clone = (PdfArray)obj.Clone();
@@ -380,10 +318,7 @@ namespace PdfClown.Objects
             return clone;
         }
 
-        public override PdfObject Visit(
-          PdfDictionary obj,
-          object data
-          )
+        public override PdfObject Visit(PdfDictionary obj, object data)
         {
             Filter cloneFilter = MatchFilter(obj);
             PdfDictionary clone = (PdfDictionary)obj.Clone();
@@ -404,26 +339,19 @@ namespace PdfClown.Objects
             return clone;
         }
 
-        public override PdfObject Visit(
-          PdfIndirectObject obj,
-          object data
-          )
-        { return context.IndirectObjects.AddExternal(obj, this); }
+        public override PdfObject Visit(PdfIndirectObject obj, object data)
+        {
+            return context.IndirectObjects.AddExternal(obj, this);
+        }
 
-        public override PdfObject Visit(
-          PdfReference obj,
-          object data
-          )
+        public override PdfObject Visit(PdfReference obj, object data)
         {
             return context == obj.File
               ? (PdfReference)obj.Clone() // Local clone.
               : Visit(obj.IndirectObject, data).Reference; // Alien clone.
         }
 
-        public override PdfObject Visit(
-          PdfStream obj,
-          object data
-          )
+        public override PdfObject Visit(PdfStream obj, object data)
         {
             PdfStream clone = (PdfStream)obj.Clone();
             {
@@ -433,17 +361,14 @@ namespace PdfClown.Objects
             return clone;
         }
 
-        public override PdfObject Visit(
-          XRefStream obj,
-          object data
-          )
-        { throw new NotSupportedException(); }
+        public override PdfObject Visit(XRefStream obj, object data)
+        {
+            throw new NotSupportedException();
+        }
         #endregion
 
         #region private
-        private Filter MatchFilter(
-          PdfObject obj
-          )
+        private Filter MatchFilter(PdfObject obj)
         {
             Filter cloneFilter = NullFilter;
             foreach (Filter filter in filters)

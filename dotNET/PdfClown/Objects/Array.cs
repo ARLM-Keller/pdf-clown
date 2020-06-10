@@ -35,7 +35,7 @@ namespace PdfClown.Objects
     /**
       <summary>Collection of sequentially-arranged object wrappers.</summary>
     */
-    public class Array<TItem> : PdfObjectWrapper<PdfArray>, IList<TItem> 
+    public class Array<TItem> : PdfObjectWrapper<PdfArray>, IList<TItem>
         where TItem : IPdfObjectWrapper
     {
         #region types
@@ -49,12 +49,13 @@ namespace PdfClown.Objects
 
         private class DefaultWrapper<T> : IWrapper<T> where T : TItem
         {
-
             internal DefaultWrapper()
             { }
 
             public T Wrap(PdfDirectObject baseObject)
-            { return PdfObjectWrapper.Wrap<T>(baseObject); }
+            {
+                return PdfObjectWrapper.Wrap<T>(baseObject);
+            }
         }
         #endregion
 
@@ -106,7 +107,9 @@ namespace PdfClown.Objects
         */
         public Array(Document context, IWrapper<TItem> itemWrapper, PdfArray baseDataObject)
             : base(context, baseDataObject)
-        { this.itemWrapper = itemWrapper; }
+        {
+            this.itemWrapper = itemWrapper;
+        }
 
         /**
           <summary>Wraps an existing base array using the default wrapper for wrapping its items.</summary>
@@ -124,20 +127,28 @@ namespace PdfClown.Objects
           everytime available.</param>
         */
         protected Array(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject) : base(baseObject)
-        { this.itemWrapper = itemWrapper; }
+        {
+            this.itemWrapper = itemWrapper;
+        }
         #endregion
 
         #region interface
         #region public
         #region IList<TItem>
         public virtual int IndexOf(TItem item)
-        { return BaseDataObject.IndexOf(item.BaseObject); }
+        {
+            return BaseDataObject.IndexOf(item.BaseObject);
+        }
 
         public virtual void Insert(int index, TItem item)
-        { BaseDataObject.Insert(index, item.BaseObject); }
+        {
+            BaseDataObject.Insert(index, item.BaseObject);
+        }
 
         public virtual void RemoveAt(int index)
-        { BaseDataObject.RemoveAt(index); }
+        {
+            BaseDataObject.RemoveAt(index);
+        }
 
         public virtual TItem this[int index]
         {
@@ -147,7 +158,9 @@ namespace PdfClown.Objects
 
         #region ICollection<TItem>
         public virtual void Add(TItem item)
-        { BaseDataObject.Add(item.BaseObject); }
+        {
+            BaseDataObject.Add(item.BaseObject);
+        }
 
         public virtual void Clear()
         {
@@ -157,7 +170,9 @@ namespace PdfClown.Objects
         }
 
         public virtual bool Contains(TItem item)
-        { return BaseDataObject.Contains(item.BaseObject); }
+        {
+            return BaseDataObject.Contains(item.BaseObject);
+        }
 
         public virtual void CopyTo(TItem[] items, int index)
         {
@@ -172,7 +187,9 @@ namespace PdfClown.Objects
         public virtual bool IsReadOnly => false;
 
         public virtual bool Remove(TItem item)
-        { return BaseDataObject.Remove(item.BaseObject); }
+        {
+            return BaseDataObject.Remove(item.BaseObject);
+        }
 
         #region IEnumerable<TItem>
         public virtual IEnumerator<TItem> GetEnumerator()
@@ -183,7 +200,9 @@ namespace PdfClown.Objects
 
         #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
-        { return this.GetEnumerator(); }
+        {
+            return this.GetEnumerator();
+        }
         #endregion
         #endregion
         #endregion

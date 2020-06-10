@@ -53,34 +53,16 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          *
          * @return The "CFF" table.
          */
-        public CFFTable CFF
-        {
-            get
-            {
-                if (!IsPostScript)
-                {
-                    throw new NotSupportedException("TTF fonts do not have a CFF table");
-                }
-                return (CFFTable)GetTable(CFFTable.TAG);
-            }
-        }
+        public CFFTable CFF => (CFFTable)GetTable(CFFTable.TAG);
 
-        public override GlyphTable Glyph
-        {
-            get
-            {
-                if (IsPostScript)
-                {
-                    throw new NotSupportedException("OTF fonts do not have a glyf table");
-                }
-                return base.Glyph;
-            }
-        }
+        public override GlyphTable Glyph => base.Glyph;
 
         public override SKPath GetPath(string name)
         {
             int gid = NameToGID(name);
-            return CFF.Font.GetType2CharString(gid).Path;
+            return IsPostScript
+                ? (CFF?.Font.GetType2CharString(gid)?.Path ?? Glyph?.GetGlyph(gid)?.GetPath())
+                : Glyph?.GetGlyph(gid)?.GetPath();
         }
 
         /**

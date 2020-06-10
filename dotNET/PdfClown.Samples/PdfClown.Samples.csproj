@@ -6,7 +6,7 @@
     <Version>0.2.1.0</Version>
     <ProjectGuid>{BDBDC0A1-6937-4BB6-964D-DDC62CE2832F}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>PdfClown.Samples.CLI</RootNamespace>
     <StartupObject>PdfClown.Samples.CLI.SampleLoader</StartupObject>
     <AssemblyName>PdfClownCLISamples</AssemblyName>

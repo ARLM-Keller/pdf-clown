@@ -68,10 +68,11 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 // full embedding
                 PdfStream stream = new PdfStream(ttf.OriginalData);
-                stream.Header[PdfName.Length1] = PdfInteger.Get(ttf.OriginalDataSize);
+                stream.Header[PdfName.Length] =
+                    stream.Header[PdfName.Length1] = PdfInteger.Get(ttf.OriginalDataSize);
                 fontDescriptor.FontFile2 = new FontFile(document, stream);
             }
-
+            dict[PdfName.Type] = PdfName.Font;
             dict[PdfName.BaseFont] = new PdfName(ttf.Name);
 
             // choose a Unicode "cmap"
@@ -105,7 +106,6 @@ namespace PdfClown.Documents.Contents.Fonts
         private bool IsEmbeddingPermitted(TrueTypeFont ttf)
         {
             if (ttf.OS2Windows != null)
-
             {
                 int fsType = ttf.OS2Windows.FsType;
                 int exclusive = fsType & 0x8; // bits 0-3 are a set of exclusive bits
@@ -149,7 +149,7 @@ namespace PdfClown.Documents.Contents.Fonts
 		 */
         private FontDescriptor CreateFontDescriptor(TrueTypeFont ttf)
         {
-            FontDescriptor fd = new FontDescriptor(new PdfDictionary());
+            FontDescriptor fd = new FontDescriptor(document, new PdfDictionary());
             fd.FontName = ttf.Name;
 
             OS2WindowsMetricsTable os2 = ttf.OS2Windows;

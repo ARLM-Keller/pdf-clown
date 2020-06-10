@@ -391,6 +391,9 @@ namespace PdfClown.Documents.Contents.Fonts
             return length2;
         }
 
+        public override float Ascent => Standard14AFM?.Ascender ?? base.Ascent;
+        public override float Descent => Standard14AFM?.Descender ?? base.Descent;
+
         public override float GetHeight(int code)
         {
             string name = CodeToName(code);
@@ -663,18 +666,15 @@ namespace PdfClown.Documents.Contents.Fonts
             return path;
         }
 
-
         public override bool HasGlyph(string name)
         {
             return genericFont.HasGlyph(GetNameInFont(name));
         }
 
-
         public override bool HasGlyph(int code)
         {
             return !Encoding.GetName(code).Equals(".notdef", StringComparison.Ordinal);
         }
-
 
         public override SKMatrix FontMatrix
         {

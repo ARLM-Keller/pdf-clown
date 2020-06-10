@@ -672,16 +672,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             int gid = NameToGID(name);
 
             // some glyphs have no outlines (e.g. space, table, newline)
-            GlyphData glyph = Glyph.GetGlyph(gid);
-            if (glyph == null)
-            {
-                return null;
-            }
-            else
-            {
-                // must scaled by caller using FontMatrix
-                return glyph.GetPath();
-            }
+            // must scaled by caller using FontMatrix
+
+            return Glyph.GetGlyph(gid)?.GetPath();
         }
 
         public override float GetWidth(string name)

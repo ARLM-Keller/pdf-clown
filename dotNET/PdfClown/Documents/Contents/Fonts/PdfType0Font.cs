@@ -60,11 +60,19 @@ namespace PdfClown.Documents.Contents.Fonts
         #region static
         #region interface
         #region public
-        public static PdfType0Font Load(Document doc, string resurceFile)
+        public static PdfType0Font Load(Document doc, System.Reflection.Assembly assembly, string resurceFile)
         {
-            using (var stream = typeof(PdfType0Font).Assembly.GetManifestResourceStream(resurceFile))
+            using (var stream = assembly.GetManifestResourceStream(resurceFile))
             {
                 return new PdfType0Font(doc, new TTFParser().Parse(stream), true, true, false);
+            }
+        }
+
+        public static PdfType0Font Load(Document doc, string fileName)
+        {
+            using (var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                return Load(doc, stream);
             }
         }
         /**
@@ -78,7 +86,7 @@ namespace PdfClown.Documents.Contents.Fonts
          */
         public static PdfType0Font Load(Document doc, Stream file)
         {
-            return new PdfType0Font(doc, new TTFParser().Parse(file), true, true, false);
+            return new PdfType0Font(doc, new OTFParser().Parse(file), false, true, false);
         }
 
         /**
@@ -92,7 +100,7 @@ namespace PdfClown.Documents.Contents.Fonts
          */
         public static PdfType0Font Load(Document doc, bytes.IInputStream input)
         {
-            return new PdfType0Font(doc, new TTFParser().Parse(input), true, true, false);
+            return new PdfType0Font(doc, new TTFParser().Parse(input), false, true, false);
         }
 
         /**

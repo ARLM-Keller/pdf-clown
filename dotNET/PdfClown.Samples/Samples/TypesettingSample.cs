@@ -74,10 +74,7 @@ namespace PdfClown.Samples.CLI
               );
             // Begin the title block!
             blockComposer.Begin(frame, XAlignmentEnum.Left, YAlignmentEnum.Top);
-            fonts::Font decorativeFont = fonts::Font.Get(
-              document,
-              GetResourcePath("fonts" + Path.DirectorySeparatorChar + "Ruritania-Outline.ttf")
-              );
+            fonts::Font decorativeFont = fonts::Font.Get(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "Ruritania-Outline.ttf"));
             composer.SetFont(decorativeFont, 56);
             blockComposer.ShowText("Chapter 1");
             blockComposer.ShowBreak();
@@ -94,10 +91,7 @@ namespace PdfClown.Samples.CLI
               );
             // Begin the body block!
             blockComposer.Begin(frame, XAlignmentEnum.Justify, YAlignmentEnum.Bottom);
-            fonts::Font bodyFont = fonts::Font.Get(
-              document,
-              GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf")
-              );
+            fonts::Font bodyFont = fonts::Font.Get(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
             composer.SetFont(bodyFont, 14);
             composer.BeginLocalState();
             composer.SetFont(decorativeFont, 28);

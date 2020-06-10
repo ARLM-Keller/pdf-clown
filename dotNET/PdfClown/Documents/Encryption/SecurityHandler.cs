@@ -470,7 +470,8 @@ namespace PdfClown.Documents.Encryption
             {
                 byte[] buf;
                 // PDFBOX-3229 check case where metadata is not encrypted despite /EncryptMetadata missing
-                using (var istream = new MemoryStream(stream.GetBody(false).GetBuffer()))
+                var metadata = stream.GetBody(false);
+                using (var istream = new MemoryStream(metadata.GetBuffer(), 0, (int)metadata.Length))
                 {
                     buf = new byte[10];
                     long isResult = istream.Read(buf, 0, 10);
@@ -489,7 +490,8 @@ namespace PdfClown.Documents.Encryption
             }
 
             DecryptDictionary(stream.Header, objNum, genNum);
-            using (var encryptedStream = new MemoryStream(stream.GetBody(false).GetBuffer()))
+            var body = stream.GetBody(false);
+            using (var encryptedStream = new MemoryStream(body.GetBuffer(), 0, (int)body.Length))
             using (var output = new MemoryStream())
             {
                 stream.encoded = EncodeState.Encoded;
@@ -514,7 +516,8 @@ namespace PdfClown.Documents.Encryption
 		 */
         public void EncryptStream(PdfStream stream, long objNum, int genNum)
         {
-            using (var encryptedStream = new MemoryStream(stream.GetBody(false).GetBuffer()))
+            var body = stream.GetBody(false);
+            using (var encryptedStream = new MemoryStream(body.GetBuffer(), 0, (int)body.Length))
             using (var output = new MemoryStream())
             {
                 if (EncryptData(objNum, genNum, encryptedStream, output, false /* encrypt */))

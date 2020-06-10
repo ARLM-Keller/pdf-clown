@@ -23,7 +23,9 @@ namespace PdfClown.Samples.CLI
         private class TypeComparer : IComparer<Type>
         {
             public int Compare(Type type1, Type type2)
-            { return type1.Name.CompareTo(type2.Name); }
+            {
+                return type1.Name.CompareTo(type2.Name);
+            }
         }
         #endregion
 
@@ -48,10 +50,8 @@ namespace PdfClown.Samples.CLI
                 Console.WriteLine("\n" + ((AssemblyTitleAttribute)pdfClownAssembly.GetCustomAttributes(typeof(AssemblyTitleAttribute), false)[0]).Title + " version " + pdfClownAssembly.GetName().Version);
             }
 
-            Run(
-              ConfigurationManager.AppSettings.Get(Properties_InputPath),
-              ConfigurationManager.AppSettings.Get(Properties_OutputPath)
-              );
+            Run(ConfigurationManager.AppSettings.Get(Properties_InputPath),
+              ConfigurationManager.AppSettings.Get(Properties_OutputPath));
 
             Console.WriteLine("\nSampleLoader finished.\n");
         }

@@ -86,7 +86,7 @@ namespace PdfClown.Samples.CLI
             // Apply transparency!
             {
                 ExtGState state = new ExtGState(document);
-                state.FillAlpha = .3;
+                state.FillAlpha = .3F;
                 composer.ApplyState(state);
             }
             // Show the text!

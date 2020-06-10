@@ -374,8 +374,8 @@ namespace PdfClown.Documents.Contents.Fonts
                 using (input = Bytes.Buffer.Extract(input, stream.Filter, stream.Parameters, stream.Header))
                 {
                     byte[] mapAsBytes = input.GetBuffer();
-
-                    int numberOfInts = mapAsBytes.Length / 2;
+                    var length = (int)input.Length;
+                    int numberOfInts = length / 2;
                     cid2gid = new int[numberOfInts];
                     int offset = 0;
                     for (int index = 0; index < numberOfInts; index++)

@@ -137,23 +137,26 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
             }
 
-            var output = new MemoryStream();
-            toUniWriter.WriteTo(output);
-            var cMapStream = new Bytes.Buffer(output.ToArray());
-
-            PdfStream stream = new PdfStream(cMapStream);
-
-            // surrogate code points, requires PDF 1.5
-            if (hasSurrogates)
+            using (var output = new MemoryStream())
             {
-                var version = document.Version;
-                if (version.GetFloat() < 1.5)
-                {
-                    document.Version = new Version(1, 5);
-                }
-            }
+                toUniWriter.WriteTo(output);
+                var cMapStream = new Bytes.Buffer(output.ToArray());
 
-            dict[PdfName.ToUnicode] = stream.Reference;
+                var header = new PdfDictionary() { { PdfName.Length, PdfInteger.Get(cMapStream.Length) } };
+                PdfStream stream = new PdfStream(header, cMapStream);
+
+                // surrogate code points, requires PDF 1.5
+                if (hasSurrogates)
+                {
+                    var version = document.Version;
+                    if (version.GetFloat() < 1.5)
+                    {
+                        document.Version = new Version(1, 5);
+                    }
+                }
+
+                dict[PdfName.ToUnicode] = document.File.Register(stream);
+            }
         }
 
         private PdfDictionary toCIDSystemInfo(string registry, string ordering, int supplement)
@@ -176,7 +179,7 @@ namespace PdfClown.Documents.Contents.Fonts
             cidFont[PdfName.BaseFont] = PdfName.Get(fontDescriptor.FontName);
             // CIDSystemInfo
             PdfDictionary info = toCIDSystemInfo("Adobe", "Identity", 0);
-            cidFont[PdfName.CIDSystemInfo] = info.Reference;
+            cidFont[PdfName.CIDSystemInfo] = info;
             // FontDescriptor
             cidFont[PdfName.FontDescriptor] = fontDescriptor.BaseObject;
 

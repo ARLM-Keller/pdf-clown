@@ -152,7 +152,6 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             List<Token> value = ReadDictValue();
 
             switch (key)
-
             {
                 case "FontName":
                     font.FontName = value[0].Text;

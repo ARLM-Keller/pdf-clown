@@ -110,7 +110,7 @@ namespace PdfClown.Samples.CLI
                     // Set the font used to show its character set!
                     composer.SetFont(font, FontBaseSize);
                     // Iterating through the font characters...
-                    foreach (int charCode in font.CodePoints.OrderBy(codePoint => codePoint))
+                    foreach (int charCode in font.Encoding.CodeToNameMap.Keys.OrderBy(codePoint => codePoint))
                     {
                         if (y > pageSize.Height - Margin)
                         {
@@ -137,9 +137,10 @@ namespace PdfClown.Samples.CLI
 
                         try
                         {
+                            var uniCode = font.ToUnicode(charCode);
                             // Show the character!
                             composer.ShowText(
-                              new String((char)charCode, 1),
+                              new String((char)uniCode, 1),
                               new SKPoint(x, y)
                               );
                             x += FontBaseSize;

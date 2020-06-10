@@ -55,9 +55,18 @@ namespace PdfClown.Documents.Contents.Fonts
         #endregion
 
         #region static
+
+        /**
+         <summary>Creates the representation of a font.</summary>
+       */
+        public static Font Get(Document context, string path)
+        {
+            return PdfType0Font.Load(context, path);
+        }
+
         #region fields
         public static Font LatestFont { get; private set; }
-        protected static readonly SKMatrix DefaultFontMatrix = new SKMatrix(0.001f, 0, 0, 0, 0.001f, 0, 0, 0, 1);
+        public static readonly SKMatrix DefaultFontMatrix = new SKMatrix(0.001f, 0, 0, 0, 0.001f, 0, 0, 0, 1);
         private const int UndefinedDefaultCode = int.MinValue;
         private const int UndefinedWidth = int.MinValue;
         #endregion
@@ -239,19 +248,19 @@ namespace PdfClown.Documents.Contents.Fonts
           <summary>Gets the unscaled vertical offset from the baseline to the descender line (descent).
           The value is a negative number.</summary>
         */
-        public virtual double Descent
+        public virtual float Descent
         {
             /*
-                  NOTE: Sometimes font descriptors specify positive descent, therefore normalization is
-                  required [FIX:27].
-                */
+              NOTE: Sometimes font descriptors specify positive descent, therefore normalization is
+              required [FIX:27].
+            */
             get => -Math.Abs(FontDescriptor?.Descent ?? 250);
         }
 
         /**
         <summary>Gets the unscaled line height.</summary>
       */
-        public double LineHeight => Ascent - Descent;
+        public float LineHeight => Ascent - Descent;
 
         public string Type
         {
@@ -597,29 +606,29 @@ namespace PdfClown.Documents.Contents.Fonts
         //  <param name="bytes">Internal representation to decode.</param>
         //  <exception cref="DecodeException"/>
         //*/
-        //public string Decode(byte[] bytes)
-        //{
-        //    var textBuilder = new StringBuilder();
-        //    {
-        //        using (var buffer = new Bytes.Buffer(bytes))
-        //        {
-        //            while (buffer.Position < buffer.Length)
-        //            {
-        //                var code = toUnicodeCMap.ReadCode(buffer, out var codeBytes);
-        //                var textChar = ToUnicode(code);
-        //                if (textChar < 0)
-        //                {
-        //                    textChar = MissingCharacter(codeBytes, code);
-        //                }
-        //                if (textChar > -1)
-        //                {
-        //                    textBuilder.Append((char)textChar);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return textBuilder.ToString();
-        //}
+        public string Decode(byte[] bytes)
+        {
+            var textBuilder = new StringBuilder();
+            {
+                using (var buffer = new Bytes.Buffer(bytes))
+                {
+                    while (buffer.Position < buffer.Length)
+                    {
+                        var code = ReadCode(buffer, out var codeBytes);
+                        var textChar = ToUnicode(code);
+                        if (textChar < 0)
+                        {
+                            textChar = '?';
+                        }
+                        if (textChar > -1)
+                        {
+                            textBuilder.Append((char)textChar);
+                        }
+                    }
+                }
+            }
+            return textBuilder.ToString();
+        }
 
 
         /**

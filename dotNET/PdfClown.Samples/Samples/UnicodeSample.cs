@@ -49,10 +49,7 @@ namespace PdfClown.Samples.CLI
 
             // 3. Inserting contents...
             // Define the font to use!
-            fonts::Font font = fonts::Font.Get(
-              document,
-              GetResourcePath("fonts" + Path.DirectorySeparatorChar + "GenR102.TTF")
-              );
+            fonts::Font font = fonts::Font.Get(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "GenR102.TTF"));
             // Define the paragraph break size!
             var breakSize = new SKSize(0, 10);
             // Define the text to show!
@@ -106,21 +103,10 @@ namespace PdfClown.Samples.CLI
             };
             // Begin the content block!
             blockComposer.Begin(
-              SKRect.Create(
-                Margin,
-                Margin,
-                page.Size.Width - Margin * 2,
-                page.Size.Height - Margin * 2
-                ),
-              XAlignmentEnum.Justify,
-              YAlignmentEnum.Top
-              );
-            for (
-              int index = 0,
-                length = titles.Length;
-              index < length;
-              index++
-              )
+                SKRect.Create(Margin, Margin, page.Size.Width - Margin * 2, page.Size.Height - Margin * 2),
+                XAlignmentEnum.Justify,
+                YAlignmentEnum.Top);
+            for (int index = 0, length = titles.Length; index < length; index++)
             {
                 composer.SetFont(font, 12);
                 blockComposer.ShowText(titles[index]);

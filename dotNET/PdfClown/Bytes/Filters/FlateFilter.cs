@@ -54,7 +54,7 @@ namespace PdfClown.Bytes.Filters
         public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             using (MemoryStream outputStream = new MemoryStream())
-            using (MemoryStream inputStream = new MemoryStream(data.GetBuffer()))
+            using (MemoryStream inputStream = new MemoryStream(data.GetBuffer(), 0, (int)data.Length))
             using (DeflateStream inputFilter = new DeflateStream(inputStream, CompressionMode.Decompress))
             {
                 inputStream.Position = 2; // Skips zlib's 2-byte header [RFC 1950] [FIX:0.0.8:JCT].
@@ -65,7 +65,7 @@ namespace PdfClown.Bytes.Filters
 
         public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            using (MemoryStream inputStream = new MemoryStream(data.GetBuffer()))
+            using (MemoryStream inputStream = new MemoryStream(data.GetBuffer(), 0, (int)data.Length))
             using (MemoryStream outputStream = new MemoryStream())
             using (DeflateStream outputFilter = new DeflateStream(outputStream, CompressionMode.Compress, true))
             {
@@ -193,6 +193,7 @@ namespace PdfClown.Bytes.Filters
             byte[] buffer = new byte[8192]; int bufferLength;
             while ((bufferLength = input.Read(buffer, 0, buffer.Length)) != 0)
             { output.Write(buffer, 0, bufferLength); }
+            output.Flush();
         }
         #endregion
         #endregion

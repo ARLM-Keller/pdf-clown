@@ -30,8 +30,7 @@ namespace PdfClown.Tokens
     /**
       <summary>Cross-reference table entry [PDF:1.6:3.4.3].</summary>
     */
-    public class XRefEntry
-      : ICloneable
+    public class XRefEntry : ICloneable
     {
         #region types
         /**
@@ -87,10 +86,8 @@ namespace PdfClown.Tokens
           <param name="number">Object number.</param>
           <param name="generation">Generation number.</param>
         */
-        public XRefEntry(
-          int number,
-          int generation
-          ) : this(number, generation, UndefinedOffset, UsageEnum.InUse)
+        public XRefEntry(int number, int generation)
+            : this(number, generation, UndefinedOffset, UsageEnum.InUse)
         { }
 
         /**
@@ -101,12 +98,8 @@ namespace PdfClown.Tokens
             or the next free-object object number (free entry).</param>
           <param name="usage">Usage state.</param>
         */
-        public XRefEntry(
-          int number,
-          int generation,
-          int offset,
-          UsageEnum usage
-          ) : this(number, generation, offset, usage, UndefinedStreamNumber)
+        public XRefEntry(int number, int generation, int offset, UsageEnum usage)
+            : this(number, generation, offset, usage, UndefinedStreamNumber)
         { }
 
         /**
@@ -116,20 +109,11 @@ namespace PdfClown.Tokens
           <param name="streamNumber">Object number of the object stream in which this object is stored.
           </param>
         */
-        public XRefEntry(
-          int number,
-          int offset,
-          int streamNumber
-          ) : this(number, 0, offset, UsageEnum.InUseCompressed, streamNumber)
+        public XRefEntry(int number, int offset, int streamNumber)
+            : this(number, 0, offset, UsageEnum.InUseCompressed, streamNumber)
         { }
 
-        private XRefEntry(
-          int number,
-          int generation,
-          int offset,
-          UsageEnum usage,
-          int streamNumber
-          )
+        private XRefEntry(int number, int generation, int offset, UsageEnum usage, int streamNumber)
         {
             this.number = number;
             this.generation = generation;
@@ -193,9 +177,10 @@ namespace PdfClown.Tokens
         }
 
         #region ICloneable
-        public object Clone(
-          )
-        { return MemberwiseClone(); }
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
         #endregion
         #endregion
         #endregion

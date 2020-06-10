@@ -61,14 +61,18 @@ namespace PdfClown.Objects
           <summary>Creates a new empty dictionary object with the default initial capacity.</summary>
         */
         public PdfDictionary()
-        { entries = new Dictionary<PdfName, PdfDirectObject>(); }
+        {
+            entries = new Dictionary<PdfName, PdfDirectObject>();
+        }
 
         /**
           <summary>Creates a new empty dictionary object with the specified initial capacity.</summary>
           <param name="capacity">Initial capacity.</param>
         */
         public PdfDictionary(int capacity)
-        { entries = new Dictionary<PdfName, PdfDirectObject>(capacity); }
+        {
+            entries = new Dictionary<PdfName, PdfDirectObject>(capacity);
+        }
 
         /**
           <summary>Creates a new dictionary object with the specified entries.</summary>
@@ -116,11 +120,41 @@ namespace PdfClown.Objects
 
         #region interface
         #region public
+        public override PdfObject Parent
+        {
+            get => parent;
+            internal set => parent = value;
+        }
+
+        public override bool Updateable
+        {
+            get => updateable;
+            set => updateable = value;
+        }
+
+        public override bool Updated
+        {
+            get => updated;
+            protected internal set => updated = value;
+        }
+
+        public ICollection<PdfName> Keys => entries.Keys;
+
+        public ICollection<PdfDirectObject> Values => entries.Values;
+
+        public int Count => entries.Count;
+
+        public bool IsReadOnly => false;
+
         public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
+        {
+            return visitor.Visit(this, data);
+        }
 
         public override int CompareTo(PdfDirectObject obj)
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
 
         /**
           <summary>Gets the value corresponding to the given key, forcing its instantiation as a direct
@@ -128,7 +162,9 @@ namespace PdfClown.Objects
           <param name="key">Key whose associated value is to be returned.</param>
         */
         public PdfDirectObject Get<T>(PdfName key) where T : PdfDataObject, new()
-        { return Get<T>(key, true); }
+        {
+            return Get<T>(key, true);
+        }
 
         /**
           <summary>Gets the value corresponding to the given key, forcing its instantiation in case of
@@ -170,7 +206,9 @@ namespace PdfClown.Objects
         }
 
         public override int GetHashCode()
-        { return entries.GetHashCode(); }
+        {
+            return entries.GetHashCode();
+        }
 
         /**
           Gets the key associated to the specified value.
@@ -188,12 +226,6 @@ namespace PdfClown.Objects
                     return entry.Key;
             }
             return null;
-        }
-
-        public override PdfObject Parent
-        {
-            get => parent;
-            internal set => parent = value;
         }
 
         public float GetFloat(PdfName key, float def = 0)
@@ -254,7 +286,9 @@ namespace PdfClown.Objects
           <returns>null, if the map contains no mapping for this key.</returns>
         */
         public PdfDataObject Resolve(PdfName key)
-        { return Resolve(this[key]); }
+        {
+            return Resolve(this[key]);
+        }
 
         /**
           <summary>Gets the dereferenced value corresponding to the given key, forcing its instantiation
@@ -265,7 +299,9 @@ namespace PdfClown.Objects
           <returns>null, if the map contains no mapping for this key.</returns>
         */
         public T Resolve<T>(PdfName key) where T : PdfDataObject, new()
-        { return (T)Resolve(Get<T>(key)); }
+        {
+            return (T)Resolve(Get<T>(key));
+        }
 
         public override PdfObject Swap(PdfObject other)
         {
@@ -301,18 +337,6 @@ namespace PdfClown.Objects
             return buffer.ToString();
         }
 
-        public override bool Updateable
-        {
-            get => updateable;
-            set => updateable = value;
-        }
-
-        public override bool Updated
-        {
-            get => updated;
-            protected internal set => updated = value;
-        }
-
         public override void WriteTo(IOutputStream stream, File context)
         {
             // Begin.
@@ -342,9 +366,9 @@ namespace PdfClown.Objects
         }
 
         public bool ContainsKey(PdfName key)
-        { return entries.ContainsKey(key); }
-
-        public ICollection<PdfName> Keys => entries.Keys;
+        {
+            return entries.ContainsKey(key);
+        }
 
         public bool Remove(PdfName key)
         {
@@ -360,16 +384,7 @@ namespace PdfClown.Objects
 
         public PdfDirectObject this[PdfName key]
         {
-            get
-            {
-                /*
-                  NOTE: This is an intentional violation of the official .NET Framework Class
-                  Library prescription (no exception is thrown anytime a key is not found --
-                  a null pointer is returned instead).
-                */
-                entries.TryGetValue(key, out var value);
-                return value;
-            }
+            get => entries.TryGetValue(key, out var value) ? value : null;
             set
             {
                 if (value == null)
@@ -385,29 +400,33 @@ namespace PdfClown.Objects
         }
 
         public bool TryGetValue(PdfName key, out PdfDirectObject value)
-        { return entries.TryGetValue(key, out value); }
-
-        public ICollection<PdfDirectObject> Values => entries.Values;
+        {
+            return entries.TryGetValue(key, out value);
+        }
 
         #region ICollection
         void ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Add(KeyValuePair<PdfName, PdfDirectObject> entry)
-        { Add(entry.Key, entry.Value); }
+        {
+            Add(entry.Key, entry.Value);
+        }
 
         public void Clear()
         {
             foreach (PdfName key in new List<PdfDirectObject>(entries.Keys))
-            { Remove(key); }
+            {
+                Remove(key);
+            }
         }
 
         bool ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Contains(KeyValuePair<PdfName, PdfDirectObject> entry)
-        { return ((ICollection<KeyValuePair<PdfName, PdfDirectObject>>)entries).Contains(entry); }
+        {
+            return ((ICollection<KeyValuePair<PdfName, PdfDirectObject>>)entries).Contains(entry);
+        }
 
         public void CopyTo(KeyValuePair<PdfName, PdfDirectObject>[] entries, int index)
-        { throw new NotImplementedException(); }
-
-        public int Count => entries.Count;
-
-        public bool IsReadOnly => false;
+        {
+            throw new NotImplementedException();
+        }
 
         public bool Remove(KeyValuePair<PdfName, PdfDirectObject> entry)
         {
@@ -419,11 +438,15 @@ namespace PdfClown.Objects
 
         #region IEnumerable<KeyValuePair<PdfName,PdfDirectObject>>
         IEnumerator<KeyValuePair<PdfName, PdfDirectObject>> IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>.GetEnumerator()
-        { return entries.GetEnumerator(); }
+        {
+            return entries.GetEnumerator();
+        }
 
         #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>)this).GetEnumerator(); }
+        {
+            return ((IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>)this).GetEnumerator();
+        }
         #endregion
         #endregion
         #endregion

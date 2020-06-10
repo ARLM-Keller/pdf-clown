@@ -666,8 +666,6 @@ namespace PdfClown.Objects
 
         private static readonly byte[] NamePrefixChunk = tokens::Encoding.Pdf.Encode(tokens.Keyword.NamePrefix);
 
-
-
         #endregion
 
         #region interface
@@ -676,20 +674,26 @@ namespace PdfClown.Objects
           <summary>Gets the object equivalent to the given value.</summary>
         */
         public static new PdfName Get(object value)
-        { return value == null ? null : Get(value.ToString()); }
+        {
+            return value == null ? null : Get(value.ToString());
+        }
 
         /**
           <summary>Gets the object equivalent to the given value.</summary>
         */
         public static PdfName Get(string value)
-        { return value == null ? null : new PdfName(value); }
+        {
+            return value == null ? null : new PdfName(value);
+        }
         #endregion
         #endregion
         #endregion
 
         #region dynamic
         #region constructors
-        public PdfName(string value) : this(value, false) { }
+        public PdfName(string value)
+            : this(value, false)
+        { }
 
         internal PdfName(string value, bool escaped)
         {
@@ -707,63 +711,7 @@ namespace PdfClown.Objects
 
         #region interface
         #region public
-        public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
-
-        public override int CompareTo(PdfDirectObject obj)
-        {
-            if (!(obj is PdfName objName))
-                throw new ArgumentException("Object MUST be a PdfName");
-
-            return string.Compare(RawValue, objName.RawValue, StringComparison.Ordinal);
-        }
-
-        public override bool Equals(object @object)
-        {
-            if (@object is PdfName objName)
-                return string.Equals(RawValue, objName.RawValue, StringComparison.Ordinal);
-            else if (@object is string objString)
-                return string.Equals(RawValue, objString, StringComparison.Ordinal);
-            return base.Equals(@object);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
         public string StringValue => (string)Value;
-
-        public override string ToString()
-        {
-            /*
-              NOTE: The textual representation of a name concerns unescaping reserved characters.
-            */
-            string value = RawValue;
-            StringBuilder buffer = new StringBuilder();
-            int index = 0;
-            Match escapedMatch = EscapedPattern.Match(value);
-            while (escapedMatch.Success)
-            {
-                int start = escapedMatch.Index;
-                if (start > index)
-                { buffer.Append(value.Substring(index, start - index)); }
-
-                buffer.Append(
-                  (char)Int32.Parse(
-                    escapedMatch.Groups[1].Value,
-                    NumberStyles.HexNumber
-                    )
-                  );
-
-                index = start + escapedMatch.Length;
-                escapedMatch = escapedMatch.NextMatch();
-            }
-            if (index < value.Length)
-            { buffer.Append(value.Substring(index)); }
-
-            return buffer.ToString();
-        }
 
         public override object Value
         {
@@ -783,27 +731,91 @@ namespace PdfClown.Objects
                     {
                         int start = unescapedMatch.Index;
                         if (start > index)
-                        { buffer.Append(stringValue.Substring(index, start - index)); }
+                        {
+                            buffer.Append(stringValue.Substring(index, start - index));
+                        }
 
-                        buffer.Append(
-                          '#' + String.Format(
-                            "{0:x}",
-                            (int)unescapedMatch.Groups[0].Value[0]
-                            )
-                          );
+                        buffer.Append('#' + String.Format("{0:x}", (int)unescapedMatch.Groups[0].Value[0]));
 
                         index = start + unescapedMatch.Length;
                         unescapedMatch = unescapedMatch.NextMatch();
                     }
                     if (index < stringValue.Length)
-                    { buffer.Append(stringValue.Substring(index)); }
+                    {
+                        buffer.Append(stringValue.Substring(index));
+                    }
                 }
                 RawValue = buffer.ToString();
             }
         }
 
+        public override PdfObject Accept(IVisitor visitor, object data)
+        {
+            return visitor.Visit(this, data);
+        }
+
+        public override int CompareTo(PdfDirectObject obj)
+        {
+            if (!(obj is PdfName objName))
+                throw new ArgumentException("Object MUST be a PdfName");
+
+            return string.Compare(RawValue, objName.RawValue, StringComparison.Ordinal);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is PdfName objName)
+            {
+                return string.Equals(RawValue, objName.RawValue, StringComparison.Ordinal);
+            }
+            else if (obj is string objString)
+            {
+                return string.Equals(RawValue, objString, StringComparison.Ordinal);
+            }
+
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            /*
+              NOTE: The textual representation of a name concerns unescaping reserved characters.
+            */
+            string value = RawValue;
+            var buffer = new StringBuilder();
+            int index = 0;
+            Match escapedMatch = EscapedPattern.Match(value);
+            while (escapedMatch.Success)
+            {
+                int start = escapedMatch.Index;
+                if (start > index)
+                {
+                    buffer.Append(value.Substring(index, start - index));
+                }
+
+                buffer.Append((char)Int32.Parse(escapedMatch.Groups[1].Value, NumberStyles.HexNumber));
+
+                index = start + escapedMatch.Length;
+                escapedMatch = escapedMatch.NextMatch();
+            }
+            if (index < value.Length)
+            {
+                buffer.Append(value.Substring(index));
+            }
+
+            return buffer.ToString();
+        }
+
         public override void WriteTo(IOutputStream stream, File context)
-        { stream.Write(NamePrefixChunk); stream.Write(RawValue); }
+        {
+            stream.Write(NamePrefixChunk);
+            stream.Write(RawValue);
+        }
         #endregion
         #endregion
         #endregion

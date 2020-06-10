@@ -59,6 +59,8 @@ namespace PdfClown.Objects
                 return PdfDate.Get(dateTimeValue);
             else if (value is bool booleanValue)
                 return PdfBoolean.Get(booleanValue);
+            else if (value is long longValue)
+                return PdfInteger.Get((int)longValue);
             else
                 throw new NotImplementedException();
         }
@@ -77,7 +79,9 @@ namespace PdfClown.Objects
           <param name="obj">Object to extract the value from.</param>
         */
         public static Object GetValue(PdfObject obj)
-        { return GetValue(obj, null); }
+        {
+            return GetValue(obj, null);
+        }
 
         /**
           <summary>Gets the value corresponding to the given object.</summary>
@@ -167,13 +171,19 @@ namespace PdfClown.Objects
         }
 
         public override int GetHashCode()
-        { return RawValue.GetHashCode(); }
+        {
+            return RawValue.GetHashCode();
+        }
 
         public override PdfObject Swap(PdfObject other)
-        { throw new NotSupportedException("Immutable object"); }
+        {
+            throw new NotSupportedException("Immutable object");
+        }
 
         public override string ToString()
-        { return Value.ToString(); }
+        {
+            return Value.ToString();
+        }
 
         #endregion
         #endregion

@@ -51,7 +51,9 @@ namespace PdfClown.Objects
           <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
         */
         internal static string ToString(PdfDirectObject obj)
-        { return (obj == null ? Keyword.Null : obj.ToString()); }
+        {
+            return obj?.ToString() ?? Keyword.Null;
+        }
 
         /**
           <summary>Ensures that the given direct object is properly serialized.</summary>

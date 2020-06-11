@@ -159,12 +159,7 @@ namespace PdfClown.Tokens
                                 }
 
                                 // Define entry!
-                                xrefEntries[index] = new XRefEntry(
-                                  index,
-                                  generation,
-                                  offset,
-                                  usage
-                                  );
+                                xrefEntries[index] = new XRefEntry(index, generation, offset, usage);
                             }
                         }
 
@@ -192,11 +187,10 @@ namespace PdfClown.Tokens
                     { trailer = sectionTrailer; }
 
                     // Get the previous xref-table section's offset!
-                    PdfInteger prevXRefOffset = (PdfInteger)sectionTrailer[PdfName.Prev];
-                    sectionOffset = (prevXRefOffset != null ? prevXRefOffset.IntValue : -1);
+                    sectionOffset = sectionTrailer.GetInt(PdfName.Prev, -1);
                 }
             }
-            //Prepare Decryption
+
             return new FileInfo(version, trailer, xrefEntries);
         }
 

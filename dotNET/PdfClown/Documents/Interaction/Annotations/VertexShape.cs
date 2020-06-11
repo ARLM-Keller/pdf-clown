@@ -191,7 +191,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             return false;
         }
 
-
         public override void RefreshBox()
         {
             Appearance.Normal[null] = null;

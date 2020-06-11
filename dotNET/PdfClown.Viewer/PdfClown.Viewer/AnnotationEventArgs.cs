@@ -1,11 +1,12 @@
 ﻿using PdfClown.Documents.Interaction.Annotations;
 using System;
+using System.ComponentModel;
 
 namespace PdfClown.Viewer
 {
-    public class AnnotationEventArgs : EventArgs
+    public class AnnotationEventArgs : CancelEventArgs
     {
-        public AnnotationEventArgs(Annotation annotation)
+        public AnnotationEventArgs(Annotation annotation) : base(false)
         {
             this.Annotation = annotation;
         }

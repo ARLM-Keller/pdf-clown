@@ -251,6 +251,7 @@ namespace PdfClown.Files
             {
                 Save(new Bytes.Stream(outputStream), mode);
             }
+            System.IO.File.SetLastWriteTimeUtc(path, DateTime.UtcNow);
         }
 
         /**
@@ -317,7 +318,9 @@ namespace PdfClown.Files
         }
 
         public override int GetHashCode()
-        { return hashCode; }
+        {
+            return hashCode;
+        }
 
         #region IDisposable
         public void Dispose()
@@ -352,10 +355,14 @@ namespace PdfClown.Files
         }
 
         private void Initialize()
-        { configuration = new FileConfiguration(this); }
+        {
+            configuration = new FileConfiguration(this);
+        }
 
         private PdfDictionary PrepareTrailer(PdfDictionary trailer)
-        { return (PdfDictionary)new ImplicitContainer(this, trailer).DataObject; }
+        {
+            return (PdfDictionary)new ImplicitContainer(this, trailer).DataObject;
+        }
 
         private string TempPath => (path == null ? null : path + ".tmp");
 

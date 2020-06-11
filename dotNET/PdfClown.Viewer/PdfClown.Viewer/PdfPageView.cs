@@ -12,7 +12,7 @@ using PdfClown.Documents.Contents.Entities;
 
 namespace PdfClown.Viewer
 {
-    public class PdfPagePicture : IDisposable
+    public class PdfPageView : IDisposable
     {
         private static Task task;
         public static bool IsPaintComplete => (task?.IsCompleted ?? true);
@@ -22,7 +22,7 @@ namespace PdfClown.Viewer
         private Page page;
         private SKImage image;
 
-        public PdfPagePicture()
+        public PdfPageView()
         {
         }
 

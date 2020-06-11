@@ -210,7 +210,7 @@ namespace PdfClown.Bytes
 
         public IBuffer Append(IInputStream data)
         {
-            return Append(data.ToByteArray(), 0, (int)data.Length);
+            return Append(data.GetBuffer(), 0, (int)data.Length);
         }
 
         public IBuffer Append(System.IO.Stream data)

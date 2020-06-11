@@ -84,10 +84,14 @@ namespace PdfClown.Objects
         #region interface
         #region public
         public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
+        {
+            return visitor.Visit(this, data);
+        }
 
         public override PdfDataObject Resolve()
-        { return DataObject; }
+        {
+            return DataObject;
+        }
         /**
           <summary>Adds the <see cref="DataObject">data object</see> to the specified object stream
           [PDF:1.6:3.4.6].</summary>
@@ -114,15 +118,49 @@ namespace PdfClown.Objects
 
         public override File File => file;
 
+        public override PdfObject Parent
+        {
+            get => null;  // NOTE: As indirect objects are root objects, no parent can be associated.
+            internal set {/* NOOP: As indirect objects are root objects, no parent can be associated. */}
+        }
+
+        public override bool Updateable
+        {
+            get => updateable;
+            set => updateable = value;
+        }
+
+        public override bool Updated
+        {
+            get => updated;
+            protected internal set
+            {
+                if (value && original)
+                {
+                    /*
+                      NOTE: It's expected that DropOriginal() is invoked by IndirectObjects indexer;
+                      such an action is delegated because clients may invoke directly the indexer skipping
+                      this method.
+                    */
+                    file.IndirectObjects.Update(this);
+                }
+                updated = value;
+            }
+        }
+
         public override int GetHashCode()
-        { return reference.GetHashCode(); }
+        {
+            return reference.GetHashCode();
+        }
 
         /**
           <summary>Gets whether this object is compressed within an object stream [PDF:1.6:3.4.6].
           </summary>
         */
         public bool IsCompressed()
-        { return xrefEntry.Usage == XRefEntry.UsageEnum.InUseCompressed; }
+        {
+            return xrefEntry.Usage == XRefEntry.UsageEnum.InUseCompressed;
+        }
 
         /**
           <summary>Gets whether this object can be compressed within an object stream [PDF:1.6:3.4.6].
@@ -141,18 +179,16 @@ namespace PdfClown.Objects
           <summary>Gets whether this object contains a data object.</summary>
         */
         public bool IsInUse()
-        { return (xrefEntry.Usage == XRefEntry.UsageEnum.InUse); }
+        {
+            return (xrefEntry.Usage == XRefEntry.UsageEnum.InUse);
+        }
 
         /**
           <summary>Gets whether this object comes intact from an existing file.</summary>
         */
         public bool IsOriginal()
-        { return original; }
-
-        public override PdfObject Parent
         {
-            get => null;  // NOTE: As indirect objects are root objects, no parent can be associated.
-            internal set {/* NOOP: As indirect objects are root objects, no parent can be associated. */}
+            return original;
         }
 
         public override PdfObject Swap(PdfObject other)
@@ -181,30 +217,6 @@ namespace PdfClown.Objects
             xrefEntry.Usage = XRefEntry.UsageEnum.InUse;
             xrefEntry.StreamNumber = XRefEntry.UndefinedStreamNumber; // No object stream.
             xrefEntry.Offset = XRefEntry.UndefinedOffset; // Offset unknown (to set on file serialization -- see CompressedWriter).
-        }
-
-        public override bool Updateable
-        {
-            get => updateable;
-            set => updateable = value;
-        }
-
-        public override bool Updated
-        {
-            get => updated;
-            protected internal set
-            {
-                if (value && original)
-                {
-                    /*
-                      NOTE: It's expected that DropOriginal() is invoked by IndirectObjects indexer;
-                      such an action is delegated because clients may invoke directly the indexer skipping
-                      this method.
-                    */
-                    file.IndirectObjects.Update(this);
-                }
-                updated = value;
-            }
         }
 
         public override void WriteTo(IOutputStream stream, File context)
@@ -330,7 +342,9 @@ namespace PdfClown.Objects
         }
 
         internal void DropOriginal()
-        { original = false; }
+        {
+            original = false;
+        }
         #endregion
         #endregion
         #endregion

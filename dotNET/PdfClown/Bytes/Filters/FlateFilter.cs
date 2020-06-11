@@ -59,6 +59,7 @@ namespace PdfClown.Bytes.Filters
             {
                 inputStream.Position = 2; // Skips zlib's 2-byte header [RFC 1950] [FIX:0.0.8:JCT].
                 Transform(inputFilter, outputStream);
+                inputFilter.Close();
                 return DecodePredictor(outputStream.ToArray(), parameters, header);
             }
         }
@@ -73,6 +74,7 @@ namespace PdfClown.Bytes.Filters
                 outputStream.WriteByte(0x78); // CMF = {CINFO (bits 7-4) = 7; CM (bits 3-0) = 8} = 0x78.
                 outputStream.WriteByte(0xDA); // FLG = {FLEVEL (bits 7-6) = 3; FDICT (bit 5) = 0; FCHECK (bits 4-0) = {31 - ((CMF * 256 + FLG - FCHECK) Mod 31)} = 26} = 0xDA.
                 Transform(inputStream, outputFilter);
+                outputFilter.Close();
                 return outputStream.ToArray();
             }
         }

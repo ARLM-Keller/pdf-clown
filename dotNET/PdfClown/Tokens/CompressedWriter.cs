@@ -178,31 +178,18 @@ namespace PdfClown.Tokens
                         indirectObject.Compress(objectStream);
                     }
 
-                    prevFreeEntry = AddXRefEntry(
-                      indirectObject,
-                      xrefStream,
-                      prevFreeEntry,
-                      null
-                      );
+                    prevFreeEntry = AddXRefEntry(indirectObject, xrefStream, prevFreeEntry, null);
                 }
                 prevFreeEntry.Offset = 0; // Links back to the first free object. NOTE: The first entry in the table (object number 0) is always free.
 
                 // 2.2. XRef stream.
                 UpdateTrailer(xrefStream.Header, stream);
-                AddXRefEntry(
-                  /*
+                xrefStreamEntry = new XRefEntry(indirectObjects.Count, 0, (int)stream.Length, XRefEntry.UsageEnum.InUse);
+                /*
                     NOTE: This xref stream indirect object is purposely temporary (i.e. not registered into
                     the file's indirect objects collection).
                   */
-                  new PdfIndirectObject(
-                    file,
-                    xrefStream,
-                    xrefStreamEntry = new XRefEntry(indirectObjects.Count, 0, (int)stream.Length, XRefEntry.UsageEnum.InUse)
-                    ),
-                  xrefStream,
-                  null,
-                  null
-                  );
+                AddXRefEntry(new PdfIndirectObject(file, xrefStream, xrefStreamEntry), xrefStream, null, null);
             }
 
             // 3. Tail.

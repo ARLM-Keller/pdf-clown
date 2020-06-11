@@ -611,13 +611,15 @@ namespace PdfClown.Viewer
 
         public override bool OnKeyDown(string keyName, KeyModifiers modifiers)
         {
-            if (string.Equals(keyName, "Del", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(keyName, "Delete", StringComparison.OrdinalIgnoreCase))
             {
                 if (!readOnly)
                 {
-                    if (selectedPoint is IndexControlPoint)
+                    if (selectedPoint is IndexControlPoint indexControlPoint)
                     {
-                        BeginOperation(selectedPoint.Annotation, OperationType.PointRemove, selectedPoint, selectedPoint.Point, selectedPoint.Point);
+                        BeginOperation(selectedPoint.Annotation, OperationType.PointRemove, indexControlPoint, indexControlPoint.Point, indexControlPoint.Point);
+                        ((VertexShape)selectedPoint.Annotation).RemovePoint(indexControlPoint.Index);
+                        return true;
                     }
                     else if (selectedAnnotation != null)
                     {

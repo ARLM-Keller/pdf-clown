@@ -13,6 +13,8 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <StackLayout Orientation="Horizontal" BackgroundColor="#484848" Padding="3">
+            <Switch IsToggled="{Binding ShowCharBound, Source={Reference viewer}}" HorizontalOptions="Start"/>
+            <Label Text="Show Chars Bound"  TextColor="WhiteSmoke"/>
             <Label x:Name="label" Text="Welcome to PDF Viewer!" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" TextColor="WhiteSmoke"/>
             <Button Text="Open File..." HorizontalOptions="End" VerticalOptions="CenterAndExpand" Clicked="OnOpenFileClicked"/>
         </StackLayout>

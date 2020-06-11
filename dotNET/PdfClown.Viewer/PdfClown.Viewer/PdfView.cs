@@ -21,7 +21,7 @@ using Xamarin.Forms;
 
 namespace PdfClown.Viewer
 {
-    public class PdfView : SKScrollView
+    public partial class PdfView : SKScrollView
     {
         public static readonly BindableProperty ScaleContentProperty = BindableProperty.Create(nameof(ScaleContent), typeof(float), typeof(PdfView), 1F,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnScaleContentChanged((float)oldValue, (float)newValue));
@@ -41,6 +41,8 @@ namespace PdfClown.Viewer
            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnHoverPointChanged((ControlPoint)oldValue, (ControlPoint)newValue));
         public static readonly BindableProperty IsReadOnlyProperty = BindableProperty.Create(nameof(IsReadOnly), typeof(bool), typeof(PdfView), false,
            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnIsReadOnlyChanged((bool)oldValue, (bool)newValue));
+        public static readonly BindableProperty ShowCharBoundProperty = BindableProperty.Create(nameof(ShowCharBound), typeof(bool), typeof(PdfView), false,
+           propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnShowCharBoundChanged((bool)oldValue, (bool)newValue));
 
         private readonly List<PdfPageView> pageViews = new List<PdfPageView>();
         internal readonly SKPaint paintRed = new SKPaint { Style = SKPaintStyle.Stroke, Color = SKColors.OrangeRed };
@@ -55,56 +57,6 @@ namespace PdfClown.Viewer
         private float scale = 1;
         private readonly float indent = 10;
         private readonly PdfViewEventArgs state = new PdfViewEventArgs();
-        public class PdfViewEventArgs : EventArgs
-        {
-            //Common
-            public PdfView Viewer;
-            public SKMatrix WindowScaleMatrix = SKMatrix.Identity;
-            public SKMatrix NavigationMatrix = SKMatrix.Identity;
-            public SKMatrix PageMatrix = SKMatrix.Identity;
-            public SKMatrix InvertPageMatrix = SKMatrix.Identity;
-            public SKMatrix ViewMatrix = SKMatrix.Identity;
-            public SKRect Area;
-
-            public PdfPageView PageView;
-
-            //Touch
-            public SKTouchEventArgs TouchEvent;
-            public SKPoint PointerLocation;
-            public SKPoint MoveLocation;
-            public SKPoint PagePointerLocation;
-            public SKPoint? PressedLocation;
-            public Annotation Annotation;
-            public SKRect AnnotationBounds;
-            public SKRect AnnotationTextBounds;
-            //Draw
-            public SKCanvas Canvas;
-            public Annotation DrawAnnotation;
-
-            private string annotationText;
-            public string AnnotationText
-            {
-                get => annotationText;
-                set
-                {
-                    if (annotationText != value)
-                    {
-                        annotationText = value;
-                        if (!string.IsNullOrEmpty(annotationText))
-                        {
-                            var temp = new SKRect();
-                            Viewer.paintText.MeasureText(annotationText, ref temp);
-                            temp.Inflate(10, 5);
-                            AnnotationTextBounds = SKRect.Create(
-                                AnnotationBounds.Left / Viewer.XScaleFactor,
-                                AnnotationBounds.Bottom / Viewer.YScaleFactor,
-                                temp.Width, temp.Height);
-                        }
-                        Viewer.InvalidateSurface();
-                    }
-                }
-            }
-        }
 
         private Annotation selectedAnnotation;
         private ControlPoint selectedPoint;
@@ -118,7 +70,7 @@ namespace PdfClown.Viewer
         private LinkedListNode<OperationEntry> operationLink;
         private bool handlePropertyChanged = true;
         private bool readOnly;
-
+        private bool showCharBound;
 
         public PdfView()
         {
@@ -179,9 +131,18 @@ namespace PdfClown.Viewer
             set => SetValue(IsReadOnlyProperty, value);
         }
 
+        public bool ShowCharBound
+        {
+            get => (bool)GetValue(ShowCharBoundProperty);
+            set => SetValue(ShowCharBoundProperty, value);
+        }
+
         public File File { get; private set; }
+
         public Document Document { get; private set; }
+
         public SKSize DocumentSize { get; private set; }
+
         public Pages Pages { get; private set; }
 
         public PdfPageView CenterPage
@@ -456,6 +417,12 @@ namespace PdfClown.Viewer
             }
         }
 
+        private void OnShowCharBoundChanged(bool oldValue, bool newValue)
+        {
+            showCharBound = newValue;
+            InvalidateSurface();
+        }
+
         private void OnIsReadOnlyChanged(bool oldValue, bool newValue)
         {
             readOnly = newValue;
@@ -515,7 +482,10 @@ namespace PdfClown.Viewer
                                     }
                                 }
                             }
-                            DrawCharBounds(state);
+                            if (showCharBound)
+                            {
+                                DrawCharBounds(state);
+                            }
                             state.Canvas.Restore();
                         }
                     }

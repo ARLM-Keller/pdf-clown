@@ -960,7 +960,17 @@ namespace PdfClown.Bytes.Filters.Jpeg
                 f.McusPerLine = mcusPerLine;
                 f.McusPerColumn = mcusPerColumn;
             }
-
+            // Some images may contain 'junk' before the SOI (start-of-image) marker.
+            // Note: this seems to mainly affect inline images.
+            while (offset < data.Length)
+            {
+                // Find the first byte of the SOI marker (0xFFD8).
+                if (data[offset] == 0xff)
+                {                    
+                    break;
+                }
+                offset++;
+            }
 
             var fileMarker = data.ReadUint16(offset);
             offset += 2;

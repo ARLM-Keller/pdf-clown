@@ -1170,6 +1170,7 @@ namespace PdfClown.Viewer
             oldDocument.Dispose();
 
             Document = newDocument;
+            InvalidateSurface();
             //TODO File.Reload();
         }
 

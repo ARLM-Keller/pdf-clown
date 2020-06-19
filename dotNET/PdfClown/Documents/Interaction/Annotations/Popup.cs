@@ -62,7 +62,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         #region public
         public override DeviceColor Color
         {
-            get => Markup != null ? markup.Color : base.Color;
+            get => Markup?.Color ?? base.Color;
             set
             {
                 if (Markup != null)
@@ -77,14 +77,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public bool IsOpen
         {
-            get
-            {
-                PdfBoolean openObject = (PdfBoolean)BaseDataObject[PdfName.Open];
-                return openObject != null
-                  ? openObject.BooleanValue
-                  : false;
-            }
-            set => BaseDataObject[PdfName.Open] = PdfBoolean.Get(value);
+            get => BaseDataObject.GetBool(PdfName.Open, false);
+            set => BaseDataObject.SetBool(PdfName.Open, value);
         }
 
         /**

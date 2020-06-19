@@ -72,10 +72,10 @@ namespace PdfClown.Documents
             throw new NotSupportedException();
         }
 
-        public override void Insert(int index, TItem @object)
+        public override void Insert(int index, TItem item)
         {
-            DoAdd(@object);
-            base.Insert(index, @object);
+            DoAdd(item);
+            base.Insert(index, item);
         }
 
         /**
@@ -101,13 +101,13 @@ namespace PdfClown.Documents
         #endregion
 
         #region private
-        private void DoAdd(TItem item)
+        protected virtual void DoAdd(TItem item)
         {
             // Link the element to its page!
             item.BaseDataObject[PdfName.P] = page.BaseObject;
         }
 
-        private void DoRemove(TItem item)
+        protected virtual void DoRemove(TItem item)
         {
             // Unlink the element from its page!
             item.BaseDataObject.Remove(PdfName.P);

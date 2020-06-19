@@ -192,7 +192,9 @@ namespace PdfClown.Tools
         { }
 
         public PageManager(Document document)
-        { Document = document; }
+        {
+            Document = document;
+        }
         #endregion
 
         #region interface
@@ -202,7 +204,9 @@ namespace PdfClown.Tools
           <param name="document">Document to be added.</param>
         */
         public void Add(Document document)
-        { Add((ICollection<Page>)document.Pages); }
+        {
+            Add((ICollection<Page>)document.Pages);
+        }
 
         /**
           <summary>Inserts a document at the specified position in the document.</summary>
@@ -210,7 +214,9 @@ namespace PdfClown.Tools
           <param name="document">Document to be inserted.</param>
         */
         public void Add(int index, Document document)
-        { Add(index, (ICollection<Page>)document.Pages); }
+        {
+            Add(index, (ICollection<Page>)document.Pages);
+        }
 
         /**
           <summary>Appends a collection of pages to the end of the document.</summary>
@@ -373,9 +379,7 @@ namespace PdfClown.Tools
             some extra structures such as cross reference tables.</param>
           <returns>Split documents.</returns>
         */
-        public IList<Document> Split(
-          long maxDataSize
-          )
+        public IList<Document> Split(long maxDataSize)
         {
             IList<Document> documents = new List<Document>();
             {

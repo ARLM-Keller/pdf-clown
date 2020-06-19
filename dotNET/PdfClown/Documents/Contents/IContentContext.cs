@@ -57,7 +57,7 @@ namespace PdfClown.Documents.Contents
           @param size Rendering canvas SKSize.
           @since 0.1.0
         */
-        void Render(SKCanvas context, SKSize size);
+        void Render(SKCanvas context, SKSize size, bool clearContent = true);
 
         /**
           <summary>Gets the resources associated with this content context either explicitly (directly

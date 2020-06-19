@@ -1,9 +1,7 @@
 ﻿using Org.BouncyCastle.Security;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Tools;
 using PdfClown.Util.Math.Geom;
@@ -13,6 +11,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -23,6 +22,8 @@ namespace PdfClown.Viewer
 {
     public partial class PdfView : SKScrollView
     {
+        public static readonly BindableProperty PageBackgroundProperty = BindableProperty.Create(nameof(PageBackground), typeof(Color), typeof(PdfView), Color.White,
+            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnPageBackgroundChanged((Color)oldValue, (Color)newValue));
         public static readonly BindableProperty ScaleContentProperty = BindableProperty.Create(nameof(ScaleContent), typeof(float), typeof(PdfView), 1F,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnScaleContentChanged((float)oldValue, (float)newValue));
         public static readonly BindableProperty ShowMarkupProperty = BindableProperty.Create(nameof(ShowMarkup), typeof(bool), typeof(PdfView), true,
@@ -44,7 +45,7 @@ namespace PdfClown.Viewer
         public static readonly BindableProperty ShowCharBoundProperty = BindableProperty.Create(nameof(ShowCharBound), typeof(bool), typeof(PdfView), false,
            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnShowCharBoundChanged((bool)oldValue, (bool)newValue));
 
-        private readonly List<PdfPageView> pageViews = new List<PdfPageView>();
+        internal readonly SKPaint paintPageBackground = new SKPaint { Style = SKPaintStyle.Fill, Color = SKColors.White };
         internal readonly SKPaint paintRed = new SKPaint { Style = SKPaintStyle.Stroke, Color = SKColors.OrangeRed };
         internal readonly SKPaint paintText = new SKPaint { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 14, IsAntialias = true };
         internal readonly SKPaint paintPointFill = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill };
@@ -55,12 +56,11 @@ namespace PdfClown.Viewer
 
         private float oldScale = 1;
         private float scale = 1;
-        private readonly float indent = 10;
+
         private readonly PdfViewEventArgs state = new PdfViewEventArgs();
 
         private Annotation selectedAnnotation;
         private ControlPoint selectedPoint;
-
 
         private string selectedString;
         private Quad? selectedQuad;
@@ -71,10 +71,17 @@ namespace PdfClown.Viewer
         private bool handlePropertyChanged = true;
         private bool readOnly;
         private bool showCharBound;
+        private PdfDocumentView document;
 
         public PdfView()
         {
             state.Viewer = this;
+        }
+
+        public Color PageBackground
+        {
+            get => (Color)GetValue(PageBackgroundProperty);
+            set => SetValue(PageBackgroundProperty, value);
         }
 
         public float ScaleContent
@@ -137,13 +144,30 @@ namespace PdfClown.Viewer
             set => SetValue(ShowCharBoundProperty, value);
         }
 
-        public File File { get; private set; }
+        public PdfDocumentView Document
+        {
+            get => document;
+            set
+            {
+                if (document == value)
+                    return;
+                if (document != null)
+                {
+                    document.AnnotationAdded -= OnDocumentAnnotationAdded;
+                    document.AnnotationRemoved -= OnDocumentAnnotationRemoved;
+                }
+                SelectedAnnotation = null;
+                SelectedPoint = null;
+                document = value;
+                if (document != null)
+                {
+                    document.AnnotationAdded += OnDocumentAnnotationAdded;
+                    document.AnnotationRemoved += OnDocumentAnnotationRemoved;
+                }
+            }
+        }
 
-        public Document Document { get; private set; }
-
-        public SKSize DocumentSize { get; private set; }
-
-        public Pages Pages { get; private set; }
+        public SKSize DocumentSize => Document?.Size ?? SKSize.Empty;
 
         public PdfPageView CenterPage
         {
@@ -151,7 +175,7 @@ namespace PdfClown.Viewer
             {
                 var area = state.Area;
                 area.Inflate(-(float)Width / 4F, -(float)Height / 4F);
-                foreach (var pageView in pageViews)
+                foreach (var pageView in Document.PageViews)
                 {
                     if (state.ViewMatrix.MapRect(pageView.Bounds).IntersectsWith(area))
                     {
@@ -161,10 +185,6 @@ namespace PdfClown.Viewer
                 return null;
             }
         }
-
-        public string FilePath { get; private set; }
-
-        public string TempFilePath { get; private set; }
 
         public List<TextChar> TextSelection { get; private set; } = new List<TextChar>();
 
@@ -235,7 +255,7 @@ namespace PdfClown.Viewer
 
         public IEnumerable<Annotation> GetAllAnnotations()
         {
-            foreach (var pageView in pageViews)
+            foreach (var pageView in Document.PageViews)
             {
                 if (pageView.Page.Annotations != null && pageView.Page.Annotations.Count > 0)
                 {
@@ -251,6 +271,11 @@ namespace PdfClown.Viewer
                     }
                 }
             }
+        }
+
+        private void OnPageBackgroundChanged(Color oldValue, Color newValue)
+        {
+            paintPageBackground.Color = newValue.ToSKColor();
         }
 
         private void OnScaleContentChanged(float oldValue, float newValue)
@@ -448,22 +473,34 @@ namespace PdfClown.Viewer
 
         protected override void OnPaintContent(SKPaintSurfaceEventArgs e)
         {
+            if (Document == null)
+                return;
             state.Canvas = e.Surface.Canvas;
             try
             {
                 state.Canvas.SetMatrix(state.ViewMatrix);
-                foreach (var pageView in pageViews)
+                foreach (var pageView in Document.PageViews)
                 {
                     if (state.ViewMatrix.MapRect(pageView.Bounds).IntersectsWith(state.Area))
                     {
                         state.PageView = pageView;
+                        state.Canvas.Save();
+                        state.Canvas.Concat(ref pageView.Matrix);
+                        var pageRect = SKRect.Create(pageView.Size);
+                        state.Canvas.ClipRect(pageRect);
+                        state.Canvas.DrawRect(pageRect, paintPageBackground);
+
                         var picture = pageView.GetPicture(this);
                         if (picture != null)
                         {
-                            state.Canvas.Save();
-                            state.Canvas.Concat(ref pageView.Matrix);
+                            //var image = pageView.GetImage(this, scale, scale);
+                            //if (image != null)
+                            //{
+                            //    state.Canvas.DrawImage(image, SKPoint.Empty);
+                            //}
 
                             state.Canvas.DrawPicture(picture);
+
 
                             if (ShowMarkup && pageView.Page.Annotations.Count > 0)
                             {
@@ -486,8 +523,8 @@ namespace PdfClown.Viewer
                             {
                                 DrawCharBounds(state);
                             }
-                            state.Canvas.Restore();
                         }
+                        state.Canvas.Restore();
                     }
                 }
             }
@@ -534,7 +571,6 @@ namespace PdfClown.Viewer
                         popup.Markup.Draw(state.Canvas);
                     }
                 }
-
             }
             //if (Dragging != null && !stage.PageView.Page.Annotations.Contains(Dragging))
             //{
@@ -659,11 +695,11 @@ namespace PdfClown.Viewer
                     return;
                 }
             }
-            if (!PdfPageView.IsPaintComplete)
+            if (Document == null || !PdfPageView.IsPaintComplete)
             {
                 return;
             }
-            foreach (var pageView in pageViews)
+            foreach (var pageView in Document.PageViews)
             {
                 if (state.ViewMatrix.MapRect(pageView.Bounds).Contains(state.PointerLocation))
                 {
@@ -1063,18 +1099,6 @@ namespace PdfClown.Viewer
             }
         }
 
-        public PdfPageView GetPageView(Documents.Page page)
-        {
-            foreach (var pageView in pageViews)
-            {
-                if (pageView.Page == page)
-                {
-                    return pageView;
-                }
-            }
-            return null;
-        }
-
         public override void OnScrolled(int delta, KeyModifiers keyModifiers)
         {
             if (keyModifiers == KeyModifiers.None)
@@ -1120,91 +1144,72 @@ namespace PdfClown.Viewer
             UpdateCurrentMatrix();
         }
 
-        public void Load(string filePath)
-        {
-            if (File != null)
-            {
-                ClearPages();
-                File.Dispose();
-            }
-            FilePath = filePath;
-            TempFilePath = filePath + "~";
-            System.IO.File.Copy(filePath, TempFilePath, true);
-            var fileStream = new System.IO.FileStream(TempFilePath, System.IO.FileMode.Open,
-                                                             System.IO.FileAccess.ReadWrite,
-                                                             System.IO.FileShare.ReadWrite);
-            Load(fileStream);
-        }
-
         public void Save()
         {
-            File.Save(FilePath, SerializationModeEnum.Standard);
+            Document?.Save();
             ClearOperations();
         }
 
         public void Reload()
         {
+            var newDocument = PdfDocumentView.LoadFrom(Document.FilePath);
+            if (operations.Count > 0)
+            {
+                var newOperations = new LinkedList<OperationEntry>();
+                foreach (var oldOperation in operations)
+                {
+                    var newOperation = oldOperation.Clone(newDocument);
+
+                    newOperation.Redo();
+
+                    newOperations.AddLast(newOperation);
+                }
+                operations = newOperations;
+            }
+            var oldDocument = Document;
+            oldDocument.Dispose();
+
+            Document = newDocument;
             //TODO File.Reload();
+        }
+
+        private void RefreshNavigation()
+        {
+            HorizontalValue = 0;
+            VerticalValue = 0;
+
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                if (Document != null)
+                {
+                    ScaleContent = (float)(Width / (DocumentSize.Width));
+                    UpdateMaximums();
+                }
+                else
+                {
+                    ScaleContent = 1;
+                }
+            });
+        }
+
+        public void Load(string filePath)
+        {
+            if (Document != null)
+                Document.Dispose();
+
+            Document = PdfDocumentView.LoadFrom(filePath);
+            ClearOperations();
+            RefreshNavigation();
         }
 
         public void Load(System.IO.Stream stream)
         {
-            if (File != null)
-            {
-                ClearPages();
-                File.Dispose();
-            }
-            ScaleContent = 1;
-            HorizontalValue = 0;
-            VerticalValue = 0;
-            File = new File(stream);
-            Document = File.Document;
-            LoadPages();
+            if (Document != null)
+                Document.Dispose();
 
+            Document = PdfDocumentView.LoadFrom(stream);
             ClearOperations();
-        }
-
-        private SKSize LoadPages()
-        {
-            float totalWidth, totalHeight;
-            Pages = Document.Pages;
-
-            totalWidth = 0F;
-            totalHeight = 0F;
-            var pages = new List<PdfPageView>();
-            foreach (var page in Pages)
-            {
-                totalHeight += indent;
-                var box = page.RotatedBox;
-                var imageSize = new SKSize(box.Width, box.Height);
-                var pageView = new PdfPageView()
-                {
-                    Page = page,
-                    Size = imageSize
-                };
-                pageView.Matrix = pageView.Matrix.PreConcat(SKMatrix.CreateTranslation(indent, totalHeight));
-                pages.Add(pageView);
-                if (imageSize.Width > totalWidth)
-                    totalWidth = imageSize.Width;
-
-                totalHeight += imageSize.Height;
-            }
-            DocumentSize = new SKSize(totalWidth + indent * 2, totalHeight);
-            foreach (var pageView in pages)
-            {
-                if ((pageView.Size.Width + indent * 2) < DocumentSize.Width)
-                {
-                    pageView.Matrix.TransX += (DocumentSize.Width - pageView.Size.Width + indent * 2) / 2;
-                }
-            }
-            this.pageViews.AddRange(pages);
-            Device.BeginInvokeOnMainThread(() =>
-            {
-                ScaleContent = (float)(Width / (DocumentSize.Width));
-                UpdateMaximums();
-            });
-
-            return DocumentSize;
+            RefreshNavigation();
         }
 
         public void ScrollTo(Annotation annotation)
@@ -1214,7 +1219,7 @@ namespace PdfClown.Viewer
                 return;
             }
 
-            var pageView = GetPageView(annotation.Page);
+            var pageView = Document.GetPageView(annotation.Page);
             if (pageView == null)
             {
                 return;
@@ -1245,7 +1250,7 @@ namespace PdfClown.Viewer
             var dx = 0F; var dy = 0F;
             if (maximumWidth < Width)
             {
-                dx = (float)(Width - maximumWidth) / 2;
+                dx = (float)((Width - 10) - maximumWidth) / 2;
             }
 
             if (maximumHeight < Height)
@@ -1258,15 +1263,6 @@ namespace PdfClown.Viewer
                 0, 0, 1);
 
             state.ViewMatrix = state.WindowScaleMatrix.PreConcat(state.NavigationMatrix);
-        }
-
-        private void ClearPages()
-        {
-            foreach (var pageView in pageViews)
-            {
-                pageView.Dispose();
-            }
-            pageViews.Clear();
         }
 
         private void CancalOperation(OperationEntry operation)
@@ -1293,10 +1289,11 @@ namespace PdfClown.Viewer
             CheckOperations();
         }
 
-        private void BeginOperation(Annotation annotation, OperationType type, object property = null, object begin = null, object end = null)
+        private OperationEntry BeginOperation(Annotation annotation, OperationType type, object property = null, object begin = null, object end = null)
         {
             var operation = new OperationEntry
             {
+                Document = document,
                 Annotation = annotation,
                 Type = type,
                 Property = property,
@@ -1335,6 +1332,7 @@ namespace PdfClown.Viewer
             {
                 CheckOperations();
             }
+            return operation;
         }
 
         public void Redo()
@@ -1351,64 +1349,7 @@ namespace PdfClown.Viewer
                     {
                         SelectedAnnotation = entry.Annotation;
                     }
-                    switch (entry.Type)
-                    {
-                        case OperationType.AnnotationAdd:
-                            AddAnnotation(entry.Annotation, true);
-                            break;
-                        case OperationType.AnnotationRemove:
-                            RemoveAnnotation(entry.Annotation, true);
-                            break;
-                        case OperationType.AnnotationDrag:
-                            entry.Annotation.MoveTo((SKRect)entry.NewValue);
-                            break;
-                        case OperationType.AnnotationSize:
-                            entry.Annotation.Box = (SKRect)entry.NewValue;
-                            break;
-                        case OperationType.AnnotationRePage:
-                            var page = Document.Pages[(int)entry.NewValue];
-                            entry.Annotation.Page = page;
-                            break;
-                        case OperationType.AnnotationColor:
-                            entry.Annotation.SKColor = (SKColor)entry.NewValue;
-                            break;
-                        case OperationType.AnnotationText:
-                            entry.Annotation.Text = (string)entry.NewValue;
-                            break;
-                        case OperationType.AnnotationSubject:
-                            entry.Annotation.Subject = (string)entry.NewValue;
-                            break;
-                        case OperationType.PointMove:
-                            {
-                                if (entry.Property is ControlPoint controlPoint)
-                                {
-                                    controlPoint.Point = (SKPoint)entry.NewValue;
-                                }
-                                break;
-                            }
-                        case OperationType.PointAdd:
-                            {
-                                if (entry.Property is IndexControlPoint controlPoint)
-                                {
-                                    if (entry.Annotation is VertexShape vertexShape)
-                                    {
-                                        vertexShape.InsertPoint(controlPoint.Index, (SKPoint)entry.NewValue);
-                                    }
-                                }
-                            }
-                            break;
-                        case OperationType.PointRemove:
-                            {
-                                if (entry.Property is IndexControlPoint controlPoint)
-                                {
-                                    if (entry.Annotation is VertexShape vertexShape)
-                                    {
-                                        vertexShape.RemovePoint(controlPoint.Index);
-                                    }
-                                }
-                            }
-                            break;
-                    }
+                    entry.Redo();
                     if (entry.Annotation.Page?.Annotations.Contains(entry.Annotation) ?? false)
                     {
                         SelectedAnnotation = entry.Annotation;
@@ -1431,71 +1372,12 @@ namespace PdfClown.Viewer
                 try
                 {
                     handlePropertyChanged = false;
+
                     if (entry.Annotation.Page?.Annotations.Contains(entry.Annotation) ?? false)
                     {
                         SelectedAnnotation = entry.Annotation;
                     }
-                    switch (entry.Type)
-                    {
-                        case OperationType.AnnotationAdd:
-                            RemoveAnnotation(entry.Annotation, true);
-                            break;
-                        case OperationType.AnnotationRemove:
-                            AddAnnotation(entry.Annotation, true);
-                            break;
-                        case OperationType.AnnotationDrag:
-                            entry.Annotation.MoveTo((SKRect)entry.OldValue);
-                            break;
-                        case OperationType.AnnotationSize:
-                            entry.Annotation.Box = (SKRect)entry.OldValue;
-                            break;
-                        case OperationType.AnnotationRePage:
-                            var page = Document.Pages[(int)entry.OldValue];
-                            entry.Annotation.Page = page;
-                            break;
-                        case OperationType.AnnotationColor:
-                            entry.Annotation.SKColor = (SKColor)entry.OldValue;
-                            break;
-                        case OperationType.AnnotationText:
-                            entry.Annotation.Text = (string)entry.OldValue;
-                            break;
-                        case OperationType.AnnotationSubject:
-                            entry.Annotation.Subject = (string)entry.OldValue;
-                            break;
-                        case OperationType.PointMove:
-                            {
-                                if (entry.Property is ControlPoint controlPoint)
-                                {
-                                    controlPoint.Point = (SKPoint)entry.OldValue;
-                                    InvalidateSurface();
-                                }
-                                break;
-                            }
-                        case OperationType.PointAdd:
-                            {
-                                if (entry.Property is IndexControlPoint controlPoint)
-                                {
-                                    if (entry.Annotation is VertexShape vertexShape)
-                                    {
-                                        vertexShape.RemovePoint(controlPoint.Index);
-                                        InvalidateSurface();
-                                    }
-                                }
-                            }
-                            break;
-                        case OperationType.PointRemove:
-                            {
-                                if (entry.Property is IndexControlPoint controlPoint)
-                                {
-                                    if (entry.Annotation is VertexShape vertexShape)
-                                    {
-                                        vertexShape.InsertPoint(controlPoint.Index, (SKPoint)entry.NewValue);
-                                        InvalidateSurface();
-                                    }
-                                }
-                            }
-                            break;
-                    }
+                    entry.Undo();
                     if (entry.Annotation.Page?.Annotations.Contains(entry.Annotation) ?? false)
                     {
                         SelectedAnnotation = entry.Annotation;
@@ -1506,6 +1388,7 @@ namespace PdfClown.Viewer
                     handlePropertyChanged = true;
                 }
                 CheckOperations();
+                InvalidateSurface();
             }
         }
 
@@ -1523,75 +1406,63 @@ namespace PdfClown.Viewer
             OnPropertyChanged(nameof(IsChanged));
         }
 
-        public void AddAnnotation(Annotation annotation, bool log = false)
+        private void OnDocumentAnnotationAdded(object sender, AnnotationEventArgs e)
         {
-            if (!log)
-            {
-                BeginOperation(annotation, OperationType.AnnotationAdd);
-            }
-            if (annotation.Page != null)
-            {
-                annotation.Page = annotation.Page;
-                if (!annotation.Page.Annotations.Contains(annotation))
-                {
-                    annotation.Page.Annotations.Add(annotation);
-                }
+            AnnotationAdded?.Invoke(this, e);
+            InvalidateSurface();
+        }
 
-                foreach (var item in annotation.Replies)
-                {
-                    if (item is Markup markup)
-                    {
-                        AddAnnotation(item);
-                    }
-                }
-            }
-            if (annotation is Popup popup
-                && popup.Markup != null)
+        public void AddAnnotation(Annotation annotation, bool undo = false)
+        {
+            OperationEntry operation = null;
+            if (!undo)
             {
-                AddAnnotation(popup.Markup);
+                operation = BeginOperation(annotation, OperationType.AnnotationAdd);
+            }
+
+            Document.AddAnnotation(annotation);
+
+            if (operation != null)
+            {
+                EndOperation(operation);
             }
             AnnotationAdded?.Invoke(this, new AnnotationEventArgs(annotation));
             InvalidateSurface();
         }
 
-        public IEnumerable<Annotation> RemoveAnnotation(Annotation annotation, bool log = false)
+        private void OnDocumentAnnotationRemoved(object sender, AnnotationEventArgs e)
+        {
+            if (e.Annotation == selectedAnnotation)
+                SelectedAnnotation = null;
+            AnnotationRemoved?.Invoke(this, e);
+            InvalidateSurface();
+        }
+
+        public IEnumerable<Annotation> RemoveAnnotation(Annotation annotation, bool undo = false)
         {
             if (!OnCheckCanRemove(annotation))
             {
                 return null;
             }
-
-            if (!log)
+            OperationEntry operation = null;
+            if (!undo)
             {
-                BeginOperation(annotation, OperationType.AnnotationRemove);
-            }
-            var list = new List<Annotation>();
-
-            if (annotation.Page != null)
-            {
-                foreach (var item in annotation.Page.Annotations.ToList())
-                {
-                    if (item is Markup markup
-                        && markup.InReplyTo == annotation)//&& markup.ReplyType == Markup.ReplyTypeEnum.Thread
-                    {
-                        annotation.Replies.Add(item);
-                        foreach (var deleted in RemoveAnnotation(markup))
-                        {
-                            list.Add(deleted);
-                        }
-                    }
-                }
+                operation = BeginOperation(annotation, OperationType.AnnotationRemove);
             }
             if (annotation == selectedAnnotation)
-                SelectedAnnotation = null;
-            annotation.Remove();
-
-            if (annotation is Popup popup)
             {
-                RemoveAnnotation(popup.Markup);
-                list.Add(popup.Markup);
+                SelectedAnnotation = null;
             }
-            list.Add(annotation);
+
+            var list = Document.RemoveAnnotation(annotation);
+
+            if (list.Contains(selectedAnnotation))
+                SelectedAnnotation = null;
+
+            if (operation != null)
+            {
+                EndOperation(operation);
+            }
             AnnotationRemoved?.Invoke(this, new AnnotationEventArgs(annotation));
             InvalidateSurface();
             return list;

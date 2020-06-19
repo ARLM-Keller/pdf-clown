@@ -41,6 +41,7 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Util.Math.Geom;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using System.Globalization;
 //using System.Diagnostics;
 
 namespace PdfClown.Documents.Interaction.Annotations
@@ -52,13 +53,13 @@ namespace PdfClown.Documents.Interaction.Annotations
     public abstract class Annotation : PdfObjectWrapper<PdfDictionary>, ILayerable, INotifyPropertyChanged
     {
         private Page page;
+        private string name;
         private SKColor? color;
         private SKRect? boxCache;
         protected BottomRightControlPoint cpBottomRight;
         protected BottomLeftControlPoint cpBottomLeft;
         protected TopRightControlPoint cpTopRight;
         protected TopLeftControlPoint cpTopLeft;
-
 
         public event PropertyChangedEventHandler PropertyChanged;
         #region types
@@ -108,6 +109,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             */
             ToggleNoView = 0x100
         }
+
         #endregion
 
         #region static
@@ -204,6 +206,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             Page = page;
             Box = box;
             Text = text;
+            GenerateName();
             Printable = true;
             IsNew = true;
         }
@@ -398,10 +401,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF14)]
         public virtual string Name
         {
-            get => BaseDataObject.GetText(PdfName.NM);
+            get => name ?? (name = BaseDataObject.GetText(PdfName.NM) ?? string.Empty);
             set
             {
                 var oldValue = Name;
+                name = value;
                 BaseDataObject.SetText(PdfName.NM, value);
                 OnPropertyChanged(oldValue, value);
             }
@@ -670,10 +674,17 @@ namespace PdfClown.Documents.Interaction.Annotations
             PropertyChanged?.Invoke(this, new DetailedPropertyChangedEventArgs(oldValue, newValue, propertyName));
         }
 
-        //protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        //{
-        //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        //}
+        public override object Clone(Cloner cloner)
+        {
+            var cloned = (Annotation)base.Clone(cloner);
+            cloned.page = null;
+            return cloned;
+        }
+
+        public void GenerateName()
+        {
+            Name = Guid.NewGuid().ToString();
+        }
 
         public virtual void RefreshBox()
         { }
@@ -721,6 +732,13 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var point = Point;
                 return new SKRect(point.X - r, point.Y - r, point.X + r, point.Y + r);
             }
+        }
+
+        public virtual ControlPoint Clone(Annotation annotation)
+        {
+            var cloned = (ControlPoint)this.MemberwiseClone();
+            cloned.Annotation = annotation;
+            return cloned;
         }
     }
 

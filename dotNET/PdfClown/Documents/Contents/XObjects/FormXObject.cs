@@ -215,16 +215,18 @@ namespace PdfClown.Documents.Contents.XObjects
                     }
                 }
 
-                Render(canvas, box.Size);
+                Render(canvas, box.Size, false);
                 return picture = recorder.EndRecording();
             }
         }
 
-        public void Render(SKCanvas context, SKSize size)
+        public void Render(SKCanvas context, SKSize size, bool clearContext = true)
         {
             ClearContents();
-            var scanner = new ContentScanner(this, context, size);
-            scanner.ClearContext = false;
+            var scanner = new ContentScanner(this, context, size)
+            {
+                ClearContext = clearContext
+            };
             scanner.Render(context, size);
         }
 

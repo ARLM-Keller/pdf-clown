@@ -160,7 +160,9 @@ namespace PdfClown.Documents
             }
 
             public void Reset()
-            { throw new NotSupportedException(); }
+            {
+                throw new NotSupportedException();
+            }
 
             public void Dispose()
             { }
@@ -205,12 +207,16 @@ namespace PdfClown.Documents
 
         public void InsertAll<TVar>(int index, ICollection<TVar> pages)
           where TVar : Page
-        { CommonAddAll(index, pages); }
+        {
+            CommonAddAll(index, pages);
+        }
 
         #region IExtCollection<Page>
         public void AddAll<TVar>(ICollection<TVar> pages)
           where TVar : Page
-        { CommonAddAll(-1, pages); }
+        {
+            CommonAddAll(-1, pages);
+        }
 
         public void RemoveAll<TVar>(ICollection<TVar> pages)
           where TVar : Page
@@ -246,13 +252,19 @@ namespace PdfClown.Documents
 
         #region IList<Page>
         public int IndexOf(Page page)
-        { return page.Index; }
+        {
+            return page.Index;
+        }
 
         public void Insert(int index, Page page)
-        { CommonAddAll(index, (ICollection<Page>)new Page[] { page }); }
+        {
+            CommonAddAll(index, (ICollection<Page>)new Page[] { page });
+        }
 
         public void RemoveAt(int index)
-        { Remove(this[index]); }
+        {
+            Remove(this[index]);
+        }
 
         public Page this[int index]
         {
@@ -285,7 +297,8 @@ namespace PdfClown.Documents
                     else // Page tree node.
                     {
                         // Does the current subtree contain the searched page?
-                        if (((PdfInteger)kid[PdfName.Count]).RawValue + pageOffset > index) // Vertical scan (deepen the search).
+                        var count = kid.GetInt(PdfName.Count);
+                        if (count + pageOffset > index) // Vertical scan (deepen the search).
                         {
                             // Go down one level!
                             parent = kid;
@@ -295,7 +308,7 @@ namespace PdfClown.Documents
                         else // Horizontal scan (go past).
                         {
                             // Cumulate current subtree count!
-                            pageOffset += ((PdfInteger)kid[PdfName.Count]).RawValue;
+                            pageOffset += count;
                         }
                     }
                 }
@@ -311,18 +324,26 @@ namespace PdfClown.Documents
 
         #region ICollection<Page>
         public void Add(Page page)
-        { CommonAddAll(-1, (ICollection<Page>)new Page[] { page }); }
+        {
+            CommonAddAll(-1, (ICollection<Page>)new Page[] { page });
+        }
 
         public void Clear()
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
 
         public bool Contains(Page page)
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
 
         public void CopyTo(Page[] pages, int index)
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
 
-        public int Count => ((PdfInteger)BaseDataObject[PdfName.Count]).RawValue;
+        public int Count => BaseDataObject.GetInt(PdfName.Count);
 
         public bool IsReadOnly => false;
 
@@ -345,9 +366,9 @@ namespace PdfClown.Documents
             do
             {
                 // Get the page collection counter!
-                PdfInteger countObject = (PdfInteger)parentData[PdfName.Count];
+                var count = parentData.GetInt(PdfName.Count);
                 // Decrement the counter at the current level!
-                parentData[PdfName.Count] = PdfInteger.Get(countObject.IntValue - 1);
+                parentData[PdfName.Count] = PdfInteger.Get(count - 1);
 
                 // Iterate upward!
                 parent = parentData[PdfName.Parent];
@@ -359,11 +380,15 @@ namespace PdfClown.Documents
 
         #region IEnumerable<Page>
         public IEnumerator<Page> GetEnumerator()
-        { return new Enumerator(this); }
+        {
+            return new Enumerator(this);
+        }
 
         #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
-        { return this.GetEnumerator(); }
+        {
+            return this.GetEnumerator();
+        }
         #endregion
         #endregion
         #endregion

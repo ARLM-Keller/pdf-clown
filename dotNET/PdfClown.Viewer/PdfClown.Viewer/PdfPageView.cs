@@ -21,6 +21,7 @@ namespace PdfClown.Viewer
         public SKMatrix Matrix = SKMatrix.MakeIdentity();
         private Page page;
         private SKImage image;
+        private float imageScale;
 
         public PdfPageView()
         {
@@ -39,16 +40,24 @@ namespace PdfClown.Viewer
             return picture;
         }
 
-        public SKImage GetImage(SKCanvasView canvasView, SKSizeI size)
+        public SKImage GetImage(SKCanvasView canvasView, float scaleX, float scaleY)
         {
             var picture = GetPicture(canvasView);
             if (picture == null)
             {
                 return null;
             }
-            if (image == null)
+            if (scaleX != imageScale || image == null)
             {
-                image = SKImage.FromPicture(picture, size);
+                imageScale = scaleX;
+                image?.Dispose();
+                var imageSize = new SKSizeI((int)(Size.Width * scaleX), (int)(Size.Height * scaleY));
+                var matrix = SKMatrix.Identity;
+                if (imageScale < 1F)
+                {
+                    //matrix = SKMatrix.CreateScale(scaleX, scaleY);
+                }
+                image = SKImage.FromPicture(picture, imageSize, matrix);//, Matrix, 
             }
             return image;
         }
@@ -56,11 +65,11 @@ namespace PdfClown.Viewer
         private void Paint(SKCanvasView canvasView)
         {
             using (var recorder = new SKPictureRecorder())
-            using (var canvas = recorder.BeginRecording(SKRect.Create(SKPoint.Empty, Size)))
+            using (var canvas = recorder.BeginRecording(SKRect.Create(Size)))
             {
                 try
                 {
-                    Page.Render(canvas, Size);
+                    Page.Render(canvas, Size, false);
                 }
                 catch (Exception ex)
                 {
@@ -101,6 +110,7 @@ namespace PdfClown.Viewer
 
         public void Dispose()
         {
+            image?.Dispose();
             picture?.Dispose();
         }
     }

@@ -185,7 +185,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             using (var recorder = new SKPictureRecorder())// SKBitmap((int)box.Width, (int)box.Height);
             using (var canvas = recorder.BeginRecording(SKRect.Create(box.Width, box.Height)))
             {
-                Render(canvas, box.Size);
+                Render(canvas, box.Size, false);
                 return picture = recorder.EndRecording();
             }
         }
@@ -195,9 +195,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return SKShader.CreatePicture(GetPicture(), SKShaderTileMode.Repeat, SKShaderTileMode.Repeat, SKMatrix, Box);
         }
 
-        public void Render(SKCanvas context, SKSize size)
+        public void Render(SKCanvas context, SKSize size, bool clearContext = true)
         {
-            var scanner = new ContentScanner(Contents);
+            var scanner = new ContentScanner(Contents)
+            {
+                ClearContext = clearContext
+            };
             scanner.Render(context, size);
         }
 

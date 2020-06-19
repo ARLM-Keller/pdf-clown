@@ -41,13 +41,8 @@ namespace PdfClown.Samples.CLI
                 foreach (PageFormat.OrientationEnum pageOrientation in pageOrientations)
                 {
                     // Add a page to the document!
-                    Page page = new Page(
-                      document,
-                      PageFormat.GetSize(
-                        pageFormat,
-                        pageOrientation
-                        )
-                      ); // Instantiates the page inside the document context.
+                    Page page = new Page(document, PageFormat.GetSize(pageFormat, pageOrientation));
+                    // Instantiates the page inside the document context.
                     pages.Add(page); // Puts the page in the pages collection.
 
                     // Drawing the text label on the page...

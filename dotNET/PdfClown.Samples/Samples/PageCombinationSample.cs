@@ -43,10 +43,8 @@ namespace PdfClown.Samples.CLI
                         { composer.Flush(); }
 
                         // Add a page to the target document!
-                        Page page = new Page(
-                            document,
-                            PageFormat.GetSize(PageFormat.SizeEnum.A3, PageFormat.OrientationEnum.Landscape)
-                          ); // Instantiates the page inside the document context.
+                        Page page = new Page(document, PageFormat.GetSize(PageFormat.SizeEnum.A3, PageFormat.OrientationEnum.Landscape));
+                        // Instantiates the page inside the document context.
                         pages.Add(page); // Puts the page in the pages collection.
                                          // Create a composer for the target content stream!
                         composer = new PrimitiveComposer(page);

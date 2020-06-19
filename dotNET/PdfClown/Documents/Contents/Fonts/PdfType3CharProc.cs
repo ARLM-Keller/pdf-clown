@@ -135,10 +135,12 @@ namespace PdfClown.Documents.Contents.Fonts
         public void OnSetCtm(SKMatrix ctm)
         { }
 
-        public void Render(SKCanvas context, SKSize size)
+        public void Render(SKCanvas context, SKSize size, bool clearContext = true)
         {
-            var scanner = new ContentScanner(Contents);
-            scanner.ClearContext = false;
+            var scanner = new ContentScanner(Contents)
+            {
+                ClearContext = clearContext
+            };
             scanner.Render(context, size);
         }
 
@@ -150,7 +152,7 @@ namespace PdfClown.Documents.Contents.Fonts
             using (var recorder = new SKPictureRecorder())
             using (var canvas = recorder.BeginRecording(box))
             {
-                Render(canvas, box.Size);
+                Render(canvas, box.Size, false);
                 return picture = recorder.EndRecording();
             }
         }

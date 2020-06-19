@@ -83,6 +83,8 @@ namespace PdfClown.Documents
         private SKMatrix? inInitialMatrix;
         private SKMatrix? rotateMatrix;
         private SKMatrix? inRotateMatrix;
+        private SKRect? box;
+        internal int? index;
         #endregion
 
         #region constructors
@@ -145,7 +147,9 @@ namespace PdfClown.Documents
           <summary>Gets the code corresponding to the given value.</summary>
         */
         private static PdfName ToCode(TabOrderEnum value)
-        { return TabOrderEnumCodes[value]; }
+        {
+            return TabOrderEnumCodes[value];
+        }
 
         /**
           <summary>Gets the tab order corresponding to the given value.</summary>
@@ -187,7 +191,7 @@ namespace PdfClown.Documents
             )
         {
             if (size.HasValue)
-            { size = size.Value; }
+            { Size = size.Value; }
         }
 
         public Page(PdfDirectObject baseObject) : base(baseObject)
@@ -221,7 +225,7 @@ namespace PdfClown.Documents
           <seealso cref="CropBox"/>
         */
         [PDF(VersionEnum.PDF13)]
-        public SKRect? ArtBox
+        public Rectangle ArtBox
         {
             get
             {
@@ -229,9 +233,9 @@ namespace PdfClown.Documents
                   NOTE: The default value is the page's crop box.
                 */
                 PdfDirectObject artBoxObject = GetInheritableAttribute(PdfName.ArtBox);
-                return artBoxObject != null ? Wrap<Rectangle>(artBoxObject).ToRect() : CropBox;
+                return artBoxObject != null ? Wrap<Rectangle>(artBoxObject) : CropBox;
             }
-            set => BaseDataObject[PdfName.ArtBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null);
+            set => BaseDataObject[PdfName.ArtBox] = value?.BaseDataObject;
         }
 
         /**
@@ -250,7 +254,7 @@ namespace PdfClown.Documents
           <seealso cref="CropBox"/>
         */
         [PDF(VersionEnum.PDF13)]
-        public SKRect? BleedBox
+        public Rectangle BleedBox
         {
             get
             {
@@ -258,9 +262,9 @@ namespace PdfClown.Documents
                   NOTE: The default value is the page's crop box.
                 */
                 PdfDirectObject bleedBoxObject = GetInheritableAttribute(PdfName.BleedBox);
-                return bleedBoxObject != null ? Wrap<Rectangle>(bleedBoxObject).ToRect() : CropBox;
+                return bleedBoxObject != null ? Wrap<Rectangle>(bleedBoxObject) : CropBox;
             }
-            set => BaseDataObject[PdfName.BleedBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null);
+            set => BaseDataObject[PdfName.BleedBox] = value?.BaseDataObject;
         }
 
         /**
@@ -274,7 +278,7 @@ namespace PdfClown.Documents
           </remarks>
           <seealso cref="Box"/>
         */
-        public SKRect? CropBox
+        public Rectangle CropBox
         {
             get
             {
@@ -282,9 +286,9 @@ namespace PdfClown.Documents
                   NOTE: The default value is the page's media box.
                 */
                 PdfDirectObject cropBoxObject = GetInheritableAttribute(PdfName.CropBox);
-                return cropBoxObject != null ? Wrap<Rectangle>(cropBoxObject).ToRect() : Box;
+                return cropBoxObject != null ? Wrap<Rectangle>(cropBoxObject) : MediaBox;
             }
-            set => BaseDataObject[PdfName.CropBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null);
+            set => BaseDataObject[PdfName.CropBox] = value?.BaseDataObject;
         }
 
         /**
@@ -311,49 +315,48 @@ namespace PdfClown.Documents
         /**
           <summary>Gets the index of this page.</summary>
         */
-        public int Index
+        public int Index => index ?? (index = CalcIndex()).Value;
+
+        private int CalcIndex()
         {
-            get
+            /*
+              NOTE: We'll scan sequentially each page-tree level above this page object
+              collecting page counts. At each level we'll scan the kids array from the
+              lower-indexed item to the ancestor of this page object at that level.
+            */
+            PdfReference ancestorKidReference = (PdfReference)BaseObject;
+            PdfReference parentReference = (PdfReference)BaseDataObject[PdfName.Parent];
+            PdfDictionary parent = (PdfDictionary)parentReference.DataObject;
+            PdfArray kids = (PdfArray)parent.Resolve(PdfName.Kids);
+            int index = 0;
+            for (int i = 0; true; i++)
             {
-                /*
-                  NOTE: We'll scan sequentially each page-tree level above this page object
-                  collecting page counts. At each level we'll scan the kids array from the
-                  lower-indexed item to the ancestor of this page object at that level.
-                */
-                PdfReference ancestorKidReference = (PdfReference)BaseObject;
-                PdfReference parentReference = (PdfReference)BaseDataObject[PdfName.Parent];
-                PdfDictionary parent = (PdfDictionary)parentReference.DataObject;
-                PdfArray kids = (PdfArray)parent.Resolve(PdfName.Kids);
-                int index = 0;
-                for (int i = 0; true; i++)
+                PdfReference kidReference = (PdfReference)kids[i];
+                // Is the current-level counting complete?
+                // NOTE: It's complete when it reaches the ancestor at this level.
+                if (kidReference.Equals(ancestorKidReference)) // Ancestor node.
                 {
-                    PdfReference kidReference = (PdfReference)kids[i];
-                    // Is the current-level counting complete?
-                    // NOTE: It's complete when it reaches the ancestor at this level.
-                    if (kidReference.Equals(ancestorKidReference)) // Ancestor node.
+                    // Does the current level correspond to the page-tree root node?
+                    if (!parent.ContainsKey(PdfName.Parent))
                     {
-                        // Does the current level correspond to the page-tree root node?
-                        if (!parent.ContainsKey(PdfName.Parent))
-                        {
-                            // We reached the top: counting's finished.
-                            return index;
-                        }
-                        // Set the ancestor at the next level!
-                        ancestorKidReference = parentReference;
-                        // Move up one level!
-                        parentReference = (PdfReference)parent[PdfName.Parent];
-                        parent = (PdfDictionary)parentReference.DataObject;
-                        kids = (PdfArray)parent.Resolve(PdfName.Kids);
-                        i = -1;
+                        // We reached the top: counting's finished.
+                        return index;
                     }
-                    else // Intermediate node.
-                    {
-                        PdfDictionary kid = (PdfDictionary)kidReference.DataObject;
-                        if (kid[PdfName.Type].Equals(PdfName.Page))
-                            index++;
-                        else
-                            index += ((PdfInteger)kid[PdfName.Count]).RawValue;
-                    }
+                    // Set the ancestor at the next level!
+                    ancestorKidReference = parentReference;
+                    // Move up one level!
+                    parentReference = (PdfReference)parent[PdfName.Parent];
+                    parent = (PdfDictionary)parentReference.DataObject;
+                    kids = (PdfArray)parent.Resolve(PdfName.Kids);
+                    i = -1;
+                }
+                else // Intermediate node.
+                {
+                    PdfDictionary kid = (PdfDictionary)kidReference.DataObject;
+                    if (kid[PdfName.Type].Equals(PdfName.Page))
+                        index++;
+                    else
+                        index += kid.GetInt(PdfName.Count);
                 }
             }
         }
@@ -414,7 +417,7 @@ namespace PdfClown.Documents
           <seealso cref="CropBox"/>
         */
         [PDF(VersionEnum.PDF13)]
-        public SKRect? TrimBox
+        public Rectangle TrimBox
         {
             get
             {
@@ -422,17 +425,24 @@ namespace PdfClown.Documents
                   NOTE: The default value is the page's crop box.
                 */
                 PdfDirectObject trimBoxObject = GetInheritableAttribute(PdfName.TrimBox);
-                return trimBoxObject != null ? Wrap<Rectangle>(trimBoxObject).ToRect() : CropBox;
+                return trimBoxObject != null ? Wrap<Rectangle>(trimBoxObject) : CropBox;
             }
-            set => BaseDataObject[PdfName.TrimBox] = (value.HasValue ? new Rectangle(value.Value).BaseDataObject : null);
+            set => BaseDataObject[PdfName.TrimBox] = value?.BaseDataObject;
         }
 
         #region IContentContext
+        public Rectangle MediaBox
+        {
+            get => Wrap<Rectangle>(GetInheritableAttribute(PdfName.MediaBox));
+            /* NOTE: Mandatory. */
+            set => BaseDataObject[PdfName.MediaBox] = value?.BaseDataObject;
+        }
+
         public SKRect Box
         {
-            get => Wrap<Rectangle>(GetInheritableAttribute(PdfName.MediaBox)).ToRect();
+            get => box ?? (box = MediaBox.ToRect()).Value;
             /* NOTE: Mandatory. */
-            set => BaseDataObject[PdfName.MediaBox] = new Rectangle(value).BaseDataObject;
+            set => MediaBox = new Rectangle(value);
         }
 
         public SKRect RotatedBox => Box.RotateRect(Rotate);
@@ -448,9 +458,12 @@ namespace PdfClown.Documents
             }
         }
 
-        public void Render(SKCanvas context, SKSize size)
+        public void Render(SKCanvas context, SKSize size, bool clearContext = true)
         {
-            ContentScanner scanner = new ContentScanner(Contents);
+            ContentScanner scanner = new ContentScanner(Contents)
+            {
+                ClearContext = clearContext
+            };
             scanner.Render(context, size);
         }
 

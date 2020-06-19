@@ -151,7 +151,7 @@ namespace PdfClown.Documents
                         PdfString stampPageKey = new PdfString(type.Value.GetName().StringValue + "=" + String.Join(" ", Regex.Split(type.Value.GetName().StringValue.Substring(2), "(?!^)(?=\\p{Lu})")));
                         Page stampPage = stampFile.Document.ResolveName<Page>(stampPageKey);
                         importedStamps[type.Value] = (stamp = (FormXObject)stampPage.ToXObject(Document));
-                        stamp.Box = stampPage.ArtBox.Value;
+                        stamp.Box = stampPage.ArtBox.ToRect();
                     }
                 }
                 else // Standard stamps template (std-stamps.pdf).

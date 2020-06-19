@@ -86,7 +86,9 @@ namespace PdfClown.Files
 
         public File(string path)
             : this(new Bytes.Stream(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-        { this.path = path; }
+        {
+            this.path = path;
+        }
 
         public File(byte[] data) : this(new Bytes.Buffer(data))
         { }
@@ -137,7 +139,9 @@ namespace PdfClown.Files
         }
 
         ~File()
-        { Dispose(false); }
+        {
+            Dispose(false);
+        }
         #endregion
 
         #region interface

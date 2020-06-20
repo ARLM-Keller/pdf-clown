@@ -678,6 +678,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             var cloned = (Annotation)base.Clone(cloner);
             cloned.page = null;
+            cloned.cpBottomRight = null;
+            cloned.cpBottomLeft = null;
+            cloned.cpTopLeft = null;
+            cloned.cpTopRight = null;
             return cloned;
         }
 

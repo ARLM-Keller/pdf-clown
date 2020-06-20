@@ -65,7 +65,9 @@ namespace PdfClown.Objects
         { }
 
         public PdfArray(int capacity)
-        { items = new List<PdfDirectObject>(capacity); }
+        {
+            items = new List<PdfDirectObject>(capacity);
+        }
 
         public PdfArray(params PdfDirectObject[] items)
             : this(items.Length)
@@ -87,10 +89,14 @@ namespace PdfClown.Objects
         #region interface
         #region public
         public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
+        {
+            return visitor.Visit(this, data);
+        }
 
         public override int CompareTo(PdfDirectObject obj)
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
 
         public override bool Equals(object @object)
         {
@@ -198,7 +204,9 @@ namespace PdfClown.Objects
         }
 
         public override int GetHashCode()
-        { return items.GetHashCode(); }
+        {
+            return items.GetHashCode();
+        }
 
         public override PdfObject Parent
         {
@@ -229,7 +237,9 @@ namespace PdfClown.Objects
           <param name="index">Index of the item to return.</param>
         */
         public PdfDataObject Resolve(int index)
-        { return Resolve(this[index]); }
+        {
+            return Resolve(this[index]);
+        }
 
         /**
           <summary>Gets the dereferenced value corresponding to the given index, forcing its
@@ -239,7 +249,9 @@ namespace PdfClown.Objects
           <param name="index">Index of the item to return.</param>
         */
         public T Resolve<T>(int index) where T : PdfDataObject, new()
-        { return (T)Resolve(Get<T>(index)); }
+        {
+            return (T)Resolve(Get<T>(index));
+        }
 
         public override PdfObject Swap(PdfObject other)
         {
@@ -287,7 +299,9 @@ namespace PdfClown.Objects
 
         #region IList
         public int IndexOf(PdfDirectObject item)
-        { return items.IndexOf(item); }
+        {
+            return items.IndexOf(item);
+        }
 
         public void Insert(int index, PdfDirectObject item)
         {
@@ -329,10 +343,14 @@ namespace PdfClown.Objects
         }
 
         public bool Contains(PdfDirectObject item)
-        { return items.Contains(item); }
+        {
+            return items.Contains(item);
+        }
 
         public void CopyTo(PdfDirectObject[] items, int index)
-        { this.items.CopyTo(items, index); }
+        {
+            this.items.CopyTo(items, index);
+        }
 
         public int Count => items.Count;
 
@@ -350,11 +368,15 @@ namespace PdfClown.Objects
 
         #region IEnumerable<PdfDirectObject>
         public IEnumerator<PdfDirectObject> GetEnumerator()
-        { return items.GetEnumerator(); }
+        {
+            return items.GetEnumerator();
+        }
 
         #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<PdfDirectObject>)this).GetEnumerator(); }
+        {
+            return ((IEnumerable<PdfDirectObject>)this).GetEnumerator();
+        }
         #endregion
         #endregion
         #endregion

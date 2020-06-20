@@ -73,28 +73,42 @@ namespace PdfClown.Objects
         #region dynamic
         #region constructors
         public PdfReal(double value)
-        { RawValue = value; }
+        {
+            RawValue = value;
+        }
         #endregion
 
         #region interface
         #region public
         public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
+        {
+            return visitor.Visit(this, data);
+        }
 
         public override int CompareTo(PdfDirectObject obj)
-        { return PdfNumber.Compare(this, obj); }
+        {
+            return PdfNumber.Compare(this, obj);
+        }
 
         public int CompareTo(object obj)
-        { return PdfNumber.Compare(this, obj); }
+        {
+            return PdfNumber.Compare(this, obj);
+        }
 
         public override bool Equals(object obj)
-        { return PdfNumber.Equal(this, obj); }
+        {
+            return PdfNumber.Equal(this, obj);
+        }
 
         public override int GetHashCode()
-        { return PdfNumber.GetHashCode(this); }
+        {
+            return PdfNumber.GetHashCode(this);
+        }
 
         public override void WriteTo(IOutputStream stream, File context)
-        { stream.Write(RawValue.ToString(context.Configuration.RealFormat, formatInfo)); }
+        {
+            stream.Write(RawValue.ToString(context.Configuration.RealFormat, formatInfo));
+        }
 
         #region IPdfNumber
         public double DoubleValue => RawValue;

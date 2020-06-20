@@ -40,7 +40,6 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF10)]
     public sealed class PageAnnotations : PageElements<Annotation>
     {
-
         public class AnnotationWrapper : IWrapper<Annotation>
         {
             public AnnotationWrapper(Page page)
@@ -74,7 +73,18 @@ namespace PdfClown.Documents
 
         public Annotation this[string name]
         {
-            get => nameIndex.TryGetValue(name, out var annotation) ? annotation : null;
+            get
+            {
+                if (nameIndex.Count < Count)
+                {
+                    //Refresh cache;
+                    for (int i = 0, length = Count; i < length; i++)
+                    {
+                        var item = this[i];
+                    }
+                }
+                return nameIndex.TryGetValue(name, out var annotation) ? annotation : null;
+            }
         }
 
         private void AddIndex(Annotation annotation)

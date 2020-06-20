@@ -26,6 +26,7 @@ namespace PdfClown.Viewer
         }
 
         private readonly List<PdfPageView> pageViews = new List<PdfPageView>();
+        private readonly Dictionary<int, PdfPageView> pagesIndex = new Dictionary<int, PdfPageView>();
         private readonly float indent = 10;
 
         public Files.File File { get; private set; }
@@ -42,6 +43,11 @@ namespace PdfClown.Viewer
 
         public SKSize Size { get; private set; }
 
+        public PdfPageView this[int index]
+        {
+            get => pagesIndex.TryGetValue(index, out var page) ? page : null;
+        }
+
         public event EventHandler<AnnotationEventArgs> AnnotationAdded;
 
         public event EventHandler<AnnotationEventArgs> AnnotationRemoved;
@@ -53,7 +59,8 @@ namespace PdfClown.Viewer
 
             totalWidth = 0F;
             totalHeight = 0F;
-            var pages = new List<PdfPageView>();
+            pageViews.Clear();
+            pagesIndex.Clear();
             foreach (var page in Pages)
             {
                 totalHeight += indent;
@@ -62,25 +69,26 @@ namespace PdfClown.Viewer
                 var imageSize = new SKSize(box.Width * dpi, box.Height * dpi);
                 var pageView = new PdfPageView()
                 {
+                    Index = page.Index,
                     Page = page,
                     Size = imageSize
                 };
                 pageView.Matrix = pageView.Matrix.PreConcat(SKMatrix.CreateTranslation(indent, totalHeight));
-                pages.Add(pageView);
+                pagesIndex[pageView.Index] = pageView;
+                pageViews.Add(pageView);
                 if (imageSize.Width > totalWidth)
                     totalWidth = imageSize.Width;
 
                 totalHeight += imageSize.Height;
             }
             Size = new SKSize(totalWidth + indent * 2, totalHeight);
-            foreach (var pageView in pages)
+            foreach (var pageView in pageViews)
             {
                 if ((pageView.Size.Width + indent * 2) < Size.Width)
                 {
                     pageView.Matrix.TransX += (Size.Width - pageView.Size.Width + indent * 2) / 2;
                 }
             }
-            this.pageViews.AddRange(pages);
         }
 
         public PdfPageView GetPageView(Documents.Page page)
@@ -102,6 +110,7 @@ namespace PdfClown.Viewer
                 pageView.Dispose();
             }
             pageViews.Clear();
+            pagesIndex.Clear();
         }
 
         public void Dispose()
@@ -159,7 +168,7 @@ namespace PdfClown.Viewer
             File.Save(FilePath, mode);
         }
 
-        public Annotation FindAnnotation(string name, int? pageIndex = 0)
+        public Annotation FindAnnotation(string name, int? pageIndex = null)
         {
             var annotation = (Annotation)null;
             if (pageIndex == null)
@@ -171,17 +180,27 @@ namespace PdfClown.Viewer
                         return annotation;
                 }
             }
+            else
+            {
+                var pageView = this[(int)pageIndex];
+                return pageView?.Page.Annotations[name];
+            }
             return null;
         }
 
         public void AddAnnotation(Annotation annotation)
         {
-            if (annotation.Page != null)
+            AddAnnotation(annotation.Page, annotation);
+        }
+
+        public void AddAnnotation(Page page, Annotation annotation)
+        {
+            if (page != null)
             {
-                annotation.Page = annotation.Page;
-                if (!annotation.Page.Annotations.Contains(annotation))
+                annotation.Page = page;
+                if (!page.Annotations.Contains(annotation))
                 {
-                    annotation.Page.Annotations.Add(annotation);
+                    page.Annotations.Add(annotation);
                     AnnotationAdded?.Invoke(this, new AnnotationEventArgs(annotation));
                 }
 
@@ -189,7 +208,7 @@ namespace PdfClown.Viewer
                 {
                     if (item is Markup markup)
                     {
-                        AddAnnotation(item);
+                        AddAnnotation(page, item);
                     }
                 }
             }

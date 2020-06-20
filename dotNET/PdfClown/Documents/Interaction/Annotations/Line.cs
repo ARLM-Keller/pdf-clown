@@ -342,6 +342,15 @@ namespace PdfClown.Documents.Interaction.Annotations
             yield return cpStart ?? (cpStart = new LineStartControlPoint { Annotation = this });
             yield return cpEnd ?? (cpEnd = new LineEndControlPoint { Annotation = this });
         }
+
+        public override object Clone(Cloner cloner)
+        {
+            var cloned = (Line)base.Clone(cloner);
+            cloned.cpStart = null;
+            cloned.cpEnd = null;
+            return cloned;
+        }
+
         #endregion
         #endregion
         #endregion

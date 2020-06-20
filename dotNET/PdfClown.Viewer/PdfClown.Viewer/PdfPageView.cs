@@ -108,6 +108,8 @@ namespace PdfClown.Viewer
             Size.Width * Matrix.ScaleX,
             Size.Height * Matrix.ScaleY);
 
+        public int Index { get; internal set; }
+
         public void Dispose()
         {
             image?.Dispose();

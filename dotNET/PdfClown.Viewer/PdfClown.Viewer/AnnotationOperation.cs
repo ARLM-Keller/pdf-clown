@@ -4,31 +4,28 @@ using System;
 
 namespace PdfClown.Viewer
 {
-    public class OperationEntry
+
+    public class AnnotationOperation : EditorOperation
     {
-
         private Annotation annotation;
-
-        public PdfDocumentView Document;
-
-        public OperationType Type { get; set; }
 
         public Annotation Annotation
         {
             get => annotation;
-            set => annotation = value;
+            set
+            {
+                annotation = value;
+                if (annotation.Page != null)
+                {
+                    PageIndex = annotation.Page.Index;
+                }
+            }
         }
 
-        public object Property { get; set; }
-
-        public object OldValue { get; set; }
-
-        public object NewValue { get; set; }
-
-        public OperationEntry Clone(PdfDocumentView document)
+        public override EditorOperation Clone(PdfDocumentView document)
         {
-            var cloned = (OperationEntry)this.MemberwiseClone();
-            cloned.Document = document;
+            var cloned = (AnnotationOperation)base.Clone(document);
+
             cloned.Annotation = document.FindAnnotation(Annotation.Name)
                 ?? (Annotation)Annotation.Clone(document.Document);
 
@@ -38,12 +35,25 @@ namespace PdfClown.Viewer
             return cloned;
         }
 
-        public virtual void Redo()
+        public override void EndOperation()
+        {
+            if (Type == OperationType.AnnotationDrag
+                || Type == OperationType.AnnotationSize)
+            {
+                NewValue = Annotation.Box;
+            }
+            if (Property is ControlPoint controlPoint)
+            {
+                NewValue = controlPoint.Point;
+            }
+        }
+
+        public override void Redo()
         {
             switch (Type)
             {
                 case OperationType.AnnotationAdd:
-                    Document.AddAnnotation(Annotation);
+                    Document.AddAnnotation(Annotation.Page ?? Document[PageIndex]?.Page, Annotation);
                     break;
                 case OperationType.AnnotationRemove:
                     Document.RemoveAnnotation(Annotation);
@@ -55,8 +65,7 @@ namespace PdfClown.Viewer
                     Annotation.Box = (SKRect)NewValue;
                     break;
                 case OperationType.AnnotationRePage:
-                    var page = Document.Pages[(int)NewValue];
-                    Annotation.Page = page;
+                    Annotation.Page = Document[(int)NewValue]?.Page;
                     break;
                 case OperationType.AnnotationColor:
                     Annotation.SKColor = (SKColor)NewValue;
@@ -100,7 +109,7 @@ namespace PdfClown.Viewer
             }
         }
 
-        public virtual void Undo()
+        public override void Undo()
         {
             switch (Type)
             {
@@ -108,7 +117,7 @@ namespace PdfClown.Viewer
                     Document.RemoveAnnotation(Annotation);
                     break;
                 case OperationType.AnnotationRemove:
-                    Document.AddAnnotation(Annotation);
+                    Document.AddAnnotation(Annotation.Page ?? Document[PageIndex]?.Page, Annotation);
                     break;
                 case OperationType.AnnotationDrag:
                     Annotation.MoveTo((SKRect)OldValue);
@@ -117,8 +126,7 @@ namespace PdfClown.Viewer
                     Annotation.Box = (SKRect)OldValue;
                     break;
                 case OperationType.AnnotationRePage:
-                    var page = Document.Pages[(int)OldValue];
-                    Annotation.Page = page;
+                    Annotation.Page = Document.Pages[(int)OldValue];
                     break;
                 case OperationType.AnnotationColor:
                     Annotation.SKColor = (SKColor)OldValue;

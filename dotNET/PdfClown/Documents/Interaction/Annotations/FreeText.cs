@@ -593,6 +593,19 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         }
 
+        public override object Clone(Cloner cloner)
+        {
+            var cloned = (FreeText)base.Clone(cloner);
+            cloned.cpTexcTopLeft = null;
+            cloned.cpTexcTopRight = null;
+            cloned.cpTexcBottomLeft = null;
+            cloned.cpTexcBottomRight = null;
+            cloned.cpLineStart = null;
+            cloned.cpLineEnd = null;
+            cloned.cpLineKnee = null;
+            cloned.cpTextMid = null;
+            return cloned;
+        }
         #endregion
         #endregion
         #endregion

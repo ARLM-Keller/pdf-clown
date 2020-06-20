@@ -245,7 +245,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-
+        public override object Clone(Cloner cloner)
+        {
+            var cloned = (VertexShape)base.Clone(cloner);
+            cloned.controlPoints = new Dictionary<int, IndexControlPoint>();
+            return cloned;
+        }
         #endregion
         #endregion
         #endregion

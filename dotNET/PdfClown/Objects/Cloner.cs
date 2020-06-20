@@ -180,8 +180,8 @@ namespace PdfClown.Objects
                 else if (annotation.ContainsKey(PdfName.Dest))
                 {
                     PdfDirectObject destObject = annotation[PdfName.Dest];
-                    if (destObject is PdfString) // Named destination.
-                    { CloneNamedObject<Destination>(cloner, source, (PdfString)destObject); }
+                    if (destObject is PdfString destString) // Named destination.
+                    { CloneNamedObject<Destination>(cloner, source, destString); }
                 }
             }
 
@@ -193,13 +193,35 @@ namespace PdfClown.Objects
                     if (array.Count > 0)
                     {
                         PdfDataObject arrayItem = array.Resolve(0);
-                        if (arrayItem is PdfDictionary)
+                        if (arrayItem is PdfDictionary arrayItemDictionary)
                         {
-                            PdfDictionary arrayItemDictionary = (PdfDictionary)arrayItem;
                             return arrayItemDictionary.ContainsKey(PdfName.Subtype)
                               && arrayItemDictionary.ContainsKey(PdfName.Rect);
                         }
                     }
+                }
+                return false;
+            }
+        }
+
+        private class AnnotationFilter : Filter
+        {
+            public AnnotationFilter() : base("Annot")
+            { }
+
+            public override bool BeforeClone(Cloner cloner, PdfDictionary source, PdfDictionary clone, PdfName key, PdfDirectObject value)
+            {
+                if (key.Equals(PdfName.P))
+                    return false;
+                return true;
+            }
+
+            public override bool Matches(Cloner cloner, PdfObject source)
+            {
+                if (source is PdfDictionary dictionary
+                    && PdfName.Annot.Equals(dictionary[PdfName.Type]))
+                {
+                    return true;
                 }
                 return false;
             }
@@ -236,8 +258,8 @@ namespace PdfClown.Objects
 
             public override bool Matches(Cloner cloner, PdfObject source)
             {
-                return source is PdfDictionary
-                  && PdfName.Page.Equals(((PdfDictionary)source)[PdfName.Type]);
+                return source is PdfDictionary dictionary
+                  && PdfName.Page.Equals(dictionary[PdfName.Type]);
             }
         }
         #endregion
@@ -256,6 +278,8 @@ namespace PdfClown.Objects
             commonFilters.Add(new PageFilter());
             // Actions.
             commonFilters.Add(new ActionFilter());
+            // Annotation.
+            commonFilters.Add(new AnnotationFilter());
             // Annotations.
             commonFilters.Add(new AnnotationsFilter());
         }

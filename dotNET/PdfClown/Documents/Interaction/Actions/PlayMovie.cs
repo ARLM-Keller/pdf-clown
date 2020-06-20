@@ -36,23 +36,21 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>'Play a movie' action [PDF:1.6:8.5.3].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class PlayMovie
-      : Action
+    public sealed class PlayMovie : Action
     {
         #region dynamic
         #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public PlayMovie(
-          Document context,
-          Movie movie
-          ) : base(context, PdfName.Movie)
-        { Movie = movie; }
+        public PlayMovie(Document context, Movie movie)
+            : base(context, PdfName.Movie)
+        {
+            Movie = movie;
+        }
 
-        internal PlayMovie(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal PlayMovie(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
         #endregion
 

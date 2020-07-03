@@ -34,8 +34,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       <summary>Device Gray color value [PDF:1.6:4.5.3].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceGrayColor
-      : DeviceColor
+    public sealed class DeviceGrayColor : DeviceColor
     {
         #region static
         #region fields
@@ -53,10 +52,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
          */
         public static new DeviceGrayColor Get(PdfArray components)
         {
-            return (components != null
-              ? new DeviceGrayColor(components)
-              : Default
-              );
+            return components != null
+                ? components.Wrapper is DeviceGrayColor color ? color : new DeviceGrayColor(components)
+                : Default;
         }
         #endregion
         #endregion
@@ -65,18 +63,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         #region dynamic
         #region constructors
         public DeviceGrayColor(float g)
-            : this(new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(NormalizeComponent(g)) }))
+            : this(new PdfArray(new PdfDirectObject[] { PdfReal.Get(NormalizeComponent(g)) }))
         { }
 
         internal DeviceGrayColor(IList<PdfDirectObject> components)
-            : base(DeviceGrayColorSpace.Default, new PdfArray(components))
+            : base(DeviceGrayColorSpace.Default, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
         #endregion
 
         #region interface
         #region public
-        public override object Clone(Document context)
-        { throw new NotImplementedException(); }
 
         /**
           <summary>Gets/Sets the gray component.</summary>
@@ -86,6 +82,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             get => GetComponentValue(0);
             set => SetComponentValue(0, value);
         }
+
+        public override object Clone(Document context)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
         #endregion
         #endregion

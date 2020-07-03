@@ -45,10 +45,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public static DeviceNColor Get(PdfArray components)
         {
-            return (components != null
-              ? new DeviceNColor(components)
-              : null
-              );
+            return components != null
+              ? components.Wrapper is DeviceNColor color ? color : new DeviceNColor(components)
+              : null;
         }
         #endregion
 
@@ -69,18 +68,17 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public DeviceNColor(params double[] components) : this(GetComponentValues(components))
         { }
 
-        internal DeviceNColor(IList<PdfDirectObject> components)
-            : base(
-            null, //TODO:colorspace?
-            new PdfArray(components)
-            )
+        internal DeviceNColor(IList<PdfDirectObject> components)//TODO:colorspace?
+            : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
         #endregion
 
         #region interface
         #region public
         public override object Clone(Document context)
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
         #endregion
         #endregion
         #endregion

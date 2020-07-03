@@ -43,6 +43,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             if (components == null)
                 return null;
+            if (components.Wrapper is DeviceColor wrapped)
+                return wrapped;
 
             switch (components.Count)
             {

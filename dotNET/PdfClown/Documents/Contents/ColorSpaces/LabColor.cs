@@ -43,22 +43,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           This method MUST be made internal and its color space MUST be passed as argument!
         */
         public LabColor(double l, double a, double b) : this(
-            new List<PdfDirectObject>(
-              new PdfDirectObject[]
-              {
+            new PdfArray(
                   PdfReal.Get(NormalizeComponent(l)),//TODO:normalize using the actual color space ranges!!!
                   PdfReal.Get(NormalizeComponent(a)),
                   PdfReal.Get(NormalizeComponent(b))
-              }
             )
           )
         { }
 
-        internal LabColor(IList<PdfDirectObject> components)
-            : base(
-            null, //TODO:colorspace?
-            new PdfArray(components)
-            )
+        internal LabColor(IList<PdfDirectObject> components)//TODO:colorspace?
+            : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
         #endregion
 
@@ -92,8 +86,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         }
 
         public override object Clone(Document context)
-        { throw new NotImplementedException(); }
-
+        {
+            throw new NotImplementedException();
+        }
 
         #endregion
         #endregion

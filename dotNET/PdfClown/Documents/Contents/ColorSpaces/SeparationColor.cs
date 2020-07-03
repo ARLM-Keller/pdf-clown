@@ -49,10 +49,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public static SeparationColor Get(PdfArray components)
         {
-            return (components != null
-              ? new SeparationColor(components)
-              : Default
-              );
+            return components != null
+              ? components.Wrapper is SeparationColor color ? color : new SeparationColor(components)
+              : Default;
         }
         #endregion
         #endregion
@@ -61,21 +60,17 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         #region dynamic
         #region constructors
         public SeparationColor(double intensity)
-            : this(new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(intensity) }))
+            : this(new PdfArray(new PdfDirectObject[] { PdfReal.Get(intensity) }))
         //TODO:normalize value (see devicecolor)!
         { }
 
-        internal SeparationColor(IList<PdfDirectObject> components)
-            : base(
-            null, //TODO:consider color space reference!
-            new PdfArray(components))
+        internal SeparationColor(IList<PdfDirectObject> components)//TODO:consider color space reference!
+            : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
         #endregion
 
         #region interface
         #region public
-        public override object Clone(Document context)
-        { throw new NotImplementedException(); }
 
         /**
           <summary>Gets/Sets the color intensity.</summary>
@@ -85,6 +80,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             get => GetComponentValue(0);
             set => SetComponentValue(0, value);
         }
+
+        public override object Clone(Document context)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
         #endregion
         #endregion

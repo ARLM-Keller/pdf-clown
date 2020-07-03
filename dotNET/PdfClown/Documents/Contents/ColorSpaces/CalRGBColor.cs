@@ -34,8 +34,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       <summary>CIE-based red-green-blue color value [PDF:1.6:4.5.4].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class CalRGBColor
-      : LeveledColor
+    public sealed class CalRGBColor : LeveledColor
     {
         #region static
         #region fields
@@ -48,28 +47,17 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         #region dynamic
         #region constructors
-        public CalRGBColor(
-          double r,
-          double g,
-          double b
-          ) : this(
-            new List<PdfDirectObject>(
-              new PdfDirectObject[]
-              {
-            PdfReal.Get(NormalizeComponent(r)),
-            PdfReal.Get(NormalizeComponent(g)),
-            PdfReal.Get(NormalizeComponent(b))
-              }
+        public CalRGBColor(double r, double g, double b)
+            : this(new PdfArray(
+                    PdfReal.Get(NormalizeComponent(r)),
+                    PdfReal.Get(NormalizeComponent(g)),
+                    PdfReal.Get(NormalizeComponent(b))
               )
             )
         { }
 
-        internal CalRGBColor(
-          IList<PdfDirectObject> components
-          ) : base(
-            null, //TODO:colorspace?
-            new PdfArray(components)
-            )
+        internal CalRGBColor(IList<PdfDirectObject> components)//TODO:colorspace?
+            : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
         #endregion
 
@@ -103,7 +91,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         }
 
         public override object Clone(Document context)
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
 
 
         #endregion

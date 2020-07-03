@@ -91,7 +91,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         }
 
         public override bool IsSpaceColor(Color color)
-        { return color is Pattern; }
+        {
+            return color is Pattern;
+        }
 
         public override SKColor GetSKColor(Color color, float? alpha = null)
         {

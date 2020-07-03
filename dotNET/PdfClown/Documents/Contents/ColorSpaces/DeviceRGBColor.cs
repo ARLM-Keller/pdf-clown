@@ -53,10 +53,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public static new DeviceRGBColor Get(PdfArray components)
         {
-            return (components != null
-              ? new DeviceRGBColor(components)
-              : Default
-              );
+            return components != null
+                ? components.Wrapper is DeviceRGBColor color ? color : new DeviceRGBColor(components)
+                : Default;
         }
 
         /**
@@ -76,16 +75,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         #region dynamic
         #region constructors
         public DeviceRGBColor(double r, double g, double b)
-            : this(new PdfDirectObject[]
-            {
+            : this(new PdfArray(
                 PdfReal.Get(NormalizeComponent(r)),
                 PdfReal.Get(NormalizeComponent(g)),
-                PdfReal.Get(NormalizeComponent(b))
-            })
+                PdfReal.Get(NormalizeComponent(b))))
         { }
 
         internal DeviceRGBColor(IList<PdfDirectObject> components)
-            : base(DeviceRGBColorSpace.Default, new PdfArray(components))
+            : base(DeviceRGBColorSpace.Default, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
         #endregion
 
@@ -119,7 +116,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         }
 
         public override object Clone(Document context)
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
 
         #endregion
         #endregion

@@ -54,7 +54,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public static new DeviceCMYKColor Get(PdfArray components)
         {
-            return (components != null ? new DeviceCMYKColor(components) : Default);
+            return components != null
+                ? components.Wrapper is DeviceCMYKColor color ? color : new DeviceCMYKColor(components)
+                : Default;
         }
         #endregion
         #endregion
@@ -63,20 +65,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         #region dynamic
         #region constructors
         public DeviceCMYKColor(double c, double m, double y, double k) : this(
-            new List<PdfDirectObject>(
-              new PdfDirectObject[]
-              {
+            new PdfArray(
                   PdfReal.Get(NormalizeComponent(c)),
                   PdfReal.Get(NormalizeComponent(m)),
                   PdfReal.Get(NormalizeComponent(y)),
-                  PdfReal.Get(NormalizeComponent(k))
-              }
-            )
-          )
+                  PdfReal.Get(NormalizeComponent(k))))
         { }
 
         internal DeviceCMYKColor(IList<PdfDirectObject> components)
-            : base(DeviceCMYKColorSpace.Default, new PdfArray(components))
+            : base(DeviceCMYKColorSpace.Default, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
         #endregion
 

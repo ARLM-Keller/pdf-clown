@@ -107,7 +107,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             /**
               <summary>Invert the interpretation of the NoView flag.</summary>
             */
-            ToggleNoView = 0x100
+            ToggleNoView = 0x100,
+            /**
+              <summary>Do not allow the contents of the annotation to be modified by the user.</summary>
+            */
+            LockedContents = 0x200
         }
 
         #endregion

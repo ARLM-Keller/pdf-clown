@@ -896,9 +896,9 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             return bbox != null && (
                 bbox.Left.CompareTo(0) != 0 ||
-                bbox.Top.CompareTo(0) != 0 ||
+                bbox.Bottom.CompareTo(0) != 0 ||
                 bbox.Right.CompareTo(0) != 0 ||
-                bbox.Bottom.CompareTo(0) != 0
+                bbox.Top.CompareTo(0) != 0
             );
         }
 

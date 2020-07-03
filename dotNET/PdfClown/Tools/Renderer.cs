@@ -57,7 +57,9 @@ namespace PdfClown.Tools
           <returns>Whether the print was fulfilled.</returns>
         */
         public bool Print(Document document)
-        { return Print(document.Pages); }
+        {
+            return Print(document.Pages);
+        }
 
         /**
           <summary>Prints the specified document.</summary>
@@ -66,7 +68,9 @@ namespace PdfClown.Tools
           <returns>Whether the print was fulfilled.</returns>
         */
         public bool Print(Document document, bool silent)
-        { return Print(document.Pages, silent); }
+        {
+            return Print(document.Pages, silent);
+        }
 
         /**
           <summary>Prints silently the specified page collection.</summary>
@@ -74,7 +78,9 @@ namespace PdfClown.Tools
           <returns>Whether the print was fulfilled.</returns>
         */
         public bool Print(IList<Page> pages)
-        { return Print(pages, true); }
+        {
+            return Print(pages, true);
+        }
 
         /**
           <summary>Prints the specified page collection.</summary>

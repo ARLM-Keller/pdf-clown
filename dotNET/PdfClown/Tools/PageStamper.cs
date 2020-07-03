@@ -50,7 +50,9 @@ namespace PdfClown.Tools
         { }
 
         public PageStamper(Page page)
-        { Page = page; }
+        {
+            Page = page;
+        }
         #endregion
 
         #region interface

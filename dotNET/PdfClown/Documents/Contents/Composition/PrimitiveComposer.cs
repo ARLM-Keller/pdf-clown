@@ -126,7 +126,9 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="state">State parameters object.</param>
         */
         public void ApplyState(ExtGState state)
-        { ApplyState_(GetResourceName(state)); }
+        {
+            ApplyState_(GetResourceName(state));
+        }
 
         /**
           <summary>Adds a composite object beginning it.</summary>
@@ -361,13 +363,10 @@ namespace PdfClown.Documents.Contents.Composition
         public void DrawPolyline(SKPoint[] points)
         {
             StartPath(points[0]);
-            for (
-              int index = 1,
-                length = points.Length;
-              index < length;
-              index++
-              )
-            { DrawLine(points[index]); }
+            for (int index = 1, length = points.Length; index < length; index++)
+            {
+                DrawLine(points[index]);
+            }
         }
 
         /**
@@ -504,7 +503,9 @@ namespace PdfClown.Documents.Contents.Composition
           <seealso cref="SetFillColor(Color)"/>
         */
         public void Fill()
-        { Add(objects::PaintPath.Fill); }
+        {
+            Add(objects::PaintPath.Fill);
+        }
 
         /**
           <summary>Fills and then strokes the path using the current colors [PDF:1.6:4.4.2].</summary>
@@ -512,13 +513,17 @@ namespace PdfClown.Documents.Contents.Composition
           <seealso cref="SetStrokeColor(Color)"/>
         */
         public void FillStroke()
-        { Add(objects::PaintPath.FillStroke); }
+        {
+            Add(objects::PaintPath.FillStroke);
+        }
 
         /**
           <summary>Serializes the contents into the content stream.</summary>
         */
         public void Flush()
-        { scanner.Contents.Flush(); }
+        {
+            scanner.Contents.Flush();
+        }
 
         /**
           <summary>Gets/Sets the content stream scanner.</summary>
@@ -558,17 +563,11 @@ namespace PdfClown.Documents.Contents.Composition
         public void Rotate(double angle, SKPoint origin)
         {
             // Center to the new origin!
-            Translate(
-              origin.X,
-              scanner.ContextSize.Height - origin.Y
-              );
+            Translate(origin.X, scanner.ContextSize.Height - origin.Y);
             // Rotate on the new origin!
             Rotate(angle);
             // Restore the standard vertical coordinates system!
-            Translate(
-              0,
-              -scanner.ContextSize.Height
-              );
+            Translate(0, -scanner.ContextSize.Height);
         }
 
         /**
@@ -579,13 +578,17 @@ namespace PdfClown.Documents.Contents.Composition
           <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         */
         public void Scale(double ratioX, double ratioY)
-        { ApplyMatrix(ratioX, 0, 0, ratioY, 0, 0); }
+        {
+            ApplyMatrix(ratioX, 0, 0, ratioY, 0, 0);
+        }
 
         /**
           <summary>Sets the character spacing parameter [PDF:1.6:5.2.1].</summary>
         */
         public void SetCharSpace(double value)
-        { Add(new objects::SetCharSpace(value)); }
+        {
+            Add(new objects::SetCharSpace(value));
+        }
 
         /**
           <summary>Sets the nonstroking color value [PDF:1.6:4.5.7].</summary>
@@ -625,31 +628,41 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="size">Scaling factor (points).</param>
         */
         public void SetFont(fonts::Font value, double size)
-        { SetFont_(GetResourceName(value), size); }
+        {
+            SetFont_(GetResourceName(value), size);
+        }
 
         /**
           <summary>Sets the line cap style [PDF:1.6:4.3.2].</summary>
         */
         public void SetLineCap(LineCapEnum value)
-        { Add(new objects::SetLineCap(value)); }
+        {
+            Add(new objects::SetLineCap(value));
+        }
 
         /**
           <summary>Sets the line dash pattern [PDF:1.6:4.3.2].</summary>
         */
         public void SetLineDash(LineDash value)
-        { Add(new objects::SetLineDash(value)); }
+        {
+            Add(new objects::SetLineDash(value));
+        }
 
         /**
           <summary>Sets the line join style [PDF:1.6:4.3.2].</summary>
         */
         public void SetLineJoin(LineJoinEnum value)
-        { Add(new objects::SetLineJoin(value)); }
+        {
+            Add(new objects::SetLineJoin(value));
+        }
 
         /**
           <summary>Sets the line width [PDF:1.6:4.3.2].</summary>
         */
         public void SetLineWidth(double value)
-        { Add(new objects::SetLineWidth(value)); }
+        {
+            Add(new objects::SetLineWidth(value));
+        }
 
         /**
           <summary>Sets the transformation of the coordinate system from user space to device space
@@ -674,7 +687,9 @@ namespace PdfClown.Documents.Contents.Composition
           <summary>Sets the miter limit [PDF:1.6:4.3.2].</summary>
         */
         public void SetMiterLimit(double value)
-        { Add(new objects::SetMiterLimit(value)); }
+        {
+            Add(new objects::SetMiterLimit(value));
+        }
 
         /**
           <summary>Sets the stroking color value [PDF:1.6:4.5.7].</summary>
@@ -696,33 +711,41 @@ namespace PdfClown.Documents.Contents.Composition
           </summary>
         */
         public void SetTextLead(double value)
-        { Add(new objects::SetTextLead(value * State.Font.GetLineHeight(State.FontSize))); }
+        {
+            Add(new objects::SetTextLead(value * State.Font.GetLineHeight(State.FontSize)));
+        }
 
         /**
           <summary>Sets the text rendering mode [PDF:1.6:5.2.5].</summary>
         */
         public void SetTextRenderMode(TextRenderModeEnum value)
-        { Add(new objects::SetTextRenderMode(value)); }
+        {
+            Add(new objects::SetTextRenderMode(value));
+        }
 
         /**
           <summary>Sets the text rise [PDF:1.6:5.2.6].</summary>
         */
-        public void SetTextRise(
-          double value
-          )
-        { Add(new objects::SetTextRise(value)); }
+        public void SetTextRise(double value)
+        {
+            Add(new objects::SetTextRise(value));
+        }
 
         /**
           <summary>Sets the text horizontal scaling [PDF:1.6:5.2.3], normalized to 1.</summary>
         */
         public void SetTextScale(double value)
-        { Add(new objects::SetTextScale(value * 100)); }
+        {
+            Add(new objects::SetTextScale(value * 100));
+        }
 
         /**
           <summary>Sets the word spacing [PDF:1.6:5.2.2].</summary>
         */
         public void SetWordSpace(double value)
-        { Add(new objects::SetWordSpace(value)); }
+        {
+            Add(new objects::SetWordSpace(value));
+        }
 
         /**
           <summary>Shows the specified text on the page at the current location [PDF:1.6:5.3.2].</summary>
@@ -1108,7 +1131,9 @@ namespace PdfClown.Documents.Contents.Composition
           <seealso cref="SetStrokeColor(Color)"/>
         */
         public void Stroke()
-        { Add(objects::PaintPath.Stroke); }
+        {
+            Add(objects::PaintPath.Stroke);
+        }
 
         /**
           <summary>Applies a translation to the coordinate system from user space to device space
@@ -1118,7 +1143,9 @@ namespace PdfClown.Documents.Contents.Composition
           <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         */
         public void Translate(double distanceX, double distanceY)
-        { ApplyMatrix(1, 0, 0, 1, distanceX, distanceY); }
+        {
+            ApplyMatrix(1, 0, 0, 1, distanceX, distanceY);
+        }
         #endregion
 
         #region private
@@ -1309,10 +1336,14 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="ratioY">Vertical scaling ratio.</param>
         */
         private void ScaleText(double ratioX, double ratioY)
-        { SetTextMatrix(ratioX, 0, 0, ratioY, 0, 0); }
+        {
+            SetTextMatrix(ratioX, 0, 0, ratioY, 0, 0);
+        }
 
         private void SetFont_(PdfName name, double size)
-        { Add(new objects::SetFont(name, size)); }
+        {
+            Add(new objects::SetFont(name, size));
+        }
 
         /**
           <summary>Sets the transformation of the coordinate system from text space to user space
@@ -1326,7 +1357,9 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="f">Item 2,1 of the matrix.</param>
         */
         private void SetTextMatrix(double a, double b, double c, double d, double e, double f)
-        { Add(new objects::SetTextMatrix(a, b, c, d, e, f)); }
+        {
+            Add(new objects::SetTextMatrix(a, b, c, d, e, f));
+        }
 
         /**
           <summary>Applies a translation to the coordinate system from text space to user space
@@ -1335,7 +1368,9 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="distanceY">Vertical distance.</param>
         */
         private void TranslateText(double distanceX, double distanceY)
-        { SetTextMatrix(1, 0, 0, 1, distanceX, distanceY); }
+        {
+            SetTextMatrix(1, 0, 0, 1, distanceX, distanceY);
+        }
 
         /**
           <summary>Applies a translation to the coordinate system from text space to user space,
@@ -1344,14 +1379,18 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="offsetY">Vertical offset.</param>
         */
         private void TranslateTextRelative(double offsetX, double offsetY)
-        { Add(new objects::TranslateTextRelative(offsetX, -offsetY)); }
+        {
+            Add(new objects::TranslateTextRelative(offsetX, -offsetY));
+        }
 
         /**
           <summary>Applies a translation to the coordinate system from text space to user space,
           moving to the start of the next line [PDF:1.6:5.3.1].</summary>
         */
         private void TranslateTextToNextLine()
-        { Add(objects::TranslateTextToNextLine.Value); }
+        {
+            Add(objects::TranslateTextToNextLine.Value);
+        }
         #endregion
         #endregion
         #endregion

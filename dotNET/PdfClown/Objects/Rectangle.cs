@@ -98,16 +98,16 @@ namespace PdfClown.Objects
 
         #region interface
         #region public
-        public double Top
-        {
-            get => BaseDataObject.GetNumber(1).RawValue;
-            set => BaseDataObject[1] = PdfReal.Get(value);
-        }
-
         public double Left
         {
             get => BaseDataObject.GetNumber(0).RawValue;
             set => BaseDataObject[0] = PdfReal.Get(value);
+        }
+
+        public double Bottom
+        {
+            get => BaseDataObject.GetNumber(1).RawValue;
+            set => BaseDataObject[1] = PdfReal.Get(value);
         }
 
         public double Right
@@ -116,14 +116,16 @@ namespace PdfClown.Objects
             set => BaseDataObject[2] = PdfReal.Get(value);
         }
 
-        public double Bottom
+        public double Top
         {
             get => BaseDataObject.GetNumber(3).RawValue;
             set => BaseDataObject[3] = PdfReal.Get(value);
         }
 
         public SKRect ToRect()
-        { return new SKRect((float)Left, (float)Top, (float)Right, (float)Bottom); }
+        {
+            return new SKRect((float)Left, (float)Bottom, (float)Right, (float)Top);
+        }
 
         public double Width
         {
@@ -133,8 +135,8 @@ namespace PdfClown.Objects
 
         public double Height
         {
-            get => (Bottom - Top);
-            set => Top = Bottom - value;
+            get => (Top - Bottom);
+            set => Bottom = Top - value;
         }
 
         public double X
@@ -145,8 +147,8 @@ namespace PdfClown.Objects
 
         public double Y
         {
-            get => Top;
-            set => Top = value;
+            get => Bottom;
+            set => Bottom = value;
         }
         #endregion
         #endregion

@@ -1153,8 +1153,8 @@ namespace PdfClown.Viewer
 
         public void Save()
         {
-            Document?.Save();
             ClearOperations();
+            Document?.Save();
         }
 
         public void Reload()

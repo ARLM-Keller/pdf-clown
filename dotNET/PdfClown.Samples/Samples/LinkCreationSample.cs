@@ -64,7 +64,7 @@ namespace PdfClown.Samples.CLI
                 */
                 new Link(page, SKRect.Create(240, 100, 100, 50), "Link annotation",
                   new GoToURI(document, new Uri("http://www.sourceforge.net/projects/clown")))
-                { Border = new Border(3, Border.StyleEnum.Beveled) };
+                { Border = new Border(3, MarkupBorderStyleEnum.Beveled) };
             }
 
             /*

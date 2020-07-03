@@ -356,9 +356,9 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var bounds = Rect;
                 BaseDataObject[PdfName.RD] = new PdfArray(
                     PdfReal.Get(mapped.Left - bounds.Left),
-                    PdfReal.Get(mapped.Top - bounds.Top),
+                    PdfReal.Get(mapped.Top - bounds.Bottom),
                     PdfReal.Get(bounds.Right - mapped.Right),
-                    PdfReal.Get(bounds.Bottom - mapped.Bottom));
+                    PdfReal.Get(bounds.Top - mapped.Bottom));
                 OnPropertyChanged(oldValue, value);
             }
         }

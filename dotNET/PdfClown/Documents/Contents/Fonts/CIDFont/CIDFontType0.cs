@@ -232,9 +232,9 @@ namespace PdfClown.Documents.Contents.Fonts
                 var bbox = FontDescriptor.FontBBox;
                 if (bbox != null && (
                     bbox.Left.CompareTo(0) != 0 ||
-                    bbox.Top.CompareTo(0) != 0 ||
+                    bbox.Bottom.CompareTo(0) != 0 ||
                     bbox.Right.CompareTo(0) != 0 ||
-                    bbox.Bottom.CompareTo(0) != 0))
+                    bbox.Top.CompareTo(0) != 0))
                 {
                     return bbox.ToRect();
                 }

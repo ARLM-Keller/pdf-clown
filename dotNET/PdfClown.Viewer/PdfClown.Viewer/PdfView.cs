@@ -345,7 +345,7 @@ namespace PdfClown.Viewer
                     BeginOperation(annotation, OperationType.AnnotationColor, nameof(Annotation.Color), details.OldValue, details.NewValue);
                     break;
                 case "Text":
-                    BeginOperation(annotation, OperationType.AnnotationText, nameof(Annotation.Text), details.OldValue, details.NewValue);
+                    BeginOperation(annotation, OperationType.AnnotationText, nameof(Annotation.Contents), details.OldValue, details.NewValue);
                     break;
                 case "Subject":
                     BeginOperation(annotation, OperationType.AnnotationSubject, nameof(Annotation.Subject), details.OldValue, details.NewValue);
@@ -570,10 +570,10 @@ namespace PdfClown.Viewer
                         OnPaintSelectedAnnotation(state);
                     }
                     if (annotation is Popup popup
-                        && popup.Markup != null
-                        && !state.PageView.Page.Annotations.Contains(popup.Markup))
+                        && popup.Parent != null
+                        && !state.PageView.Page.Annotations.Contains(popup.Parent))
                     {
-                        popup.Markup.Draw(state.Canvas);
+                        popup.Parent.Draw(state.Canvas);
                     }
                 }
             }
@@ -1030,7 +1030,7 @@ namespace PdfClown.Viewer
         {
             if (state.TouchEvent.ActionType == SKTouchAction.Moved)
             {
-                state.AnnotationText = state.Annotation.Text;
+                state.AnnotationText = state.Annotation.Contents;
                 if (state.TouchEvent.MouseButton == SKMouseButton.Left)
                 {
                     if (!readOnly

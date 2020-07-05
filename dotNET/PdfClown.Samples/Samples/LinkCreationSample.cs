@@ -64,7 +64,7 @@ namespace PdfClown.Samples.CLI
                 */
                 new Link(page, SKRect.Create(240, 100, 100, 50), "Link annotation",
                   new GoToURI(document, new Uri("http://www.sourceforge.net/projects/clown")))
-                { Border = new Border(3, MarkupBorderStyleEnum.Beveled) };
+                { Border = new Border(3, BorderStyleType.Beveled) };
             }
 
             /*
@@ -91,7 +91,7 @@ namespace PdfClown.Samples.CLI
                   )
                 {
                     Name = fileAttachmentName,
-                    IconType = FileAttachment.IconTypeEnum.PaperClip
+                    ImageName = FileAttachmentImageType.PaperClip
                 };
 
                 blockComposer.Begin(SKRect.Create(30, 170, 200, 50), XAlignmentEnum.Left, YAlignmentEnum.Middle);
@@ -128,7 +128,7 @@ namespace PdfClown.Samples.CLI
                       ) // The destination must be within the target document.
                     )
                   )
-                { Border = new Border(1, new LineDash(new double[] { 8, 5, 2, 5 })) };
+                { Border = new Border(1, new LineDash(new float[] { 8, 5, 2, 5 })) };
             }
 
             /*

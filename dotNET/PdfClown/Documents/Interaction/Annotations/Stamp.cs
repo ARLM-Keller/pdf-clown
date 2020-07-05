@@ -101,7 +101,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             TypeName = CustomTypeName;
         }
 
-        internal Stamp(PdfDirectObject baseObject) : base(baseObject)
+        public Stamp(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -141,11 +141,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public int Rotation
         {
-            get
-            {
-                IPdfNumber rotationObject = (IPdfNumber)BaseDataObject[PdfName.Rotate];
-                return rotationObject != null ? rotationObject.IntValue : 0;
-            }
+            get => BaseDataObject.GetInt(PdfName.Rotate, 0);
             set
             {
                 BaseDataObject[PdfName.Rotate] = (value != 0 ? new PdfInteger(value) : null);

@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             Color = color;
         }
 
-        internal Scribble(PdfDirectObject baseObject) : base(baseObject)
+        public Scribble(PdfDirectObject baseObject) : base(baseObject)
         {
             paths = new List<SKPath>();
         }
@@ -59,6 +59,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region interface
         #region public
+
+        public PdfArray InkList
+        {
+            get => (PdfArray)BaseDataObject[PdfName.InkList];
+            set => BaseDataObject[PdfName.InkList] = value;
+        }
+
         /**
           <summary>Gets/Sets the coordinates of each path.</summary>
         */
@@ -68,7 +75,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 if (paths.Count > 0)
                     return paths;
-                PdfArray pathsObject = (PdfArray)BaseDataObject[PdfName.InkList];
+                PdfArray pathsObject = InkList;
                 double pageHeight = Page.Box.Height;
                 for (int pathIndex = 0, pathLength = pathsObject.Count; pathIndex < pathLength; pathIndex++)
                 {
@@ -95,7 +102,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 paths = value;
-                PdfArray pathsObject = new PdfArray();
+                var pathsObject = new PdfArray();
                 double pageHeight = Page.Box.Height;
                 SKRect box = SKRect.Empty;
                 foreach (var path in value)
@@ -113,8 +120,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     pathsObject.Add(pathObject);
                 }
                 Box = box;
-                BaseDataObject[PdfName.InkList] = pathsObject;
-
+                InkList = pathsObject;
             }
         }
 

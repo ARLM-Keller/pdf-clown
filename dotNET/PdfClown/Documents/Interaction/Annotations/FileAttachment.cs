@@ -43,47 +43,22 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class FileAttachment : Markup, IFileResource
     {
-        #region types
-        /**
-          <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
-        */
-        public enum IconTypeEnum
-        {
-            /**
-              <summary>Graph.</summary>
-            */
-            Graph,
-            /**
-              <summary>Paper clip.</summary>
-            */
-            PaperClip,
-            /**
-              <summary>Push pin.</summary>
-            */
-            PushPin,
-            /**
-              <summary>Tag.</summary>
-            */
-            Tag
-        };
-        #endregion
-
         #region static
         #region fields
-        private static readonly Dictionary<IconTypeEnum, PdfName> IconTypeEnumCodes;
+        private static readonly Dictionary<FileAttachmentImageType, PdfName> IconTypeEnumCodes;
 
-        private static readonly IconTypeEnum DefaultIconType = IconTypeEnum.PushPin;
+        private static readonly FileAttachmentImageType DefaultIconType = FileAttachmentImageType.PushPin;
         #endregion
 
         #region constructors
         static FileAttachment()
         {
-            IconTypeEnumCodes = new Dictionary<IconTypeEnum, PdfName>
+            IconTypeEnumCodes = new Dictionary<FileAttachmentImageType, PdfName>
             {
-                [IconTypeEnum.Graph] = PdfName.Graph,
-                [IconTypeEnum.PaperClip] = PdfName.Paperclip,
-                [IconTypeEnum.PushPin] = PdfName.PushPin,
-                [IconTypeEnum.Tag] = PdfName.Tag
+                [FileAttachmentImageType.Graph] = PdfName.Graph,
+                [FileAttachmentImageType.PaperClip] = PdfName.Paperclip,
+                [FileAttachmentImageType.PushPin] = PdfName.PushPin,
+                [FileAttachmentImageType.Tag] = PdfName.Tag
             };
         }
         #endregion
@@ -93,7 +68,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
-        private static PdfName ToCode(IconTypeEnum value)
+        private static PdfName ToCode(FileAttachmentImageType value)
         {
             return IconTypeEnumCodes[value];
         }
@@ -101,9 +76,9 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the icon type corresponding to the given value.</summary>
         */
-        private static IconTypeEnum ToIconTypeEnum(PdfName value)
+        private static FileAttachmentImageType ToImageTypeEnum(PdfName value)
         {
-            foreach (KeyValuePair<IconTypeEnum, PdfName> iconType in IconTypeEnumCodes)
+            foreach (KeyValuePair<FileAttachmentImageType, PdfName> iconType in IconTypeEnumCodes)
             {
                 if (iconType.Value.Equals(value))
                     return iconType.Key;
@@ -122,7 +97,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             DataFile = dataFile;
         }
 
-        internal FileAttachment(PdfDirectObject baseObject)
+        public FileAttachment(PdfDirectObject baseObject)
             : base(baseObject)
         { }
         #endregion
@@ -132,12 +107,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
         */
-        public IconTypeEnum IconType
+        public FileAttachmentImageType ImageName
         {
-            get => ToIconTypeEnum((PdfName)BaseDataObject[PdfName.Name]);
+            get => ToImageTypeEnum((PdfName)BaseDataObject[PdfName.Name]);
             set
             {
-                var oldvalue = IconType;
+                var oldvalue = ImageName;
                 BaseDataObject[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;
                 OnPropertyChanged(oldvalue, value);
             }
@@ -159,7 +134,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             var bounds = Box;
             var color = SKColor;
-            SvgImage.DrawImage(canvas, IconType.ToString(), color, bounds, 1);
+            SvgImage.DrawImage(canvas, ImageName.ToString(), color, bounds, 1);
         }
 
         #endregion
@@ -167,4 +142,28 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
         #endregion
     }
+
+    /**
+      <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
+    */
+    public enum FileAttachmentImageType
+    {
+        /**
+          <summary>Graph.</summary>
+        */
+        Graph,
+        /**
+          <summary>Paper clip.</summary>
+        */
+        PaperClip,
+        /**
+          <summary>Push pin.</summary>
+        */
+        PushPin,
+        /**
+          <summary>Tag.</summary>
+        */
+        Tag
+    };
+
 }

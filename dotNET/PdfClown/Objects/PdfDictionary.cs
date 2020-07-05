@@ -278,14 +278,19 @@ namespace PdfClown.Objects
             this[key] = PdfName.Get(value);
         }
 
-        internal string GetText(PdfName key)
+        public string GetText(PdfName key)
         {
             return ((PdfString)Resolve(key))?.StringValue;
         }
 
-        internal void SetText(PdfName key, string value)
+        public void SetText(PdfName key, string value)
         {
             this[key] = PdfTextString.Get(value);
+        }
+
+        public void SetString(PdfName key, string value)
+        {
+            this[key] = PdfString.Get(value);
         }
 
         public DateTime? GetDate(PdfName key)

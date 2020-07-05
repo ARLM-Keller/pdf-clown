@@ -49,7 +49,7 @@ namespace PdfClown.Samples.CLI
             composer.ShowText("Sticky note annotation:", new SKPoint(35, 35));
             new StickyNote(page, new SKPoint(50, 50), "Text of the Sticky note annotation")
             {
-                IconType = StickyNote.IconTypeEnum.Note,
+                ImageName = ImageNameEnum.Note,
                 Color = DeviceRGBColor.Get(SKColors.Yellow),
                 Popup = new Popup(
                     page,
@@ -62,7 +62,7 @@ namespace PdfClown.Samples.CLI
             };
             new StickyNote(page, new SKPoint(80, 50), "Text of the Help sticky note annotation")
             {
-                IconType = StickyNote.IconTypeEnum.Help,
+                ImageName = ImageNameEnum.Help,
                 Color = DeviceRGBColor.Get(SKColors.Pink),
                 Author = "Stefano",
                 Subject = "Sticky note",
@@ -74,14 +74,14 @@ namespace PdfClown.Samples.CLI
             };
             new StickyNote(page, new SKPoint(110, 50), "Text of the Comment sticky note annotation")
             {
-                IconType = StickyNote.IconTypeEnum.Comment,
+                ImageName = ImageNameEnum.Comment,
                 Color = DeviceRGBColor.Get(SKColors.Green),
                 Author = "Stefano",
                 Subject = "Sticky note"
             };
             new StickyNote(page, new SKPoint(140, 50), "Text of the Key sticky note annotation")
             {
-                IconType = StickyNote.IconTypeEnum.Key,
+                ImageName = ImageNameEnum.Key,
                 Color = DeviceRGBColor.Get(SKColors.Blue),
                 Author = "Stefano",
                 Subject = "Sticky note"
@@ -114,7 +114,7 @@ namespace PdfClown.Samples.CLI
                 "happyGNU.jpg")
               )
             {
-                IconType = FileAttachment.IconTypeEnum.PaperClip,
+                ImageName = FileAttachmentImageType.PaperClip,
                 Author = "Stefano",
                 Subject = "File attachment"
             };
@@ -136,7 +136,7 @@ namespace PdfClown.Samples.CLI
                     StartStyle = LineEndStyleEnum.Circle,
                     EndStyle = LineEndStyleEnum.ClosedArrow,
                     CaptionVisible = true,
-                    FillColor = DeviceRGBColor.Get(SKColors.Green),
+                    InteriorColor = DeviceRGBColor.Get(SKColors.Green),
                     Author = "Stefano",
                     Subject = "Arrow line"
                 };
@@ -152,7 +152,7 @@ namespace PdfClown.Samples.CLI
                   )
                 {
                     LeaderLineLength = 20,
-                    LeaderLineExtensionLength = 10,
+                    LeaderLineExtension = 10,
                     StartStyle = LineEndStyleEnum.OpenArrow,
                     EndStyle = LineEndStyleEnum.OpenArrow,
                     Border = new Border(1),
@@ -180,7 +180,7 @@ namespace PdfClown.Samples.CLI
               "Text of the Scribble annotation",
               DeviceRGBColor.Get(SKColors.Orange))
             {
-                Border = new Border(1, new LineDash(new double[] { 5, 2, 2, 2 })),
+                Border = new Border(1, new LineDash(new float[] { 5, 2, 2, 2 })),
                 Author = "Stefano",
                 Subject = "Scribble"
             };
@@ -193,7 +193,7 @@ namespace PdfClown.Samples.CLI
               "Text of the Rectangle annotation")
             {
                 Color = DeviceRGBColor.Get(SKColors.Red),
-                Border = new Border(1, new LineDash(new double[] { 5 })),
+                Border = new Border(1, new LineDash(new float[] { 5 })),
                 Author = "Stefano",
                 Subject = "Rectangle",
                 Popup = new Popup(
@@ -210,8 +210,8 @@ namespace PdfClown.Samples.CLI
               SKRect.Create(50, 440, 100, 30),
               "Text of the Ellipse annotation")
             {
-                BorderEffect = new BorderEffect(BorderEffect.TypeEnum.Cloudy, 1),
-                FillColor = DeviceRGBColor.Get(SKColors.Cyan),
+                BorderEffect = new BorderEffect(BorderEffectType.Cloudy, 1),
+                InteriorColor = DeviceRGBColor.Get(SKColors.Cyan),
                 Color = DeviceRGBColor.Get(SKColors.Black),
                 Author = "Stefano",
                 Subject = "Ellipse"

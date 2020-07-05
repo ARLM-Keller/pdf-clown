@@ -42,23 +42,23 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region static
         #region fields
-        private static readonly LineDash DefaultLineDash = new LineDash(new double[] { 3, 1 });
-        private static readonly MarkupBorderStyleEnum DefaultStyle = MarkupBorderStyleEnum.Solid;
+        private static readonly LineDash DefaultLineDash = new LineDash(new float[] { 3, 1 });
+        private static readonly BorderStyleType DefaultStyle = BorderStyleType.Solid;
         private static readonly double DefaultWidth = 1;
 
-        private static readonly Dictionary<MarkupBorderStyleEnum, PdfName> StyleEnumCodes;
+        private static readonly Dictionary<BorderStyleType, PdfName> StyleEnumCodes;
         #endregion
 
         #region constructors
         static Border()
         {
-            StyleEnumCodes = new Dictionary<MarkupBorderStyleEnum, PdfName>
+            StyleEnumCodes = new Dictionary<BorderStyleType, PdfName>
             {
-                [MarkupBorderStyleEnum.Solid] = PdfName.S,
-                [MarkupBorderStyleEnum.Dashed] = PdfName.D,
-                [MarkupBorderStyleEnum.Beveled] = PdfName.B,
-                [MarkupBorderStyleEnum.Inset] = PdfName.I,
-                [MarkupBorderStyleEnum.Underline] = PdfName.U
+                [BorderStyleType.Solid] = PdfName.S,
+                [BorderStyleType.Dashed] = PdfName.D,
+                [BorderStyleType.Beveled] = PdfName.B,
+                [BorderStyleType.Inset] = PdfName.I,
+                [BorderStyleType.Underline] = PdfName.U
             };
         }
 
@@ -73,7 +73,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
-        private static PdfName ToCode(MarkupBorderStyleEnum value)
+        private static PdfName ToCode(BorderStyleType value)
         {
             return StyleEnumCodes[value];
         }
@@ -81,11 +81,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the style corresponding to the given value.</summary>
         */
-        private static MarkupBorderStyleEnum ToStyleEnum(PdfName value)
+        private static BorderStyleType ToStyleEnum(PdfName value)
         {
             if (value == null)
                 return DefaultStyle;
-            foreach (KeyValuePair<MarkupBorderStyleEnum, PdfName> style in StyleEnumCodes)
+            foreach (KeyValuePair<BorderStyleType, PdfName> style in StyleEnumCodes)
             {
                 if (style.Value.Equals(value))
                     return style.Key;
@@ -107,7 +107,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Creates a non-reusable instance.</summary>
         */
-        public Border(double width, MarkupBorderStyleEnum style) : this(null, width, style)
+        public Border(double width, BorderStyleType style) : this(null, width, style)
         { }
 
         /**
@@ -125,16 +125,16 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public Border(Document context, double width, MarkupBorderStyleEnum style) : this(context, width, style, null)
+        public Border(Document context, double width, BorderStyleType style) : this(context, width, style, null)
         { }
 
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public Border(Document context, double width, LineDash pattern) : this(context, width, MarkupBorderStyleEnum.Dashed, pattern)
+        public Border(Document context, double width, LineDash pattern) : this(context, width, BorderStyleType.Dashed, pattern)
         { }
 
-        private Border(Document context, double width, MarkupBorderStyleEnum style, LineDash pattern)
+        private Border(Document context, double width, BorderStyleType style, LineDash pattern)
             : base(context, new PdfDictionary(new PdfName[] { PdfName.Type }, new PdfDirectObject[] { PdfName.Border }))
         {
             Width = width;
@@ -174,7 +174,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets/Sets the border style.</summary>
         */
-        public MarkupBorderStyleEnum Style
+        public BorderStyleType Style
         {
             get => ToStyleEnum((PdfName)BaseDataObject[PdfName.S]);
             set => BaseDataObject[PdfName.S] = value != DefaultStyle ? ToCode(value) : null;
@@ -198,7 +198,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             paint.Style = SKPaintStyle.Stroke;
             paint.StrokeWidth = (float)Width;
             paint.IsAntialias = true;
-            if (Style == MarkupBorderStyleEnum.Dashed)
+            if (Style == BorderStyleType.Dashed)
             {
                 Pattern?.Apply(paint);
             }
@@ -212,7 +212,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     /**
       <summary>Border style [PDF:1.6:8.4.3].</summary>
     */
-    public enum MarkupBorderStyleEnum
+    public enum BorderStyleType
     {
         /**
           <summary>Solid.</summary>

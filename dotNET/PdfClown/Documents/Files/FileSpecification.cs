@@ -46,7 +46,9 @@ namespace PdfClown.Documents.Files
           <param name="path">File path.</param>
         */
         public static SimpleFileSpecification Get(Document context, string path)
-        { return (SimpleFileSpecification)Get(context, path, false); }
+        {
+            return (SimpleFileSpecification)Get(context, path, false);
+        }
 
         /**
           <summary>Creates a new reference to a file.</summary>
@@ -67,7 +69,9 @@ namespace PdfClown.Documents.Files
           <param name="filename">Name corresponding to the reference.</param>
         */
         public static FullFileSpecification Get(EmbeddedFile embeddedFile, string filename)
-        { return new FullFileSpecification(embeddedFile, filename); }
+        {
+            return new FullFileSpecification(embeddedFile, filename);
+        }
 
         /**
           <summary>Creates a new reference to a remote file.</summary>
@@ -75,7 +79,9 @@ namespace PdfClown.Documents.Files
           <param name="url">Remote file location.</param>
         */
         public static FullFileSpecification Get(Document context, Uri url)
-        { return new FullFileSpecification(context, url); }
+        {
+            return new FullFileSpecification(context, url);
+        }
 
         /**
           <summary>Instantiates an existing file reference.</summary>
@@ -151,10 +157,7 @@ namespace PdfClown.Documents.Files
         /**
           <summary>Gets the file path.</summary>
         */
-        public abstract string Path
-        {
-            get;
-        }
+        public abstract string Path { get; set; }
 
         #region IPdfNamedObjectWrapper
         public PdfString Name => RetrieveName();

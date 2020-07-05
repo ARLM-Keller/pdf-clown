@@ -103,7 +103,7 @@ namespace PdfClown.Samples.CLI
                         // Drawing the arc frame...
                         composer.BeginLocalState();
                         composer.SetLineWidth(0.25f);
-                        composer.SetLineDash(new LineDash(new double[] { 5 }, 3));
+                        composer.SetLineDash(new LineDash(new float[] { 5 }, 3));
                         composer.DrawRectangle(arcFrame);
                         composer.Stroke();
                         composer.End();
@@ -134,7 +134,7 @@ namespace PdfClown.Samples.CLI
                 // Drawing the circle frame...
                 composer.BeginLocalState();
                 composer.SetLineWidth(0.25f);
-                composer.SetLineDash(new LineDash(new double[] { 5 }, 3));
+                composer.SetLineDash(new LineDash(new float[] { 5 }, 3));
                 composer.DrawRectangle(arcFrame);
                 composer.Stroke();
                 composer.End();
@@ -152,7 +152,7 @@ namespace PdfClown.Samples.CLI
                 // Drawing the ellipse frame...
                 composer.BeginLocalState();
                 composer.SetLineWidth(0.25f);
-                composer.SetLineDash(new LineDash(new double[] { 5 }, 3));
+                composer.SetLineDash(new LineDash(new float[] { 5 }, 3));
                 composer.DrawRectangle(arcFrame);
                 composer.Stroke();
                 composer.End();
@@ -170,7 +170,7 @@ namespace PdfClown.Samples.CLI
                 // Drawing the ellipse frame...
                 composer.BeginLocalState();
                 composer.SetLineWidth(0.25f);
-                composer.SetLineDash(new LineDash(new double[] { 5 }, 3));
+                composer.SetLineDash(new LineDash(new float[] { 5 }, 3));
                 composer.DrawRectangle(arcFrame);
                 composer.Stroke();
                 composer.End();
@@ -211,7 +211,7 @@ namespace PdfClown.Samples.CLI
                         switch (rowIndex)
                         {
                             case 2:
-                                composer.SetLineDash(new LineDash(new double[] { 10, 5 }));
+                                composer.SetLineDash(new LineDash(new float[] { 10, 5 }));
                                 composer.SetLineCap(LineCapEnum.Round);
                                 break;
                             default:
@@ -310,7 +310,7 @@ namespace PdfClown.Samples.CLI
             {
                 if (x > 300)
                 {
-                    composer.SetLineDash(new LineDash(new double[] { 5 }, 3));
+                    composer.SetLineDash(new LineDash(new float[] { 5 }, 3));
                 }
 
                 composer.SetFillColor(new DeviceRGBColor(1, x / 500d, x / 500d));
@@ -658,7 +658,7 @@ namespace PdfClown.Samples.CLI
 
                         composer.BeginLocalState();
                         composer.SetLineWidth(0.2f);
-                        composer.SetLineDash(new LineDash(new double[] { 5 }, 5));
+                        composer.SetLineDash(new LineDash(new float[] { 5 }, 5));
                         composer.DrawRectangle(frame);
                         composer.Stroke();
                         composer.End();
@@ -754,7 +754,7 @@ namespace PdfClown.Samples.CLI
                             composer.BeginLocalState();
                             {
                                 composer.SetLineWidth(0.1f);
-                                composer.SetLineDash(new LineDash(new double[] { 1, 4 }, 4));
+                                composer.SetLineDash(new LineDash(new float[] { 1, 4 }, 4));
                                 composer.DrawRectangle(blockComposer.Frame);
                                 composer.Stroke();
                             }
@@ -763,7 +763,7 @@ namespace PdfClown.Samples.CLI
                             composer.BeginLocalState();
                             {
                                 composer.SetLineWidth(0.1f);
-                                composer.SetLineDash(new LineDash(new double[] { 1 }, 1));
+                                composer.SetLineDash(new LineDash(new float[] { 1 }, 1));
                                 composer.DrawRectangle(blockComposer.BoundBox);
                                 composer.Stroke();
                             }
@@ -839,7 +839,7 @@ namespace PdfClown.Samples.CLI
                 composer.BeginLocalState();
                 {
                     composer.SetLineWidth(0.2);
-                    composer.SetLineDash(new LineDash(new double[] { 5 }, 5));
+                    composer.SetLineDash(new LineDash(new float[] { 5 }, 5));
                     composer.DrawRectangle(frame);
                     composer.Stroke();
                 }
@@ -908,7 +908,7 @@ namespace PdfClown.Samples.CLI
                     composer.BeginLocalState();
                     {
                         composer.SetLineWidth(0.2);
-                        composer.SetLineDash(new LineDash(new double[] { 5 }, 5));
+                        composer.SetLineDash(new LineDash(new float[] { 5 }, 5));
                         composer.DrawRectangle(frame);
                         composer.Stroke();
                     }
@@ -929,7 +929,7 @@ namespace PdfClown.Samples.CLI
                     composer.BeginLocalState();
                     {
                         composer.SetLineWidth(0.2);
-                        composer.SetLineDash(new LineDash(new double[] { 5 }, 5));
+                        composer.SetLineDash(new LineDash(new float[] { 5 }, 5));
                         composer.DrawRectangle(frame);
                         composer.Stroke();
                     }
@@ -952,7 +952,7 @@ namespace PdfClown.Samples.CLI
         {
             composer.BeginLocalState();
             composer.SetLineWidth(0.2f);
-            composer.SetLineDash(new LineDash(new double[] { 5 }, 5));
+            composer.SetLineDash(new LineDash(new float[] { 5 }, 5));
             composer.DrawPolygon(frameVertices);
             composer.Stroke();
             composer.End();

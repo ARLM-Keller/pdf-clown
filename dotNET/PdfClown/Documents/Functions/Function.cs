@@ -223,6 +223,7 @@ namespace PdfClown.Documents.Functions
         {
             return Exponential(x, c0, c1, (float)Math.Pow(x, Exponent));
         }
+
         static public float Exponential(float x, float c0, float c1, float inputN)
         {
             return c0 + inputN * (c1 - c0);

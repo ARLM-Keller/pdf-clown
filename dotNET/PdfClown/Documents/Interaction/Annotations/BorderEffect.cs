@@ -39,40 +39,23 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF15)]
     public sealed class BorderEffect : PdfObjectWrapper<PdfDictionary>
     {
-        #region types
-        /**
-          <summary>Border effect type [PDF:1.6:8.4.3].</summary>
-        */
-        public enum TypeEnum
-        {
-            /**
-              No effect.
-            */
-            None,
-            /**
-              Cloudy.
-            */
-            Cloudy
-        }
-        #endregion
-
         #region static
 
         #region fields
         private static readonly double DefaultIntensity = 0;
-        private static readonly TypeEnum DefaultType = TypeEnum.None;
+        private static readonly BorderEffectType DefaultType = BorderEffectType.None;
 
-        private static readonly Dictionary<TypeEnum, PdfName> TypeEnumCodes;
+        private static readonly Dictionary<BorderEffectType, PdfName> TypeEnumCodes;
 
         #endregion
 
         #region constructors
         static BorderEffect()
         {
-            TypeEnumCodes = new Dictionary<TypeEnum, PdfName>
+            TypeEnumCodes = new Dictionary<BorderEffectType, PdfName>
             {
-                [TypeEnum.None] = PdfName.S,
-                [TypeEnum.Cloudy] = PdfName.C
+                [BorderEffectType.None] = PdfName.S,
+                [BorderEffectType.Cloudy] = PdfName.C
             };
         }
         #endregion
@@ -82,15 +65,17 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
-        private static PdfName ToCode(TypeEnum value)
-        { return TypeEnumCodes[value]; }
+        private static PdfName ToCode(BorderEffectType value)
+        {
+            return TypeEnumCodes[value];
+        }
 
         /**
           <summary>Gets the style corresponding to the given value.</summary>
         */
-        private static TypeEnum ToTypeEnum(PdfName value)
+        private static BorderEffectType ToTypeEnum(PdfName value)
         {
-            foreach (KeyValuePair<TypeEnum, PdfName> type in TypeEnumCodes)
+            foreach (KeyValuePair<BorderEffectType, PdfName> type in TypeEnumCodes)
             {
                 if (type.Value.Equals(value))
                     return type.Key;
@@ -106,25 +91,25 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Creates a non-reusable instance.</summary>
         */
-        public BorderEffect(TypeEnum type) : this(null, type)
+        public BorderEffect(BorderEffectType type) : this(null, type)
         { }
 
         /**
           <summary>Creates a non-reusable instance.</summary>
         */
-        public BorderEffect(TypeEnum type, double intensity) : this(null, type, intensity)
+        public BorderEffect(BorderEffectType type, double intensity) : this(null, type, intensity)
         { }
 
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public BorderEffect(Document context, TypeEnum type) : this(context, type, DefaultIntensity)
+        public BorderEffect(Document context, BorderEffectType type) : this(context, type, DefaultIntensity)
         { }
 
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public BorderEffect(Document context, TypeEnum type, double intensity) : base(context, new PdfDictionary())
+        public BorderEffect(Document context, BorderEffectType type, double intensity) : base(context, new PdfDictionary())
         {
             Type = type;
             Intensity = intensity;
@@ -141,18 +126,14 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public double Intensity
         {
-            get
-            {
-                IPdfNumber intensityObject = (IPdfNumber)BaseDataObject[PdfName.I];
-                return intensityObject != null ? intensityObject.DoubleValue : DefaultIntensity;
-            }
+            get => BaseDataObject.GetDouble(PdfName.I, DefaultIntensity);
             set => BaseDataObject[PdfName.I] = value != DefaultIntensity ? PdfReal.Get(value) : null;
         }
 
         /**
           <summary>Gets/Sets the effect type.</summary>
         */
-        public TypeEnum Type
+        public BorderEffectType Type
         {
             get => ToTypeEnum((PdfName)BaseDataObject[PdfName.S]);
             set => BaseDataObject[PdfName.S] = value != DefaultType ? ToCode(value) : null;
@@ -160,7 +141,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public SKPath Apply(SKPaint paint, SKPath targetPath = null)
         {
-            if (Type == TypeEnum.Cloudy)
+            if (Type == BorderEffectType.Cloudy)
             {
                 var intensity = (float)Intensity;
                 const int r = 5;
@@ -205,4 +186,20 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
         #endregion
     }
+
+    /**
+      <summary>Border effect type [PDF:1.6:8.4.3].</summary>
+    */
+    public enum BorderEffectType
+    {
+        /**
+          No effect.
+        */
+        None,
+        /**
+          Cloudy.
+        */
+        Cloudy
+    }
+
 }

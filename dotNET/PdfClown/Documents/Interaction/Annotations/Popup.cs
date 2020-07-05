@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     {
         #region dynamic
         #region fields
-        private Markup markup;
+        private Markup parent;
         #endregion
 
         #region constructors
@@ -53,7 +53,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, PdfName.Popup, box, text)
         { }
 
-        internal Popup(PdfDirectObject baseObject)
+        public Popup(PdfDirectObject baseObject)
             : base(baseObject)
         { }
         #endregion
@@ -62,11 +62,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         #region public
         public override DeviceColor Color
         {
-            get => Markup?.Color ?? base.Color;
+            get => Parent?.Color ?? base.Color;
             set
             {
-                if (Markup != null)
-                { markup.Color = value; }
+                if (Parent != null)
+                { parent.Color = value; }
                 else
                 { base.Color = value; }
             }
@@ -84,10 +84,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the markup associated with this annotation.</summary>
         */
-        public Markup Markup
+        public Markup Parent
         {
-            get => markup ?? (markup = (Markup)Annotation.Wrap(BaseDataObject[PdfName.Parent]));
-            internal set
+            get => parent ?? (parent = (Markup)Annotation.Wrap(BaseDataObject[PdfName.Parent]));
+            set
             {
                 PdfDictionary baseDataObject = BaseDataObject;
                 baseDataObject[PdfName.Parent] = value.BaseObject;
@@ -102,25 +102,25 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override DateTime? ModificationDate
         {
-            get => Markup != null ? markup.ModificationDate : base.ModificationDate;
+            get => Parent != null ? parent.ModificationDate : base.ModificationDate;
             set
             {
-                if (Markup != null)
-                { markup.ModificationDate = value; }
+                if (Parent != null)
+                { parent.ModificationDate = value; }
                 else
                 { base.ModificationDate = value; }
             }
         }
 
-        public override string Text
+        public override string Contents
         {
-            get => Markup?.Text ?? base.Text;
+            get => Parent?.Contents ?? base.Contents;
             set
             {
-                if (Markup != null)
-                { markup.Text = value; }
+                if (Parent != null)
+                { parent.Contents = value; }
                 else
-                { base.Text = value; }
+                { base.Contents = value; }
             }
         }
 

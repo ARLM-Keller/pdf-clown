@@ -34,6 +34,7 @@ using System.Collections.Generic;
 using SkiaSharp;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Util.Math.Geom;
+using PdfClown.Documents.Contents.ColorSpaces;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -44,18 +45,6 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF11)]
     public abstract class Markup : Annotation
     {
-        #region types
-        /**
-          <summary>Annotation relationship [PDF:1.6:8.4.5].</summary>
-        */
-        [PDF(VersionEnum.PDF16)]
-        public enum ReplyTypeEnum
-        {
-            Thread,
-            Group
-        }
-        #endregion
-
         #region dynamic
         #region constructors
         protected Markup(Page page, PdfName subtype, SKRect box, string text)
@@ -138,7 +127,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = Popup;
                 if (value != null)
                 {
-                    value.Markup = this;
+                    value.Parent = this;
                 }
                 BaseDataObject[PdfName.Popup] = value.BaseObject;
                 OnPropertyChanged(oldValue, value);
@@ -159,6 +148,91 @@ namespace PdfClown.Documents.Interaction.Annotations
                 BaseDataObject[PdfName.RT] = value.GetCode();
                 OnPropertyChanged(oldValue, value);
             }
+        }
+
+        [PDF(VersionEnum.PDF15)]
+        public string RichContents
+        {
+            get => BaseDataObject.GetText(PdfName.RC);
+            set => BaseDataObject.SetText(PdfName.RC, value);
+        }
+
+        [PDF(VersionEnum.PDF16)]
+        public MarkupIntent? Intent
+        {
+            get => MarkupIntentExtension.Get(TypeBase);
+            set => TypeBase = MarkupIntentExtension.GetCode(value.Value);
+        }
+
+        public string DefaultStyle
+        {
+            get => BaseDataObject.GetText(PdfName.DS);
+            set => BaseDataObject.SetText(PdfName.DS, value);
+        }
+
+        /**
+          <summary>Gets/Sets the color with which to fill the interior of following markups: Line Ending, Circle, Square.</summary>
+        */
+        public DeviceColor InteriorColor
+        {
+            get => DeviceColor.Get((PdfArray)BaseDataObject[PdfName.IC]);
+            set => BaseDataObject[PdfName.IC] = (PdfArray)value?.BaseDataObject;
+        }
+
+        public SkiaSharp.SKColor? InteriorSKColor
+        {
+            get => InteriorColor == null ? (SKColor?)null : DeviceColorSpace.CalcSKColor(InteriorColor, Alpha);
+            set
+            {
+                var oldValue = InteriorSKColor;
+                InteriorColor = DeviceRGBColor.Get(value);
+                OnPropertyChanged(oldValue, value);
+            }
+        }
+
+        /**
+          <summary>Gets/Sets the border effect.</summary>
+        */
+        [PDF(VersionEnum.PDF15)]
+        public BorderEffect BorderEffect
+        {
+            get => Wrap<BorderEffect>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
+            set
+            {
+                var oldValue = BorderEffect;
+                BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
+                OnPropertyChanged(oldValue, value);
+            }
+        }
+
+        protected virtual void RefreshAppearance()
+        {
+
+        }
+
+        protected FormXObject ResetAppearance()
+        {
+            return ResetAppearance(Rect.ToRect());
+        }
+
+        protected FormXObject ResetAppearance(SKRect box)
+        {
+            FormXObject normalAppearance;
+            AppearanceStates normalAppearances = Appearance.Normal;
+            normalAppearance = normalAppearances[null];
+            if (normalAppearance != null)
+            {
+                normalAppearance.Box = box;
+                normalAppearance.BaseDataObject.Body.Clear();
+                normalAppearance.ClearContents();
+            }
+            else
+            {
+                normalAppearances[null] =
+                      normalAppearance = new FormXObject(Document, box);
+            }
+
+            return normalAppearance;
         }
 
         public override SKRect GetBounds(SKMatrix pageMatrix)
@@ -185,28 +259,87 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
     }
 
-    internal static class ReplyTypeEnumExtension
+    /**
+      <summary>Annotation relationship [PDF:1.6:8.4.5].</summary>
+    */
+    [PDF(VersionEnum.PDF16)]
+    public enum ReplyTypeEnum
     {
-        private static readonly BiDictionary<Markup.ReplyTypeEnum, PdfName> codes;
+        Thread,
+        Group
+    }
+    public enum MarkupIntent
+    {
+        FreeText,
+        FreeTextCallout,
+        FreeTextTypeWriter,
 
-        static ReplyTypeEnumExtension()
+        LineArrow,
+        LineDimension,
+
+        PolygonCloud,
+        PolygonDimension,
+        PolyLineDimension
+    }
+    internal static class MarkupIntentExtension
+    {
+        private static readonly BiDictionary<MarkupIntent, PdfName> codes;
+
+        static MarkupIntentExtension()
         {
-            codes = new BiDictionary<Markup.ReplyTypeEnum, PdfName>
+            codes = new BiDictionary<MarkupIntent, PdfName>
             {
-                [Markup.ReplyTypeEnum.Thread] = PdfName.R,
-                [Markup.ReplyTypeEnum.Group] = PdfName.Group
+                [MarkupIntent.FreeText] = PdfName.FreeText,
+                [MarkupIntent.FreeTextCallout] = PdfName.FreeTextCallout,
+                [MarkupIntent.FreeTextTypeWriter] = PdfName.FreeTextTypeWriter,
+
+                [MarkupIntent.LineArrow] = PdfName.LineArrow,
+                [MarkupIntent.LineDimension] = PdfName.LineDimension,
+
+                [MarkupIntent.PolygonCloud] = PdfName.PolygonCloud,
+                [MarkupIntent.PolygonDimension] = PdfName.PolygonDimension,
+                [MarkupIntent.PolyLineDimension] = PdfName.PolyLineDimension
             };
         }
 
-        public static Markup.ReplyTypeEnum? Get(PdfName name)
+        public static MarkupIntent? Get(PdfName name)
         {
             if (name == null)
-                return Markup.ReplyTypeEnum.Thread;
+                return null;
 
             return codes.GetKey(name);
         }
 
-        public static PdfName GetCode(this Markup.ReplyTypeEnum replyType)
-        { return codes[replyType]; }
+        public static PdfName GetCode(this MarkupIntent? intent)
+        {
+            return intent == null ? null : codes[intent.Value];
+        }
+    }
+
+    internal static class ReplyTypeEnumExtension
+    {
+        private static readonly BiDictionary<ReplyTypeEnum, PdfName> codes;
+
+        static ReplyTypeEnumExtension()
+        {
+            codes = new BiDictionary<ReplyTypeEnum, PdfName>
+            {
+                [ReplyTypeEnum.Thread] = PdfName.R,
+                [ReplyTypeEnum.Group] = PdfName.Group
+            };
+        }
+
+        public static ReplyTypeEnum? Get(PdfName name)
+        {
+            if (name == null)
+                return ReplyTypeEnum.Thread;
+
+            return codes.GetKey(name);
+        }
+
+        public static PdfName GetCode(this ReplyTypeEnum replyType)
+        {
+            return codes[replyType];
+        }
     }
 }

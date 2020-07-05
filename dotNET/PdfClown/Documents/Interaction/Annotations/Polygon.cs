@@ -29,6 +29,7 @@ using PdfClown.Objects;
 
 using System;
 using SkiaSharp;
+using Org.BouncyCastle.Bcpg.Sig;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -45,7 +46,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, box, text, PdfName.Polygon)
         { }
 
-        internal Polygon(PdfDirectObject baseObject)
+        public Polygon(PdfDirectObject baseObject)
             : base(baseObject)
         { }
         #endregion

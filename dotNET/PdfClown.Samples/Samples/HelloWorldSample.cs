@@ -58,7 +58,7 @@ namespace PdfClown.Samples.CLI
 
             composer.SetLineWidth(.25);
             composer.SetLineCap(LineCapEnum.Round);
-            composer.SetLineDash(new LineDash(new double[] { 5, 10 }));
+            composer.SetLineDash(new LineDash(new float[] { 5, 10 }));
             composer.SetTextLead(1.2);
             composer.DrawPolygon(
               composer.ShowText(

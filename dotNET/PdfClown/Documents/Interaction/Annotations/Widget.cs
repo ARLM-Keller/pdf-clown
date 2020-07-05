@@ -121,7 +121,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public Widget(Page page, SKRect box)
             : base(page, PdfName.Widget, box, null)
-        { Flags = EnumUtils.Mask(Flags, FlagsEnum.Print, true); }
+        { Flags = EnumUtils.Mask(Flags, AnnotationFlagsEnum.Print, true); }
 
         /**
           <summary>Creates a new dual-state widget (required by <see

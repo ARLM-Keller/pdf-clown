@@ -48,10 +48,10 @@ namespace PdfClown.Documents.Files
         */
         public static EmbeddedFile Get(Document context, string path)
         {
-            return new EmbeddedFile(
-              context,
-              new Bytes.Stream(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-              );
+            using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                return new EmbeddedFile(context, new Bytes.Stream(fileStream));
+            }
         }
 
         /**
@@ -60,7 +60,9 @@ namespace PdfClown.Documents.Files
           <param name="stream">File stream to embed.</param>
         */
         public static EmbeddedFile Get(Document context, bytes::IInputStream stream)
-        { return new EmbeddedFile(context, stream); }
+        {
+            return new EmbeddedFile(context, stream);
+        }
 
         #endregion
         #endregion
@@ -91,12 +93,8 @@ namespace PdfClown.Documents.Files
         */
         public DateTime? CreationDate
         {
-            get
-            {
-                PdfDate dateObject = (PdfDate)GetInfo(PdfName.CreationDate);
-                return dateObject != null ? (DateTime?)dateObject.Value : null;
-            }
-            set => SetInfo(PdfName.CreationDate, PdfDate.Get(value));
+            get => Params.GetDate(PdfName.CreationDate);
+            set => Params.SetDate(PdfName.CreationDate, value);
         }
 
         /**
@@ -109,12 +107,8 @@ namespace PdfClown.Documents.Files
         */
         public string MimeType
         {
-            get
-            {
-                PdfName subtype = (PdfName)BaseDataObject.Header[PdfName.Subtype];
-                return subtype != null ? (string)subtype.Value : null;
-            }
-            set => BaseDataObject.Header[PdfName.Subtype] = new PdfName(value);
+            get => Header.GetName(PdfName.Subtype);
+            set => Header.SetName(PdfName.Subtype, value);
         }
 
         /**
@@ -122,12 +116,8 @@ namespace PdfClown.Documents.Files
         */
         public DateTime? ModificationDate
         {
-            get
-            {
-                PdfDate dateObject = (PdfDate)GetInfo(PdfName.ModDate);
-                return (DateTime?)(dateObject != null ? dateObject.Value : null);
-            }
-            set => SetInfo(PdfName.ModDate, PdfDate.Get(value));
+            get => Params.GetDate(PdfName.ModDate);
+            set => Params.SetDate(PdfName.ModDate, value);
         }
 
         /**
@@ -135,33 +125,18 @@ namespace PdfClown.Documents.Files
         */
         public int Size
         {
-            get
-            {
-                PdfInteger sizeObject = (PdfInteger)GetInfo(PdfName.Size);
-                return sizeObject != null ? sizeObject.IntValue : 0;
-            }
-            set => SetInfo(PdfName.Size, PdfInteger.Get(value));
+            get => Params.GetInt(PdfName.Size);
+            set => Params.SetInt(PdfName.Size, value);
         }
         #endregion
 
         #region private
         /**
-          <summary>Gets the file parameter associated to the specified key.</summary>
-          <param name="key">Parameter key.</param>
-        */
-        private PdfDirectObject GetInfo(PdfName key)
-        { return Params[key]; }
-
-        /**
           <summary>Gets the file parameters.</summary>
         */
-        private PdfDictionary Params => BaseDataObject.Header.Resolve<PdfDictionary>(PdfName.Params);
+        private PdfDictionary Params => Header.Resolve<PdfDictionary>(PdfName.Params);
 
-        /**
-          <see cref="GetInfo(PdfName)"/>
-        */
-        private void SetInfo(PdfName key, PdfDirectObject value)
-        { Params[key] = value; }
+        private PdfDictionary Header => BaseDataObject.Header;
         #endregion
         #endregion
         #endregion

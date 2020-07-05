@@ -71,7 +71,7 @@ namespace PdfClown.Viewer
                     Annotation.SKColor = (SKColor)NewValue;
                     break;
                 case OperationType.AnnotationText:
-                    Annotation.Text = (string)NewValue;
+                    Annotation.Contents = (string)NewValue;
                     break;
                 case OperationType.AnnotationSubject:
                     Annotation.Subject = (string)NewValue;
@@ -132,7 +132,7 @@ namespace PdfClown.Viewer
                     Annotation.SKColor = (SKColor)OldValue;
                     break;
                 case OperationType.AnnotationText:
-                    Annotation.Text = (string)OldValue;
+                    Annotation.Contents = (string)OldValue;
                     break;
                 case OperationType.AnnotationSubject:
                     Annotation.Subject = (string)OldValue;

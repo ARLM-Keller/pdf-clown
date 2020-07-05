@@ -56,10 +56,10 @@ namespace PdfClown.Tools
                 foreach (Widget widget in field.Widgets)
                 {
                     Page widgetPage = widget.Page;
-                    Annotation.FlagsEnum flags = widget.Flags;
+                    AnnotationFlagsEnum flags = widget.Flags;
                     // Is the widget to be rendered?
-                    if (((flags & Annotation.FlagsEnum.Hidden) == 0 || hiddenRendered)
-                      && ((flags & Annotation.FlagsEnum.Print) > 0 || nonPrintableRendered))
+                    if (((flags & AnnotationFlagsEnum.Hidden) == 0 || hiddenRendered)
+                      && ((flags & AnnotationFlagsEnum.Print) > 0 || nonPrintableRendered))
                     {
                         // Stamping the current state appearance of the widget...
                         PdfName widgetCurrentState = (PdfName)widget.BaseDataObject[PdfName.AS];

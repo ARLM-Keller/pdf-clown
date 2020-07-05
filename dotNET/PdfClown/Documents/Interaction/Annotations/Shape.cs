@@ -53,41 +53,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region interface
         #region public
-        /**
-          <summary>Gets/Sets the border effect.</summary>
-        */
-        [PDF(VersionEnum.PDF15)]
-        public BorderEffect BorderEffect
-        {
-            get => Wrap<BorderEffect>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
-            set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
-        }
 
-        /**
-          <summary>Gets/Sets the color with which to fill the interior of the annotation's shape.</summary>
-        */
-        public DeviceRGBColor FillColor
-        {
-            get
-            {
-                PdfArray fillColorObject = (PdfArray)BaseDataObject[PdfName.IC];
-                //TODO:use baseObject constructor!!!
-                return fillColorObject != null
-                  ? new DeviceRGBColor(
-                    ((IPdfNumber)fillColorObject[0]).RawValue,
-                    ((IPdfNumber)fillColorObject[1]).RawValue,
-                    ((IPdfNumber)fillColorObject[2]).RawValue
-                    )
-                  : null;
-            }
-            set => BaseDataObject[PdfName.IC] = PdfObjectWrapper.GetBaseObject(value);
-        }
 
         public void DrawPath(SKCanvas canvas, SKPath path)
         {
-            if (FillColor != null)
+            if (InteriorColor != null)
             {
-                var fillColor = DeviceRGBColorSpace.Default.GetSKColor(FillColor, Alpha);
+                var fillColor = InteriorSKColor.Value;
                 using (var paint = new SKPaint { Color = fillColor, Style = SKPaintStyle.Fill })
                 {
                     var cloudPath = BorderEffect?.Apply(paint, path) ?? path;

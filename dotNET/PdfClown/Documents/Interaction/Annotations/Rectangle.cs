@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, box, text, PdfName.Square)
         { }
 
-        internal Rectangle(PdfDirectObject baseObject)
+        public Rectangle(PdfDirectObject baseObject)
             : base(baseObject)
         { }
         #endregion

@@ -165,7 +165,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             Printable = true;
         }
 
-        internal TextMarkup(PdfDirectObject baseObject) : base(baseObject)
+        public TextMarkup(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
@@ -181,6 +181,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public PdfArray QuadPoints
+        {
+            get => (PdfArray)BaseDataObject[PdfName.QuadPoints];
+            set
+            {
+                BaseDataObject[PdfName.QuadPoints] = value;
+                markupBoxes.Clear();
+                RefreshAppearance();
+            }
+        }
         /**
           <summary>Gets/Sets the quadrilaterals encompassing a word or group of contiguous words in the
           text underlying the annotation.</summary>
@@ -190,10 +200,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             get
             {
 
-                PdfArray quadPointsObject = (PdfArray)BaseDataObject[PdfName.QuadPoints];
-                if (quadPointsObject != null)
+                var quadPoints = QuadPoints;
+                if (quadPoints != null)
                 {
-                    var length = quadPointsObject.Count;
+                    var length = quadPoints.Count;
                     if (markupBoxes.Count * 8 != length)
                     {
                         markupBoxes.Clear();
@@ -205,18 +215,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                               NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
                             */
                             var quad = new Quad(
-                                new SKPoint(
-                                  ((IPdfNumber)quadPointsObject[index]).FloatValue,
-                                  ((IPdfNumber)quadPointsObject[index + 1]).FloatValue),
-                                new SKPoint(
-                                  ((IPdfNumber)quadPointsObject[index + 2]).FloatValue,
-                                  ((IPdfNumber)quadPointsObject[index + 3]).FloatValue),
-                                new SKPoint(
-                                  ((IPdfNumber)quadPointsObject[index + 6]).FloatValue,
-                                  ((IPdfNumber)quadPointsObject[index + 7]).FloatValue),
-                                new SKPoint(
-                                  ((IPdfNumber)quadPointsObject[index + 4]).FloatValue,
-                                  ((IPdfNumber)quadPointsObject[index + 5]).FloatValue));
+                                new SKPoint(quadPoints.GetFloat(index), quadPoints.GetFloat(index + 1)),
+                                new SKPoint(quadPoints.GetFloat(index + 2), quadPoints.GetFloat(index + 3)),
+                                new SKPoint(quadPoints.GetFloat(index + 6), quadPoints.GetFloat(index + 7)),
+                                new SKPoint(quadPoints.GetFloat(index + 4), quadPoints.GetFloat(index + 5)));
                             quad.Transform(ref pageMatrix);
                             markupBoxes.Add(quad);
                         }
@@ -226,32 +228,29 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             set
             {
-                PdfArray quadPointsObject = new PdfArray();
+                var quadPoints = new PdfArray();
                 var pageMatrix = InvertPageMatrix;
-                markupBoxes.Clear();
                 SKRect box = SKRect.Empty;
                 foreach (Quad markupBox in value)
                 {
-                    markupBoxes.Add(markupBox);
                     /*
                       NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
                     */
-                    SKPoint[] markupBoxPoints = pageMatrix.MapPoints(markupBox.GetPoints());
+                    SKPoint[] points = pageMatrix.MapPoints(markupBox.GetPoints());
 
-                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[0].X)); // x1.
-                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[0].Y)); // y1.
-                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[1].X)); // x2.
-                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[1].Y)); // y2.
-                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[3].X)); // x4.
-                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[3].Y)); // y4.
-                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[2].X)); // x3.
-                    quadPointsObject.Add(PdfReal.Get(markupBoxPoints[2].Y)); // y3.
+                    quadPoints.Add(PdfReal.Get(points[0].X)); // x1.
+                    quadPoints.Add(PdfReal.Get(points[0].Y)); // y1.
+                    quadPoints.Add(PdfReal.Get(points[1].X)); // x2.
+                    quadPoints.Add(PdfReal.Get(points[1].Y)); // y2.
+                    quadPoints.Add(PdfReal.Get(points[3].X)); // x4.
+                    quadPoints.Add(PdfReal.Get(points[3].Y)); // y4.
+                    quadPoints.Add(PdfReal.Get(points[2].X)); // x3.
+                    quadPoints.Add(PdfReal.Get(points[2].Y)); // y3.
                     if (box.IsEmpty)
                     { box = markupBox.GetBounds(); }
                     else
                     { box = SKRect.Union(box, markupBox.GetBounds()); }
                 }
-                BaseDataObject[PdfName.QuadPoints] = quadPointsObject;
 
                 /*
                   NOTE: Box width is expanded to make room for end decorations (e.g. rounded highlight caps).
@@ -260,7 +259,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 box.Inflate(markupBoxMargin, 0);
                 Box = box;
 
-                RefreshAppearance();
+                QuadPoints = quadPoints;
             }
         }
 
@@ -293,22 +292,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         /*
           TODO: refresh should happen for every Annotation with overwrite\remove check 
         */
-        private void RefreshAppearance()
+        protected override void RefreshAppearance()
         {
-            FormXObject normalAppearance;
             SKRect box = Rect.ToRect();
-            {
-                AppearanceStates normalAppearances = Appearance.Normal;
-                normalAppearance = normalAppearances[null];
-                if (normalAppearance != null)
-                {
-                    normalAppearance.Box = box;
-                    normalAppearance.BaseDataObject.Body.Clear();
-                    normalAppearance.ClearContents();
-                }
-                else
-                { normalAppearances[null] = normalAppearance = new FormXObject(Document, box); }
-            }
+            FormXObject normalAppearance = ResetAppearance(box);
 
             PrimitiveComposer composer = new PrimitiveComposer(normalAppearance);
             {

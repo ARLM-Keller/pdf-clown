@@ -71,7 +71,9 @@ namespace PdfClown.Objects
 
         #region static
         public static PdfString Get(string value)
-        { return value != null ? new PdfString(value) : null; }
+        {
+            return value != null ? new PdfString(value) : null;
+        }
 
         #region fields
         public static readonly PdfString Default = new PdfString("");

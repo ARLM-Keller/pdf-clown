@@ -77,13 +77,10 @@ namespace PdfClown.Documents.Files
             {
                 List<string> keys = new List<string>();
                 PdfArray itemPairs = BaseDataObject;
-                for (
-                  int index = 0,
-                    length = itemPairs.Count;
-                  index < length;
-                  index += 2
-                  )
-                { keys.Add((string)((PdfTextString)itemPairs[index]).Value); }
+                for (int index = 0, length = itemPairs.Count; index < length; index += 2)
+                {
+                    keys.Add((string)((PdfTextString)itemPairs[index]).Value);
+                }
                 return keys;
             }
         }
@@ -149,30 +146,42 @@ namespace PdfClown.Documents.Files
                 List<EmbeddedFile> values = new List<EmbeddedFile>();
                 PdfArray itemPairs = BaseDataObject;
                 for (int index = 1, length = itemPairs.Count; index < length; index += 2)
-                { values.Add(Wrap<EmbeddedFile>(itemPairs[index])); }
+                {
+                    values.Add(Wrap<EmbeddedFile>(itemPairs[index]));
+                }
                 return values;
             }
         }
 
         #region ICollection
         void ICollection<KeyValuePair<string, EmbeddedFile>>.Add(KeyValuePair<string, EmbeddedFile> entry)
-        { Add(entry.Key, entry.Value); }
+        {
+            Add(entry.Key, entry.Value);
+        }
 
         public void Clear()
-        { BaseDataObject.Clear(); }
+        {
+            BaseDataObject.Clear();
+        }
 
         bool ICollection<KeyValuePair<string, EmbeddedFile>>.Contains(KeyValuePair<string, EmbeddedFile> entry)
-        { return entry.Value.Equals(this[entry.Key]); }
+        {
+            return entry.Value.Equals(this[entry.Key]);
+        }
 
         public void CopyTo(KeyValuePair<string, EmbeddedFile>[] entries, int index)
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
 
         public int Count => BaseDataObject.Count;
 
         public bool IsReadOnly => false;
 
         public bool Remove(KeyValuePair<string, EmbeddedFile> entry)
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
 
         #region IEnumerable<KeyValuePair<string,EmbeddedFile>>
         IEnumerator<KeyValuePair<string, EmbeddedFile>> IEnumerable<KeyValuePair<string, EmbeddedFile>>.GetEnumerator()
@@ -189,7 +198,9 @@ namespace PdfClown.Documents.Files
 
         #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<KeyValuePair<string, EmbeddedFile>>)this).GetEnumerator(); }
+        {
+            return ((IEnumerable<KeyValuePair<string, EmbeddedFile>>)this).GetEnumerator();
+        }
         #endregion
         #endregion
         #endregion

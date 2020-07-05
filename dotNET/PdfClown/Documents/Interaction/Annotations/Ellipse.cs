@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Ellipse(Page page, SKRect box, string text) : base(page, box, text, PdfName.Circle)
         { }
 
-        internal Ellipse(PdfDirectObject baseObject) : base(baseObject)
+        public Ellipse(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 

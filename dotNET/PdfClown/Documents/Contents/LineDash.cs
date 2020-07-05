@@ -48,11 +48,11 @@ namespace PdfClown.Documents.Contents
                 return null;
 
             // Dash array.
-            double[] dashArrayValue = new double[dashArray.Count];
+            var dashArrayValue = new float[dashArray.Count];
             for (int index = 0, length = dashArrayValue.Length; index < length; index++)
-            { dashArrayValue[index] = ((IPdfNumber)dashArray[index]).DoubleValue; }
+            { dashArrayValue[index] = dashArray.GetFloat(index); }
             // Dash phase.
-            double dashPhaseValue = dashPhase != null ? ((IPdfNumber)dashPhase).DoubleValue : 0;
+            var dashPhaseValue = dashPhase != null ? dashPhase.FloatValue : 0;
 
             return new LineDash(dashArrayValue, dashPhaseValue);
         }
@@ -62,42 +62,42 @@ namespace PdfClown.Documents.Contents
 
         #region dynamic
         #region fields
-        private readonly double[] dashArray;
-        private readonly double dashPhase;
+        private readonly float[] dashArray;
+        private readonly float dashPhase;
         #endregion
 
         #region constructors
         public LineDash() : this(null) { }
 
-        public LineDash(double[] dashArray) : this(dashArray, 0)
+        public LineDash(float[] dashArray) : this(dashArray, 0)
         { }
 
-        public LineDash(double[] dashArray, double dashPhase)
+        public LineDash(float[] dashArray, float dashPhase)
         {
-            this.dashArray = dashArray != null ? dashArray : new double[0]; // [FIX:9] NullPointerException if dashArray not initialized.
+            this.dashArray = dashArray != null ? dashArray : new float[0]; // [FIX:9] NullPointerException if dashArray not initialized.
             this.dashPhase = dashPhase;
         }
         #endregion
 
         #region interface
         #region public
-        public double[] DashArray => dashArray;
+        public float[] DashArray => dashArray;
 
-        public double DashPhase => dashPhase;
+        public float DashPhase => dashPhase;
 
         public void Apply(SKPaint stroke)
         {
-            double[] dashArray = DashArray;
+            var dashArray = DashArray;
             if (dashArray.Length > 0)
             {
                 if (dashArray.Length % 2 != 0)
                 {
-                    var list = new double[dashArray.Length + 1];
+                    var list = new float[dashArray.Length + 1];
                     System.Array.Copy(dashArray, 0, list, 0, dashArray.Length);
                     list[dashArray.Length] = dashArray[dashArray.Length - 1];
                     dashArray = list;
                 }
-                stroke.PathEffect = SKPathEffect.CreateDash(ConvertUtils.ToFloatArray(dashArray), (float)DashPhase);
+                stroke.PathEffect = SKPathEffect.CreateDash(dashArray, DashPhase);
             }
 
         }

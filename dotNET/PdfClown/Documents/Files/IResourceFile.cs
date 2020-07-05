@@ -33,10 +33,6 @@ namespace PdfClown.Documents.Files
         /**
           <summary>Gets/Sets the file containing the object data.</summary>
         */
-        FileSpecification DataFile
-        {
-            get;
-            set;
-        }
+        FileSpecification DataFile { get; set; }
     }
 }

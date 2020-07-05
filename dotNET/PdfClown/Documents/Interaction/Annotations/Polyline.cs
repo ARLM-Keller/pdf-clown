@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, box, text, PdfName.PolyLine)
         { }
 
-        internal Polyline(PdfDirectObject baseObject) : base(baseObject)
+        public Polyline(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 

@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Contents.Objects
             {
                 operands.Clear();
                 // 1. Dash array.
-                double[] dashArray = value.DashArray;
+                var dashArray = value.DashArray;
                 PdfArray baseDashArray = new PdfArray(dashArray.Length);
                 foreach (double dashItem in dashArray)
                 { baseDashArray.Add(PdfReal.Get(dashItem)); }

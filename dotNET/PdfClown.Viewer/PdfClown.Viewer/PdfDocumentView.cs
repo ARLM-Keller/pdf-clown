@@ -213,9 +213,9 @@ namespace PdfClown.Viewer
                 }
             }
             if (annotation is Popup popup
-                && popup.Markup != null)
+                && popup.Parent != null)
             {
-                AddAnnotation(popup.Markup);
+                AddAnnotation(popup.Parent);
             }
         }
 
@@ -242,7 +242,7 @@ namespace PdfClown.Viewer
             AnnotationRemoved?.Invoke(this, new AnnotationEventArgs(annotation));
             if (annotation is Popup popup)
             {
-                foreach (var deleted in RemoveAnnotation(popup.Markup))
+                foreach (var deleted in RemoveAnnotation(popup.Parent))
                 {
                     list.Add(deleted);
                 }

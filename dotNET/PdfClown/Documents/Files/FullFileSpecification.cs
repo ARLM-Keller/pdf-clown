@@ -67,13 +67,19 @@ namespace PdfClown.Documents.Files
               new PdfDirectObject[] { PdfName.Filespec }
               )
             )
-        { SetPath(path); }
+        {
+            Path = path;
+        }
 
         internal FullFileSpecification(EmbeddedFile embeddedFile, string filename) : this(embeddedFile.Document, filename)
-        { EmbeddedFile = embeddedFile; }
+        {
+            EmbeddedFile = embeddedFile;
+        }
 
         internal FullFileSpecification(Document context, Uri url) : this(context, url.ToString())
-        { FileSystem = StandardFileSystemEnum.URL; }
+        {
+            FileSystem = StandardFileSystemEnum.URL;
+        }
 
         internal FullFileSpecification(PdfDirectObject baseObject) : base(baseObject)
         { }
@@ -81,6 +87,21 @@ namespace PdfClown.Documents.Files
 
         #region interface
         #region public
+        /**
+          <summary>Gets/Sets the identifier of the file.</summary>
+        */
+        public FileIdentifier ID
+        {
+            get => Wrap<FileIdentifier>(BaseDictionary[PdfName.ID]);
+            set => BaseDictionary[PdfName.ID] = value.BaseObject;
+        }
+
+        public override string Path
+        {
+            get => BaseDictionary.GetText(PdfName.F);
+            set => BaseDictionary.SetString(PdfName.F, value);
+        }
+
         /**
           <summary>Gets/Sets the related files.</summary>
         */
@@ -95,8 +116,8 @@ namespace PdfClown.Documents.Files
         */
         public string Description
         {
-            get => (string)PdfSimpleObject<object>.GetValue(BaseDictionary[PdfName.Desc]);
-            set => BaseDictionary[PdfName.Desc] = new PdfTextString(value);
+            get => BaseDictionary.GetText(PdfName.Desc);
+            set => BaseDictionary.SetText(PdfName.Desc, value);
         }
 
         /**
@@ -134,6 +155,15 @@ namespace PdfClown.Documents.Files
                 BaseDictionary[PdfName.FS] = fileSystemObject;
             }
         }
+        /**
+          <summary>Gets/Sets whether the referenced file is volatile (changes frequently with time).
+          </summary>
+        */
+        public bool Volatile
+        {
+            get => BaseDictionary.GetBool(PdfName.V, false);
+            set => BaseDictionary.SetBool(PdfName.V, value);
+        }
 
         public override bytes::IInputStream GetInputStream()
         {
@@ -154,8 +184,7 @@ namespace PdfClown.Documents.Files
                 return base.GetInputStream();
         }
 
-        public override bytes::IOutputStream GetOutputStream(
-          )
+        public override bytes::IOutputStream GetOutputStream()
         {
             if (PdfName.URL.Equals(BaseDictionary[PdfName.FS])) // Remote resource [PDF:1.7:3.10.4].
             {
@@ -174,29 +203,6 @@ namespace PdfClown.Documents.Files
                 return base.GetOutputStream();
         }
 
-        /**
-          <summary>Gets/Sets the identifier of the file.</summary>
-        */
-        public FileIdentifier ID
-        {
-            get => Wrap<FileIdentifier>(BaseDictionary[PdfName.ID]);
-            set => BaseDictionary[PdfName.ID] = value.BaseObject;
-        }
-
-        public override string Path => GetPath(PdfName.F);
-
-        public void SetPath(string value)
-        { SetPath(PdfName.F, value); }
-
-        /**
-          <summary>Gets/Sets whether the referenced file is volatile (changes frequently with time).
-          </summary>
-        */
-        public bool Volatile
-        {
-            get => (bool)PdfSimpleObject<object>.GetValue(BaseDictionary[PdfName.V], false);
-            set => BaseDictionary[PdfName.V] = PdfBoolean.Get(value);
-        }
         #endregion
 
         #region private
@@ -215,6 +221,15 @@ namespace PdfClown.Documents.Files
         }
 
         /**
+          <see cref="GetDependencies(PdfName)"/>
+        */
+        private void SetDependencies(PdfName key, RelatedFiles value)
+        {
+            PdfDictionary dependenciesObject = BaseDictionary.Resolve<PdfDictionary>(PdfName.RF);
+
+            dependenciesObject[key] = value.BaseObject;
+        }
+        /**
           <summary>Gets the embedded file associated to the given key.</summary>
         */
         private EmbeddedFile GetEmbeddedFile(PdfName key)
@@ -227,40 +242,15 @@ namespace PdfClown.Documents.Files
         }
 
         /**
-          <summary>Gets the path associated to the given key.</summary>
-        */
-        private string GetPath(PdfName key)
-        { return (string)PdfSimpleObject<object>.GetValue(BaseDictionary[key]); }
-
-        /**
-          <see cref="GetDependencies(PdfName)"/>
-        */
-        private void SetDependencies(PdfName key, RelatedFiles value)
-        {
-            PdfDictionary dependenciesObject = (PdfDictionary)BaseDictionary[PdfName.RF];
-            if (dependenciesObject == null)
-            { BaseDictionary[PdfName.RF] = dependenciesObject = new PdfDictionary(); }
-
-            dependenciesObject[key] = value.BaseObject;
-        }
-
-        /**
           <see cref="GetEmbeddedFile(PdfName)"/>
         */
         private void SetEmbeddedFile(PdfName key, EmbeddedFile value)
         {
-            PdfDictionary embeddedFilesObject = (PdfDictionary)BaseDictionary[PdfName.EF];
-            if (embeddedFilesObject == null)
-            { BaseDictionary[PdfName.EF] = embeddedFilesObject = new PdfDictionary(); }
+            PdfDictionary embeddedFilesObject = BaseDictionary.Resolve<PdfDictionary>(PdfName.EF);
 
             embeddedFilesObject[key] = value.BaseObject;
         }
 
-        /**
-          <see cref="GetPath(PdfName)"/>
-        */
-        private void SetPath(PdfName key, string value)
-        { BaseDictionary[key] = new PdfString(value); }
         #endregion
         #endregion
         #endregion
@@ -280,9 +270,13 @@ namespace PdfClown.Documents.Files
         }
 
         public static FullFileSpecification.StandardFileSystemEnum? Get(PdfName code)
-        { return codes.GetKey(code); }
+        {
+            return codes.GetKey(code);
+        }
 
         public static PdfName GetCode(this FullFileSpecification.StandardFileSystemEnum standardFileSystem)
-        { return codes[standardFileSystem]; }
+        {
+            return codes[standardFileSystem];
+        }
     }
 }

@@ -62,59 +62,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         protected TopLeftControlPoint cpTopLeft;
 
         public event PropertyChangedEventHandler PropertyChanged;
-        #region types
-        /**
-          <summary>Annotation flags [PDF:1.6:8.4.2].</summary>
-        */
-        [Flags]
-        public enum FlagsEnum
-        {
-            /**
-              <summary>Hide the annotation, both on screen and on print,
-              if it does not belong to one of the standard annotation types
-              and no annotation handler is available.</summary>
-            */
-            Invisible = 0x1,
-            /**
-              <summary>Hide the annotation, both on screen and on print
-              (regardless of its annotation type or whether an annotation handler is available).</summary>
-            */
-            Hidden = 0x2,
-            /**
-              <summary>Print the annotation when the page is printed.</summary>
-            */
-            Print = 0x4,
-            /**
-              <summary>Do not scale the annotation's appearance to match the magnification of the page.</summary>
-            */
-            NoZoom = 0x8,
-            /**
-              <summary>Do not rotate the annotation's appearance to match the rotation of the page.</summary>
-            */
-            NoRotate = 0x10,
-            /**
-              <summary>Hide the annotation on the screen.</summary>
-            */
-            NoView = 0x20,
-            /**
-              <summary>Do not allow the annotation to interact with the user.</summary>
-            */
-            ReadOnly = 0x40,
-            /**
-              <summary>Do not allow the annotation to be deleted or its properties to be modified by the user.</summary>
-            */
-            Locked = 0x80,
-            /**
-              <summary>Invert the interpretation of the NoView flag.</summary>
-            */
-            ToggleNoView = 0x100,
-            /**
-              <summary>Do not allow the contents of the annotation to be modified by the user.</summary>
-            */
-            LockedContents = 0x200
-        }
-
-        #endregion
 
         #region static
         #region interface
@@ -209,7 +156,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             Page = page;
             Box = box;
-            Text = text;
+            Contents = text;
             GenerateName();
             Printable = true;
             IsNew = true;
@@ -356,7 +303,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public virtual SKColor SKColor
         {
-            get => color ?? (color = DeviceColorSpace.CalcSKColor(Color, Alpha)).Value;
+            get => color ?? (color = Color == null ? SKColors.Transparent : DeviceColorSpace.CalcSKColor(Color, Alpha)).Value;
             set
             {
                 var oldValue = SKColor;
@@ -371,9 +318,9 @@ namespace PdfClown.Documents.Interaction.Annotations
           <summary>Gets/Sets the annotation flags.</summary>
         */
         [PDF(VersionEnum.PDF11)]
-        public virtual FlagsEnum Flags
+        public virtual AnnotationFlagsEnum Flags
         {
-            get => (FlagsEnum)BaseDataObject.GetInt(PdfName.F);
+            get => (AnnotationFlagsEnum)BaseDataObject.GetInt(PdfName.F);
             set
             {
                 var oldValue = Flags;
@@ -448,11 +395,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF11)]
         public virtual bool Printable
         {
-            get => (Flags & FlagsEnum.Print) == FlagsEnum.Print;
+            get => (Flags & AnnotationFlagsEnum.Print) == AnnotationFlagsEnum.Print;
             set
             {
                 var oldValue = Printable;
-                Flags = EnumUtils.Mask(Flags, FlagsEnum.Print, value);
+                Flags = EnumUtils.Mask(Flags, AnnotationFlagsEnum.Print, value);
                 OnPropertyChanged(oldValue, value);
             }
         }
@@ -462,12 +409,12 @@ namespace PdfClown.Documents.Interaction.Annotations
           <remarks>Depending on the annotation type, the text may be either directly displayed
           or (in case of non-textual annotations) used as alternate description.</remarks>
         */
-        public virtual string Text
+        public virtual string Contents
         {
             get => BaseDataObject.GetText(PdfName.Contents);
             set
             {
-                var oldValue = Text;
+                var oldValue = Contents;
                 BaseDataObject.SetText(PdfName.Contents, value);
                 ModificationDate = DateTime.Now;
                 OnPropertyChanged(oldValue, value);
@@ -496,11 +443,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF11)]
         public virtual bool Visible
         {
-            get => (Flags & FlagsEnum.Hidden) != FlagsEnum.Hidden;
+            get => (Flags & AnnotationFlagsEnum.Hidden) != AnnotationFlagsEnum.Hidden;
             set
             {
                 var oldValue = Visible;
-                Flags = EnumUtils.Mask(Flags, FlagsEnum.Hidden, !value);
+                Flags = EnumUtils.Mask(Flags, AnnotationFlagsEnum.Hidden, !value);
                 OnPropertyChanged(oldValue, value);
             }
         }
@@ -713,6 +660,58 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
         #endregion
     }
+
+    /**
+      <summary>Annotation flags [PDF:1.6:8.4.2].</summary>
+    */
+    [Flags]
+    public enum AnnotationFlagsEnum
+    {
+        /**
+          <summary>Hide the annotation, both on screen and on print,
+          if it does not belong to one of the standard annotation types
+          and no annotation handler is available.</summary>
+        */
+        Invisible = 0x1,
+        /**
+          <summary>Hide the annotation, both on screen and on print
+          (regardless of its annotation type or whether an annotation handler is available).</summary>
+        */
+        Hidden = 0x2,
+        /**
+          <summary>Print the annotation when the page is printed.</summary>
+        */
+        Print = 0x4,
+        /**
+          <summary>Do not scale the annotation's appearance to match the magnification of the page.</summary>
+        */
+        NoZoom = 0x8,
+        /**
+          <summary>Do not rotate the annotation's appearance to match the rotation of the page.</summary>
+        */
+        NoRotate = 0x10,
+        /**
+          <summary>Hide the annotation on the screen.</summary>
+        */
+        NoView = 0x20,
+        /**
+          <summary>Do not allow the annotation to interact with the user.</summary>
+        */
+        ReadOnly = 0x40,
+        /**
+          <summary>Do not allow the annotation to be deleted or its properties to be modified by the user.</summary>
+        */
+        Locked = 0x80,
+        /**
+          <summary>Invert the interpretation of the NoView flag.</summary>
+        */
+        ToggleNoView = 0x100,
+        /**
+          <summary>Do not allow the contents of the annotation to be modified by the user.</summary>
+        */
+        LockedContents = 0x200
+    }
+
 
     public class DetailedPropertyChangedEventArgs : PropertyChangedEventArgs
     {

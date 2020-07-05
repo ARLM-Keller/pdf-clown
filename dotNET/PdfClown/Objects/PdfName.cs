@@ -61,6 +61,7 @@ namespace PdfClown.Objects
         public static readonly PdfName A85 = new PdfName("A85");
         public static readonly PdfName AA = new PdfName("AA");
         public static readonly PdfName AC = new PdfName("AC");
+        public static readonly PdfName Accepted = new PdfName("Accepted");
         public static readonly PdfName Action = new PdfName("Action");
         public static readonly PdfName AcroForm = new PdfName("AcroForm");
         public static readonly PdfName AESV2 = new PdfName("AESV2");
@@ -127,6 +128,7 @@ namespace PdfClown.Objects
         public static readonly PdfName ca = new PdfName("ca");
         public static readonly PdfName CalGray = new PdfName("CalGray");
         public static readonly PdfName CalRGB = new PdfName("CalRGB");
+        public static readonly PdfName Cancelled = new PdfName("Cancelled");
         public static readonly PdfName Cap = new PdfName("Cap");
         public static readonly PdfName CapHeight = new PdfName("CapHeight");
         public static readonly PdfName Caret = new PdfName("Caret");
@@ -151,6 +153,7 @@ namespace PdfClown.Objects
         public static readonly PdfName CMap = new PdfName("CMap");
         public static readonly PdfName CMapName = new PdfName("CMapName");
         public static readonly PdfName CMapType = new PdfName("CMapType");
+        public static readonly PdfName CO = new PdfName("CO");
         public static readonly PdfName Color = new PdfName("Color");
         public static readonly PdfName ColorBurn = new PdfName("ColorBurn");
         public static readonly PdfName ColorDodge = new PdfName("ColorDodge");
@@ -159,6 +162,7 @@ namespace PdfClown.Objects
         public static readonly PdfName ColorTransform = new PdfName("ColorTransform");
         public static readonly PdfName Columns = new PdfName("Columns");
         public static readonly PdfName Compatible = new PdfName("Compatible");
+        public static readonly PdfName Completed = new PdfName("Completed");
         public static readonly PdfName Comment = new PdfName("Comment");
         public static readonly PdfName Confidential = new PdfName("Confidential");
         public static readonly PdfName Configs = new PdfName("Configs");
@@ -166,6 +170,7 @@ namespace PdfClown.Objects
         public static readonly PdfName Coords = new PdfName("Coords");
         public static readonly PdfName Count = new PdfName("Count");
         public static readonly PdfName Cover = new PdfName("Cover");
+        public static readonly PdfName CP = new PdfName("CP");
         public static readonly PdfName CharProcs = new PdfName("CharProcs");
         public static readonly PdfName CreationDate = new PdfName("CreationDate");
         public static readonly PdfName Creator = new PdfName("Creator");
@@ -327,6 +332,7 @@ namespace PdfClown.Objects
         public static readonly PdfName Index = new PdfName("Index");
         public static readonly PdfName Indexed = new PdfName("Indexed");
         public static readonly PdfName Info = new PdfName("Info");
+        public static readonly PdfName Inline = new PdfName("Inline");
         public static readonly PdfName Ink = new PdfName("Ink");
         public static readonly PdfName InkList = new PdfName("InkList");
         public static readonly PdfName Insert = new PdfName("Insert");
@@ -366,11 +372,14 @@ namespace PdfClown.Objects
         public static readonly PdfName Lighten = new PdfName("Lighten");
         public static readonly PdfName Limits = new PdfName("Limits");
         public static readonly PdfName Line = new PdfName("Line");
+        public static readonly PdfName LineArrow = new PdfName("LineArrow");
+        public static readonly PdfName LineDimension = new PdfName("LineDimension");
         public static readonly PdfName Link = new PdfName("Link");
         public static readonly PdfName ListMode = new PdfName("ListMode");
         public static readonly PdfName LJ = new PdfName("LJ");
         public static readonly PdfName LL = new PdfName("LL");
         public static readonly PdfName LLE = new PdfName("LLE");
+        public static readonly PdfName LLO = new PdfName("LLO");
         public static readonly PdfName Locked = new PdfName("Locked");
         public static readonly PdfName Luminosity = new PdfName("Luminosity");
         public static readonly PdfName LW = new PdfName("LW");
@@ -394,6 +403,7 @@ namespace PdfClown.Objects
         public static readonly PdfName MediaPlayerInfo = new PdfName("MediaPlayerInfo");
         public static readonly PdfName MediaPlayParams = new PdfName("MediaPlayParams");
         public static readonly PdfName MediaScreenParams = new PdfName("MediaScreenParams");
+        public static readonly PdfName Marked = new PdfName("Marked");
         public static readonly PdfName Mask = new PdfName("Mask");
         public static readonly PdfName Metadata = new PdfName("Metadata");
         public static readonly PdfName MH = new PdfName("MH");
@@ -478,7 +488,10 @@ namespace PdfClown.Objects
         public static readonly PdfName PL = new PdfName("PL");
         public static readonly PdfName PO = new PdfName("PO");
         public static readonly PdfName Polygon = new PdfName("Polygon");
+        public static readonly PdfName PolygonCloud = new PdfName("PolygonCloud");
+        public static readonly PdfName PolygonDimension = new PdfName("PolygonDimension");
         public static readonly PdfName PolyLine = new PdfName("PolyLine");
+        public static readonly PdfName PolyLineDimension = new PdfName("PolyLineDimension");
         public static readonly PdfName Popup = new PdfName("Popup");
         public static readonly PdfName Predictor = new PdfName("Predictor");
         public static readonly PdfName Preferred = new PdfName("Preferred");
@@ -500,12 +513,14 @@ namespace PdfClown.Objects
         public static readonly PdfName r = new PdfName("r");
         public static readonly PdfName R2L = new PdfName("R2L");
         public static readonly PdfName Range = new PdfName("Range");
+        public static readonly PdfName Rejected = new PdfName("Rejected");
         public static readonly PdfName RBGroups = new PdfName("RBGroups");
         public static readonly PdfName RC = new PdfName("RC");
         public static readonly PdfName RClosedArrow = new PdfName("RClosedArrow");
         public static readonly PdfName RD = new PdfName("RD");
         public static readonly PdfName Recipients = new PdfName("Recipients");
         public static readonly PdfName Rect = new PdfName("Rect");
+        public static readonly PdfName Review = new PdfName("Review");
         public static readonly PdfName Registry = new PdfName("Registry");
         public static readonly PdfName Rendition = new PdfName("Rendition");
         public static readonly PdfName Renditions = new PdfName("Renditions");
@@ -593,6 +608,7 @@ namespace PdfClown.Objects
         public static readonly PdfName Timespan = new PdfName("Timespan");
         public static readonly PdfName Title = new PdfName("Title");
         public static readonly PdfName Toggle = new PdfName("Toggle");
+        public static readonly PdfName Top = new PdfName("Top");
         public static readonly PdfName TopSecret = new PdfName("TopSecret");
         public static readonly PdfName ToUnicode = new PdfName("ToUnicode");
         public static readonly PdfName TP = new PdfName("TP");
@@ -619,6 +635,7 @@ namespace PdfClown.Objects
         public static readonly PdfName Uncover = new PdfName("Uncover");
         public static readonly PdfName Underline = new PdfName("Underline");
         public static readonly PdfName Unix = new PdfName("Unix");
+        public static readonly PdfName Unmarked = new PdfName("Unix");
         public static readonly PdfName URI = new PdfName("URI");
         public static readonly PdfName URL = new PdfName("URL");
         public static readonly PdfName Usage = new PdfName("Usage");

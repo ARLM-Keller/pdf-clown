@@ -199,26 +199,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, PdfName.FreeText, box, text)
         { }
 
-        internal FreeText(PdfDirectObject baseObject) : base(baseObject)
+        public FreeText(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 
         #region interface
         #region public
-        /**
-          <summary>Gets/Sets the border effect.</summary>
-        */
-        [PDF(VersionEnum.PDF16)]
-        public BorderEffect BorderEffect
-        {
-            get => Wrap<BorderEffect>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
-            set
-            {
-                var oldValue = (BorderEffect)null;
-                BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged(oldValue, value);
-            }
-        }
 
         /**
           <summary>Gets/Sets the justification to be used in displaying the annotation's text.</summary>
@@ -234,6 +220,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public PdfArray Callout
+        {
+            get => (PdfArray)BaseDataObject[PdfName.CL];
+            set => BaseDataObject[PdfName.CL] = value;
+        }
+
         /**
           <summary>Gets/Sets the callout line attached to the free text annotation.</summary>
         */
@@ -241,7 +233,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get
             {
-                var calloutCalloutLine = (PdfArray)BaseDataObject[PdfName.CL];
+                var calloutCalloutLine = Callout;
                 var line = Wrap<CalloutLine>(calloutCalloutLine);
                 if (line != null)
                 {
@@ -253,7 +245,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Line;
-                BaseDataObject[PdfName.CL] = PdfObjectWrapper.GetBaseObject(value);
+                Callout = value?.BaseDataObject;
                 if (value != null)
                 {
                     /*
@@ -363,6 +355,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public Objects.Rectangle Padding
+        {
+            get => Wrap<Objects.Rectangle>(BaseDataObject[PdfName.RD]);
+            set => BaseDataObject[PdfName.RD] = value?.BaseDataObject;
+        }
+
         public SKPoint TextTopLeftPoint
         {
             get => new SKPoint(TextBox.Left, TextBox.Top);
@@ -466,7 +464,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 IsAntialias = true
             })
             {
-                canvas.DrawLines(Text, textBounds, paint);
+                canvas.DrawLines(Contents, textBounds, paint);
             }
 
         }
@@ -715,7 +713,9 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public static PdfName GetName(this FreeText.TypeEnum type)
-        { return codes[type]; }
+        {
+            return codes[type];
+        }
     }
 
     public static class DrawHelper

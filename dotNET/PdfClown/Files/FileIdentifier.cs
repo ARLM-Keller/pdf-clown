@@ -43,10 +43,14 @@ namespace PdfClown.Files
         #region static
         #region private
         private static void Digest(BinaryWriter buffer, object value)
-        { buffer.Write(value.ToString()); }
+        {
+            buffer.Write(value.ToString());
+        }
 
         private static PdfArray CreateBaseDataObject()
-        { return new PdfArray(PdfString.Default, PdfString.Default); }
+        {
+            return new PdfArray(PdfString.Default, PdfString.Default);
+        }
         #endregion
         #endregion
 
@@ -107,7 +111,7 @@ namespace PdfClown.Files
             */
             using (MD5 md5 = MD5.Create())
             {
-                using (BinaryWriter buffer = new BinaryWriter(new MemoryStream(), Charset.ISO88591))
+                using (BinaryWriter buffer = new BinaryWriter(new MemoryStream(), Charset.ISO88591, false))
                 {
                     File file = writer.File;
                     try

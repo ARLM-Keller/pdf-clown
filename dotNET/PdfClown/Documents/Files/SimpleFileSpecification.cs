@@ -34,26 +34,26 @@ namespace PdfClown.Documents.Files
       <summary>Simple reference to the contents of another file [PDF:1.6:3.10.2].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class SimpleFileSpecification
-      : FileSpecification
+    public sealed class SimpleFileSpecification : FileSpecification
     {
         #region dynamic
         #region constructors
-        internal SimpleFileSpecification(
-          Document context,
-          string path
-          ) : base(context, new PdfString(path))
+        internal SimpleFileSpecification(Document context, string path)
+            : base(context, new PdfString(path))
         { }
 
-        internal SimpleFileSpecification(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal SimpleFileSpecification(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
         #endregion
 
         #region interface
         #region public
-        public override string Path => (string)((PdfString)BaseDataObject).Value;
+        public override string Path
+        {
+            get => (string)((PdfString)BaseDataObject).Value;
+            set { }
+        }
         #endregion
         #endregion
         #endregion

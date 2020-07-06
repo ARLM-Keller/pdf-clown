@@ -1194,7 +1194,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             bitModel.RunCleanupPass();
                             if (segmentationSymbolUsed)
                             {
-                                bitModel.ÑheckSegmentationSymbol();
+                                bitModel.CheckSegmentation();
                             }
                             break;
                     }
@@ -2446,7 +2446,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             }
         }
 
-        public void ÑheckSegmentationSymbol()
+        public void CheckSegmentation()
         {
             var decoder = Decoder;
             var contexts = Contexts;

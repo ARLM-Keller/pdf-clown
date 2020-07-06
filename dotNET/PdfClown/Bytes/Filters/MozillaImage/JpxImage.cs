@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 namespace PdfClown.Bytes.Filters.Jpx
 {
@@ -71,9 +70,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                 {
                     // XLBox: read UInt64 according to spec.
                     // JavaScript's int precision of 53 bit should be sufficient here.
-                    lbox =
-data.ReadUint32(position) * 4294967296 +
-data.ReadUint32(position + 4);
+                    lbox = data.ReadUint32(position) * 4294967296 + data.ReadUint32(position + 4);
                     position += 8;
                     headerSize += 8;
                 }
@@ -133,10 +130,10 @@ data.ReadUint32(position + 4);
                         break;
                     default:
                         var headerType = new string(new char[] {
-(char)((tbox >> 24) & 0xff),
-(char)((tbox >> 16) & 0xff),
-(char)((tbox >> 8) & 0xff),
-(char)(tbox & 0xff)});
+                            (char)((tbox >> 24) & 0xff),
+                            (char)((tbox >> 16) & 0xff),
+                            (char)((tbox >> 8) & 0xff),
+                            (char)(tbox & 0xff)});
                         Debug.WriteLine("warn: Unsupported header type " + tbox + " (" + headerType + ")");
                         break;
                 }
@@ -463,9 +460,7 @@ data.ReadUint32(position + 4);
                             // skipping content
                             break;
                         case 0xff53: // Coding style component (COC)
-                            throw new Exception(
-"Codestream code 0xFF53 (COC) is not implemented"
-);
+                            throw new Exception("Codestream code 0xFF53 (COC) is not implemented");
                         default:
                             throw new Exception("Unknown codestream code: " + code.ToString());
                     }
@@ -560,14 +555,8 @@ data.ReadUint32(position + 4);
                 result.PPy = codOrCoc.PrecinctsSizes[r].PPy;
             }
             // calculate codeblock size as described in section B.7
-            result.xcb_ =
-r > 0
-? Math.Min(codOrCoc.Xcb, result.PPx - 1)
-: Math.Min(codOrCoc.Xcb, result.PPx);
-            result.ycb_ =
-            r > 0
-            ? Math.Min(codOrCoc.Ycb, result.PPy - 1)
-            : Math.Min(codOrCoc.Ycb, result.PPy);
+            result.xcb_ = r > 0 ? Math.Min(codOrCoc.Xcb, result.PPx - 1) : Math.Min(codOrCoc.Xcb, result.PPx);
+            result.ycb_ = r > 0 ? Math.Min(codOrCoc.Ycb, result.PPy - 1) : Math.Min(codOrCoc.Ycb, result.PPy);
             return result;
         }
 
@@ -832,12 +821,12 @@ r > 0
                     {
                         // one sub-band (LL) with last decomposition
                         subband = new SubBand(
-type: "LL",
-tbx0: (int)Math.Ceiling((double)component.Tcx0 / scale),
-tby0: (int)Math.Ceiling((double)component.Tcy0 / scale),
-tbx1: (int)Math.Ceiling((double)component.Tcx1 / scale),
-tby1: (int)Math.Ceiling((double)component.Tcy1 / scale),
-resolution: resolution);
+                            type: "LL",
+                            tbx0: (int)Math.Ceiling((double)component.Tcx0 / scale),
+                            tby0: (int)Math.Ceiling((double)component.Tcy0 / scale),
+                            tbx1: (int)Math.Ceiling((double)component.Tcx1 / scale),
+                            tby1: (int)Math.Ceiling((double)component.Tcy1 / scale),
+                            resolution: resolution);
                         BuildCodeblocks(context, subband, blocksDimensions);
                         subbands.Add(subband);
                         resolution.subbands = new List<SubBand>(new[] { subband });
@@ -848,34 +837,34 @@ resolution: resolution);
                         var resolutionSubbands = new List<SubBand>();
                         // three sub-bands (HL, LH and HH) with rest of decompositions
                         subband = new SubBand(
-type: "HL",
-tbx0: (int)Math.Ceiling((double)component.Tcx0 / bscale - 0.5),
-tby0: (int)Math.Ceiling((double)component.Tcy0 / bscale),
-tbx1: (int)Math.Ceiling((double)component.Tcx1 / bscale - 0.5),
-tby1: (int)Math.Ceiling((double)component.Tcy1 / bscale),
-resolution: resolution);
+                            type: "HL",
+                            tbx0: (int)Math.Ceiling((double)component.Tcx0 / bscale - 0.5),
+                            tby0: (int)Math.Ceiling((double)component.Tcy0 / bscale),
+                            tbx1: (int)Math.Ceiling((double)component.Tcx1 / bscale - 0.5),
+                            tby1: (int)Math.Ceiling((double)component.Tcy1 / bscale),
+                            resolution: resolution);
                         BuildCodeblocks(context, subband, blocksDimensions);
                         subbands.Add(subband);
                         resolutionSubbands.Add(subband);
 
                         subband = new SubBand(
-                        type: "LH",
-                        tbx0: (int)Math.Ceiling((double)component.Tcx0 / bscale),
-                        tby0: (int)Math.Ceiling((double)component.Tcy0 / bscale - 0.5),
-                        tbx1: (int)Math.Ceiling((double)component.Tcx1 / bscale),
-                        tby1: (int)Math.Ceiling((double)component.Tcy1 / bscale - 0.5),
-                        resolution: resolution);
+                            type: "LH",
+                            tbx0: (int)Math.Ceiling((double)component.Tcx0 / bscale),
+                            tby0: (int)Math.Ceiling((double)component.Tcy0 / bscale - 0.5),
+                            tbx1: (int)Math.Ceiling((double)component.Tcx1 / bscale),
+                            tby1: (int)Math.Ceiling((double)component.Tcy1 / bscale - 0.5),
+                            resolution: resolution);
                         BuildCodeblocks(context, subband, blocksDimensions);
                         subbands.Add(subband);
                         resolutionSubbands.Add(subband);
 
                         subband = new SubBand(
-                        type: "HH",
-                        tbx0: (int)Math.Ceiling((double)component.Tcx0 / bscale - 0.5),
-                        tby0: (int)Math.Ceiling((double)component.Tcy0 / bscale - 0.5),
-                        tbx1: (int)Math.Ceiling((double)component.Tcx1 / bscale - 0.5),
-                        tby1: (int)Math.Ceiling((double)component.Tcy1 / bscale - 0.5),
-                        resolution: resolution);
+                            type: "HH",
+                            tbx0: (int)Math.Ceiling((double)component.Tcx0 / bscale - 0.5),
+                            tby0: (int)Math.Ceiling((double)component.Tcy0 / bscale - 0.5),
+                            tbx1: (int)Math.Ceiling((double)component.Tcx1 / bscale - 0.5),
+                            tby1: (int)Math.Ceiling((double)component.Tcy1 / bscale - 0.5),
+                            resolution: resolution);
                         BuildCodeblocks(context, subband, blocksDimensions);
                         subbands.Add(subband);
                         resolutionSubbands.Add(subband);
@@ -1104,10 +1093,7 @@ resolution: resolution);
                     }
                     var codingpassesLog2 = FiltersExtension.Log2(codingpasses);
                     // rounding down log2
-                    var bits =
-(codingpasses < 1 << codingpassesLog2
-? codingpassesLog2 - 1
-: codingpassesLog2) + codeblock.Lblock;
+                    var bits = (codingpasses < 1 << codingpassesLog2 ? codingpassesLog2 - 1 : codingpassesLog2) + codeblock.Lblock;
                     var codedDataLength = readBits(bits);
                     queue.Enqueue(new PacketItem(codeblock, codingpasses, dataLength: codedDataLength));
                 }
@@ -1308,9 +1294,7 @@ resolution: resolution);
                     var gainLog2 = SubbandsGainLog2[subband.Type];
 
                     // calculate quantization coefficient (Section E.1.1.1)
-                    var delta = reversible
-? 1
-: (double)Math.Pow(2, precision + gainLog2 - epsilon) * (1 + mu / 2048D);
+                    var delta = reversible ? 1 : (double)Math.Pow(2, precision + gainLog2 - epsilon) * (1 + mu / 2048D);
                     var mb = guardBits + epsilon - 1;
 
                     // In the first resolution level, copyCoefficients will fill the
@@ -1323,11 +1307,7 @@ resolution: resolution);
                 subbandCoefficients.Add(new Coefficient(width, height, items: coefficients));
             }
 
-            var result = transform.Calculate(
-            subbandCoefficients,
-            component.Tcx0,
-            component.Tcy0
-            );
+            var result = transform.Calculate(subbandCoefficients, component.Tcx0, component.Tcy0);
             return new TileResultF(left: component.Tcx0, top: component.Tcy0, width: result.Width, height: result.Height, items: result.Items);
         }
 
@@ -2040,22 +2020,22 @@ resolution: resolution);
         // vv - sum of Vi (0..2), and hh - sum of Hi (0..2)
         // prettier-ignore
         public static readonly byte[] LLAndLHContextsLabel = new byte[]{
-0, 5, 8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 1, 6, 8, 0, 3, 7, 8, 0, 4,
-7, 8, 0, 0, 0, 0, 0, 2, 6, 8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 2, 6,
-8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 2, 6, 8, 0, 3, 7, 8, 0, 4, 7, 8
-};
+            0, 5, 8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 1, 6, 8, 0, 3, 7, 8, 0, 4,
+            7, 8, 0, 0, 0, 0, 0, 2, 6, 8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 2, 6,
+            8, 0, 3, 7, 8, 0, 4, 7, 8, 0, 0, 0, 0, 0, 2, 6, 8, 0, 3, 7, 8, 0, 4, 7, 8
+            };
         // prettier-ignore
         public static readonly byte[] HLContextLabel = new byte[]{
-0, 3, 4, 0, 5, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 1, 3, 4, 0, 6, 7, 7, 0, 8,
-8, 8, 0, 0, 0, 0, 0, 2, 3, 4, 0, 6, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 2, 3,
-4, 0, 6, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 2, 3, 4, 0, 6, 7, 7, 0, 8, 8, 8
-};
+            0, 3, 4, 0, 5, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 1, 3, 4, 0, 6, 7, 7, 0, 8,
+            8, 8, 0, 0, 0, 0, 0, 2, 3, 4, 0, 6, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 2, 3,
+            4, 0, 6, 7, 7, 0, 8, 8, 8, 0, 0, 0, 0, 0, 2, 3, 4, 0, 6, 7, 7, 0, 8, 8, 8
+            };
         // prettier-ignore
         public static readonly byte[] HHContextLabel = new byte[]{
-0, 1, 2, 0, 1, 2, 2, 0, 2, 2, 2, 0, 0, 0, 0, 0, 3, 4, 5, 0, 4, 5, 5, 0, 5,
-5, 5, 0, 0, 0, 0, 0, 6, 7, 7, 0, 7, 7, 7, 0, 7, 7, 7, 0, 0, 0, 0, 0, 8, 8,
-8, 0, 8, 8, 8, 0, 8, 8, 8, 0, 0, 0, 0, 0, 8, 8, 8, 0, 8, 8, 8, 0, 8, 8, 8
-};
+            0, 1, 2, 0, 1, 2, 2, 0, 2, 2, 2, 0, 0, 0, 0, 0, 3, 4, 5, 0, 4, 5, 5, 0, 5,
+            5, 5, 0, 0, 0, 0, 0, 6, 7, 7, 0, 7, 7, 7, 0, 7, 7, 7, 0, 0, 0, 0, 0, 8, 8,
+            8, 0, 8, 8, 8, 0, 8, 8, 8, 0, 0, 0, 0, 0, 8, 8, 8, 0, 8, 8, 8, 0, 8, 8, 8
+            };
 
         internal int Width;
         internal int Height;
@@ -2344,8 +2324,7 @@ resolution: resolution);
                     for (var index = index0 + j; index < indexNext; index += width)
                     {
                         // significant but not those that have just become
-                        if (coefficentsMagnitude[index] == 0 ||
-(processingFlags[index] & processedMask) != 0)
+                        if (coefficentsMagnitude[index] == 0 || (processingFlags[index] & processedMask) != 0)
                         {
                             continue;
                         }
@@ -2396,15 +2375,15 @@ resolution: resolution);
                     // using the property: labels[neighborsSignificance[index]] == 0
                     // when neighborsSignificance[index] == 0
                     var allEmpty =
-checkAllEmpty &&
-processingFlags[index0] == 0 &&
-processingFlags[index0 + oneRowDown] == 0 &&
-processingFlags[index0 + twoRowsDown] == 0 &&
-processingFlags[index0 + threeRowsDown] == 0 &&
-neighborsSignificance[index0] == 0 &&
-neighborsSignificance[index0 + oneRowDown] == 0 &&
-neighborsSignificance[index0 + twoRowsDown] == 0 &&
-neighborsSignificance[index0 + threeRowsDown] == 0;
+                        checkAllEmpty &&
+                        processingFlags[index0] == 0 &&
+                        processingFlags[index0 + oneRowDown] == 0 &&
+                        processingFlags[index0 + twoRowsDown] == 0 &&
+                        processingFlags[index0 + threeRowsDown] == 0 &&
+                        neighborsSignificance[index0] == 0 &&
+                        neighborsSignificance[index0 + oneRowDown] == 0 &&
+                        neighborsSignificance[index0 + twoRowsDown] == 0 &&
+                        neighborsSignificance[index0 + threeRowsDown] == 0;
                     var i1 = 0;
                     var index = index0;
                     var i = i0;
@@ -2466,6 +2445,7 @@ neighborsSignificance[index0 + threeRowsDown] == 0;
                 }
             }
         }
+
         public void ÑheckSegmentationSymbol()
         {
             var decoder = Decoder;
@@ -2790,7 +2770,6 @@ neighborsSignificance[index0 + threeRowsDown] == 0;
     }
 
     //Classes
-
     internal class CodeBlockData
     {
         internal readonly byte[] Data;

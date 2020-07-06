@@ -914,7 +914,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     {
                         // copy width and lsb
                         offset = glyphId * 4L;
-                        lastOffset = ÑopyBytes(input, bos, offset, lastOffset, 4);
+                        lastOffset = CopyBytes(input, bos, offset, lastOffset, 4);
                     }
                     else
                     {
@@ -924,14 +924,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                             // to all later glyphs
                             needLastGidWidth = false;
                             offset = lastgid * 4L;
-                            lastOffset = ÑopyBytes(input, bos, offset, lastOffset, 2);
+                            lastOffset = CopyBytes(input, bos, offset, lastOffset, 2);
 
                             // then go on with lsb from actual glyph (lsb are individual even in monotype fonts)
                         }
 
                         // copy lsb only, as we are beyond numOfHMetrics
                         offset = h.NumberOfHMetrics * 4L + (glyphId - h.NumberOfHMetrics) * 2L;
-                        lastOffset = ÑopyBytes(input, bos, offset, lastOffset, 2);
+                        lastOffset = CopyBytes(input, bos, offset, lastOffset, 2);
                     }
                 }
 
@@ -943,7 +943,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        private long ÑopyBytes(Bytes.Buffer input, Stream os, long newOffset, long lastOffset, int count)
+        private long CopyBytes(Bytes.Buffer input, Stream os, long newOffset, long lastOffset, int count)
         {
             // skip over from last original offset
             long nskip = newOffset - lastOffset;

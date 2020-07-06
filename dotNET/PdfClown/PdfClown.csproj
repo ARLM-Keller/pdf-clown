@@ -5,12 +5,12 @@
     <OutputType>Library</OutputType>
     <AssemblyName>PdfClown</AssemblyName>
     <RootNamespace>PdfClown</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <ProjectGuid>{DBED0809-EE4C-45B0-92FA-E4789ECC2AEC}</ProjectGuid>
-    <Version>0.2.1.0</Version>
+    <Version>0.2.2.0</Version>
     <Company>Stefano Chizzolini</Company>
     <Product>PDF Clown for .NET Core</Product>
-    <PackageId>PDFClownFor.NETCore</PackageId>
+    <PackageId>PDFClown.NETCore</PackageId>
     <Authors>Stefano Chizzolini</Authors>
     <Description>PDF engine</Description>
     <Copyright>Copyright 2006-2015 Stefano Chizzolini</Copyright>
@@ -516,7 +516,4 @@
     <PackageReference Include="SkiaSharp" Version="1.68.3" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.7.1" />
   </ItemGroup>
-
-
-
 </Project>

@@ -71,6 +71,8 @@ namespace PdfClown.Tokens
         private string keyAlias;
         private SecurityHandler securityHandler;
         private AccessPermission accessPermission;
+
+        public string KeyAlias { get => keyAlias; set => keyAlias = value; }
         #endregion
 
         #region constructors

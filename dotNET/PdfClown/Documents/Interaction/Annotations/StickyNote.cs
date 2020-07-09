@@ -116,8 +116,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = ImageName;
-                BaseDataObject[PdfName.Name] = (value != DefaultIconType ? ToCode(value) : null);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.Name] = (value != DefaultIconType ? ToCode(value) : null);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -130,8 +133,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = IsOpen;
-                BaseDataObject[PdfName.Open] = (value != DefaultOpen ? PdfBoolean.Get(value) : null);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.Open] = (value != DefaultOpen ? PdfBoolean.Get(value) : null);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -139,13 +145,29 @@ namespace PdfClown.Documents.Interaction.Annotations
         public MarkupState? State
         {
             get => MarkupStateExtension.Get((PdfName)BaseDataObject[PdfName.State]);
-            set => BaseDataObject[PdfName.State] = MarkupStateExtension.GetCode(value);
+            set
+            {
+                var oldValue = State;
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.State] = MarkupStateExtension.GetCode(value);
+                    OnPropertyChanged(oldValue, value);
+                }
+            }
         }
 
         public MarkupStateModel? StateModel
         {
             get => MarkupStateModelExtension.Get((PdfName)BaseDataObject[PdfName.State]);
-            set => BaseDataObject[PdfName.State] = MarkupStateModelExtension.GetCode(value);
+            set
+            {
+                var oldValue = StateModel;
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.State] = MarkupStateModelExtension.GetCode(value);
+                    OnPropertyChanged(oldValue, value);
+                }
+            }
         }
 
         public override void DrawSpecial(SKCanvas canvas)
@@ -167,7 +189,9 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()
-        { yield break; }
+        {
+            yield break;
+        }
         //TODO:State and StateModel!!!
         #endregion
         #endregion

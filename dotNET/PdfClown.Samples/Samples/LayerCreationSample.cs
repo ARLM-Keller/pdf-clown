@@ -218,7 +218,7 @@ namespace PdfClown.Samples.CLI
                   page,
                   composer.ShowText(zoomRestrictedLayer.Title + ": this text is only visible if zoom between 75% and 125%", new SKPoint(50, 290)),
                   "This is a highlight annotation visible only if zoom is between 75% and 125%",
-                  TextMarkup.MarkupTypeEnum.Highlight
+                  TextMarkupType.Highlight
                   )
                 { Layer = zoomRestrictedLayer /* Associates the annotation to the layer. */ };
                 composer.End();

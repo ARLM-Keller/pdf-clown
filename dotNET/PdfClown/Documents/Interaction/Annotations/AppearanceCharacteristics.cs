@@ -41,42 +41,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF12)]
     public sealed class AppearanceCharacteristics : PdfObjectWrapper<PdfDictionary>
     {
-        #region types
-        /**
-          <summary>Caption position relative to its icon [PDF:1.6:8.4.5].</summary>
-        */
-        public enum CaptionPositionEnum
-        {
-            /**
-              <summary>Caption only (no icon).</summary>
-            */
-            CaptionOnly = 0,
-            /**
-              <summary>No caption (icon only).</summary>
-            */
-            NoCaption = 1,
-            /**
-              <summary>Caption below the icon.</summary>
-            */
-            Below = 2,
-            /**
-              <summary>Caption above the icon.</summary>
-            */
-            Above = 3,
-            /**
-              <summary>Caption to the right of the icon.</summary>
-            */
-            Right = 4,
-            /**
-              <summary>Caption to the left of the icon.</summary>
-            */
-            Left = 5,
-            /**
-              <summary>Caption overlaid directly on the icon.</summary>
-            */
-            Overlaid = 6
-        };
-
+        #region types        
         /**
           <summary>Icon fit [PDF:1.6:8.6.6].</summary>
         */
@@ -382,12 +347,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets/Sets the position of the caption relative to its icon (Pushbutton fields only).</summary>
         */
-        public CaptionPositionEnum CaptionPosition
+        public AppearanceCaptionPosition CaptionPosition
         {
             get
             {
                 PdfInteger captionPositionObject = (PdfInteger)BaseDataObject[PdfName.TP];
-                return captionPositionObject != null ? (CaptionPositionEnum)captionPositionObject.RawValue : CaptionPositionEnum.CaptionOnly;
+                return captionPositionObject != null ? (AppearanceCaptionPosition)captionPositionObject.RawValue : AppearanceCaptionPosition.CaptionOnly;
             }
             set => BaseDataObject[PdfName.TP] = PdfInteger.Get((int)value);
         }
@@ -482,4 +447,40 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
         #endregion
     }
+
+    /**
+      <summary>Caption position relative to its icon [PDF:1.6:8.4.5].</summary>
+    */
+    public enum AppearanceCaptionPosition
+    {
+        /**
+          <summary>Caption only (no icon).</summary>
+        */
+        CaptionOnly = 0,
+        /**
+          <summary>No caption (icon only).</summary>
+        */
+        NoCaption = 1,
+        /**
+          <summary>Caption below the icon.</summary>
+        */
+        Below = 2,
+        /**
+          <summary>Caption above the icon.</summary>
+        */
+        Above = 3,
+        /**
+          <summary>Caption to the right of the icon.</summary>
+        */
+        Right = 4,
+        /**
+          <summary>Caption to the left of the icon.</summary>
+        */
+        Left = 5,
+        /**
+          <summary>Caption overlaid directly on the icon.</summary>
+        */
+        Overlaid = 6
+    };
+
 }

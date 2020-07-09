@@ -406,11 +406,7 @@ namespace PdfClown.Documents.Contents.Composition
                 }
 
                 // Does the text fit?
-                if (textFitter.Fit(
-                  index,
-                  frame.Width - currentRow.Width, // Remaining row width.
-                  currentRow.SpaceCount == 0
-                  ))
+                if (textFitter.Fit(index, frame.Width - currentRow.Width, currentRow.SpaceCount == 0))// Remaining row width.
                 {
                     // Get the fitting text!
                     string textChunk = textFitter.FittedText;

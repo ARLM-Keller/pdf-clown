@@ -65,7 +65,7 @@ namespace PdfClown.Documents.Contents.Fonts
             // descendant CIDFont
             cidFont = CreateCIDFont();
             PdfArray descendantFonts = new PdfArray();
-            descendantFonts.Add(cidFont);
+            descendantFonts.Add(document.File.Register(cidFont));
             dict[PdfName.DescendantFonts] = descendantFonts;
 
             if (!embedSubset)

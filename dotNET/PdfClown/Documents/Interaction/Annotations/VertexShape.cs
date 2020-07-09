@@ -104,7 +104,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         public PdfArray Vertices
         {
             get => (PdfArray)BaseDataObject[PdfName.Vertices];
-            set => BaseDataObject[PdfName.Vertices] = value;
+            set
+            {
+                var oldValue = Vertices;
+                //if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.Vertices] = value;
+                    OnPropertyChanged(oldValue, value);
+                }
+            }
         }
 
         public SKPoint this[int index]

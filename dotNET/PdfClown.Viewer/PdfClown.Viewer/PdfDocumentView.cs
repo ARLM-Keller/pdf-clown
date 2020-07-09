@@ -228,7 +228,7 @@ namespace PdfClown.Viewer
                 foreach (var item in annotation.Page.Annotations.ToList())
                 {
                     if (item is Markup markup
-                        && markup.InReplyTo == annotation)//&& markup.ReplyType == Markup.ReplyTypeEnum.Thread
+                        && markup.ReplyTo == annotation)//&& markup.ReplyType == Markup.ReplyTypeEnum.Thread
                     {
                         annotation.Replies.Add(item);
                         foreach (var deleted in RemoveAnnotation(markup))

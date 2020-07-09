@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       <summary>Border characteristics [PDF:1.6:8.4.3].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class Border : PdfObjectWrapper<PdfDictionary>
+    public sealed class Border : PdfObjectWrapper<PdfDictionary>, IEquatable<Border>
     {
 
         #region static
@@ -203,6 +203,15 @@ namespace PdfClown.Documents.Interaction.Annotations
                 Pattern?.Apply(paint);
             }
             borderEffect?.Apply(paint);
+        }
+
+        public bool Equals(Border other)
+        {
+            if (other == null)
+                return false;
+            return Width == other.Width
+                && Style == other.Style
+                && Pattern.Equals(other.Pattern);
         }
         #endregion
         #endregion

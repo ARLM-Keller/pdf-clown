@@ -190,8 +190,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Action;
-                BaseDataObject[PdfName.A] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.A] = PdfObjectWrapper.GetBaseObject(value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -204,9 +207,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => CommonAnnotationActions.Wrap(this, BaseDataObject.Get<PdfDictionary>(PdfName.AA));
             set
             {
-                var oldValue = (AnnotationActions)null;
-                BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged(oldValue, value);
+                var oldValue = Actions;
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -222,8 +228,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Alpha;
-                BaseDataObject.SetFloat(PdfName.CA, value);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject.SetFloat(PdfName.CA, value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -237,8 +246,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = (Appearance)null;
-                BaseDataObject[PdfName.AP] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.AP] = PdfObjectWrapper.GetBaseObject(value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -251,11 +263,14 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => Wrap<Border>(BaseDataObject.Get<PdfDictionary>(PdfName.BS));
             set
             {
-                var oldValue = (Border)null;
-                BaseDataObject[PdfName.BS] = PdfObjectWrapper.GetBaseObject(value);
-                if (value != null)
-                { BaseDataObject.Remove(PdfName.Border); }
-                OnPropertyChanged(oldValue, value);
+                var oldValue = Border;
+                if (!(oldValue?.Equals(value) ?? value == null))
+                {
+                    BaseDataObject[PdfName.BS] = PdfObjectWrapper.GetBaseObject(value);
+                    if (value != null)
+                    { BaseDataObject.Remove(PdfName.Border); }
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -269,9 +284,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Box;
-                boxCache = value;
-                Rect = new Objects.Rectangle(InvertPageMatrix.MapRect(value));
-                OnPropertyChanged(oldValue, value);
+                if (!oldValue.Equals(value))
+                {
+                    boxCache = value;
+                    Rect = new Objects.Rectangle(InvertPageMatrix.MapRect(value));
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -281,8 +299,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Rect;
-                BaseDataObject[PdfName.Rect] = value.BaseDataObject;
-                OnPropertyChanged(oldValue, value);
+                if (!(oldValue?.Equals(value) ?? value == null))
+                {
+                    BaseDataObject[PdfName.Rect] = value.BaseDataObject;
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -307,10 +328,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = SKColor;
-                color = value;
-                Color = DeviceRGBColor.Get(value);
-                Alpha = value.Alpha / 255F;
-                OnPropertyChanged(oldValue, value);
+                if (!oldValue.Equals(value))
+                {
+                    color = value;
+                    Color = DeviceRGBColor.Get(value);
+                    Alpha = value.Alpha / 255F;
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -324,8 +348,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Flags;
-                BaseDataObject.SetInt(PdfName.F, (int)value);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject.SetInt(PdfName.F, (int)value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -340,8 +367,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = ModificationDate;
-                BaseDataObject.SetDate(PdfName.M, value);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject.SetDate(PdfName.M, value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -356,9 +386,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Name;
-                name = value;
-                BaseDataObject.SetText(PdfName.NM, value);
-                OnPropertyChanged(oldValue, value);
+                if (!string.Equals(oldValue, value, StringComparison.Ordinal))
+                {
+                    name = value;
+                    BaseDataObject.SetText(PdfName.NM, value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -382,7 +415,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                 page = value;
                 if (page != null)
                 {
-                    page.Annotations.Add(this);
+                    if (!page.Annotations.Contains(this))
+                    {
+                        page.Annotations.Add(this);
+                    }
+                    else if (BaseDataObject[PdfName.P] == null)
+                    {
+                        page.Annotations.DoAdd(this);
+                    }
                     //Debug.WriteLine($"Move to page {page}");
                 }
                 OnPropertyChanged(oldPage, value);
@@ -399,8 +439,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Printable;
-                Flags = EnumUtils.Mask(Flags, AnnotationFlagsEnum.Print, value);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    Flags = EnumUtils.Mask(Flags, AnnotationFlagsEnum.Print, value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -415,9 +458,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Contents;
-                BaseDataObject.SetText(PdfName.Contents, value);
-                ModificationDate = DateTime.Now;
-                OnPropertyChanged(oldValue, value);
+                if (!string.Equals(oldValue, value, StringComparison.Ordinal))
+                {
+                    BaseDataObject.SetText(PdfName.Contents, value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -431,9 +476,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Subject;
-                BaseDataObject.SetText(PdfName.Subj, value);
-                ModificationDate = DateTime.Now;
-                OnPropertyChanged(oldValue, value);
+                if (!string.Equals(oldValue, value, StringComparison.Ordinal))
+                {
+                    BaseDataObject.SetText(PdfName.Subj, value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -447,8 +494,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Visible;
-                Flags = EnumUtils.Mask(Flags, AnnotationFlagsEnum.Hidden, !value);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    Flags = EnumUtils.Mask(Flags, AnnotationFlagsEnum.Hidden, !value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -459,9 +509,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => (LayerEntity)PropertyList.Wrap(BaseDataObject[PdfName.OC]);
             set
             {
-                var oldValue = (LayerEntity)null;
-                BaseDataObject[PdfName.OC] = value != null ? value.Membership.BaseObject : null;
-                OnPropertyChanged(oldValue, value);
+                var oldValue = Layer;
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.OC] = value != null ? value.Membership.BaseObject : null;
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
         #endregion
@@ -623,6 +676,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         protected void OnPropertyChanged(object oldValue, object newValue, [CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new DetailedPropertyChangedEventArgs(oldValue, newValue, propertyName));
+            if (string.Equals(propertyName, nameof(ModificationDate), StringComparison.Ordinal))
+            {
+                ModificationDate = DateTime.UtcNow;
+            }
         }
 
         public override object Clone(Cloner cloner)

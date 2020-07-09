@@ -16,11 +16,9 @@ namespace PdfClown.Samples.CLI
       see the other available samples (<see cref="TextInfoExtractionSample"/>,
       <see cref="AdvancedTextExtractionSample"/>).</remarks>
     */
-    public class BasicTextExtractionSample
-      : Sample
+    public class BasicTextExtractionSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");

@@ -107,12 +107,8 @@ namespace PdfClown.Documents.Contents.Composition
                           NOTE: This text fitting algorithm returns everytime it finds a line break character,
                           as it's intended to evaluate the width of just a single line of text at a time.
                         */
-                        for (
-                          int spaceIndex = leadingWhitespaceGroup.Index,
-                            spaceEnd = leadingWhitespaceGroup.Index + leadingWhitespaceGroup.Length;
-                          spaceIndex < spaceEnd;
-                          spaceIndex++
-                          )
+                        var spaceEnd = leadingWhitespaceGroup.Index + leadingWhitespaceGroup.Length;
+                        for (int spaceIndex = leadingWhitespaceGroup.Index; spaceIndex < spaceEnd; spaceIndex++)
                         {
                             switch (text[spaceIndex])
                             {
@@ -145,13 +141,7 @@ namespace PdfClown.Documents.Contents.Composition
                         /*
                           NOTE: We need to hyphenate the current (unfitting) word.
                         */
-                        Hyphenate(
-                          hyphenation,
-                          ref index,
-                          ref wordEndIndex,
-                          wordWidth,
-                          out hyphen
-                          );
+                        Hyphenate(hyphenation, ref index, ref wordEndIndex, wordWidth, out hyphen);
 
                         break;
                     }

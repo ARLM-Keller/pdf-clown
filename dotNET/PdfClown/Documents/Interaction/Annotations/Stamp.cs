@@ -74,18 +74,20 @@ namespace PdfClown.Documents.Interaction.Annotations
           <param name="text">Annotation text.</param>
           <param name="type">Predefined stamp type.</param>
         */
-        public Stamp(Page page, SKPoint location, SKSize? size, string text, StandardStampEnum type) : base(
-          page,
-          PdfName.Stamp,
-          GeomUtils.Align(size.HasValue
-              ? SKRect.Create(0, 0,
-                size.Value.Width > 0 ? size.Value.Width : size.Value.Height * type.GetAspect(),
-                size.Value.Height > 0 ? size.Value.Height : size.Value.Width / type.GetAspect())
-              : SKRect.Create(0, 0, 40 * type.GetAspect(), 40),
-            location,
-            new SKPoint(0, 0)),
-          text)
-        { TypeName = type.GetName().StringValue; }
+        public Stamp(Page page, SKPoint location, SKSize? size, string text, StandardStampEnum type)
+            : base(page,
+                  PdfName.Stamp,
+                  GeomUtils.Align(size.HasValue
+                      ? SKRect.Create(0, 0,
+                          size.Value.Width > 0 ? size.Value.Width : size.Value.Height * type.GetAspect(),
+                          size.Value.Height > 0 ? size.Value.Height : size.Value.Width / type.GetAspect())
+                      : SKRect.Create(0, 0, 40 * type.GetAspect(), 40),
+                      location,
+                      new SKPoint(0, 0)),
+                  text)
+        {
+            TypeName = type.GetName().StringValue;
+        }
 
         /**
           <summary>Creates a new custom stamp on the specified page.</summary>
@@ -122,16 +124,21 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             set
             {
-                PdfName typeNameObject = PdfName.Get(value);
-                BaseDataObject[PdfName.Name] = (typeNameObject != null && !typeNameObject.Equals(DefaultType.GetName()) ? typeNameObject : null);
-
-                StandardStampEnum? standardType = StampStandardTypeEnumExtension.Get(typeNameObject);
-                if (standardType.HasValue)
+                var oldValue = TypeName;
+                if (!string.Equals(oldValue, value, StringComparison.Ordinal))
                 {
-                    /*
-                      NOTE: Standard stamp types leverage predefined appearances.
-                    */
-                    Appearance.Normal[null] = Document.Configuration.GetStamp(standardType.Value);
+                    PdfName typeNameObject = PdfName.Get(value);
+                    BaseDataObject[PdfName.Name] = (typeNameObject != null && !typeNameObject.Equals(DefaultType.GetName()) ? typeNameObject : null);
+
+                    StandardStampEnum? standardType = StampStandardTypeEnumExtension.Get(typeNameObject);
+                    if (standardType.HasValue)
+                    {
+                        /*
+                          NOTE: Standard stamp types leverage predefined appearances.
+                        */
+                        Appearance.Normal[null] = Document.Configuration.GetStamp(standardType.Value);
+                    }
+                    OnPropertyChanged(oldValue, value);
                 }
             }
         }
@@ -144,33 +151,34 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => BaseDataObject.GetInt(PdfName.Rotate, 0);
             set
             {
-                BaseDataObject[PdfName.Rotate] = (value != 0 ? new PdfInteger(value) : null);
-
-                FormXObject appearance = Appearance.Normal[null];
-                // Custom appearance?
-                if (appearance != null)
+                var oldValue = Rotation;
+                if (oldValue != value)
                 {
-                    /*
-                      NOTE: Custom appearances are responsible of their proper rotation.
-                      NOTE: Rotation must preserve the original scale factor.
-                    */
-                    SKRect oldBox = Box;
-                    SKRect unscaledOldBox = appearance.Matrix.MapRect(appearance.Box);
-                    SKSize scale = new SKSize(oldBox.Width / unscaledOldBox.Width, oldBox.Height / unscaledOldBox.Height);
+                    BaseDataObject[PdfName.Rotate] = (value != 0 ? new PdfInteger(value) : null);
 
-                    SKMatrix matrix = SKMatrix.MakeRotationDegrees(value);
-                    appearance.Matrix = matrix;
+                    FormXObject appearance = Appearance.Normal[null];
+                    // Custom appearance?
+                    if (appearance != null)
+                    {
+                        /*
+                          NOTE: Custom appearances are responsible of their proper rotation.
+                          NOTE: Rotation must preserve the original scale factor.
+                        */
+                        SKRect oldBox = Box;
+                        SKRect unscaledOldBox = appearance.Matrix.MapRect(appearance.Box);
+                        SKSize scale = new SKSize(oldBox.Width / unscaledOldBox.Width, oldBox.Height / unscaledOldBox.Height);
 
-                    SKRect appearanceBox = appearance.Box;
-                    appearanceBox = SKRect.Create(0, 0, appearanceBox.Width * scale.Width, appearanceBox.Height * scale.Height);
-                    Box = GeomUtils.Align(
-                      appearance.Matrix.MapRect(appearanceBox),
-                      oldBox.Center(),
-                      new SKPoint(0, 0)
-                      );
+                        SKMatrix matrix = SKMatrix.MakeRotationDegrees(value);
+                        appearance.Matrix = matrix;
+
+                        SKRect appearanceBox = appearance.Box;
+                        appearanceBox = SKRect.Create(0, 0, appearanceBox.Width * scale.Width, appearanceBox.Height * scale.Height);
+                        Box = GeomUtils.Align(appearance.Matrix.MapRect(appearanceBox), oldBox.Center(), new SKPoint(0, 0));
+                    }
                 }
             }
         }
+
         public override IEnumerable<ControlPoint> GetControlPoints()
         {
             foreach (var cpBase in GetDefaultControlPoint())

@@ -41,7 +41,7 @@ namespace PdfClown.Objects
         positively-oriented axes).</para>
       </remarks>
     */
-    public sealed class Rectangle : PdfObjectWrapper<PdfArray>
+    public sealed class Rectangle : PdfObjectWrapper<PdfArray>, IEquatable<Rectangle>
     {
         #region static
         #region interface
@@ -125,6 +125,14 @@ namespace PdfClown.Objects
         public SKRect ToRect()
         {
             return new SKRect((float)Left, (float)Bottom, (float)Right, (float)Top);
+        }
+
+        public bool Equals(Rectangle other)
+        {
+            return Left.Equals(other.Left)
+                && Bottom.Equals(other.Bottom)
+                && Right.Equals(other.Right)
+                && Top.Equals(other.Top);
         }
 
         public double Width

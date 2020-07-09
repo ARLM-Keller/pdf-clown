@@ -52,7 +52,10 @@ namespace PdfClown.Documents
             public Annotation Wrap(PdfDirectObject baseObject)
             {
                 var annotation = Annotation.Wrap(baseObject);
-                Page.Annotations.AddIndex(annotation);
+                if (annotation != null)
+                {
+                    Page.Annotations.AddIndex(annotation);
+                }
                 return annotation;
             }
         }
@@ -89,6 +92,11 @@ namespace PdfClown.Documents
 
         private void AddIndex(Annotation annotation)
         {
+            //Recovery
+            if (annotation.Page == null)
+            {
+                DoAdd(annotation);
+            }
             if (string.IsNullOrEmpty(annotation.Name)
                 || (nameIndex.TryGetValue(annotation.Name, out var existing)
                 && existing != annotation))

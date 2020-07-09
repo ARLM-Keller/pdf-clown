@@ -281,12 +281,9 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 if (DescendantFonts == null)
                 {
-                    DescendantFonts = new PdfArray(new[] { value?.BaseObject });
+                    DescendantFonts = new PdfArray();
                 }
-                else
-                {
-                    DescendantFonts[0] = value?.BaseObject;
-                }
+                DescendantFonts[0] = value?.BaseObject;
             }
         }
 

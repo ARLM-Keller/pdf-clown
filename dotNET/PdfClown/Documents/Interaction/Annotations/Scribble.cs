@@ -63,7 +63,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         public PdfArray InkList
         {
             get => (PdfArray)BaseDataObject[PdfName.InkList];
-            set => BaseDataObject[PdfName.InkList] = value;
+            set
+            {
+                var oldValue = InkList;
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.InkList] = value;
+                    OnPropertyChanged(oldValue, value);
+                }
+            }
         }
 
         /**

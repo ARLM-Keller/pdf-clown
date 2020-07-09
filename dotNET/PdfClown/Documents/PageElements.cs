@@ -101,7 +101,7 @@ namespace PdfClown.Documents
         #endregion
 
         #region private
-        protected virtual void DoAdd(TItem item)
+        protected internal virtual void DoAdd(TItem item)
         {
             // Link the element to its page!
             item.BaseDataObject[PdfName.P] = page.BaseObject;

@@ -569,6 +569,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
             if (cmap == null)
             {
+                cmap = cmapTable.GetSubtable(CmapTable.PLATFORM_MACINTOSH,
+                                             CmapTable.ENCODING_UNICODE_1_0);
+            }
+            if (cmap == null)
+            {
                 // Microsoft's "Recommendations for OpenType Fonts" says that "Symbol" encoding
                 // actually means "Unicode, non-standard character set"
                 cmap = cmapTable.GetSubtable(CmapTable.PLATFORM_WINDOWS,

@@ -74,9 +74,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Author;
-                BaseDataObject.SetText(PdfName.T, value);
-                ModificationDate = DateTime.Now;
-                OnPropertyChanged(oldValue, value);
+                if (!string.Equals(oldValue, value, StringComparison.Ordinal))
+                {
+                    BaseDataObject.SetText(PdfName.T, value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -90,8 +92,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = CreationDate;
-                BaseDataObject[PdfName.CreationDate] = PdfDate.Get(value);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject.SetDate(PdfName.CreationDate, value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -102,14 +107,17 @@ namespace PdfClown.Documents.Interaction.Annotations
           <see cref="ReplyType"/> property.</remarks>
         */
         [PDF(VersionEnum.PDF15)]
-        public virtual Annotation InReplyTo
+        public virtual Annotation ReplyTo
         {
             get => Annotation.Wrap(BaseDataObject[PdfName.IRT]);
             set
             {
-                var oldValue = InReplyTo;
-                BaseDataObject[PdfName.IRT] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged(oldValue, value);
+                var oldValue = ReplyTo;
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.IRT] = PdfObjectWrapper.GetBaseObject(value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -125,18 +133,21 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Popup;
-                if (value != null)
+                if (oldValue != value)
                 {
-                    value.Parent = this;
+                    if (value != null)
+                    {
+                        value.Parent = this;
+                    }
+                    BaseDataObject[PdfName.Popup] = value.BaseObject;
+                    OnPropertyChanged(oldValue, value);
                 }
-                BaseDataObject[PdfName.Popup] = value.BaseObject;
-                OnPropertyChanged(oldValue, value);
             }
         }
 
         /**
           <summary>Gets/Sets the relationship between this annotation and one specified by
-          <see cref="InReplyTo"/> property.</summary>
+          <see cref="ReplyTo"/> property.</summary>
         */
         [PDF(VersionEnum.PDF16)]
         public virtual ReplyTypeEnum ReplyType
@@ -145,8 +156,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = ReplyType;
-                BaseDataObject[PdfName.RT] = value.GetCode();
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.RT] = value.GetCode();
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -154,20 +168,44 @@ namespace PdfClown.Documents.Interaction.Annotations
         public string RichContents
         {
             get => BaseDataObject.GetText(PdfName.RC);
-            set => BaseDataObject.SetText(PdfName.RC, value);
-        }
-
-        [PDF(VersionEnum.PDF16)]
-        public MarkupIntent? Intent
-        {
-            get => MarkupIntentExtension.Get(TypeBase);
-            set => TypeBase = MarkupIntentExtension.GetCode(value.Value);
+            set
+            {
+                var oldValue = RichContents;
+                if (!string.Equals(oldValue, value, StringComparison.Ordinal))
+                {
+                    BaseDataObject.SetText(PdfName.RC, value);
+                    OnPropertyChanged(oldValue, value);
+                }
+            }
         }
 
         public string DefaultStyle
         {
             get => BaseDataObject.GetText(PdfName.DS);
-            set => BaseDataObject.SetText(PdfName.DS, value);
+            set
+            {
+                var oldValue = DefaultStyle;
+                if (!string.Equals(oldValue, value, StringComparison.Ordinal))
+                {
+                    BaseDataObject.SetText(PdfName.DS, value);
+                    OnPropertyChanged(oldValue, value);
+                }
+            }
+        }
+
+        [PDF(VersionEnum.PDF16)]
+        public MarkupIntent? Intent
+        {
+            get => MarkupIntentExtension.Get((PdfName)BaseDataObject[PdfName.IT]);
+            set
+            {
+                var oldValue = Intent;
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.IT] = MarkupIntentExtension.GetCode(value.Value);
+                    OnPropertyChanged(oldValue, value);
+                }
+            }
         }
 
         /**
@@ -176,7 +214,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         public DeviceColor InteriorColor
         {
             get => DeviceColor.Get((PdfArray)BaseDataObject[PdfName.IC]);
-            set => BaseDataObject[PdfName.IC] = (PdfArray)value?.BaseDataObject;
+            set
+            {
+                var oldValue = InteriorColor;
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.IC] = (PdfArray)value?.BaseDataObject;
+                    OnPropertyChanged(oldValue, value);
+                }
+            }
         }
 
         public SkiaSharp.SKColor? InteriorSKColor
@@ -185,8 +231,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = InteriorSKColor;
-                InteriorColor = DeviceRGBColor.Get(value);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    InteriorColor = DeviceRGBColor.Get(value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -200,8 +249,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = BorderEffect;
-                BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged(oldValue, value);
+                if (!(oldValue?.Equals(value) ?? value == null))
+                {
+                    BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -241,20 +293,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
         #endregion
 
-        #region protected
-        protected PdfName TypeBase
-        {
-            get => (PdfName)BaseDataObject[PdfName.IT];
-            set
-            {
-                var oldvalue = TypeBase;
-                BaseDataObject[PdfName.IT] = value;
-                OnPropertyChanged(oldvalue, value);
-            }
-        }
-
-
-        #endregion
         #endregion
         #endregion
     }
@@ -267,53 +305,6 @@ namespace PdfClown.Documents.Interaction.Annotations
     {
         Thread,
         Group
-    }
-    public enum MarkupIntent
-    {
-        FreeText,
-        FreeTextCallout,
-        FreeTextTypeWriter,
-
-        LineArrow,
-        LineDimension,
-
-        PolygonCloud,
-        PolygonDimension,
-        PolyLineDimension
-    }
-    internal static class MarkupIntentExtension
-    {
-        private static readonly BiDictionary<MarkupIntent, PdfName> codes;
-
-        static MarkupIntentExtension()
-        {
-            codes = new BiDictionary<MarkupIntent, PdfName>
-            {
-                [MarkupIntent.FreeText] = PdfName.FreeText,
-                [MarkupIntent.FreeTextCallout] = PdfName.FreeTextCallout,
-                [MarkupIntent.FreeTextTypeWriter] = PdfName.FreeTextTypeWriter,
-
-                [MarkupIntent.LineArrow] = PdfName.LineArrow,
-                [MarkupIntent.LineDimension] = PdfName.LineDimension,
-
-                [MarkupIntent.PolygonCloud] = PdfName.PolygonCloud,
-                [MarkupIntent.PolygonDimension] = PdfName.PolygonDimension,
-                [MarkupIntent.PolyLineDimension] = PdfName.PolyLineDimension
-            };
-        }
-
-        public static MarkupIntent? Get(PdfName name)
-        {
-            if (name == null)
-                return null;
-
-            return codes.GetKey(name);
-        }
-
-        public static PdfName GetCode(this MarkupIntent? intent)
-        {
-            return intent == null ? null : codes[intent.Value];
-        }
     }
 
     internal static class ReplyTypeEnumExtension

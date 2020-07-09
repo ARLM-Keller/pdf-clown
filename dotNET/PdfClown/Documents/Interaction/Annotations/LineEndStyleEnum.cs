@@ -113,6 +113,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public static PdfName GetName(this LineEndStyleEnum lineEndStyle)
-        { return codes[lineEndStyle]; }
+        {
+            return codes[lineEndStyle];
+        }
     }
 }

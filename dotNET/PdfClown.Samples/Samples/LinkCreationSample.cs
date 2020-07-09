@@ -91,7 +91,7 @@ namespace PdfClown.Samples.CLI
                   )
                 {
                     Name = fileAttachmentName,
-                    ImageName = FileAttachmentImageType.PaperClip
+                    AttachmentName = FileAttachmentImageType.PaperClip
                 };
 
                 blockComposer.Begin(SKRect.Create(30, 170, 200, 50), XAlignmentEnum.Left, YAlignmentEnum.Middle);

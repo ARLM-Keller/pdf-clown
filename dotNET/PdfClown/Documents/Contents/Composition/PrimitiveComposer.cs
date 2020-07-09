@@ -81,8 +81,8 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public T Add<T>(T obj) where T : objects::ContentObject
         {
-            scanner.Insert(obj);
-            scanner.MoveNext();
+            Scanner.Insert(obj);
+            Scanner.MoveNext();
 
             return obj;
         }
@@ -112,7 +112,7 @@ namespace PdfClown.Documents.Contents.Composition
         public void ApplyState(PdfName name)
         {
             // Doesn't the state exist in the context resources?
-            if (!scanner.ContentContext.Resources.ExtGStates.ContainsKey(name))
+            if (!Scanner.ContentContext.Resources.ExtGStates.ContainsKey(name))
                 throw new ArgumentException("No state resource associated to the given argument.", "name");
 
             ApplyState_(name);
@@ -138,9 +138,9 @@ namespace PdfClown.Documents.Contents.Composition
         public objects.CompositeObject Begin(objects.CompositeObject obj)
         {
             // Insert the new object at the current level!
-            scanner.Insert(obj);
+            Scanner.Insert(obj);
             // The new object's children level is the new current level!
-            scanner = scanner.ChildLevel;
+            Scanner = Scanner.ChildLevel;
 
             return obj;
         }
@@ -212,7 +212,7 @@ namespace PdfClown.Documents.Contents.Composition
         public objects::MarkedContent BeginMarkedContent(PdfName tag, PdfName propertyListName)
         {
             // Doesn't the property list exist in the context resources?
-            if (propertyListName != null && !scanner.ContentContext.Resources.PropertyLists.ContainsKey(propertyListName))
+            if (propertyListName != null && !Scanner.ContentContext.Resources.PropertyLists.ContainsKey(propertyListName))
                 throw new ArgumentException("No property list resource associated to the given argument.", "name");
 
             return BeginMarkedContent_(tag, propertyListName);
@@ -275,17 +275,10 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void DrawCurve(SKPoint endPoint, SKPoint startControl, SKPoint endControl)
         {
-            double contextHeight = scanner.ContextSize.Height;
-            Add(
-              new objects::DrawCurve(
-                endPoint.X,
-                contextHeight - endPoint.Y,
-                startControl.X,
-                contextHeight - startControl.Y,
-                endControl.X,
-                contextHeight - endControl.Y
-                )
-              );
+            double contextHeight = Scanner.ContextSize.Height;
+            Add(new objects::DrawCurve(endPoint.X, contextHeight - endPoint.Y,
+                startControl.X, contextHeight - startControl.Y,
+                endControl.X, contextHeight - endControl.Y));
         }
 
         /**
@@ -321,12 +314,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void DrawLine(SKPoint endPoint)
         {
-            Add(
-              new objects::DrawLine(
-                endPoint.X,
-                scanner.ContextSize.Height - endPoint.Y
-                )
-              );
+            Add(new objects::DrawLine(endPoint.X, Scanner.ContextSize.Height - endPoint.Y));
         }
 
         /**
@@ -393,14 +381,7 @@ namespace PdfClown.Documents.Contents.Composition
         {
             if (radius == 0)
             {
-                Add(
-                  new objects::DrawRectangle(
-                    location.Left,
-                    scanner.ContextSize.Height - location.Top - location.Height,
-                    location.Width,
-                    location.Height
-                    )
-                  );
+                Add(new objects::DrawRectangle(location.Left, Scanner.ContextSize.Height - location.Top - location.Height, location.Width, location.Height));
             }
             else
             {
@@ -494,8 +475,8 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void End()
         {
-            scanner = scanner.ParentLevel;
-            scanner.MoveNext();
+            Scanner = Scanner.ParentLevel;
+            Scanner.MoveNext();
         }
 
         /**
@@ -522,7 +503,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void Flush()
         {
-            scanner.Contents.Flush();
+            Scanner.Contents.Flush();
         }
 
         /**
@@ -537,7 +518,7 @@ namespace PdfClown.Documents.Contents.Composition
         /**
           <summary>Gets the current graphics state [PDF:1.6:4.3].</summary>
         */
-        public GraphicsState State => scanner.State;
+        public GraphicsState State => Scanner.State;
 
         /**
           <summary>Applies a rotation to the coordinate system from user space to device space
@@ -563,11 +544,11 @@ namespace PdfClown.Documents.Contents.Composition
         public void Rotate(double angle, SKPoint origin)
         {
             // Center to the new origin!
-            Translate(origin.X, scanner.ContextSize.Height - origin.Y);
+            Translate(origin.X, Scanner.ContextSize.Height - origin.Y);
             // Rotate on the new origin!
             Rotate(angle);
             // Restore the standard vertical coordinates system!
-            Translate(0, -scanner.ContextSize.Height);
+            Translate(0, -Scanner.ContextSize.Height);
         }
 
         /**
@@ -596,7 +577,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void SetFillColor(colors::Color value)
         {
-            if (!scanner.State.FillColorSpace.IsSpaceColor(value))
+            if (!State.FillColorSpace.IsSpaceColor(value))
             {
                 // Set filling color space!
                 Add(new objects::SetFillColorSpace(GetResourceName(value.ColorSpace)));
@@ -613,7 +594,7 @@ namespace PdfClown.Documents.Contents.Composition
         public void SetFont(PdfName name, double size)
         {
             // Doesn't the font exist in the context resources?
-            if (!scanner.ContentContext.Resources.Fonts.ContainsKey(name))
+            if (!Scanner.ContentContext.Resources.Fonts.ContainsKey(name))
                 throw new ArgumentException("No font resource associated to the given argument.", "name");
 
             SetFont_(name, size);
@@ -678,7 +659,7 @@ namespace PdfClown.Documents.Contents.Composition
         public void SetMatrix(double a, double b, double c, double d, double e, double f)
         {
             // Reset the CTM!
-            Add(objects::ModifyCTM.GetResetCTM(scanner.State));
+            Add(objects::ModifyCTM.GetResetCTM(State));
             // Apply the transformation!
             Add(new objects::ModifyCTM(a, b, c, d, e, f));
         }
@@ -697,7 +678,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void SetStrokeColor(colors::Color value)
         {
-            if (!scanner.State.StrokeColorSpace.IsSpaceColor(value))
+            if (!State.StrokeColorSpace.IsSpaceColor(value))
             {
                 // Set stroking color space!
                 Add(new objects::SetStrokeColorSpace(GetResourceName(value.ColorSpace)));
@@ -820,8 +801,7 @@ namespace PdfClown.Documents.Contents.Composition
                 double rad = MathUtils.ToRadians(rotation);
                 double cos = Math.Cos(rad);
                 double sin = Math.Sin(rad);
-                ApplyMatrix(cos, sin, -sin, cos,
-                    location.X, scanner.ContextSize.Height - location.Y);
+                ApplyMatrix(cos, sin, -sin, cos, location.X, Scanner.ContextSize.Height - location.Y);
 
                 string[] textLines = value.Split('\n');
 
@@ -946,7 +926,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public Link ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation, actions::Action action)
         {
-            IContentContext contentContext = scanner.ContentContext;
+            IContentContext contentContext = Scanner.ContentContext;
             if (!(contentContext is Page))
                 throw new Exception("Links can be shown only on page contexts.");
 
@@ -1037,7 +1017,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void ShowXObject(PdfName name, SKPoint location, SKSize? size, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
         {
-            XObject xObject = scanner.ContentContext.Resources.XObjects[name];
+            XObject xObject = Scanner.ContentContext.Resources.XObjects[name];
             SKSize xObjectSize = xObject.Size;
 
             if (!size.HasValue)
@@ -1082,7 +1062,7 @@ namespace PdfClown.Documents.Contents.Composition
             BeginLocalState();
             try
             {
-                Translate(location.X, scanner.ContextSize.Height - location.Y);
+                Translate(location.X, Scanner.ContextSize.Height - location.Y);
                 if (rotation != 0)
                 { Rotate(rotation); }
                 ApplyMatrix(
@@ -1123,7 +1103,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void StartPath(SKPoint startPoint)
         {
-            Add(new objects::BeginSubpath(startPoint.X, scanner.ContextSize.Height - startPoint.Y));
+            Add(new objects::BeginSubpath(startPoint.X, Scanner.ContextSize.Height - startPoint.Y));
         }
 
         /**
@@ -1188,26 +1168,17 @@ namespace PdfClown.Documents.Contents.Composition
             double radiusX = location.Width / 2;
             double radiusY = location.Height / 2;
 
-            SKPoint center = new SKPoint(
-              (float)(location.Left + radiusX),
-              (float)(location.Top + radiusY)
-              );
+            SKPoint center = new SKPoint((float)(location.Left + radiusX), (float)(location.Top + radiusY));
 
             double radians1 = MathUtils.ToRadians(startAngle);
-            SKPoint point1 = new SKPoint(
-              (float)(center.X + Math.Cos(radians1) * radiusX),
-              (float)(center.Y - Math.Sin(radians1) * radiusY)
-              );
+            SKPoint point1 = new SKPoint((float)(center.X + Math.Cos(radians1) * radiusX), (float)(center.Y - Math.Sin(radians1) * radiusY));
 
             if (beginPath)
             { StartPath(point1); }
 
             double endRadians = MathUtils.ToRadians(endAngle);
             double quadrantRadians = Math.PI / 2;
-            double radians2 = Math.Min(
-              radians1 + quadrantRadians - radians1 % quadrantRadians,
-              endRadians
-              );
+            double radians2 = Math.Min(radians1 + quadrantRadians - radians1 % quadrantRadians, endRadians);
             double kappa = 0.5522847498;
             while (true)
             {
@@ -1215,16 +1186,10 @@ namespace PdfClown.Documents.Contents.Composition
                 double segmentY = radiusY * kappa;
 
                 // Endpoint 2.
-                SKPoint point2 = new SKPoint(
-                  (float)(center.X + Math.Cos(radians2) * radiusX),
-                  (float)(center.Y - Math.Sin(radians2) * radiusY)
-                  );
+                SKPoint point2 = new SKPoint((float)(center.X + Math.Cos(radians2) * radiusX), (float)(center.Y - Math.Sin(radians2) * radiusY));
 
                 // Control point 1.
-                double tangentialRadians1 = Math.Atan(
-                  -(Math.Pow(radiusY, 2) * (point1.X - center.X))
-                    / (Math.Pow(radiusX, 2) * (point1.Y - center.Y))
-                  );
+                double tangentialRadians1 = Math.Atan(-(Math.Pow(radiusY, 2) * (point1.X - center.X)) / (Math.Pow(radiusX, 2) * (point1.Y - center.Y)));
                 double segment1 = (
                   segmentY * (1 - Math.Abs(Math.Sin(radians1)))
                     + segmentX * (1 - Math.Abs(Math.Cos(radians1)))
@@ -1235,10 +1200,7 @@ namespace PdfClown.Documents.Contents.Composition
                   );
 
                 // Control point 2.
-                double tangentialRadians2 = Math.Atan(
-                  -(Math.Pow(radiusY, 2) * (point2.X - center.X))
-                    / (Math.Pow(radiusX, 2) * (point2.Y - center.Y))
-                  );
+                double tangentialRadians2 = Math.Atan(-(Math.Pow(radiusY, 2) * (point2.X - center.X)) / (Math.Pow(radiusX, 2) * (point2.Y - center.Y)));
                 double segment2 = (
                   segmentY * (1 - Math.Abs(Math.Sin(radians2)))
                     + segmentX * (1 - Math.Abs(Math.Cos(radians2)))
@@ -1273,14 +1235,14 @@ namespace PdfClown.Documents.Contents.Composition
         //TODO: temporary (consolidate stack tracing of marked content blocks!)
         private LayerEntity GetLayer()
         {
-            var parentLevel = scanner.ParentLevel;
+            var parentLevel = Scanner.ParentLevel;
             while (parentLevel != null)
             {
-                if (parentLevel.Current is objects::MarkedContent)
+                if (parentLevel.Current is objects::MarkedContent markedContent)
                 {
-                    var marker = (objects::ContentMarker)((objects::MarkedContent)parentLevel.Current).Header;
+                    var marker = (objects::ContentMarker)markedContent.Header;
                     if (PdfName.OC.Equals(marker.Tag))
-                        return (LayerEntity)marker.GetProperties(scanner.ContentContext);
+                        return (LayerEntity)marker.GetProperties(Scanner.ContentContext);
                 }
                 parentLevel = parentLevel.ParentLevel;
             }
@@ -1298,7 +1260,7 @@ namespace PdfClown.Documents.Contents.Composition
             else
             {
                 // Ensuring that the resource exists within the context resources...
-                PdfDictionary resourceItemsObject = ((PdfObjectWrapper<PdfDictionary>)scanner.ContentContext.Resources.Get(value.GetType())).BaseDataObject;
+                PdfDictionary resourceItemsObject = ((PdfObjectWrapper<PdfDictionary>)Scanner.ContentContext.Resources.Get(value.GetType())).BaseDataObject;
                 // Get the key associated to the resource!
                 PdfName name = resourceItemsObject.GetKey(value.BaseObject);
                 // No key found?

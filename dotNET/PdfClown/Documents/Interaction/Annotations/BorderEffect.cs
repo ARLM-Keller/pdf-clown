@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Interaction.Annotations
       <summary>Border effect [PDF:1.6:8.4.3].</summary>
     */
     [PDF(VersionEnum.PDF15)]
-    public sealed class BorderEffect : PdfObjectWrapper<PdfDictionary>
+    public sealed class BorderEffect : PdfObjectWrapper<PdfDictionary>, IEquatable<BorderEffect>
     {
         #region static
 
@@ -180,6 +180,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
             return targetPath;
+        }
+
+        public bool Equals(BorderEffect other)
+        {
+            if (other == null)
+                return false;
+            return Type == other.Type
+                && Intensity.Equals(other.Intensity);
         }
 
         #endregion

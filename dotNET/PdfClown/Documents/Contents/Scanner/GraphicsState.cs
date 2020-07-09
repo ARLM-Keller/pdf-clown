@@ -251,7 +251,7 @@ namespace PdfClown.Documents.Contents
         public float LineWidth
         {
             get => lineWidth;
-            set => lineWidth = value < 1 ? 0 : value;
+            set => lineWidth = value;
         }
 
         /**
@@ -352,7 +352,7 @@ namespace PdfClown.Documents.Contents
                 //paint.TextScaleX = (float)Scale;
 
                 paint.Style = SKPaintStyle.Stroke;
-                paint.StrokeWidth = LineWidth;
+                paint.StrokeWidth = LineWidth < 1 ? 0 : LineWidth;
                 paint.StrokeCap = LineCap.ToSkia();
                 paint.StrokeJoin = LineJoin.ToSkia();
                 paint.StrokeMiter = MiterLimit;

@@ -46,49 +46,21 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class TextMarkup : Markup
     {
-        #region types
-        /**
-          <summary>Markup type [PDF:1.6:8.4.5].</summary>
-        */
-        public enum MarkupTypeEnum
-        {
-            /**
-              <summary>Highlight.</summary>
-            */
-            [PDF(VersionEnum.PDF13)]
-            Highlight,
-            /**
-              <summary>Squiggly.</summary>
-            */
-            [PDF(VersionEnum.PDF14)]
-            Squiggly,
-            /**
-              <summary>StrikeOut.</summary>
-            */
-            [PDF(VersionEnum.PDF13)]
-            StrikeOut,
-            /**
-              <summary>Underline.</summary>
-            */
-            [PDF(VersionEnum.PDF13)]
-            Underline
-        };
-        #endregion
 
         #region static
         #region fields
-        private static readonly Dictionary<MarkupTypeEnum, PdfName> MarkupTypeEnumCodes;
+        private static readonly Dictionary<TextMarkupType, PdfName> MarkupTypeEnumCodes;
         #endregion
 
         #region constructors
         static TextMarkup()
         {
-            MarkupTypeEnumCodes = new Dictionary<MarkupTypeEnum, PdfName>
+            MarkupTypeEnumCodes = new Dictionary<TextMarkupType, PdfName>
             {
-                [MarkupTypeEnum.Highlight] = PdfName.Highlight,
-                [MarkupTypeEnum.Squiggly] = PdfName.Squiggly,
-                [MarkupTypeEnum.StrikeOut] = PdfName.StrikeOut,
-                [MarkupTypeEnum.Underline] = PdfName.Underline
+                [TextMarkupType.Highlight] = PdfName.Highlight,
+                [TextMarkupType.Squiggly] = PdfName.Squiggly,
+                [TextMarkupType.StrikeOut] = PdfName.StrikeOut,
+                [TextMarkupType.Underline] = PdfName.Underline
             };
         }
         #endregion
@@ -98,7 +70,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
-        private static PdfName ToCode(MarkupTypeEnum value)
+        private static PdfName ToCode(TextMarkupType value)
         {
             return MarkupTypeEnumCodes[value];
         }
@@ -106,9 +78,9 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the markup type corresponding to the given value.</summary>
         */
-        private static MarkupTypeEnum ToMarkupTypeEnum(PdfName value)
+        private static TextMarkupType ToMarkupTypeEnum(PdfName value)
         {
-            foreach (KeyValuePair<MarkupTypeEnum, PdfName> markupType in MarkupTypeEnumCodes)
+            foreach (KeyValuePair<TextMarkupType, PdfName> markupType in MarkupTypeEnumCodes)
             {
                 if (markupType.Value.Equals(value))
                     return markupType.Key;
@@ -144,7 +116,7 @@ namespace PdfClown.Documents.Interaction.Annotations
           <param name="text">Annotation text.</param>
           <param name="markupType">Markup type.</param>
         */
-        public TextMarkup(Page page, Quad markupBox, string text, MarkupTypeEnum markupType)
+        public TextMarkup(Page page, Quad markupBox, string text, TextMarkupType markupType)
             : this(page, new List<Quad>() { markupBox }, text, markupType)
         { }
 
@@ -157,7 +129,7 @@ namespace PdfClown.Documents.Interaction.Annotations
           <param name="text">Annotation text.</param>
           <param name="markupType">Markup type.</param>
         */
-        public TextMarkup(Page page, IList<Quad> markupBoxes, string text, MarkupTypeEnum markupType)
+        public TextMarkup(Page page, IList<Quad> markupBoxes, string text, TextMarkupType markupType)
             : base(page, ToCode(markupType), markupBoxes[0].GetBounds(), text)
         {
             MarkupType = markupType;
@@ -186,9 +158,14 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => (PdfArray)BaseDataObject[PdfName.QuadPoints];
             set
             {
-                BaseDataObject[PdfName.QuadPoints] = value;
-                markupBoxes.Clear();
-                RefreshAppearance();
+                var oldValue = QuadPoints;
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.QuadPoints] = value;
+                    markupBoxes.Clear();
+                    OnPropertyChanged(oldValue, value);
+                    RefreshAppearance();
+                }
             }
         }
         /**
@@ -266,7 +243,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets/Sets the markup type.</summary>
         */
-        public MarkupTypeEnum MarkupType
+        public TextMarkupType MarkupType
         {
             get => ToMarkupTypeEnum((PdfName)BaseDataObject[PdfName.Subtype]);
             set
@@ -274,10 +251,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                 BaseDataObject[PdfName.Subtype] = ToCode(value);
                 switch (value)
                 {
-                    case MarkupTypeEnum.Highlight:
+                    case TextMarkupType.Highlight:
                         Color = new DeviceRGBColor(1, 1, 0);
                         break;
-                    case MarkupTypeEnum.Squiggly:
+                    case TextMarkupType.Squiggly:
                         Color = new DeviceRGBColor(1, 0, 0);
                         break;
                     default:
@@ -300,10 +277,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             PrimitiveComposer composer = new PrimitiveComposer(normalAppearance);
             {
                 var matrix = SKMatrix.MakeTranslation(0, box.Height - Page.Size.Height);
-                MarkupTypeEnum markupType = MarkupType;
+                TextMarkupType markupType = MarkupType;
                 switch (markupType)
                 {
-                    case MarkupTypeEnum.Highlight:
+                    case TextMarkupType.Highlight:
                         {
                             ExtGState defaultExtGState;
                             {
@@ -347,7 +324,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                             }
                         }
                         break;
-                    case MarkupTypeEnum.Squiggly:
+                    case TextMarkupType.Squiggly:
                         {
                             composer.SetStrokeColor(Color);
                             composer.SetLineCap(LineCapEnum.Round);
@@ -361,12 +338,12 @@ namespace PdfClown.Documents.Interaction.Annotations
                                     sign = sign == 0 ? 1 : sign;
                                     float markupBoxHeight = markupBox.Height;
                                     float markupBoxWidth = markupBox.Width;
-                                    float lineWidth = markupBoxHeight * .05f;
+                                    float lineWidth = markupBoxHeight * .06f;
                                     float step = markupBoxHeight * .125f;
                                     float length = (float)Math.Sqrt(Math.Pow(step, 2) * 2);
                                     var bottomUp = SKPoint.Normalize(markupBox.TopLeft - markupBox.BottomLeft);
                                     bottomUp = new SKPoint(bottomUp.X * lineWidth, bottomUp.Y * lineWidth);
-                                    var startPoint = markupBox.BottomLeft + bottomUp;
+                                    var startPoint = markupBox.BottomLeft + (new SKPoint(bottomUp.X * 2, bottomUp.Y * 2));
                                     var leftRight = SKPoint.Normalize(markupBox.BottomRight - markupBox.BottomLeft);
                                     leftRight = new SKPoint(leftRight.X * step, leftRight.Y * step);
                                     var leftRightPerp = leftRight.GetPerp(step * sign);
@@ -389,18 +366,18 @@ namespace PdfClown.Documents.Interaction.Annotations
                             }
                         }
                         break;
-                    case MarkupTypeEnum.StrikeOut:
-                    case MarkupTypeEnum.Underline:
+                    case TextMarkupType.StrikeOut:
+                    case TextMarkupType.Underline:
                         {
                             composer.SetStrokeColor(Color);
                             {
                                 float lineYRatio = 0;
                                 switch (markupType)
                                 {
-                                    case MarkupTypeEnum.StrikeOut:
+                                    case TextMarkupType.StrikeOut:
                                         lineYRatio = .5f;
                                         break;
-                                    case MarkupTypeEnum.Underline:
+                                    case TextMarkupType.Underline:
                                         lineYRatio = .9f;
                                         break;
                                     default:
@@ -441,4 +418,31 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
         #endregion
     }
+
+    /**
+      <summary>Markup type [PDF:1.6:8.4.5].</summary>
+    */
+    public enum TextMarkupType
+    {
+        /**
+          <summary>Highlight.</summary>
+        */
+        [PDF(VersionEnum.PDF13)]
+        Highlight,
+        /**
+          <summary>Squiggly.</summary>
+        */
+        [PDF(VersionEnum.PDF14)]
+        Squiggly,
+        /**
+          <summary>StrikeOut.</summary>
+        */
+        [PDF(VersionEnum.PDF13)]
+        StrikeOut,
+        /**
+          <summary>Underline.</summary>
+        */
+        [PDF(VersionEnum.PDF13)]
+        Underline
+    };
 }

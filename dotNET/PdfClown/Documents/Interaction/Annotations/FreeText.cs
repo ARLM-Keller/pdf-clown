@@ -107,6 +107,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         coordinates[4] = PdfReal.Get(val.X);
                         coordinates[5] = PdfReal.Get(val.Y);
                     }
+                    FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
                     FreeText.RefreshBox();
                 }
             }
@@ -129,6 +130,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     var val = FreeText.InvertPageMatrix.MapPoint(value.Value);
                     coordinates[2] = PdfReal.Get(val.X);
                     coordinates[3] = PdfReal.Get(val.Y);
+                    FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
                     //FreeText.RefreshBox();
                 }
             }
@@ -149,6 +151,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     var val = FreeText.InvertPageMatrix.MapPoint(value);
                     coordinates[0] = PdfReal.Get(val.X);
                     coordinates[1] = PdfReal.Get(val.Y);
+                    FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
                     FreeText.RefreshBox();
                 }
             }
@@ -156,24 +159,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             public FreeText FreeText { get; internal set; }
         }
 
-        /**
-          <summary>Note type [PDF:1.6:8.4.5].</summary>
-        */
-        public enum TypeEnum
-        {
-            /**
-              Default.
-            */
-            Default,
-            /**
-              Callout.
-            */
-            Callout,
-            /**
-              Typewriter.
-            */
-            TypeWriter
-        }
         #endregion
 
         #region static
@@ -215,15 +200,26 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Justification;
-                BaseDataObject[PdfName.Q] = value != DefaultJustification ? value.GetCode() : null;
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.Q] = value != DefaultJustification ? value.GetCode() : null;
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
         public PdfArray Callout
         {
             get => (PdfArray)BaseDataObject[PdfName.CL];
-            set => BaseDataObject[PdfName.CL] = value;
+            set
+            {
+                var oldValue = Callout;
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.CL] = value;
+                    OnPropertyChanged(oldValue, value);
+                }
+            }
         }
 
         /**
@@ -252,7 +248,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                       NOTE: To ensure the callout would be properly rendered, we have to declare the
                       corresponding intent.
                     */
-                    Type = TypeEnum.Callout;
+                    Intent = MarkupIntent.FreeTextCallout;
                     value.FreeText = this;
                 }
                 OnPropertyChanged(oldValue, value);
@@ -272,8 +268,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = LineEndStyle;
-                EnsureLineEndStylesObject()[1] = value.GetName();
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    EnsureLineEndStylesObject()[1] = value.GetName();
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -290,8 +289,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = LineStartStyle;
-                EnsureLineEndStylesObject()[0] = value.GetName();
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    EnsureLineEndStylesObject()[0] = value.GetName();
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -316,12 +318,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                   );
             }
             return endStylesObject;
-        }
-
-        public TypeEnum? Type
-        {
-            get => FreeTextTypeEnumExtension.Get(TypeBase);
-            set => TypeBase = value.HasValue ? value.Value.GetName() : null;
         }
 
         public SKRect TextBox
@@ -430,7 +426,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 Border?.Apply(paint, BorderEffect);
                 canvas.DrawRect(textBounds, paint);
-                if (Type == TypeEnum.Callout && Line != null)
+                if (Intent == MarkupIntent.FreeTextCallout && Line != null)
                 {
                     var line = Line;
                     using (var linePath = new SKPath())
@@ -482,7 +478,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 .PreConcat(SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height))
                 .PreConcat(SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
 
-            if (Type == TypeEnum.Callout && Line != null)
+            if (Intent == MarkupIntent.FreeTextCallout && Line != null)
             {
                 Line.Start = dif.MapPoint(Line.Start);
                 Line.End = dif.MapPoint(Line.End);
@@ -496,7 +492,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public void CalcLine()
         {
-            if (Type == TypeEnum.Callout && Line != null)
+            if (Intent == MarkupIntent.FreeTextCallout && Line != null)
             {
                 var textBox = TextBox;
                 var textBoxInflate = SKRect.Inflate(textBox, 15, 15);
@@ -552,7 +548,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             box.Add(TextTopRightPoint);
             box.Add(TextBottomRightPoint);
             box.Add(TextBottomLeftPoint);
-            if (Type == TypeEnum.Callout && Line != null)
+            if (Intent == MarkupIntent.FreeTextCallout && Line != null)
             {
                 box.Add(Line.Start);
                 box.Add(Line.End);
@@ -574,7 +570,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             yield return cpTexcBottomLeft ?? (cpTexcBottomLeft = new TextBottomLeftControlPoint { Annotation = this });
             yield return cpTexcBottomRight ?? (cpTexcBottomRight = new TextBottomRightControlPoint { Annotation = this });
             yield return cpTextMid ?? (cpTextMid = new TextMidControlPoint { Annotation = this });
-            if (Type == TypeEnum.Callout && Line != null)
+            if (Intent == MarkupIntent.FreeTextCallout && Line != null)
             {
                 yield return cpLineStart ?? (cpLineStart = new TextLineStartControlPoint { Annotation = this });
                 yield return cpLineEnd ?? (cpLineEnd = new TextLineEndControlPoint { Annotation = this });
@@ -683,38 +679,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get => FreeText.TextMidPoint;
             set => FreeText.TextMidPoint = value;
-        }
-    }
-
-    internal static class FreeTextTypeEnumExtension
-    {
-        private static readonly BiDictionary<FreeText.TypeEnum, PdfName> codes;
-
-        static FreeTextTypeEnumExtension()
-        {
-            codes = new BiDictionary<FreeText.TypeEnum, PdfName>
-            {
-                [FreeText.TypeEnum.Default] = PdfName.FreeText,
-                [FreeText.TypeEnum.Callout] = PdfName.FreeTextCallout,
-                [FreeText.TypeEnum.TypeWriter] = PdfName.FreeTextTypeWriter
-            };
-        }
-
-        public static FreeText.TypeEnum? Get(PdfName name)
-        {
-            if (name == null)
-                return null;
-
-            FreeText.TypeEnum? type = codes.GetKey(name);
-            if (!type.HasValue)
-                throw new NotSupportedException("Type unknown: " + name);
-
-            return type.Value;
-        }
-
-        public static PdfName GetName(this FreeText.TypeEnum type)
-        {
-            return codes[type];
         }
     }
 

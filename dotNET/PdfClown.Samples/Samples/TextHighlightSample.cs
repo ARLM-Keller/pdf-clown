@@ -53,6 +53,7 @@ namespace PdfClown.Samples.CLI
 
             public void Process(Interval<int> interval, ITextString match)
             {
+                //var matrix = page.RotateMatrix;
                 // Defining the highlight box of the text pattern match...
                 IList<Quad> highlightQuads = new List<Quad>();
                 {
@@ -80,7 +81,7 @@ namespace PdfClown.Samples.CLI
                     highlightQuads.Add(textQuad.Value);
                 }
                 // Highlight the text pattern match!
-                new TextMarkup(page, highlightQuads, null, TextMarkup.MarkupTypeEnum.Highlight);
+                new TextMarkup(page, highlightQuads, null, TextMarkupType.Highlight);
             }
 
             public void Reset()

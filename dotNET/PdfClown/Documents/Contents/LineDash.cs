@@ -24,6 +24,7 @@
 */
 
 using System;
+using System.Linq;
 using PdfClown.Objects;
 using PdfClown.Util;
 using SkiaSharp;
@@ -34,7 +35,7 @@ namespace PdfClown.Documents.Contents
       <summary>Line Dash Pattern [PDF:1.6:4.3.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class LineDash
+    public sealed class LineDash : IEquatable<LineDash>
     {
         #region static
         #region interface
@@ -100,6 +101,14 @@ namespace PdfClown.Documents.Contents
                 stroke.PathEffect = SKPathEffect.CreateDash(dashArray, DashPhase);
             }
 
+        }
+
+        public bool Equals(LineDash other)
+        {
+            if (other == null)
+                return false;
+            return DashPhase == other.DashPhase
+                && DashArray.SequenceEqual(other.DashArray);
         }
         #endregion
         #endregion

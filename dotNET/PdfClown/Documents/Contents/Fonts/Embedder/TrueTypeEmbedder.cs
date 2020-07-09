@@ -51,8 +51,7 @@ namespace PdfClown.Documents.Contents.Fonts
         /**
 		 * Creates a new TrueType font for embedding.
 		 */
-        public TrueTypeEmbedder(Document document, PdfDictionary dict, TrueTypeFont ttf,
-                         bool embedSubset)
+        public TrueTypeEmbedder(Document document, PdfDictionary dict, TrueTypeFont ttf, bool embedSubset)
         {
             this.document = document;
             this.embedSubset = embedSubset;

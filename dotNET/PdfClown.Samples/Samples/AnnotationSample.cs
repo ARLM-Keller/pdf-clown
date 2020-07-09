@@ -97,7 +97,7 @@ namespace PdfClown.Samples.CLI
                     new SKPoint(150, 125),
                     new SKPoint(250, 125)
                     ),
-                Type = FreeText.TypeEnum.Callout,
+                Intent = MarkupIntent.FreeTextCallout,
                 LineEndStyle = LineEndStyleEnum.OpenArrow,
                 Border = new Border(1),
                 Color = DeviceRGBColor.Get(SKColors.Yellow)
@@ -114,7 +114,7 @@ namespace PdfClown.Samples.CLI
                 "happyGNU.jpg")
               )
             {
-                ImageName = FileAttachmentImageType.PaperClip,
+                AttachmentName = FileAttachmentImageType.PaperClip,
                 Author = "Stefano",
                 Subject = "File attachment"
             };
@@ -151,7 +151,7 @@ namespace PdfClown.Samples.CLI
                   DeviceRGBColor.Get(SKColors.Blue)
                   )
                 {
-                    LeaderLineLength = 20,
+                    LeaderLineLength = -20,
                     LeaderLineExtension = 10,
                     StartStyle = LineEndStyleEnum.OpenArrow,
                     EndStyle = LineEndStyleEnum.OpenArrow,
@@ -316,88 +316,93 @@ namespace PdfClown.Samples.CLI
             {
                 composer.BeginLocalState();
                 composer.SetFont(font, 8);
-
-                new TextMarkup(
-                  page,
-                  composer.ShowText("Highlight annotation", new SKPoint(35, 680)),
+                var matrix = page.RotateMatrix;
+                new TextMarkup(page,
+                  composer.ShowText("Highlight annotation", new SKPoint(35, 680)).Transform(ref matrix),
                   "Text of the Highlight annotation",
-                  TextMarkup.MarkupTypeEnum.Highlight)
+                  TextMarkupType.Highlight)
                 {
                     Author = "Stefano",
                     Subject = "An highlight text markup!"
                 };
-                new TextMarkup(
-                  page,
-                  composer.ShowText("Highlight annotation 2", new SKPoint(35, 695)).Inflate(0, 1),
+
+                new TextMarkup(page,
+                  composer.ShowText("Highlight annotation 2", new SKPoint(35, 695)).Inflate(0, 1).Transform(ref matrix),
                   "Text of the Highlight annotation 2",
-                  TextMarkup.MarkupTypeEnum.Highlight)
-                { Color = DeviceRGBColor.Get(SKColors.Magenta) };
-                new TextMarkup(
-                  page,
-                  composer.ShowText("Highlight annotation 3", new SKPoint(35, 710)).Inflate(0, 2),
+                  TextMarkupType.Highlight)
+                {
+                    Color = DeviceRGBColor.Get(SKColors.Magenta)
+                };
+
+                new TextMarkup(page,
+                  composer.ShowText("Highlight annotation 3", new SKPoint(35, 710)).Inflate(0, 2).Transform(ref matrix),
                   "Text of the Highlight annotation 3",
-                  TextMarkup.MarkupTypeEnum.Highlight)
-                { Color = DeviceRGBColor.Get(SKColors.Red) };
+                  TextMarkupType.Highlight)
+                {
+                    Color = DeviceRGBColor.Get(SKColors.Red)
+                };
 
-                new TextMarkup(
-                  page,
-                  composer.ShowText("Squiggly annotation", new SKPoint(180, 680)),
+                new TextMarkup(page,
+                  composer.ShowText("Squiggly annotation", new SKPoint(180, 680)).Transform(ref matrix),
                   "Text of the Squiggly annotation",
-                  TextMarkup.MarkupTypeEnum.Squiggly);
-                new TextMarkup(
-                  page,
-                  composer.ShowText("Squiggly annotation 2", new SKPoint(180, 695)).Inflate(0, 2.5f),
+                  TextMarkupType.Squiggly);
+
+                new TextMarkup(page,
+                  composer.ShowText("Squiggly annotation 2", new SKPoint(180, 695)).Inflate(0, 2.5f).Transform(ref matrix),
                   "Text of the Squiggly annotation 2",
-                  TextMarkup.MarkupTypeEnum.Squiggly)
-                { Color = DeviceRGBColor.Get(SKColors.Orange) };
-                new TextMarkup(
-                  page,
-                  composer.ShowText("Squiggly annotation 3", new SKPoint(180, 710)).Inflate(0, 3),
+                  TextMarkupType.Squiggly)
+                {
+                    Color = DeviceRGBColor.Get(SKColors.Orange)
+                };
+
+                new TextMarkup(page,
+                  composer.ShowText("Squiggly annotation 3", new SKPoint(180, 710)).Inflate(0, 3).Transform(ref matrix),
                   "Text of the Squiggly annotation 3",
-                  TextMarkup.MarkupTypeEnum.Squiggly)
-                { Color = DeviceRGBColor.Get(SKColors.Pink) };
+                  TextMarkupType.Squiggly)
+                {
+                    Color = DeviceRGBColor.Get(SKColors.Pink)
+                };
 
-                new TextMarkup(
-                  page,
-                  composer.ShowText("Underline annotation", new SKPoint(320, 680)),
-                  "Text of the Underline annotation",
-                  TextMarkup.MarkupTypeEnum.Underline
-                  );
-                new TextMarkup(
-                  page,
-                  composer.ShowText("Underline annotation 2", new SKPoint(320, 695)).Inflate(0, 2.5f),
+                new TextMarkup(page,
+                    composer.ShowText("Underline annotation", new SKPoint(320, 680)).Transform(ref matrix),
+                    "Text of the Underline annotation",
+                    TextMarkupType.Underline);
+                new TextMarkup(page,
+                  composer.ShowText("Underline annotation 2", new SKPoint(320, 695)).Inflate(0, 2.5f).Transform(ref matrix),
                   "Text of the Underline annotation 2",
-                  TextMarkup.MarkupTypeEnum.Underline
-                  )
-                { Color = DeviceRGBColor.Get(SKColors.Orange) };
-                new TextMarkup(
-                  page,
-                  composer.ShowText("Underline annotation 3", new SKPoint(320, 710)).Inflate(0, 3),
-                  "Text of the Underline annotation 3",
-                  TextMarkup.MarkupTypeEnum.Underline
-                  )
-                { Color = DeviceRGBColor.Get(SKColors.Green) };
+                  TextMarkupType.Underline)
+                {
+                    Color = DeviceRGBColor.Get(SKColors.Orange)
+                };
 
-                new TextMarkup(
-                  page,
-                  composer.ShowText("StrikeOut annotation", new SKPoint(455, 680)),
-                  "Text of the StrikeOut annotation",
-                  TextMarkup.MarkupTypeEnum.StrikeOut
-                  );
-                new TextMarkup(
-                  page,
-                  composer.ShowText("StrikeOut annotation 2", new SKPoint(455, 695)).Inflate(0, 2.5f),
-                  "Text of the StrikeOut annotation 2",
-                  TextMarkup.MarkupTypeEnum.StrikeOut
-                  )
-                { Color = DeviceRGBColor.Get(SKColors.Orange) };
-                new TextMarkup(
-                  page,
-                  composer.ShowText("StrikeOut annotation 3", new SKPoint(455, 710)).Inflate(0, 3),
-                  "Text of the StrikeOut annotation 3",
-                  TextMarkup.MarkupTypeEnum.StrikeOut
-                  )
-                { Color = DeviceRGBColor.Get(SKColors.Green) };
+                new TextMarkup(page,
+                  composer.ShowText("Underline annotation 3", new SKPoint(320, 710)).Inflate(0, 3).Transform(ref matrix),
+                  "Text of the Underline annotation 3",
+                  TextMarkupType.Underline)
+                {
+                    Color = DeviceRGBColor.Get(SKColors.Green)
+                };
+
+                new TextMarkup(page,
+                    composer.ShowText("StrikeOut annotation", new SKPoint(455, 680)).Transform(ref matrix),
+                    "Text of the StrikeOut annotation",
+                    TextMarkupType.StrikeOut);
+
+                new TextMarkup(page,
+                    composer.ShowText("StrikeOut annotation 2", new SKPoint(455, 695)).Inflate(0, 2.5f).Transform(ref matrix),
+                    "Text of the StrikeOut annotation 2",
+                    TextMarkupType.StrikeOut)
+                {
+                    Color = DeviceRGBColor.Get(SKColors.Orange)
+                };
+
+                new TextMarkup(page,
+                    composer.ShowText("StrikeOut annotation 3", new SKPoint(455, 710)).Inflate(0, 3).Transform(ref matrix),
+                    "Text of the StrikeOut annotation 3",
+                    TextMarkupType.StrikeOut)
+                {
+                    Color = DeviceRGBColor.Get(SKColors.Green)
+                };
 
                 composer.End();
             }

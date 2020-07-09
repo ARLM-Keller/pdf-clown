@@ -197,12 +197,13 @@ namespace PdfClown.Util.Math.Geom
             return this;
         }
 
-        public void Transform(ref SKMatrix matrix)
+        public Quad Transform(ref SKMatrix matrix)
         {
             pointTopLeft = matrix.MapPoint(pointTopLeft);
             pointTopRight = matrix.MapPoint(pointTopRight);
             pointBottomRight = matrix.MapPoint(pointBottomRight);
             pointBottomLeft = matrix.MapPoint(pointBottomLeft);
+            return this;
         }
 
         public bool IntersectsWith(Quad value)

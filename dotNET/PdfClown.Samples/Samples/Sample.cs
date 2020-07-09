@@ -41,21 +41,27 @@ namespace PdfClown.Samples.CLI
 
         #region protected
         protected string GetIndentation(int level)
-        { return new String(' ', level); }
+        {
+            return new String(' ', level);
+        }
 
         /**
           <summary>Gets the path used to serialize output files.</summary>
           <param name="fileName">Relative output file path.</param>
         */
         protected string GetOutputPath(string fileName)
-        { return outputPath + (fileName != null ? Path.DirectorySeparatorChar + fileName : ""); }
+        {
+            return fileName != null ? Path.Combine(outputPath, fileName) : outputPath;
+        }
 
         /**
           <summary>Gets the path to a sample resource.</summary>
           <param name="resourceName">Relative resource path.</param>
         */
         protected string GetResourcePath(string resourceName)
-        { return inputPath + Path.DirectorySeparatorChar + resourceName; }
+        {
+            return Path.Combine(inputPath, resourceName);
+        }
 
         /**
           <summary>Gets the path used to serialize output files.</summary>
@@ -70,7 +76,9 @@ namespace PdfClown.Samples.CLI
           <param name="message">Text to show.</param>
         */
         protected void Prompt(string message)
-        { Utils.Prompt(message); }
+        {
+            Utils.Prompt(message);
+        }
 
         /**
           <summary>Gets the user's choice from the given request.</summary>
@@ -157,7 +165,9 @@ namespace PdfClown.Samples.CLI
           <returns>Selected page index.</returns>
         */
         protected int PromptPageChoice(string inputDescription, int pageCount)
-        { return PromptPageChoice(inputDescription, 0, pageCount); }
+        {
+            return PromptPageChoice(inputDescription, 0, pageCount);
+        }
 
         /**
           <summary>Prompts the user for a page index to select.</summary>
@@ -185,7 +195,9 @@ namespace PdfClown.Samples.CLI
           <summary>Indicates that the sample was exited before its completion.</summary>
         */
         protected void Quit()
-        { quit = true; }
+        {
+            quit = true;
+        }
 
         /**
           <summary>Serializes the given PDF Clown file object.</summary>
@@ -193,7 +205,9 @@ namespace PdfClown.Samples.CLI
           <returns>Serialization path.</returns>
         */
         protected string Serialize(files::File file)
-        { return Serialize(file, null, null, null); }
+        {
+            return Serialize(file, null, null, null);
+        }
 
         /**
           <summary>Serializes the given PDF Clown file object.</summary>
@@ -202,7 +216,9 @@ namespace PdfClown.Samples.CLI
           <returns>Serialization path.</returns>
         */
         protected string Serialize(files::File file, files::SerializationModeEnum? serializationMode)
-        { return Serialize(file, serializationMode, null, null, null); }
+        {
+            return Serialize(file, serializationMode, null, null, null);
+        }
 
         /**
           <summary>Serializes the given PDF Clown file object.</summary>
@@ -211,7 +227,9 @@ namespace PdfClown.Samples.CLI
           <returns>Serialization path.</returns>
         */
         protected string Serialize(files::File file, string fileName)
-        { return Serialize(file, fileName, null, null); }
+        {
+            return Serialize(file, fileName, null, null);
+        }
 
         /**
           <summary>Serializes the given PDF Clown file object.</summary>
@@ -221,7 +239,9 @@ namespace PdfClown.Samples.CLI
           <returns>Serialization path.</returns>
         */
         protected string Serialize(files::File file, string fileName, files::SerializationModeEnum? serializationMode)
-        { return Serialize(file, fileName, serializationMode, null, null, null); }
+        {
+            return Serialize(file, fileName, serializationMode, null, null, null);
+        }
 
         /**
           <summary>Serializes the given PDF Clown file object.</summary>
@@ -232,7 +252,9 @@ namespace PdfClown.Samples.CLI
           <returns>Serialization path.</returns>
         */
         protected string Serialize(files::File file, string title, string subject, string keywords)
-        { return Serialize(file, null, title, subject, keywords); }
+        {
+            return Serialize(file, null, title, subject, keywords);
+        }
 
         /**
           <summary>Serializes the given PDF Clown file object.</summary>
@@ -244,7 +266,9 @@ namespace PdfClown.Samples.CLI
           <returns>Serialization path.</returns>
         */
         protected string Serialize(files::File file, files::SerializationModeEnum? serializationMode, string title, string subject, string keywords)
-        { return Serialize(file, GetType().Name, serializationMode, title, subject, keywords); }
+        {
+            return Serialize(file, GetType().Name, serializationMode, title, subject, keywords);
+        }
 
         /**
           <summary>Serializes the given PDF Clown file object.</summary>

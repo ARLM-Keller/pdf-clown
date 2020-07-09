@@ -78,7 +78,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         public bool IsOpen
         {
             get => BaseDataObject.GetBool(PdfName.Open, false);
-            set => BaseDataObject.SetBool(PdfName.Open, value);
+            set
+            {
+                var oldValue = IsOpen;
+                if (oldValue != value)
+                {
+                    BaseDataObject.SetBool(PdfName.Open, value);
+                    OnPropertyChanged(oldValue, value);
+                }
+            }
         }
 
         /**
@@ -89,20 +97,28 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => parent ?? (parent = (Markup)Annotation.Wrap(BaseDataObject[PdfName.Parent]));
             set
             {
-                PdfDictionary baseDataObject = BaseDataObject;
-                baseDataObject[PdfName.Parent] = value.BaseObject;
-                /*
-                  NOTE: The markup annotation's properties override those of this pop-up annotation.
-                */
-                baseDataObject.Remove(PdfName.Contents);
-                baseDataObject.Remove(PdfName.M);
-                baseDataObject.Remove(PdfName.C);
+
+                var oldValue = Parent;
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.Parent] = value?.BaseObject;
+                    if (value != null)
+                    {
+                        /*
+                          NOTE: The markup annotation's properties override those of this pop-up annotation.
+                        */
+                        BaseDataObject.Remove(PdfName.Contents);
+                        BaseDataObject.Remove(PdfName.M);
+                        BaseDataObject.Remove(PdfName.C);
+                    }
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
         public override DateTime? ModificationDate
         {
-            get => Parent != null ? parent.ModificationDate : base.ModificationDate;
+            get => Parent?.ModificationDate ?? base.ModificationDate;
             set
             {
                 if (Parent != null)

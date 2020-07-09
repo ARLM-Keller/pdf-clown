@@ -561,7 +561,7 @@ namespace PdfClown.Viewer
         {
             foreach (var annotation in state.PageView.Page.Annotations)
             {
-                if (annotation.Visible)
+                if (annotation != null && annotation.Visible)
                 {
                     annotation.Draw(state.Canvas);
                     if (annotation == selectedAnnotation)
@@ -760,7 +760,7 @@ namespace PdfClown.Viewer
             }
             foreach (var annotation in state.PageView.Page.Annotations)
             {
-                if (!annotation.Visible)
+                if (annotation == null || !annotation.Visible)
                     continue;
                 var bounds = annotation.GetBounds(state.PageMatrix);
                 bounds.Inflate(4, 4);

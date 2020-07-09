@@ -107,14 +107,17 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
         */
-        public FileAttachmentImageType ImageName
+        public FileAttachmentImageType AttachmentName
         {
             get => ToImageTypeEnum((PdfName)BaseDataObject[PdfName.Name]);
             set
             {
-                var oldvalue = ImageName;
-                BaseDataObject[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;
-                OnPropertyChanged(oldvalue, value);
+                var oldvalue = AttachmentName;
+                if (oldvalue != value)
+                {
+                    BaseDataObject[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;
+                    OnPropertyChanged(oldvalue, value);
+                }
             }
         }
 
@@ -125,8 +128,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = DataFile;
-                BaseDataObject[PdfName.FS] = value.BaseObject;
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.FS] = value.BaseObject;
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -134,7 +140,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             var bounds = Box;
             var color = SKColor;
-            SvgImage.DrawImage(canvas, ImageName.ToString(), color, bounds, 1);
+            SvgImage.DrawImage(canvas, AttachmentName.ToString(), color, bounds, 1);
         }
 
         #endregion

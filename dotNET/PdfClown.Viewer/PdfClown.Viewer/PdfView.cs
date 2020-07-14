@@ -22,6 +22,8 @@ namespace PdfClown.Viewer
 {
     public partial class PdfView : SKScrollView
     {
+        public static readonly BindableProperty FitModeProperty = BindableProperty.Create(nameof(FitMode), typeof(PdfViewFitMode), typeof(PdfView), PdfViewFitMode.PageSize,
+            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnFitModeChanged((PdfViewFitMode)oldValue, (PdfViewFitMode)newValue));
         public static readonly BindableProperty PageBackgroundProperty = BindableProperty.Create(nameof(PageBackground), typeof(Color), typeof(PdfView), Color.White,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnPageBackgroundChanged((Color)oldValue, (Color)newValue));
         public static readonly BindableProperty ScaleContentProperty = BindableProperty.Create(nameof(ScaleContent), typeof(float), typeof(PdfView), 1F,
@@ -72,10 +74,17 @@ namespace PdfClown.Viewer
         private bool readOnly;
         private bool showCharBound;
         private PdfDocumentView document;
+        private PdfPageView currentPage;
 
         public PdfView()
         {
             state.Viewer = this;
+        }
+
+        public PdfViewFitMode FitMode
+        {
+            get => (PdfViewFitMode)GetValue(FitModeProperty);
+            set => SetValue(FitModeProperty, value);
         }
 
         public Color PageBackground
@@ -159,6 +168,9 @@ namespace PdfClown.Viewer
                 SelectedAnnotation = null;
                 SelectedPoint = null;
                 document = value;
+                OnPropertyChanged(nameof(PagesCount));
+                CurrentPage = document.PageViews.FirstOrDefault();
+                ScrollTo(CurrentPage);
                 if (document != null)
                 {
                     document.AnnotationAdded += OnDocumentAnnotationAdded;
@@ -169,20 +181,24 @@ namespace PdfClown.Viewer
 
         public SKSize DocumentSize => Document?.Size ?? SKSize.Empty;
 
-        public PdfPageView CenterPage
+        public PdfPageView CurrentPage
         {
             get
             {
-                var area = state.Area;
-                area.Inflate(-(float)Width / 4F, -(float)Height / 4F);
-                foreach (var pageView in Document.PageViews)
+                if (currentPage == null || currentPage.Document != Document)
                 {
-                    if (state.ViewMatrix.MapRect(pageView.Bounds).IntersectsWith(area))
-                    {
-                        return pageView;
-                    }
+                    currentPage = GetCenterPage();
                 }
-                return null;
+                return currentPage;
+            }
+            set
+            {
+                if (currentPage != value)
+                {
+                    currentPage = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(PageNumber));
+                }
             }
         }
 
@@ -229,11 +245,54 @@ namespace PdfClown.Viewer
             }
         }
 
+
         public bool IsChanged => lastOperationLink != null;
 
         public bool CanRedo => (lastOperationLink == null ? operations.First : lastOperationLink?.Next) != null;
 
         public bool CanUndo => lastOperationLink != null;
+
+        public int PagesCount
+        {
+            get => Document?.PageViews.Count ?? 0;
+        }
+
+        public int PageNumber
+        {
+            get => (CurrentPage?.Index ?? -1) + 1;
+            set
+            {
+                if (Document == null
+                    || Document.PageViews.Count == 0)
+                {
+                    return;
+                }
+                var index = value - 1;
+                if (index < 0)
+                {
+                    index = Document.PageViews.Count - 1;
+                }
+                else if (index >= Document.PageViews.Count)
+                {
+                    index = 0;
+                }
+
+                CurrentPage = Document.PageViews[index];
+                OnPropertyChanged();
+            }
+        }
+
+        public void NextPage()
+        {
+            PageNumber += 1;
+            ScrollTo(CurrentPage);
+        }
+
+        public void PrevPage()
+        {
+            PageNumber -= 1;
+            ScrollTo(CurrentPage);
+        }
 
         public event EventHandler<AnnotationEventArgs> CheckCanRemove;
 
@@ -247,30 +306,31 @@ namespace PdfClown.Viewer
 
         public event EventHandler<AnnotationEventArgs> SelectedAnnotationChanged;
 
+        private PdfPageView GetCenterPage()
+        {
+            if (Document == null)
+                return null;
+            var area = state.Area;
+            area.Inflate(-(float)Width / 4F, -(float)Height / 4F);
+            foreach (var pageView in Document.PageViews)
+            {
+                if (state.ViewMatrix.MapRect(pageView.Bounds).IntersectsWith(area))
+                {
+                    return pageView;
+                }
+            }
+            return Document.PageViews.FirstOrDefault();
+        }
+
         public void BeginDragAnnotation(Annotation note)
         {
             SelectedAnnotation = note;
             CurrentOperation = OperationType.AnnotationDrag;
         }
 
-        public IEnumerable<Annotation> GetAllAnnotations()
+        private void OnFitModeChanged(PdfViewFitMode oldValue, PdfViewFitMode newValue)
         {
-            foreach (var pageView in Document.PageViews)
-            {
-                if (pageView.Page.Annotations != null && pageView.Page.Annotations.Count > 0)
-                {
-                    foreach (var annotation in pageView.Page.Annotations)
-                    {
-                        yield return annotation;
-                        if (annotation is Markup markup
-                            && markup.Popup != null
-                            && !pageView.Page.Annotations.Contains(markup.Popup))
-                        {
-                            yield return markup.Popup;
-                        }
-                    }
-                }
-            }
+            ScrollTo(CurrentPage);
         }
 
         private void OnPageBackgroundChanged(Color oldValue, Color newValue)
@@ -351,7 +411,7 @@ namespace PdfClown.Viewer
                     BeginOperation(annotation, OperationType.AnnotationSubject, nameof(Annotation.Subject), details.OldValue, details.NewValue);
                     break;
             }
-            InvalidateSurface();
+            Device.BeginInvokeOnMainThread(() => InvalidateSurface());
         }
 
         private void OnSelectedMarkupChanged(Markup oldValue, Markup newValue)
@@ -462,6 +522,10 @@ namespace PdfClown.Viewer
         {
             UpdateCurrentMatrix();
             base.OnVerticalValueChanged(oldValue, newValue);
+            if (ScrollAnimation == null)
+            {
+                CurrentPage = GetCenterPage();
+            }
         }
 
         protected override void OnHorizontalValueChanged(double oldValue, double newValue)
@@ -507,7 +571,7 @@ namespace PdfClown.Viewer
                             state.Canvas.DrawPicture(picture);
 
 
-                            if (ShowMarkup && pageView.Page.Annotations.Count > 0)
+                            if (ShowMarkup && pageView.GetAnnotations().Any())
                             {
                                 OnPaintAnnotations(state);
                             }
@@ -559,7 +623,7 @@ namespace PdfClown.Viewer
 
         private void OnPaintAnnotations(PdfViewEventArgs state)
         {
-            foreach (var annotation in state.PageView.Page.Annotations)
+            foreach (var annotation in state.PageView.GetAnnotations())
             {
                 if (annotation != null && annotation.Visible)
                 {
@@ -569,15 +633,9 @@ namespace PdfClown.Viewer
                         state.DrawAnnotation = annotation;
                         OnPaintSelectedAnnotation(state);
                     }
-                    if (annotation is Popup popup
-                        && popup.Parent != null
-                        && !state.PageView.Page.Annotations.Contains(popup.Parent))
-                    {
-                        popup.Parent.Draw(state.Canvas);
-                    }
                 }
             }
-            //if (Dragging != null && !stage.PageView.Page.Annotations.Contains(Dragging))
+            //if (Dragging != null && !stage.PageView.GetAnnotations().Contains(Dragging))
             //{
             //    Dragging.Draw(canvas);
             //}
@@ -700,7 +758,7 @@ namespace PdfClown.Viewer
                     return;
                 }
             }
-            if (Document == null || !PdfPageView.IsPaintComplete)
+            if (Document == null || !Document.IsPaintComplete)
             {
                 return;
             }
@@ -758,7 +816,7 @@ namespace PdfClown.Viewer
             {
                 return;
             }
-            foreach (var annotation in state.PageView.Page.Annotations)
+            foreach (var annotation in state.PageView.GetAnnotations())
             {
                 if (annotation == null || !annotation.Visible)
                     continue;
@@ -1149,6 +1207,7 @@ namespace PdfClown.Viewer
         {
             base.OnSizeAllocated(width, height);
             UpdateCurrentMatrix();
+            ScrollTo(CurrentPage);
         }
 
         public void Save()
@@ -1208,7 +1267,7 @@ namespace PdfClown.Viewer
 
             Document = PdfDocumentView.LoadFrom(filePath);
             ClearOperations();
-            RefreshNavigation();
+            //RefreshNavigation();
         }
 
         public void Load(System.IO.Stream stream)
@@ -1218,7 +1277,37 @@ namespace PdfClown.Viewer
 
             Document = PdfDocumentView.LoadFrom(stream);
             ClearOperations();
-            RefreshNavigation();
+            //RefreshNavigation();
+        }
+
+        public void ScrollTo(PdfPageView page)
+        {
+            if (page == null || Document == null)
+            {
+                return;
+            }
+            ScrollAnimation = new Animation();
+            if (FitMode == PdfViewFitMode.DocumentWidth)
+            {
+                ScaleContent = (float)Width / Document.Size.Width;
+            }
+            else if (FitMode == PdfViewFitMode.PageWidth)
+            {
+                ScaleContent = (float)Width / (page.Bounds.Width + 10);
+            }
+            else if (FitMode == PdfViewFitMode.PageSize)
+            {
+                var vScale = (float)Height / (page.Bounds.Height + 10);
+                var hScale = (float)Width / (page.Bounds.Width + 10);
+                ScaleContent = hScale < vScale ? hScale : vScale;
+            }
+
+            var matrix = SKMatrix.MakeIdentity()
+                .PreConcat(SKMatrix.MakeScale(scale, scale));
+            var bound = matrix.MapRect(page.Bounds);
+            var top = bound.Top - 10;
+            var left = bound.Left - 10;
+            AnimateScroll(Math.Max(top, 0), Math.Max(left, 0));
         }
 
         public void ScrollTo(Annotation annotation)
@@ -1390,7 +1479,7 @@ namespace PdfClown.Viewer
             }
         }
 
-        private void ClearOperations()
+        public void ClearOperations()
         {
             operations.Clear();
             lastOperationLink = null;

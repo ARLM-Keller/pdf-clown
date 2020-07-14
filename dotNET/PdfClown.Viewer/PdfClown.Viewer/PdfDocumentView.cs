@@ -6,11 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace PdfClown.Viewer
 {
     public class PdfDocumentView : IDisposable
     {
+        internal readonly ManualResetEventSlim LockObject = new ManualResetEventSlim(true);
+        public bool IsPaintComplete => LockObject.IsSet;
+
         public static PdfDocumentView LoadFrom(string filePath)
         {
             var document = new PdfDocumentView();
@@ -24,6 +28,7 @@ namespace PdfClown.Viewer
             document.Load(fileStream);
             return document;
         }
+
 
         private readonly List<PdfPageView> pageViews = new List<PdfPageView>();
         private readonly Dictionary<int, PdfPageView> pagesIndex = new Dictionary<int, PdfPageView>();
@@ -69,6 +74,7 @@ namespace PdfClown.Viewer
                 var imageSize = new SKSize(box.Width * dpi, box.Height * dpi);
                 var pageView = new PdfPageView()
                 {
+                    Document = this,
                     Index = page.Index,
                     Page = page,
                     Size = imageSize
@@ -117,9 +123,11 @@ namespace PdfClown.Viewer
         {
             if (File != null)
             {
+
                 ClearPages();
                 File.Dispose();
                 File = null;
+                LockObject.Dispose();
 
                 try { System.IO.File.Delete(TempFilePath); }
                 catch { }
@@ -168,6 +176,17 @@ namespace PdfClown.Viewer
             File.Save(FilePath, mode);
         }
 
+        public IEnumerable<Annotation> GetAllAnnotations()
+        {
+            foreach (var pageView in PageViews)
+            {
+                foreach (var annotation in pageView.GetAnnotations())
+                {
+                    yield return annotation;
+                }
+            }
+        }
+
         public Annotation FindAnnotation(string name, int? pageIndex = null)
         {
             var annotation = (Annotation)null;
@@ -175,7 +194,7 @@ namespace PdfClown.Viewer
             {
                 foreach (var pageView in PageViews)
                 {
-                    annotation = pageView.Page.Annotations[name];
+                    annotation = pageView.GetAnnotation(name);
                     if (annotation != null)
                         return annotation;
                 }
@@ -183,7 +202,7 @@ namespace PdfClown.Viewer
             else
             {
                 var pageView = this[(int)pageIndex];
-                return pageView?.Page.Annotations[name];
+                return pageView?.GetAnnotation(name);
             }
             return null;
         }

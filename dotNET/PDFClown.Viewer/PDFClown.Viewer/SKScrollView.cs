@@ -146,7 +146,7 @@ namespace PdfClown.Viewer
 
         public KeyModifiers KeyModifiers { get; set; }
 
-        public Animation ScrollAnimation { get; private set; }
+        public Animation ScrollAnimation { get; protected set; }
 
         public double VericalSize => VerticalHovered ? 14 : 7;
 

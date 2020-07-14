@@ -111,7 +111,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         [PDF(VersionEnum.PDF17)]
-        public SKPoint CaptionOffset
+        public SKPoint? CaptionOffset
         {
             get
             {
@@ -120,14 +120,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                     var offset = (PdfArray)BaseDataObject[PdfName.CO];
                     captionOffset = new SKPoint(offset?.GetFloat(0) ?? 0F, offset?.GetFloat(1) ?? 0F);
                 }
-                return captionOffset.Value;
+                return captionOffset;
             }
             set
             {
                 var oldValue = CaptionOffset;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.CO] = new PdfArray(PdfReal.Get(value.X), PdfReal.Get(value.Y));
+                    BaseDataObject[PdfName.CO] = value == null ? null : new PdfArray(PdfReal.Get(value.Value.X), PdfReal.Get((float)value.Value.Y));
                     OnPropertyChanged(oldValue, value);
                 }
             }

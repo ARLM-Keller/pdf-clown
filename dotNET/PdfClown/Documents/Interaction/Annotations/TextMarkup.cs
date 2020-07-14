@@ -34,6 +34,7 @@ using PdfClown.Util.Math.Geom;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Interaction.Annotations
@@ -148,8 +149,23 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 base.Color = value;
-                if (Appearance.Normal[null] != null)
-                { RefreshAppearance(); }
+                if (MarkupBoxes.Count > 0)
+                {
+                    RefreshAppearance();
+                }
+            }
+        }
+
+        public override Page Page
+        {
+            get => base.Page;
+            set
+            {
+                base.Page = value;
+                if (MarkupBoxes.Count > 0)
+                {
+                    RefreshAppearance();
+                }
             }
         }
 
@@ -271,12 +287,24 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         protected override void RefreshAppearance()
         {
+            if (Page == null)
+            {
+                return;
+            }
+            if (Rect == null)
+            {
+                MarkupBoxes = MarkupBoxes;
+                return;
+            }
             SKRect box = Rect.ToRect();
             FormXObject normalAppearance = ResetAppearance(box);
 
             PrimitiveComposer composer = new PrimitiveComposer(normalAppearance);
             {
+                var first = MarkupBoxes.FirstOrDefault();
+                //var matrix = SKMatrix.MakeTranslation(-first.TopLeft.X, -first.TopLeft.Y);
                 var matrix = SKMatrix.MakeTranslation(0, box.Height - Page.Size.Height);
+                //var matrix = InvertPageMatrix;
                 TextMarkupType markupType = MarkupType;
                 switch (markupType)
                 {
@@ -302,8 +330,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                             {
                                 foreach (Quad markup in MarkupBoxes)
                                 {
-                                    var markupBox = markup;
-                                    markupBox.Transform(ref matrix);
+                                    var markupBox = Quad.Transform(markup, ref matrix);
+
                                     var sign = Math.Sign((markupBox.BottomLeft - markupBox.TopLeft).Y);
                                     sign = sign == 0 ? -1 : sign;
                                     float markupBoxHeight = markupBox.Height;
@@ -332,8 +360,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                             {
                                 foreach (Quad markup in MarkupBoxes)
                                 {
-                                    var markupBox = markup;
-                                    markupBox.Transform(ref matrix);
+                                    var markupBox = Quad.Transform(markup, ref matrix);
                                     var sign = Math.Sign((markupBox.BottomLeft - markupBox.TopLeft).Y);
                                     sign = sign == 0 ? 1 : sign;
                                     float markupBoxHeight = markupBox.Height;
@@ -385,8 +412,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                                 }
                                 foreach (Quad markup in MarkupBoxes)
                                 {
-                                    var markupBox = markup;
-                                    markupBox.Transform(ref matrix);
+                                    var markupBox = Quad.Transform(markup, ref matrix);
                                     float markupBoxHeight = markupBox.Height;
                                     float boxYOffset = markupBoxHeight * lineYRatio;
                                     var normal = SKPoint.Normalize(markupBox.BottomLeft - markupBox.TopLeft);

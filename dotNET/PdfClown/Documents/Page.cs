@@ -440,7 +440,7 @@ namespace PdfClown.Documents
 
         public SKRect Box
         {
-            get => box ?? (box = TrimBox.ToRect()).Value;
+            get => box ?? (box = MediaBox.ToRect()).Value;
             /* NOTE: Mandatory. */
             set => MediaBox = new Rectangle(value);
         }

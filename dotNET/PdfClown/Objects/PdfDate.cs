@@ -102,6 +102,8 @@ namespace PdfClown.Objects
         #region private
         private static string Format(DateTime value)
         {
+            if (value.Kind == DateTimeKind.Utc)
+                value = value.ToLocalTime();
             return ("D:" + value.ToString(FormatString).Replace(':', '\'') + "'");
         }
         #endregion

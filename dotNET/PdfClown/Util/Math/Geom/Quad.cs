@@ -46,8 +46,7 @@ namespace PdfClown.Util.Math.Geom
         public static Quad Transform(Quad quad, ref SKMatrix matrix)
         {
             var temp = new Quad(quad);
-            temp.Transform(ref matrix);
-            return temp;
+            return temp.Transform(ref matrix);
         }
 
         #endregion

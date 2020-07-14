@@ -150,9 +150,9 @@ namespace PdfClown.Documents.Interaction.Annotations
           <see cref="ReplyTo"/> property.</summary>
         */
         [PDF(VersionEnum.PDF16)]
-        public virtual ReplyTypeEnum ReplyType
+        public virtual ReplyTypeEnum? ReplyType
         {
-            get => ReplyTypeEnumExtension.Get((PdfName)BaseDataObject[PdfName.RT]).Value;
+            get => ReplyTypeEnumExtension.Get((PdfName)BaseDataObject[PdfName.RT]);
             set
             {
                 var oldValue = ReplyType;
@@ -328,9 +328,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             return codes.GetKey(name);
         }
 
-        public static PdfName GetCode(this ReplyTypeEnum replyType)
+        public static PdfName GetCode(this ReplyTypeEnum? replyType)
         {
-            return codes[replyType];
+            return replyType == null ? null : codes[replyType.Value];
         }
     }
 }

@@ -60,6 +60,19 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         #region interface
         #region public
+
+        public override Page Page
+        {
+            get => Parent?.Page ?? base.Page;
+            set
+            {
+                if (Parent != null)
+                { parent.Page = value; }
+                else
+                { base.Page = value; }
+            }
+        }
+
         public override DeviceColor Color
         {
             get => Parent?.Color ?? base.Color;

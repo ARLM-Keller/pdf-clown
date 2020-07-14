@@ -82,7 +82,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 baseObject.Wrapper = referenceAnnotation;
                 return referenceAnnotation;
             }
-            var dictionary = (PdfDictionary)baseObject.Resolve();
+            var dictionary = baseObject.Resolve() as PdfDictionary;
             if (dictionary == null)
                 return null;
             PdfName annotationType = (PdfName)dictionary[PdfName.Subtype];
@@ -154,10 +154,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                       )
                   )
         {
+            GenerateName();
             Page = page;
             Box = box;
             Contents = text;
-            GenerateName();
             Printable = true;
             IsNew = true;
         }
@@ -284,10 +284,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = Box;
-                if (!oldValue.Equals(value))
+                boxCache = new SKRect((float)Math.Round(value.Left, 4),
+                                      (float)Math.Round(value.Top, 4),
+                                      (float)Math.Round(value.Right, 4),
+                                      (float)Math.Round(value.Bottom, 4));
+                if (!oldValue.Equals(boxCache.Value))
                 {
-                    boxCache = value;
-                    Rect = new Objects.Rectangle(InvertPageMatrix.MapRect(value));
+                    Rect = new Objects.Rectangle(InvertPageMatrix.MapRect(boxCache.Value));
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -313,7 +316,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF11)]
         public virtual DeviceColor Color
         {
-            get => DeviceColor.Get((PdfArray)BaseDataObject[PdfName.C]);
+            get => DeviceColor.Get((PdfArray)BaseDataObject[PdfName.C]) ?? DeviceRGBColor.Black;
             set
             {
                 var oldValue = Color;
@@ -697,6 +700,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             Name = Guid.NewGuid().ToString();
         }
+
+        public void GenerateExistingName()
+        {
+            Name = $"Annot{Dictionary[PdfName.Subtype]}{Page?.Index}{BaseObject.Reference?.ObjectNumber}{BaseObject.Reference?.GenerationNumber}{Author}";
+        }
+
 
         public virtual void RefreshBox()
         { }

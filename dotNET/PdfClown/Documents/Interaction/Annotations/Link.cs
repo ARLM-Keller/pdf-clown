@@ -47,7 +47,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Link(Page page, SKRect box, string text, PdfObjectWrapper target) : base(page, PdfName.Link, box, text)
         { Target = target; }
 
-        internal Link(PdfDirectObject baseObject) : base(baseObject)
+        public Link(PdfDirectObject baseObject) : base(baseObject)
         { }
         #endregion
 

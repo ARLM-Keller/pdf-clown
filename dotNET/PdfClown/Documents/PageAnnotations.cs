@@ -80,13 +80,30 @@ namespace PdfClown.Documents
             {
                 if (nameIndex.Count < Count)
                 {
-                    //Refresh cache;
-                    for (int i = 0, length = Count; i < length; i++)
-                    {
-                        var item = this[i];
-                    }
+                    RefreshCache();
                 }
                 return nameIndex.TryGetValue(name, out var annotation) ? annotation : null;
+            }
+        }
+
+        public void RefreshCache()
+        {
+            for (int i = 0, length = Count; i < length; i++)
+            {
+                var item = this[i];
+                if (item is Markup markup
+                    && markup.Popup != null
+                    && !Contains(markup.Popup))
+                {
+                    AddIndex(markup.Popup);
+                }
+                //Recovery
+                if (item is Popup popup
+                       && popup.Parent != null
+                       && !Contains(popup.Parent))
+                {
+                    Add(popup.Parent);
+                }
             }
         }
 
@@ -101,7 +118,7 @@ namespace PdfClown.Documents
                 || (nameIndex.TryGetValue(annotation.Name, out var existing)
                 && existing != annotation))
             {
-                annotation.GenerateName();
+                annotation.GenerateExistingName();
             }
             nameIndex[annotation.Name] = annotation;
         }

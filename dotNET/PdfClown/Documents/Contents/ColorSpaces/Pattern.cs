@@ -155,12 +155,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 else
                     return new SKMatrix
                     {
-                        ScaleX = ((IPdfNumber)matrix[0]).FloatValue,
-                        SkewY = ((IPdfNumber)matrix[1]).FloatValue,
-                        SkewX = ((IPdfNumber)matrix[2]).FloatValue,
-                        ScaleY = ((IPdfNumber)matrix[3]).FloatValue,
-                        TransX = ((IPdfNumber)matrix[4]).FloatValue,
-                        TransY = ((IPdfNumber)matrix[5]).FloatValue,
+                        ScaleX = matrix.GetFloat(0),
+                        SkewY = matrix.GetFloat(1),
+                        SkewX = matrix.GetFloat(2),
+                        ScaleY = matrix.GetFloat(3),
+                        TransX = matrix.GetFloat(4),
+                        TransY = matrix.GetFloat(5),
                         Persp2 = 1
                     };
             }

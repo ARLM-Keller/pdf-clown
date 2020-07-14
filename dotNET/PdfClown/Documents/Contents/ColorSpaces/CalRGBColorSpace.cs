@@ -264,7 +264,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 PdfArray gamma = (PdfArray)Dictionary[PdfName.Gamma];
                 return (gamma == null
                   ? new float[] { 1, 1, 1 }
-                  : new float[] { ((IPdfNumber)gamma[0]).FloatValue, ((IPdfNumber)gamma[1]).FloatValue, ((IPdfNumber)gamma[2]).FloatValue }
+                  : new float[] { gamma.GetFloat(0), gamma.GetFloat(1), gamma.GetFloat(2) }
                   );
             }
         }
@@ -279,12 +279,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 else
                     return new SKMatrix
                     {
-                        ScaleX = ((IPdfNumber)matrix[0]).FloatValue,
-                        SkewY = ((IPdfNumber)matrix[1]).FloatValue,
-                        SkewX = ((IPdfNumber)matrix[2]).FloatValue,
-                        ScaleY = ((IPdfNumber)matrix[3]).FloatValue,
-                        TransX = ((IPdfNumber)matrix[4]).FloatValue,
-                        TransY = ((IPdfNumber)matrix[5]).FloatValue,
+                        ScaleX = matrix.GetFloat(0),
+                        SkewY = matrix.GetFloat(1),
+                        SkewX = matrix.GetFloat(2),
+                        ScaleY = matrix.GetFloat(3),
+                        TransX = matrix.GetFloat(4),
+                        TransY = matrix.GetFloat(5),
                         Persp2 = 1
                     };
             }

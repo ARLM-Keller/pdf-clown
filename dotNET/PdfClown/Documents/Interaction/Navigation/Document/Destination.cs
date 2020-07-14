@@ -217,19 +217,19 @@ namespace PdfClown.Documents.Interaction.Navigation
                     case ModeEnum.FitBoundingBoxVertical:
                     case ModeEnum.FitHorizontal:
                     case ModeEnum.FitVertical:
-                        return Convert.ToSingle(PdfSimpleObject<object>.GetValue(BaseDataObject[2], Double.NaN));
+                        return BaseDataObject.GetFloat(2, float.NaN);
                     case ModeEnum.FitRectangle:
                         {
-                            float left = Convert.ToSingle(PdfSimpleObject<object>.GetValue(BaseDataObject[2], Double.NaN));
-                            float top = Convert.ToSingle(PdfSimpleObject<object>.GetValue(BaseDataObject[5], Double.NaN));
-                            float width = Convert.ToSingle(PdfSimpleObject<object>.GetValue(BaseDataObject[4], Double.NaN)) - left;
-                            float height = Convert.ToSingle(PdfSimpleObject<object>.GetValue(BaseDataObject[3], Double.NaN)) - top;
+                            float left = BaseDataObject.GetFloat(2, float.NaN);
+                            float top = BaseDataObject.GetFloat(5, float.NaN);
+                            float width = BaseDataObject.GetFloat(4, float.NaN) - left;
+                            float height = BaseDataObject.GetFloat(3, float.NaN) - top;
                             return SKRect.Create(left, top, width, height);
                         }
                     case ModeEnum.XYZ:
                         return new SKPoint(
-                          Convert.ToSingle(PdfSimpleObject<object>.GetValue(BaseDataObject[2], Double.NaN)),
-                          Convert.ToSingle(PdfSimpleObject<object>.GetValue(BaseDataObject[3], Double.NaN))
+                          BaseDataObject.GetFloat(2, float.NaN),
+                          BaseDataObject.GetFloat(3, float.NaN)
                           );
                     default:
                         return null;

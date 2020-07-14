@@ -54,7 +54,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 PdfArray black = (PdfArray)Dictionary[PdfName.BlackPoint];
                 return (black == null
                   ? new float[] { 0, 0, 0 }
-                  : new float[] { ((IPdfNumber)black[0]).FloatValue, ((IPdfNumber)black[1]).FloatValue, ((IPdfNumber)black[2]).FloatValue });
+                  : new float[] { black.GetFloat(0), black.GetFloat(1), black.GetFloat(2) });
             }
         }
 
@@ -66,7 +66,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             get
             {
                 PdfArray white = (PdfArray)Dictionary[PdfName.WhitePoint];
-                return new float[] { ((IPdfNumber)white[0]).FloatValue, ((IPdfNumber)white[1]).FloatValue, ((IPdfNumber)white[2]).FloatValue };
+                return new float[] { white.GetFloat(0), white.GetFloat(1), white.GetFloat(2) };
             }
         }
         #endregion

@@ -114,8 +114,8 @@ namespace PdfClown.Documents.Contents.Fonts
                     if (baseObject is PdfArray array)
                     {
                         fontMatrix = new SKMatrix(
-                            ((IPdfNumber)array[0]).FloatValue, ((IPdfNumber)array[1]).FloatValue, ((IPdfNumber)array[4]).FloatValue,
-                            ((IPdfNumber)array[2]).FloatValue, ((IPdfNumber)array[3]).FloatValue, ((IPdfNumber)array[5]).FloatValue,
+                            array.GetFloat(0), array.GetFloat(1), array.GetFloat(4),
+                            array.GetFloat(2), array.GetFloat(3), array.GetFloat(5),
                             0, 0, 1);
                     }
                     else

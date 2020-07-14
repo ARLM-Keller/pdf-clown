@@ -242,7 +242,7 @@ namespace PdfClown.Documents.Contents.Objects
                             {
                                 tx = 0;
                                 ty = (float)(w.Y * fontSize + charSpace + wordSpacing);
-                                var fw = font.GetWidth(code)/1000;
+                                var fw = font.GetWidth(code) / 1000;
                                 charBox = SKRect.Create(0, ty, fw, charHeight);
                             }
                             else

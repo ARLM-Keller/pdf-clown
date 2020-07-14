@@ -121,25 +121,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     if (rangesObject == null)
                     {
                         // 2. a* component.
-                        ranges.Add(
-                          new Interval<float>(-100F, 100F)
-                          );
+                        ranges.Add(new Interval<float>(-100F, 100F));
                         // 3. b* component.
-                        ranges.Add(
-                          new Interval<float>(-100F, 100F)
-                          );
+                        ranges.Add(new Interval<float>(-100F, 100F));
                     }
                     else
                     {
                         // 2/3. a*/b* components.
                         for (int index = 0, length = rangesObject.Count; index < length; index += 2)
                         {
-                            ranges.Add(
-                              new Interval<float>(
-                                ((IPdfNumber)rangesObject[index]).FloatValue,
-                                ((IPdfNumber)rangesObject[index + 1]).FloatValue
-                                )
-                              );
+                            ranges.Add(new Interval<float>(rangesObject.GetFloat(index), rangesObject.GetFloat(index + 1)));
                         }
                     }
                 }

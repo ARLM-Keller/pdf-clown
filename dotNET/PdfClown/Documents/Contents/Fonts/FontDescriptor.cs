@@ -101,19 +101,19 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public float ItalicAngle
         {
-            get => ((IPdfNumber)Dictionary[PdfName.ItalicAngle])?.FloatValue ?? 0F;
+            get => Dictionary.GetFloat(PdfName.ItalicAngle, 0F);
             set => Dictionary[PdfName.ItalicAngle] = new PdfReal(value);
         }
 
         public float Ascent
         {
-            get => ((IPdfNumber)Dictionary[PdfName.Ascent])?.FloatValue ?? 750F;
+            get => Dictionary.GetFloat(PdfName.Ascent, 750F);
             set => Dictionary[PdfName.Ascent] = new PdfReal(value);
         }
 
         public float Descent
         {
-            get => ((IPdfNumber)Dictionary[PdfName.Descent])?.FloatValue ?? 250F;
+            get => Dictionary.GetFloat(PdfName.Descent, -250F);
             set => Dictionary[PdfName.Descent] = new PdfReal(value);
         }
 
@@ -137,13 +137,13 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public float StemV
         {
-            get => ((IPdfNumber)Dictionary[PdfName.StemV])?.FloatValue ?? 0F;
+            get => Dictionary.GetFloat(PdfName.StemV, 0F);
             set => Dictionary[PdfName.StemV] = new PdfReal((float)value);
         }
 
         public float StemH
         {
-            get => ((IPdfNumber)Dictionary[PdfName.StemH])?.FloatValue ?? 0F;
+            get => Dictionary.GetFloat(PdfName.StemH, 0F);
             set => Dictionary[PdfName.StemH] = new PdfReal((float)value);
         }
 

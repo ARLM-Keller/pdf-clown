@@ -515,7 +515,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = Layer;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.OC] = value != null ? value.Membership.BaseObject : null;
+                    BaseDataObject[PdfName.OC] = value?.Membership.BaseObject;
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -639,7 +639,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             var appearanceBounds = appearance.Box;
             var picture = appearance.Render();
 
-            var startMatrix = appearance.StartMatrix;
             var matrix = appearance.Matrix;
 
             var quad = new Quad(appearanceBounds);
@@ -679,7 +678,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         protected void OnPropertyChanged(object oldValue, object newValue, [CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new DetailedPropertyChangedEventArgs(oldValue, newValue, propertyName));
-            if (string.Equals(propertyName, nameof(ModificationDate), StringComparison.Ordinal))
+            if (!string.Equals(propertyName, nameof(ModificationDate), StringComparison.Ordinal))
             {
                 ModificationDate = DateTime.UtcNow;
             }

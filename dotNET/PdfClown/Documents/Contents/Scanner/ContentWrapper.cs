@@ -373,7 +373,9 @@ namespace PdfClown.Documents.Contents
             // Serializing the new contents into the stream buffer...
             Document context = Document;
             foreach (ContentObject item in items)
-            { item.WriteTo(buffer, context); }
+            {
+                item.WriteTo(buffer, context);
+            }
         }
 
         public IContentContext ContentContext => contentContext ?? (contentContext = BaseObject.GetContentContext());

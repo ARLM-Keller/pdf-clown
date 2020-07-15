@@ -79,8 +79,6 @@ namespace PdfClown.Documents
         public static readonly ISet<PdfName> InheritableAttributeKeys;
 
         private static readonly Dictionary<TabOrderEnum, PdfName> TabOrderEnumCodes;
-        private SKMatrix? initialMatrix;
-        private SKMatrix? inInitialMatrix;
         private SKMatrix? rotateMatrix;
         private SKMatrix? inRotateMatrix;
         private SKRect? box;
@@ -488,32 +486,6 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.Rotate] = PdfInteger.Get(value);
         }
 
-        public SKMatrix InitialMatrix
-        {
-            get
-            {
-                if (initialMatrix == null)
-                {
-                    var size = Box.Size;
-                    initialMatrix = GraphicsState.GetInitialMatrix(this, size);
-                }
-                return initialMatrix.Value;
-            }
-        }
-
-        public SKMatrix InvertMatrix
-        {
-            get
-            {
-                if (inInitialMatrix == null)
-                {
-                    InitialMatrix.TryInvert(out var invert);
-                    inInitialMatrix = invert;
-                }
-                return inInitialMatrix.Value;
-            }
-        }
-
         public SKMatrix RotateMatrix
         {
             get
@@ -523,6 +495,11 @@ namespace PdfClown.Documents
                     rotateMatrix = GraphicsState.GetRotationMatrix(Box, Rotate);
                 }
                 return rotateMatrix.Value;
+            }
+            set
+            {
+                rotateMatrix = value;
+                inRotateMatrix = null;
             }
         }
 
@@ -542,15 +519,19 @@ namespace PdfClown.Documents
         #region IAppDataHolder
         public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PieceInfo), this);
 
-        public AppData GetAppData(PdfName appName)
-        { return AppData.Ensure(appName); }
-
         public DateTime? ModificationDate => (DateTime)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.LastModified]);
 
         public List<ITextString> Strings { get; } = new List<ITextString>();
 
+        public AppData GetAppData(PdfName appName)
+        {
+            return AppData.Ensure(appName);
+        }
+
         public void Touch(PdfName appName)
-        { Touch(appName, DateTime.Now); }
+        {
+            Touch(appName, DateTime.Now);
+        }
 
         public void Touch(PdfName appName, DateTime modificationDate)
         {
@@ -595,12 +576,10 @@ namespace PdfClown.Documents
 
         #region private
         private PdfDirectObject GetInheritableAttribute(PdfName key)
-        { return GetInheritableAttribute(BaseDataObject, key); }
-
-        public void OnSetCtm(SKMatrix ctm)
         {
-
+            return GetInheritableAttribute(BaseDataObject, key);
         }
+
         #endregion
         #endregion
         #endregion

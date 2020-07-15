@@ -1,10 +1,10 @@
 ﻿using PdfClown.Documents.Interaction.Annotations;
+using PdfClown.Util.Reflection;
 using SkiaSharp;
 using System;
 
 namespace PdfClown.Viewer
 {
-
     public class AnnotationOperation : EditorOperation
     {
         private Annotation annotation;
@@ -35,17 +35,32 @@ namespace PdfClown.Viewer
             return cloned;
         }
 
-        public override void EndOperation()
+        public override object EndOperation()
         {
-            if (Type == OperationType.AnnotationDrag
-                || Type == OperationType.AnnotationSize)
+            var result = (object)null;
+            switch (Type)
             {
-                NewValue = Annotation.Box;
+                case OperationType.AnnotationDrag:
+                case OperationType.AnnotationSize:
+                    result =
+                        NewValue = Annotation.Box;
+                    break;
+                case OperationType.AnnotationAdd:
+                    result =
+                        Document.AddAnnotation(Annotation);
+                    break;
+                case OperationType.AnnotationRemove:
+                    result =
+                        Document.RemoveAnnotation(Annotation);
+                    break;
             }
             if (Property is ControlPoint controlPoint)
             {
-                NewValue = controlPoint.Point;
+                result =
+                    NewValue = controlPoint.Point;
             }
+            Document?.OnEndOperation(result);
+            return result;
         }
 
         public override void Redo()
@@ -67,14 +82,9 @@ namespace PdfClown.Viewer
                 case OperationType.AnnotationRePage:
                     Annotation.Page = Document[(int)NewValue]?.Page;
                     break;
-                case OperationType.AnnotationColor:
-                    Annotation.SKColor = (SKColor)NewValue;
-                    break;
-                case OperationType.AnnotationText:
-                    Annotation.Contents = (string)NewValue;
-                    break;
-                case OperationType.AnnotationSubject:
-                    Annotation.Subject = (string)NewValue;
+                case OperationType.AnnotationProperty:
+                    var invoker = Property as IInvoker;
+                    invoker.SetValue(Annotation, NewValue);
                     break;
                 case OperationType.PointMove:
                     {
@@ -128,14 +138,9 @@ namespace PdfClown.Viewer
                 case OperationType.AnnotationRePage:
                     Annotation.Page = Document.Pages[(int)OldValue];
                     break;
-                case OperationType.AnnotationColor:
-                    Annotation.SKColor = (SKColor)OldValue;
-                    break;
-                case OperationType.AnnotationText:
-                    Annotation.Contents = (string)OldValue;
-                    break;
-                case OperationType.AnnotationSubject:
-                    Annotation.Subject = (string)OldValue;
+                case OperationType.AnnotationProperty:
+                    var invoker = Property as IInvoker;
+                    invoker.SetValue(Annotation, OldValue);
                     break;
                 case OperationType.PointMove:
                     {

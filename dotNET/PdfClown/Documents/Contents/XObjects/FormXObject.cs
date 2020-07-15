@@ -240,8 +240,6 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public int Rotate => 0;
 
-        public SKMatrix InitialMatrix => SKMatrix.MakeIdentity();
-
         public SKMatrix RotateMatrix => SKMatrix.MakeIdentity();
 
         public SKMatrix TextMatrix => SKMatrix.MakeIdentity();
@@ -251,15 +249,17 @@ namespace PdfClown.Documents.Contents.XObjects
         #region IAppDataHolder
         public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.Header.Get<PdfDictionary>(PdfName.PieceInfo), this);
 
-        public AppData GetAppData(PdfName appName)
-        { return AppData.Ensure(appName); }
-
         public DateTime? ModificationDate => (DateTime?)PdfSimpleObject<object>.GetValue(BaseDataObject.Header[PdfName.LastModified]);
 
-        public SKMatrix? StartMatrix { get; private set; }
+        public AppData GetAppData(PdfName appName)
+        {
+            return AppData.Ensure(appName);
+        }
 
         public void Touch(PdfName appName)
-        { Touch(appName, DateTime.Now); }
+        {
+            Touch(appName, DateTime.Now);
+        }
 
         public void Touch(PdfName appName, DateTime modificationDate)
         {
@@ -270,10 +270,14 @@ namespace PdfClown.Documents.Contents.XObjects
 
         #region IContentEntity
         public ContentObject ToInlineObject(PrimitiveComposer composer)
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
 
         public XObject ToXObject(Document context)
-        { return (XObject)Clone(context); }
+        {
+            return (XObject)Clone(context);
+        }
 
         internal void InvalidatePicture()
         {
@@ -281,11 +285,6 @@ namespace PdfClown.Documents.Contents.XObjects
             picture = null;
         }
 
-        public void OnSetCtm(SKMatrix ctm)
-        {
-            if (StartMatrix == null)
-                StartMatrix = ctm;
-        }
         #endregion
         #endregion
         #endregion

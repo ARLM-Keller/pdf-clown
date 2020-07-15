@@ -47,11 +47,14 @@ namespace PdfClown.Viewer
         public string TempFilePath { get; set; }
 
         public SKSize Size { get; private set; }
+        public float AvgHeigth { get; private set; }
 
         public PdfPageView this[int index]
         {
             get => pagesIndex.TryGetValue(index, out var page) ? page : null;
         }
+
+        public event EventHandler EndOperation;
 
         public event EventHandler<AnnotationEventArgs> AnnotationAdded;
 
@@ -60,6 +63,7 @@ namespace PdfClown.Viewer
         public void LoadPages()
         {
             float totalWidth, totalHeight;
+            var doubleIndent = indent * 2;
             Pages = Document.Pages;
 
             totalWidth = 0F;
@@ -79,7 +83,7 @@ namespace PdfClown.Viewer
                     Page = page,
                     Size = imageSize
                 };
-                pageView.Matrix = pageView.Matrix.PreConcat(SKMatrix.CreateTranslation(indent, totalHeight));
+                pageView.Matrix = pageView.Matrix.PostConcat(SKMatrix.CreateTranslation(indent, totalHeight));
                 pagesIndex[pageView.Index] = pageView;
                 pageViews.Add(pageView);
                 if (imageSize.Width > totalWidth)
@@ -87,12 +91,16 @@ namespace PdfClown.Viewer
 
                 totalHeight += imageSize.Height;
             }
-            Size = new SKSize(totalWidth + indent * 2, totalHeight);
+            Size = new SKSize(totalWidth + doubleIndent, totalHeight);
+
+            AvgHeigth = totalHeight / pageViews.Count;
+
             foreach (var pageView in pageViews)
             {
-                if ((pageView.Size.Width + indent * 2) < Size.Width)
+                var indWidth = pageView.Size.Width + doubleIndent;
+                if (indWidth < Size.Width)
                 {
-                    pageView.Matrix.TransX += (Size.Width - pageView.Size.Width + indent * 2) / 2;
+                    pageView.Matrix = pageView.Matrix.PostConcat(SKMatrix.CreateTranslation((Size.Width - indWidth) / 2, 0));
                 }
             }
         }
@@ -176,6 +184,11 @@ namespace PdfClown.Viewer
             File.Save(FilePath, mode);
         }
 
+        public void SaveTo(Stream stream, SerializationModeEnum mode = SerializationModeEnum.Standard)
+        {
+            File.Save(stream, mode);
+        }
+
         public IEnumerable<Annotation> GetAllAnnotations()
         {
             foreach (var pageView in PageViews)
@@ -207,35 +220,42 @@ namespace PdfClown.Viewer
             return null;
         }
 
-        public void AddAnnotation(Annotation annotation)
+        public void OnEndOperation(object result)
         {
-            AddAnnotation(annotation.Page, annotation);
+            EndOperation?.Invoke(this, new OperationEventArgs(result));
         }
 
-        public void AddAnnotation(Page page, Annotation annotation)
+        public List<Annotation> AddAnnotation(Annotation annotation)
         {
+            return AddAnnotation(annotation.Page, annotation);
+        }
+
+        public List<Annotation> AddAnnotation(Page page, Annotation annotation)
+        {
+            var list = new List<Annotation>();
             if (page != null)
             {
                 annotation.Page = page;
                 if (!page.Annotations.Contains(annotation))
                 {
                     page.Annotations.Add(annotation);
-                    AnnotationAdded?.Invoke(this, new AnnotationEventArgs(annotation));
+                    list.Add(annotation);
                 }
-
+                AnnotationAdded?.Invoke(this, new AnnotationEventArgs(annotation));
                 foreach (var item in annotation.Replies)
                 {
                     if (item is Markup markup)
                     {
-                        AddAnnotation(page, item);
+                        list.AddRange(AddAnnotation(page, item));
                     }
                 }
             }
             if (annotation is Popup popup
                 && popup.Parent != null)
             {
-                AddAnnotation(popup.Parent);
+                list.AddRange(AddAnnotation(popup.Parent));
             }
+            return list;
         }
 
         public List<Annotation> RemoveAnnotation(Annotation annotation)
@@ -250,10 +270,7 @@ namespace PdfClown.Viewer
                         && markup.ReplyTo == annotation)//&& markup.ReplyType == Markup.ReplyTypeEnum.Thread
                     {
                         annotation.Replies.Add(item);
-                        foreach (var deleted in RemoveAnnotation(markup))
-                        {
-                            list.Add(deleted);
-                        }
+                        list.AddRange(RemoveAnnotation(markup));
                     }
                 }
             }
@@ -261,14 +278,13 @@ namespace PdfClown.Viewer
             AnnotationRemoved?.Invoke(this, new AnnotationEventArgs(annotation));
             if (annotation is Popup popup)
             {
-                foreach (var deleted in RemoveAnnotation(popup.Parent))
-                {
-                    list.Add(deleted);
-                }
+                list.AddRange(RemoveAnnotation(popup.Parent));
             }
             list.Add(annotation);
 
             return list;
         }
+
+
     }
 }

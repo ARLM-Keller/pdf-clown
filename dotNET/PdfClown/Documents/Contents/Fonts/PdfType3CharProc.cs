@@ -112,14 +112,9 @@ namespace PdfClown.Documents.Contents.Fonts
             get => (float?)(Contents.OfType<CharProcWidth>().FirstOrDefault()?.WX ?? Contents.OfType<CharProcBBox>().FirstOrDefault()?.WX);
         }
 
-        public RotationEnum Rotation
-        { get => RotationEnum.Downward; }
+        public RotationEnum Rotation => RotationEnum.Downward;
 
-        public int Rotate
-        { get => 0; }
-
-        public SKMatrix InitialMatrix
-        { get => SKMatrix.MakeIdentity(); }
+        public int Rotate => 0;
 
         public SKMatrix RotateMatrix
         { get => SKMatrix.MakeIdentity(); }
@@ -131,9 +126,6 @@ namespace PdfClown.Documents.Contents.Fonts
         public AppDataCollection AppData => null;
 
         public DateTime? ModificationDate => null;
-
-        public void OnSetCtm(SKMatrix ctm)
-        { }
 
         public void Render(SKCanvas context, SKSize size, bool clearContext = true)
         {

@@ -229,10 +229,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             throw new NotImplementedException();
         }
 
-        public void OnSetCtm(SKMatrix ctm)
-        {
-
-        }
         #endregion
 
         #region private
@@ -241,8 +237,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public RotationEnum Rotation => RotationEnum.Downward;
 
         public int Rotate => 0;
-
-        public SKMatrix InitialMatrix => SKMatrix.MakeIdentity();
 
         public SKMatrix RotateMatrix => SKMatrix.MakeIdentity();
 

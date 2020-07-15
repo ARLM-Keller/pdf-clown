@@ -164,7 +164,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         #region static
         #region fields
         private static readonly JustificationEnum DefaultJustification = JustificationEnum.Left;
-        private static readonly LineEndStyleEnum DefaultLineEndStyle = LineEndStyleEnum.None;
         private TextTopLeftControlPoint cpTexcTopLeft;
         private TextTopRightControlPoint cpTexcTopRight;
         private TextBottomLeftControlPoint cpTexcBottomLeft;
@@ -260,38 +259,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public LineEndStyleEnum LineEndStyle
         {
-            get
-            {
-                PdfArray endstylesObject = (PdfArray)BaseDataObject[PdfName.LE];
-                return endstylesObject != null ? LineEndStyleEnumExtension.Get((PdfName)endstylesObject[1]) : DefaultLineEndStyle;
-            }
+            get => LineEndStyleEnumExtension.Get((PdfName)BaseDataObject[PdfName.LE]);
             set
             {
                 var oldValue = LineEndStyle;
                 if (oldValue != value)
                 {
-                    EnsureLineEndStylesObject()[1] = value.GetName();
-                    OnPropertyChanged(oldValue, value);
-                }
-            }
-        }
-
-        /**
-          <summary>Gets/Sets the style of the starting line ending.</summary>
-        */
-        public LineEndStyleEnum LineStartStyle
-        {
-            get
-            {
-                PdfArray endstylesObject = (PdfArray)BaseDataObject[PdfName.LE];
-                return endstylesObject != null ? LineEndStyleEnumExtension.Get((PdfName)endstylesObject[0]) : DefaultLineEndStyle;
-            }
-            set
-            {
-                var oldValue = LineStartStyle;
-                if (oldValue != value)
-                {
-                    EnsureLineEndStylesObject()[0] = value.GetName();
+                    BaseDataObject[PdfName.LE] = value.GetName();
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -308,18 +282,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         #endregion
 
         #region private
-        private PdfArray EnsureLineEndStylesObject()
-        {
-            PdfArray endStylesObject = (PdfArray)BaseDataObject[PdfName.LE];
-            if (endStylesObject == null)
-            {
-                BaseDataObject[PdfName.LE] = endStylesObject = new PdfArray(
-                  new PdfDirectObject[] { DefaultLineEndStyle.GetName(), DefaultLineEndStyle.GetName() }
-                  );
-            }
-            return endStylesObject;
-        }
-
         public SKRect TextBox
         {
             get

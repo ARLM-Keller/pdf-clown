@@ -99,7 +99,6 @@ namespace PdfClown.Documents.Contents.Objects
             var ctm = state.Ctm;
             ctm = ctm.PreConcat(Value);
             state.Ctm = ctm;
-            state.Scanner.ContentContext.OnSetCtm(ctm);
 
             var context = state.Scanner.RenderContext;
             if (context != null)

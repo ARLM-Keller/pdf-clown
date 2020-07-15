@@ -71,13 +71,9 @@ namespace PdfClown.Documents.Contents
         /**
           <summary>Gets the rendering rotation of this content context.</summary>
         */
-        RotationEnum Rotation
-        { get; }
+        RotationEnum Rotation { get; }
 
-        int Rotate
-        { get; }
-
-        SKMatrix InitialMatrix { get; }
+        int Rotate { get; }
 
         SKMatrix RotateMatrix { get; }
 
@@ -85,6 +81,5 @@ namespace PdfClown.Documents.Contents
 
         TransparencyXObject Group { get; }
 
-        void OnSetCtm(SKMatrix ctm);
     }
 }

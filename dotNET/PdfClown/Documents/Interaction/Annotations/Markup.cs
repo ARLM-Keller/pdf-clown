@@ -269,19 +269,20 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         protected FormXObject ResetAppearance(SKRect box)
         {
+            var boxSize = SKRect.Create(box.Width, box.Height);
             FormXObject normalAppearance;
             AppearanceStates normalAppearances = Appearance.Normal;
             normalAppearance = normalAppearances[null];
             if (normalAppearance != null)
             {
-                normalAppearance.Box = box;
+                normalAppearance.Box = boxSize;
                 normalAppearance.BaseDataObject.Body.Clear();
                 normalAppearance.ClearContents();
             }
             else
             {
                 normalAppearances[null] =
-                      normalAppearance = new FormXObject(Document, box);
+                      normalAppearance = new FormXObject(Document, boxSize);
             }
 
             return normalAppearance;

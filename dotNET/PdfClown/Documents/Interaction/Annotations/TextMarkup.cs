@@ -298,13 +298,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             SKRect box = Rect.ToRect();
             FormXObject normalAppearance = ResetAppearance(box);
-
+            normalAppearance.Matrix = SKMatrix.MakeTranslation(box.Left, box.Top);
             PrimitiveComposer composer = new PrimitiveComposer(normalAppearance);
             {
                 var first = MarkupBoxes.FirstOrDefault();
-                //var matrix = SKMatrix.MakeTranslation(-first.TopLeft.X, -first.TopLeft.Y);
-                var matrix = SKMatrix.MakeTranslation(0, box.Height - Page.Size.Height);
-                //var matrix = InvertPageMatrix;
+                var matrix = SKMatrix.MakeTranslation(-box.Left, -box.Top).PreConcat(InvertPageMatrix);
+
                 TextMarkupType markupType = MarkupType;
                 switch (markupType)
                 {
@@ -332,8 +331,9 @@ namespace PdfClown.Documents.Interaction.Annotations
                                 {
                                     var markupBox = Quad.Transform(markup, ref matrix);
 
-                                    var sign = Math.Sign((markupBox.BottomLeft - markupBox.TopLeft).Y);
-                                    sign = sign == 0 ? -1 : sign;
+                                    var sign = Math.Sign((markupBox.TopLeft - markupBox.BottomLeft).Y);
+                                    sign = sign == 0 ? 1 : sign;
+
                                     float markupBoxHeight = markupBox.Height;
                                     float markupBoxMargin = GetMarkupBoxMargin(markupBoxHeight) * sign;
 
@@ -361,16 +361,17 @@ namespace PdfClown.Documents.Interaction.Annotations
                                 foreach (Quad markup in MarkupBoxes)
                                 {
                                     var markupBox = Quad.Transform(markup, ref matrix);
-                                    var sign = Math.Sign((markupBox.BottomLeft - markupBox.TopLeft).Y);
+                                    var sign = Math.Sign((markupBox.TopLeft - markupBox.BottomLeft).Y);
                                     sign = sign == 0 ? 1 : sign;
+
                                     float markupBoxHeight = markupBox.Height;
                                     float markupBoxWidth = markupBox.Width;
                                     float lineWidth = markupBoxHeight * .06f;
                                     float step = markupBoxHeight * .125f;
                                     float length = (float)Math.Sqrt(Math.Pow(step, 2) * 2);
-                                    var bottomUp = SKPoint.Normalize(markupBox.TopLeft - markupBox.BottomLeft);
+                                    var bottomUp = SKPoint.Normalize(markupBox.BottomLeft - markupBox.TopLeft);
                                     bottomUp = new SKPoint(bottomUp.X * lineWidth, bottomUp.Y * lineWidth);
-                                    var startPoint = markupBox.BottomLeft + (new SKPoint(bottomUp.X * 2, bottomUp.Y * 2));
+                                    var startPoint = markupBox.TopLeft + (new SKPoint(bottomUp.X * 2, bottomUp.Y * 2));
                                     var leftRight = SKPoint.Normalize(markupBox.BottomRight - markupBox.BottomLeft);
                                     leftRight = new SKPoint(leftRight.X * step, leftRight.Y * step);
                                     var leftRightPerp = leftRight.GetPerp(step * sign);
@@ -415,10 +416,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                                     var markupBox = Quad.Transform(markup, ref matrix);
                                     float markupBoxHeight = markupBox.Height;
                                     float boxYOffset = markupBoxHeight * lineYRatio;
-                                    var normal = SKPoint.Normalize(markupBox.BottomLeft - markupBox.TopLeft);
+                                    var normal = SKPoint.Normalize(markupBox.TopLeft - markupBox.BottomLeft);
                                     normal = new SKPoint(normal.X * boxYOffset, normal.Y * boxYOffset);
                                     composer.SetLineWidth(markupBoxHeight * .065);
-                                    composer.DrawLine(markupBox.TopLeft + normal, markupBox.TopRight + normal);
+                                    composer.DrawLine(markupBox.BottomLeft + normal, markupBox.BottomRight + normal);
                                 }
                                 composer.Stroke();
                             }

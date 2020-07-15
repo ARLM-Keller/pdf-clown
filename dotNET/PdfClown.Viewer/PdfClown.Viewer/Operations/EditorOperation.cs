@@ -14,7 +14,11 @@
 
         public object NewValue { get; set; }
 
-        public abstract void EndOperation();
+        public virtual object EndOperation()
+        {
+            Document?.OnEndOperation(null);
+            return null;
+        }
 
         public abstract void Redo();
 

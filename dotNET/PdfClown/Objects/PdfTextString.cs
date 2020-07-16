@@ -97,7 +97,7 @@ namespace PdfClown.Objects
         {
             get
             {
-                if (SerializationMode == SerializationModeEnum.Literal && unicoded)
+                if (unicoded)//SerializationMode == SerializationModeEnum.Literal && 
                 {
                     byte[] valueBytes = RawValue;
                     return Charset.UTF16BE.GetString(valueBytes, 2, valueBytes.Length - 2);

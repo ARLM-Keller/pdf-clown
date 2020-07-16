@@ -179,7 +179,7 @@ namespace PdfClown.Objects
 
         public override string ToString()
         {
-            switch (serializationMode)
+            switch (SerializationMode)
             {
                 case SerializationModeEnum.Hex:
                     return "<" + base.ToString() + ">";
@@ -194,19 +194,19 @@ namespace PdfClown.Objects
         {
             get
             {
-                switch (serializationMode)
+                switch (SerializationMode)
                 {
                     case SerializationModeEnum.Literal:
                         return tokens::Encoding.Pdf.Decode(RawValue);
                     case SerializationModeEnum.Hex:
                         return ConvertUtils.ByteArrayToHex(RawValue);
                     default:
-                        throw new NotImplementedException(serializationMode + " serialization mode is not implemented.");
+                        throw new NotImplementedException(SerializationMode + " serialization mode is not implemented.");
                 }
             }
             protected set
             {
-                switch (serializationMode)
+                switch (SerializationMode)
                 {
                     case SerializationModeEnum.Literal:
                         RawValue = tokens::Encoding.Pdf.Encode((string)value);
@@ -215,7 +215,7 @@ namespace PdfClown.Objects
                         RawValue = ConvertUtils.HexStringToByteArray((string)value);
                         break;
                     default:
-                        throw new NotImplementedException(serializationMode + " serialization mode is not implemented.");
+                        throw new NotImplementedException(SerializationMode + " serialization mode is not implemented.");
                 }
             }
         }
@@ -225,7 +225,7 @@ namespace PdfClown.Objects
             MemoryStream buffer = new MemoryStream();
             {
                 byte[] rawValue = RawValue;
-                switch (serializationMode)
+                switch (SerializationMode)
                 {
                     case SerializationModeEnum.Literal:
                         buffer.WriteByte(LiteralLeftDelimiterCode);

@@ -30,8 +30,8 @@ namespace PdfClown.Documents.Contents
 {
     public class TextGraphicsState
     {
-        private SKMatrix tlm = SKMatrix.MakeIdentity();
-        private SKMatrix tm = SKMatrix.MakeIdentity();
+        private SKMatrix tlm = SKMatrix.Identity;
+        private SKMatrix tm = SKMatrix.Identity;
 
         public TextGraphicsState()
         {

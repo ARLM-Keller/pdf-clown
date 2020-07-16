@@ -281,7 +281,7 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             isEmbedded = false;
             isDamaged = false;
-            fontMatrixTransform = SKMatrix.MakeIdentity();
+            fontMatrixTransform = SKMatrix.Identity;
         }
 
         public PdfType1Font(Document doc, Bytes.IInputStream pfbIn) : base(doc)
@@ -293,7 +293,7 @@ namespace PdfClown.Documents.Contents.Fonts
             genericFont = embedder.Type1Font;
             isEmbedded = true;
             isDamaged = false;
-            fontMatrixTransform = SKMatrix.MakeIdentity();
+            fontMatrixTransform = SKMatrix.Identity;
             codeToBytesMap = new Dictionary<int, byte[]>();
         }
 
@@ -306,7 +306,7 @@ namespace PdfClown.Documents.Contents.Fonts
             genericFont = embedder.Type1Font;
             isEmbedded = true;
             isDamaged = false;
-            fontMatrixTransform = SKMatrix.MakeIdentity();
+            fontMatrixTransform = SKMatrix.Identity;
             codeToBytesMap = new Dictionary<int, byte[]>();
         }
 

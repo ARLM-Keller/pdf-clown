@@ -14,6 +14,7 @@
     <Authors>Stefano Chizzolini</Authors>
     <Description>PDF engine</Description>
     <Copyright>Copyright 2006-2015 Stefano Chizzolini</Copyright>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugType>full</DebugType>

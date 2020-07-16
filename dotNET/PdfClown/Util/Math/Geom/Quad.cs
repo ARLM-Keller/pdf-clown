@@ -186,9 +186,9 @@ namespace PdfClown.Util.Math.Geom
         public Quad Inflate(float valueX, float valueY)
         {
             SKRect oldBounds = GetBounds();
-            var matrix = SKMatrix.MakeTranslation(oldBounds.MidX, oldBounds.MidY);
-            matrix = matrix.PreConcat(SKMatrix.MakeScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height));
-            matrix = matrix.PreConcat(SKMatrix.MakeTranslation(-(oldBounds.MidX), -(oldBounds.MidY)));
+            var matrix = SKMatrix.CreateTranslation(oldBounds.MidX, oldBounds.MidY);
+            matrix = matrix.PreConcat(SKMatrix.CreateScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height));
+            matrix = matrix.PreConcat(SKMatrix.CreateTranslation(-(oldBounds.MidX), -(oldBounds.MidY)));
             pointTopLeft = matrix.MapPoint(pointTopLeft);
             pointTopRight = matrix.MapPoint(pointTopRight);
             pointBottomRight = matrix.MapPoint(pointBottomRight);

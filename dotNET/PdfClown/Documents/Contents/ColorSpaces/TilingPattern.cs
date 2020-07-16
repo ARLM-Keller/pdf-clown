@@ -238,7 +238,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public int Rotate => 0;
 
-        public SKMatrix RotateMatrix => SKMatrix.MakeIdentity();
+        public SKMatrix RotateMatrix => SKMatrix.Identity;
 
         public AppDataCollection AppData => throw new NotImplementedException();
 

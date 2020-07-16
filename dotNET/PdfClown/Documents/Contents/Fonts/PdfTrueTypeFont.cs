@@ -470,7 +470,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 if (path != null && hasScaling)
                 {
                     var scaledPath = new SKPath(path);
-                    scaledPath.Transform(SKMatrix.MakeScale(scale, scale));
+                    scaledPath.Transform(SKMatrix.CreateScale(scale, scale));
                     path = scaledPath;
                 }
                 cacheGlyphs[code] = path;

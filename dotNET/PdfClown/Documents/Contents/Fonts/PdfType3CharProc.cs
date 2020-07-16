@@ -117,7 +117,9 @@ namespace PdfClown.Documents.Contents.Fonts
         public int Rotate => 0;
 
         public SKMatrix RotateMatrix
-        { get => SKMatrix.MakeIdentity(); }
+        {
+            get => SKMatrix.Identity;
+        }
 
         public List<ITextString> Strings { get; set; }
 

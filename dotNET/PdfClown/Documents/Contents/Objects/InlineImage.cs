@@ -82,7 +82,7 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public SKSize Size => new SKSize(ImageHeader.Width, ImageHeader.Height);
 
-        public SKMatrix Matrix => SKMatrix.MakeScale(1F / ImageHeader.Width, -1F / ImageHeader.Height);
+        public SKMatrix Matrix => SKMatrix.CreateScale(1F / ImageHeader.Width, -1F / ImageHeader.Height);
 
         public IImageObject SMask => null;
 
@@ -118,7 +118,7 @@ namespace PdfClown.Documents.Contents.Objects
                     var matrix = canvas.TotalMatrix;
 
                     matrix = matrix.PreConcat(Matrix);
-                    matrix = matrix.PreConcat(SKMatrix.MakeTranslation(0, -size.Height));
+                    matrix = matrix.PreConcat(SKMatrix.CreateTranslation(0, -size.Height));
                     canvas.SetMatrix(matrix);
 
                     if (ImageMask)

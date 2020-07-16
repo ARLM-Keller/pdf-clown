@@ -176,7 +176,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 isDamaged = fontIsDamaged;
             }
             fontMatrixTransform = FontMatrix;
-            fontMatrixTransform = fontMatrixTransform.PostConcat(SKMatrix.MakeScale(1000, 1000));
+            fontMatrixTransform = fontMatrixTransform.PostConcat(SKMatrix.CreateScale(1000, 1000));
         }
 
         public override BaseFont GenericFont => cidFont ?? t1Font;

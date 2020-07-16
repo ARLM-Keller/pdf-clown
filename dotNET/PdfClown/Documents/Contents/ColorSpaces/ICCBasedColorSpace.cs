@@ -118,7 +118,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 skColorSpace = SKColorSpace.CreateIcc(Profile.GetBody(true).GetBuffer());
                 if (skColorSpace != null)
                 {
-                    xyzD50 = skColorSpace.FromXyzD50();
                     skColorSpace.GetNumericalTransferFunction(out var spaceTransfer);
                     transfer = spaceTransfer.Invert();
                 }

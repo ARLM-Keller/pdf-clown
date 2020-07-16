@@ -468,9 +468,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             try
             {
                 Type1CharString accent = font.GetType1CharString(accentName);
-                var at = SKMatrix.MakeTranslation(
-                        leftSideBearing.X + adx - asb,
-                        leftSideBearing.Y + ady);
+                var at = SKMatrix.CreateTranslation(leftSideBearing.X + adx - asb, leftSideBearing.Y + ady);
                 path.AddPath(accent.Path, ref at, SKPathAddMode.Append);
             }
             catch (Exception e)

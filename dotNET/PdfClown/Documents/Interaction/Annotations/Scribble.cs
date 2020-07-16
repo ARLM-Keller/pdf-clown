@@ -160,10 +160,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                 Appearance.Normal[null] = null;
             }
             //base.MoveTo(newBox);
-            var dif = SKMatrix.MakeIdentity()
-                .PreConcat(SKMatrix.MakeTranslation(newBox.MidX, newBox.MidY))
-                .PreConcat(SKMatrix.MakeScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height))
-                .PreConcat(SKMatrix.MakeTranslation(-oldBox.MidX, -oldBox.MidY));
+            var dif = SKMatrix.CreateIdentity()
+                .PreConcat(SKMatrix.CreateTranslation(newBox.MidX, newBox.MidY))
+                .PreConcat(SKMatrix.CreateScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height))
+                .PreConcat(SKMatrix.CreateTranslation(-oldBox.MidX, -oldBox.MidY));
             var oldPaths = Paths;
             var newPaths = new List<SKPath>();
             foreach (var path in oldPaths)

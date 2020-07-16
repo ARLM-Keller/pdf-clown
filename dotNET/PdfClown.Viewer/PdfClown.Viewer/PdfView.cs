@@ -569,7 +569,7 @@ namespace PdfClown.Viewer
         protected override void OnWindowScaleChanged()
         {
             base.OnWindowScaleChanged();
-            state.WindowScaleMatrix = SKMatrix.MakeScale(XScaleFactor, YScaleFactor);
+            state.WindowScaleMatrix = SKMatrix.CreateScale(XScaleFactor, YScaleFactor);
         }
 
         protected override void OnPaintContent(SKPaintSurfaceEventArgs e)
@@ -1342,8 +1342,8 @@ namespace PdfClown.Viewer
                 ScaleContent = hScale < vScale ? hScale : vScale;
             }
 
-            var matrix = SKMatrix.MakeIdentity()
-                .PreConcat(SKMatrix.MakeScale(scale, scale));
+            var matrix = SKMatrix.CreateIdentity()
+                .PreConcat(SKMatrix.CreateScale(scale, scale));
             var bound = matrix.MapRect(page.Bounds);
             var top = bound.Top - 10;
             var left = bound.Left - 10;
@@ -1362,8 +1362,8 @@ namespace PdfClown.Viewer
             {
                 return;
             }
-            var matrix = SKMatrix.MakeIdentity()
-                .PreConcat(SKMatrix.MakeScale(scale, scale))
+            var matrix = SKMatrix.CreateIdentity()
+                .PreConcat(SKMatrix.CreateScale(scale, scale))
                 .PreConcat(pageView.Matrix);
             var bound = annotation.GetBounds(matrix);
             var top = bound.Top - (state.WindowArea.MidY - bound.Height / 2);

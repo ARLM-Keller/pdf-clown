@@ -19,7 +19,7 @@ namespace PdfClown.Viewer
     public class PdfPageView : IDisposable
     {
         private SKPicture picture;
-        public SKMatrix Matrix = SKMatrix.MakeIdentity();
+        public SKMatrix Matrix = SKMatrix.Identity;
         private Page page;
         private SKImage image;
         private float imageScale;
@@ -139,7 +139,7 @@ namespace PdfClown.Viewer
                             canvas.Save();
                             if (canvas.TotalMatrix.ScaleY < 0)
                             {
-                                var matrix = SKMatrix.MakeScale(1, -1);
+                                var matrix = SKMatrix.CreateScale(1, -1);
                                 canvas.Concat(ref matrix);
                             }
                             canvas.DrawText(ex.Message, 0, 0, paint);

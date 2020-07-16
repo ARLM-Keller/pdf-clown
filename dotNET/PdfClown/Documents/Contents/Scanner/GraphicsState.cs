@@ -307,7 +307,7 @@ namespace PdfClown.Documents.Contents
         public static SKMatrix GetInitialMatrix(IContentContext contentContext, SKSize canvasSize)
         {
             if (contentContext == null)
-                return SKMatrix.MakeIdentity();
+                return SKMatrix.Identity;
             return GetInitialMatrix(contentContext, canvasSize, contentContext.Box);
         }
 
@@ -319,7 +319,7 @@ namespace PdfClown.Documents.Contents
                 || contentContext is FormXObject xObject
                 || contentContext is PdfType3CharProc charProc)
             {
-                return SKMatrix.MakeIdentity();
+                return SKMatrix.Identity;
             }
             else
             {
@@ -329,13 +329,13 @@ namespace PdfClown.Documents.Contents
 
             // Scaling.
             SKSize rotatedCanvasSize = rotation.Transform(canvasSize);
-            initialCtm = initialCtm.PreConcat(SKMatrix.MakeScale(
+            initialCtm = initialCtm.PreConcat(SKMatrix.CreateScale(
                rotatedCanvasSize.Width / contentBox.Width,
                rotatedCanvasSize.Height / contentBox.Height
                ));
 
             // Origin alignment.
-            initialCtm = initialCtm.PreConcat(SKMatrix.MakeTranslation(-contentBox.Left, -contentBox.Top)); //TODO: verify minimum coordinates!
+            initialCtm = initialCtm.PreConcat(SKMatrix.CreateTranslation(-contentBox.Left, -contentBox.Top)); //TODO: verify minimum coordinates!
             return initialCtm;
         }
         public SKColor? GetStrokeColor()
@@ -471,10 +471,10 @@ namespace PdfClown.Documents.Contents
 
         public static SKMatrix GetRotationMatrix(SKRect box, int degrees)
         {
-            var matrix = SKMatrix.MakeRotationDegrees(degrees);
-            matrix = matrix.PreConcat(SKMatrix.MakeScale(1, -1));
+            var matrix = SKMatrix.CreateRotationDegrees(degrees);
+            matrix = matrix.PreConcat(SKMatrix.CreateScale(1, -1));
             var mappedBox = matrix.MapRect(box);
-            matrix = matrix.PostConcat(SKMatrix.MakeTranslation(-mappedBox.Left, -mappedBox.Top));
+            matrix = matrix.PostConcat(SKMatrix.CreateTranslation(-mappedBox.Left, -mappedBox.Top));
             return matrix;
         }
 

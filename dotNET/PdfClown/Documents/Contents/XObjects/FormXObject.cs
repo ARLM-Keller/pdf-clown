@@ -120,7 +120,7 @@ namespace PdfClown.Documents.Contents.XObjects
                 */
                 PdfArray matrix = (PdfArray)BaseDataObject.Header.Resolve(PdfName.Matrix);
                 if (matrix == null)
-                    return SKMatrix.MakeIdentity();
+                    return SKMatrix.Identity;
                 else
                     return new SKMatrix
                     {
@@ -240,9 +240,9 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public int Rotate => 0;
 
-        public SKMatrix RotateMatrix => SKMatrix.MakeIdentity();
+        public SKMatrix RotateMatrix => SKMatrix.Identity;
 
-        public SKMatrix TextMatrix => SKMatrix.MakeIdentity();
+        public SKMatrix TextMatrix => SKMatrix.Identity;
 
         public List<ITextString> Strings { get; } = new List<ITextString>();
 

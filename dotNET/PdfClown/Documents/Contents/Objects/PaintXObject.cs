@@ -109,7 +109,7 @@ namespace PdfClown.Documents.Contents.Objects
                         var size = imageObject.Size;
                         var imageMatrix = imageObject.Matrix;
                         imageMatrix.ScaleY *= -1;
-                        imageMatrix = imageMatrix.PreConcat(SKMatrix.MakeTranslation(0, -size.Height));
+                        imageMatrix = imageMatrix.PreConcat(SKMatrix.CreateTranslation(0, -size.Height));
                         canvas.Concat(ref imageMatrix);
 
                         if (imageObject.ImageMask)

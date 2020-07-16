@@ -151,7 +151,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 */
                 PdfArray matrix = (PdfArray)Dictionary[PdfName.Matrix];
                 if (matrix == null)
-                    return SKMatrix.MakeIdentity();
+                    return SKMatrix.Identity;
                 else
                     return new SKMatrix
                     {

@@ -298,11 +298,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             SKRect box = Rect.ToRect();
             FormXObject normalAppearance = ResetAppearance(box);
-            normalAppearance.Matrix = SKMatrix.MakeTranslation(box.Left, box.Top);
+            normalAppearance.Matrix = SKMatrix.CreateTranslation(box.Left, box.Top);
             PrimitiveComposer composer = new PrimitiveComposer(normalAppearance);
             {
                 var first = MarkupBoxes.FirstOrDefault();
-                var matrix = SKMatrix.MakeTranslation(-box.Left, -box.Top).PreConcat(InvertPageMatrix);
+                var matrix = SKMatrix.CreateTranslation(-box.Left, -box.Top).PreConcat(InvertPageMatrix);
 
                 TextMarkupType markupType = MarkupType;
                 switch (markupType)

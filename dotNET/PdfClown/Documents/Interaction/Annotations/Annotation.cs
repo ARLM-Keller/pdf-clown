@@ -529,7 +529,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         protected SKMatrix InvertPageMatrix
         {
-            get => Page?.InRotateMatrix ?? (GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0).TryInvert(out var inverted) ? inverted : SKMatrix.MakeIdentity());
+            get => Page?.InRotateMatrix ?? (GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0).TryInvert(out var inverted) ? inverted : SKMatrix.Identity);
         }
 
 
@@ -644,9 +644,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             var quad = new Quad(appearanceBounds);
             quad.Transform(ref matrix);
 
-            var a = SKMatrix.MakeScale(bounds.Width / quad.HorizontalLength, bounds.Height / quad.VerticalLenght);
+            var a = SKMatrix.CreateScale(bounds.Width / quad.HorizontalLength, bounds.Height / quad.VerticalLenght);
             var quadA = Quad.Transform(quad, ref a);
-            a = a.PostConcat(SKMatrix.MakeTranslation(bounds.Left - quadA.Left, bounds.Top - quadA.Top));
+            a = a.PostConcat(SKMatrix.CreateTranslation(bounds.Left - quadA.Left, bounds.Top - quadA.Top));
 
             matrix = matrix.PostConcat(a);
 

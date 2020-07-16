@@ -47,9 +47,9 @@ namespace PdfClown.Util.Math.Geom
 
         public static void AddOpenArrow(this SKPath path, SKPoint point, SKPoint normal)
         {
-            var matrix1 = SKMatrix.MakeRotationDegrees(35);
+            var matrix1 = SKMatrix.CreateRotationDegrees(35);
             var rotated1 = matrix1.MapVector(normal.X, normal.Y);
-            var matrix2 = SKMatrix.MakeRotationDegrees(-35);
+            var matrix2 = SKMatrix.CreateRotationDegrees(-35);
             var rotated2 = matrix2.MapVector(normal.X, normal.Y);
 
             path.MoveTo(point + new SKPoint(rotated1.X * 8, rotated1.Y * 8));
@@ -59,9 +59,9 @@ namespace PdfClown.Util.Math.Geom
 
         public static void AddCloseArrow(this SKPath path, SKPoint point, SKPoint normal)
         {
-            var matrix1 = SKMatrix.MakeRotationDegrees(35);
+            var matrix1 = SKMatrix.CreateRotationDegrees(35);
             var rotated1 = matrix1.MapVector(normal.X, normal.Y);
-            var matrix2 = SKMatrix.MakeRotationDegrees(-35);
+            var matrix2 = SKMatrix.CreateRotationDegrees(-35);
             var rotated2 = matrix2.MapVector(normal.X, normal.Y);
 
             path.MoveTo(point + new SKPoint(rotated1.X * 8, rotated1.Y * 8));

@@ -214,8 +214,8 @@ namespace PdfClown.Documents.Contents.Objects
                                 // position vector, in text space
                                 var v = font.GetPositionVector(code);
                                 // apply the position vector to the horizontal origin to get the vertical origin
-                                trm = trm.PreConcat(SKMatrix.MakeTranslation(v.X, v.Y));
-                                utm = utm.PreConcat(SKMatrix.MakeTranslation(v.X, v.Y));
+                                trm = trm.PreConcat(SKMatrix.CreateTranslation(v.X, v.Y));
+                                utm = utm.PreConcat(SKMatrix.CreateTranslation(v.X, v.Y));
                             }
                             trm = trm.PreConcat(fm);
 
@@ -260,7 +260,7 @@ namespace PdfClown.Documents.Contents.Objects
                                 textScanner.ScanChar(textChar, quad);
                             }
 
-                            tm = tm.PreConcat(SKMatrix.MakeTranslation(tx, ty));
+                            tm = tm.PreConcat(SKMatrix.CreateTranslation(tx, ty));
                         }
                     }
                 }
@@ -281,7 +281,7 @@ namespace PdfClown.Documents.Contents.Objects
                         ty = 0;
                     }
 
-                    tm = tm.PreConcat(SKMatrix.MakeTranslation(tx, ty));
+                    tm = tm.PreConcat(SKMatrix.CreateTranslation(tx, ty));
                 }
             }
             if (context != null)

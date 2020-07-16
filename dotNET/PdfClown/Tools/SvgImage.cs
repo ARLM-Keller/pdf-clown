@@ -72,15 +72,15 @@ namespace PdfClown.Tools
             var width = svg.ViewBox.Width * scale;
             var height = svg.ViewBox.Height * scale;
 
-            var matrix = SKMatrix.MakeIdentity();
+            var matrix = SKMatrix.Identity;
 
             if (rotate > 0)
             {
-                matrix = matrix.PreConcat(SKMatrix.MakeRotationDegrees(rotate, (left + widthR / 2), (top + heightR / 2)));
+                matrix = matrix.PreConcat(SKMatrix.CreateRotationDegrees(rotate, (left + widthR / 2), (top + heightR / 2)));
             }
 
-            matrix = matrix.PreConcat(SKMatrix.MakeTranslation(left + (widthR - width) / 2F, top + (heightR - height) / 2F));
-            matrix = matrix.PreConcat(SKMatrix.MakeScale(scale, scale));
+            matrix = matrix.PreConcat(SKMatrix.CreateTranslation(left + (widthR - width) / 2F, top + (heightR - height) / 2F));
+            matrix = matrix.PreConcat(SKMatrix.CreateScale(scale, scale));
 
             return matrix;
         }
@@ -355,7 +355,7 @@ namespace PdfClown.Tools
 
         private static SKMatrix ReadTransform(string raw)
         {
-            var t = SKMatrix.MakeIdentity();
+            var t = SKMatrix.Identity;
 
             if (string.IsNullOrWhiteSpace(raw))
             {
@@ -366,7 +366,7 @@ namespace PdfClown.Tools
             foreach (var c in calls)
             {
                 var args = c.Split(new[] { '(', ',', ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                var nt = SKMatrix.MakeIdentity();
+                var nt = SKMatrix.Identity;
                 switch (args[0])
                 {
                     case "matrix":
@@ -387,22 +387,22 @@ namespace PdfClown.Tools
                     case "translate":
                         if (args.Length >= 3)
                         {
-                            nt = SKMatrix.MakeTranslation(ReadNumber(args[1]), ReadNumber(args[2]));
+                            nt = SKMatrix.CreateTranslation(ReadNumber(args[1]), ReadNumber(args[2]));
                         }
                         else if (args.Length >= 2)
                         {
-                            nt = SKMatrix.MakeTranslation(ReadNumber(args[1]), 0);
+                            nt = SKMatrix.CreateTranslation(ReadNumber(args[1]), 0);
                         }
                         break;
                     case "scale":
                         if (args.Length >= 3)
                         {
-                            nt = SKMatrix.MakeScale(ReadNumber(args[1]), ReadNumber(args[2]));
+                            nt = SKMatrix.CreateScale(ReadNumber(args[1]), ReadNumber(args[2]));
                         }
                         else if (args.Length >= 2)
                         {
                             var sx = ReadNumber(args[1]);
-                            nt = SKMatrix.MakeScale(sx, sx);
+                            nt = SKMatrix.CreateScale(sx, sx);
                         }
                         break;
                     case "rotate":
@@ -411,15 +411,15 @@ namespace PdfClown.Tools
                         {
                             var x = ReadNumber(args[2]);
                             var y = ReadNumber(args[3]);
-                            var t1 = SKMatrix.MakeTranslation(x, y);
-                            var t2 = SKMatrix.MakeRotationDegrees(a);
-                            var t3 = SKMatrix.MakeTranslation(-x, -y);
+                            var t1 = SKMatrix.CreateTranslation(x, y);
+                            var t2 = SKMatrix.CreateRotationDegrees(a);
+                            var t3 = SKMatrix.CreateTranslation(-x, -y);
                             SKMatrix.Concat(ref nt, ref t1, ref t2);
                             SKMatrix.Concat(ref nt, ref nt, ref t3);
                         }
                         else
                         {
-                            nt = SKMatrix.MakeRotationDegrees(a);
+                            nt = SKMatrix.CreateRotationDegrees(a);
                         }
                         break;
                     default:

@@ -168,7 +168,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         SKRect unscaledOldBox = appearance.Matrix.MapRect(appearance.Box);
                         SKSize scale = new SKSize(oldBox.Width / unscaledOldBox.Width, oldBox.Height / unscaledOldBox.Height);
 
-                        SKMatrix matrix = SKMatrix.MakeRotationDegrees(value);
+                        SKMatrix matrix = SKMatrix.CreateRotationDegrees(value);
                         appearance.Matrix = matrix;
 
                         SKRect appearanceBox = appearance.Box;

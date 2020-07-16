@@ -35,7 +35,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       <summary>Device Red-Green-Blue color value [PDF:1.6:4.5.3].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceRGBColor : DeviceColor
+    public sealed class DeviceRGBColor : DeviceColor, IEquatable<DeviceRGBColor>
     {
         #region static
         #region fields
@@ -115,9 +115,20 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             set => SetComponentValue(2, value);
         }
 
+        public override bool IsZero => Equals(Black);
+
         public override object Clone(Document context)
         {
             throw new NotImplementedException();
+        }
+
+        public bool Equals(DeviceRGBColor other)
+        {
+            if (other == null)
+                return false;
+            return R.Equals(other.R)
+                && G.Equals(other.G)
+                && B.Equals(other.B);
         }
 
         #endregion

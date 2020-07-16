@@ -36,7 +36,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       ambiguities.</remarks>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceCMYKColor : DeviceColor
+    public sealed class DeviceCMYKColor : DeviceColor, IEquatable<DeviceCMYKColor>
     {
         #region static
         #region fields
@@ -115,8 +115,22 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             set => SetComponentValue(3, value);
         }
 
+        public override bool IsZero => Equals(White);
+
         public override object Clone(Document context)
-        { throw new NotImplementedException(); }
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Equals(DeviceCMYKColor other)
+        {
+            if (other == null)
+                return false;
+            return C.Equals(other.C)
+                && M.Equals(other.M)
+                && Y.Equals(other.Y)
+                && K.Equals(other.K);
+        }
 
         #endregion
         #endregion

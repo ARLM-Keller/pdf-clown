@@ -316,12 +316,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF11)]
         public virtual DeviceColor Color
         {
-            get => DeviceColor.Get((PdfArray)BaseDataObject[PdfName.C]) ?? DeviceRGBColor.Black;
+            get => DeviceColor.Get((PdfArray)BaseDataObject[PdfName.C]);
             set
             {
                 var oldValue = Color;
-                BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value);
-                OnPropertyChanged(oldValue, value);
+                if (oldValue != value)
+                {
+                    BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value);
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 

@@ -68,7 +68,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         cloudPath.Dispose();
                 }
             }
-            if (Border != null)
+            if (Border != null && Color != null && !Color.IsZero)
             {
                 var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
                 using (var paint = new SKPaint { Color = color })

@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Objects;
+using System;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -68,6 +69,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             : base(colorSpace, baseObject)
         { }
         #endregion
+
+        public abstract bool IsZero { get; }
         #endregion
     }
 }

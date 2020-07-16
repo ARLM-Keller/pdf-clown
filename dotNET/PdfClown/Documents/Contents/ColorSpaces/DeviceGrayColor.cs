@@ -34,7 +34,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
       <summary>Device Gray color value [PDF:1.6:4.5.3].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceGrayColor : DeviceColor
+    public sealed class DeviceGrayColor : DeviceColor, IEquatable<DeviceGrayColor>
     {
         #region static
         #region fields
@@ -83,9 +83,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             set => SetComponentValue(0, value);
         }
 
+        public override bool IsZero => Equals(Black);
+
         public override object Clone(Document context)
         {
             throw new NotImplementedException();
+        }
+
+        public bool Equals(DeviceGrayColor other)
+        {
+            if (other == null)
+                return false;
+            return G.Equals(other.G);
         }
 
         #endregion

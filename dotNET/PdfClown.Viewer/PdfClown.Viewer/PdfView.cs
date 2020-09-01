@@ -173,6 +173,7 @@ namespace PdfClown.Viewer
                 SelectedPoint = null;
                 document = value;
                 OnPropertyChanged(nameof(PagesCount));
+                UpdateMaximums();
                 CurrentPage = document.PageViews.FirstOrDefault();
                 ScrollTo(CurrentPage);
                 if (document != null)
@@ -1282,25 +1283,6 @@ namespace PdfClown.Viewer
             //TODO File.Reload();
         }
 
-        private void RefreshNavigation()
-        {
-            HorizontalValue = 0;
-            VerticalValue = 0;
-
-            Device.BeginInvokeOnMainThread(() =>
-            {
-                if (Document != null)
-                {
-                    ScaleContent = (float)(Width / (DocumentSize.Width));
-                    UpdateMaximums();
-                }
-                else
-                {
-                    ScaleContent = 1;
-                }
-            });
-        }
-
         public void Load(string filePath)
         {
             if (Document != null)
@@ -1308,7 +1290,6 @@ namespace PdfClown.Viewer
 
             Document = PdfDocumentView.LoadFrom(filePath);
             ClearOperations();
-            //RefreshNavigation();
         }
 
         public void Load(System.IO.Stream stream)
@@ -1318,7 +1299,6 @@ namespace PdfClown.Viewer
 
             Document = PdfDocumentView.LoadFrom(stream);
             ClearOperations();
-            //RefreshNavigation();
         }
 
         public void ScrollTo(PdfPageView page)

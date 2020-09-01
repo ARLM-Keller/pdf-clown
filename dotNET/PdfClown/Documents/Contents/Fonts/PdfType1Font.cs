@@ -53,20 +53,35 @@ namespace PdfClown.Documents.Contents.Fonts
     [PDF(VersionEnum.PDF10)]
     public class PdfType1Font : SimpleFont
     {
-        public static readonly PdfType1Font TIMES_ROMAN = new PdfType1Font(null, "Times-Roman");
-        public static readonly PdfType1Font TIMES_BOLD = new PdfType1Font(null, "Times-Bold");
-        public static readonly PdfType1Font TIMES_ITALIC = new PdfType1Font(null, "Times-Italic");
-        public static readonly PdfType1Font TIMES_BOLD_ITALIC = new PdfType1Font(null, "Times-BoldItalic");
-        public static readonly PdfType1Font HELVETICA = new PdfType1Font(null, "Helvetica");
-        public static readonly PdfType1Font HELVETICA_BOLD = new PdfType1Font(null, "Helvetica-Bold");
-        public static readonly PdfType1Font HELVETICA_OBLIQUE = new PdfType1Font(null, "Helvetica-Oblique");
-        public static readonly PdfType1Font HELVETICA_BOLD_OBLIQUE = new PdfType1Font(null, "Helvetica-BoldOblique");
-        public static readonly PdfType1Font COURIER = new PdfType1Font(null, "Courier");
-        public static readonly PdfType1Font COURIER_BOLD = new PdfType1Font(null, "Courier-Bold");
-        public static readonly PdfType1Font COURIER_OBLIQUE = new PdfType1Font(null, "Courier-Oblique");
-        public static readonly PdfType1Font COURIER_BOLD_OBLIQUE = new PdfType1Font(null, "Courier-BoldOblique");
-        public static readonly PdfType1Font SYMBOL = new PdfType1Font(null, "Symbol");
-        public static readonly PdfType1Font ZAPF_DINGBATS = new PdfType1Font(null, "ZapfDingbats");
+        private static PdfType1Font _TIMES_ROMAN;
+        private static PdfType1Font _TIMES_BOLD;
+        private static PdfType1Font _TIMES_ITALIC;
+        private static PdfType1Font _TIMES_BOLD_ITALIC;
+        private static PdfType1Font _HELVETICA;
+        private static PdfType1Font _HELVETICA_BOLD;
+        private static PdfType1Font _HELVETICA_OBLIQUE;
+        private static PdfType1Font _HELVETICA_BOLD_OBLIQUE;
+        private static PdfType1Font _COURIER;
+        private static PdfType1Font _COURIER_BOLD;
+        private static PdfType1Font _COURIER_OBLIQUE;
+        private static PdfType1Font _COURIER_BOLD_OBLIQUE;
+        private static PdfType1Font _SYMBOL;
+        private static PdfType1Font _ZAPF_DINGBATS;
+
+        public static PdfType1Font TIMES_ROMAN => _TIMES_ROMAN ?? (_TIMES_ROMAN = new PdfType1Font(null, "Times-Roman"));
+        public static PdfType1Font TIMES_BOLD => _TIMES_BOLD ?? (_TIMES_BOLD = new PdfType1Font(null, "Times-Bold"));
+        public static PdfType1Font TIMES_ITALIC => _TIMES_ITALIC ?? (_TIMES_ITALIC = new PdfType1Font(null, "Times-Italic"));
+        public static PdfType1Font TIMES_BOLD_ITALIC => _TIMES_BOLD_ITALIC ?? (_TIMES_BOLD_ITALIC = new PdfType1Font(null, "Times-BoldItalic"));
+        public static PdfType1Font HELVETICA => _HELVETICA ?? (_HELVETICA = new PdfType1Font(null, "Helvetica"));
+        public static PdfType1Font HELVETICA_BOLD => _HELVETICA_BOLD ?? (_HELVETICA_BOLD = new PdfType1Font(null, "Helvetica-Bold"));
+        public static PdfType1Font HELVETICA_OBLIQUE => _HELVETICA_OBLIQUE ?? (_HELVETICA_OBLIQUE = new PdfType1Font(null, "Helvetica-Oblique"));
+        public static PdfType1Font HELVETICA_BOLD_OBLIQUE => _HELVETICA_BOLD_OBLIQUE ?? (_HELVETICA_BOLD_OBLIQUE = new PdfType1Font(null, "Helvetica-BoldOblique"));
+        public static PdfType1Font COURIER => _COURIER ?? (_COURIER = new PdfType1Font(null, "Courier"));
+        public static PdfType1Font COURIER_BOLD => _COURIER_BOLD ?? (_COURIER_BOLD = new PdfType1Font(null, "Courier-Bold"));
+        public static PdfType1Font COURIER_OBLIQUE => _COURIER_OBLIQUE ?? (_COURIER_OBLIQUE = new PdfType1Font(null, "Courier-Oblique"));
+        public static PdfType1Font COURIER_BOLD_OBLIQUE => _COURIER_BOLD_OBLIQUE ?? (_COURIER_BOLD_OBLIQUE = new PdfType1Font(null, "Courier-BoldOblique"));
+        public static PdfType1Font SYMBOL => _SYMBOL ?? (_SYMBOL = new PdfType1Font(null, "Symbol"));
+        public static PdfType1Font ZAPF_DINGBATS => _ZAPF_DINGBATS ?? (_ZAPF_DINGBATS = new PdfType1Font(null, "ZapfDingbats"));
         public enum FamilyEnum
         {
             Courier,
@@ -136,6 +151,9 @@ namespace PdfClown.Documents.Contents.Fonts
         private readonly Dictionary<int, byte[]> codeToBytesMap;
         private SKMatrix? fontMatrix;
         private SKRect? fontBBox;
+
+
+
         #endregion
 
         #region constructors

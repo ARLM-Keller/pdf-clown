@@ -31,7 +31,6 @@ namespace PdfClown.Documents.Contents.Fonts
 	 */
     public sealed class Standard14Fonts
     {
-        private static readonly HashSet<string> StandardNames = new HashSet<string>(StringComparer.Ordinal);
         private static readonly Dictionary<string, string> StandardMapping = new Dictionary<string, string>(34, StringComparer.Ordinal);
         private static readonly Dictionary<string, FontMetrics> StandardAFMMapping = new Dictionary<string, FontMetrics>(34, StringComparer.Ordinal);
         static Standard14Fonts()
@@ -100,31 +99,32 @@ namespace PdfClown.Documents.Contents.Fonts
 
         private static void AddAFM(string fontName, string afmName)
         {
-            if (!StandardAFMMapping.TryGetValue(afmName, out var metric))
-            {
-                using (var afmStream = typeof(Standard14Fonts).Assembly.GetManifestResourceStream("fonts.afm." + afmName))
-                {
-                    if (afmStream == null)
-                    {
-                        throw new IOException(fontName + " not found");
-                    }
-                    AFMParser parser = new AFMParser(afmStream);
-                    StandardAFMMapping[afmName] = metric = parser.Parse(true);
-                }
-            }
-
-            StandardNames.Add(fontName);
             StandardMapping[fontName] = afmName;
-            StandardAFMMapping[fontName] = metric;
         }
 
         /**
 		 * Returns the AFM for the given font.
 		 * @param baseName base name of font
 		 */
-        public static FontMetrics GetAFM(string baseName)
+        public static FontMetrics GetAFM(string fontName)
         {
-            return baseName == null ? null : StandardAFMMapping.TryGetValue(baseName, out var fontMetrics) ? fontMetrics : null;
+            if (!StandardMapping.TryGetValue(fontName, out var baseName))
+                return null;
+
+            if (!StandardAFMMapping.TryGetValue(baseName, out var metric))
+            {
+                using (var afmStream = typeof(Standard14Fonts).Assembly.GetManifestResourceStream("fonts.afm." + baseName))
+                {
+                    if (afmStream == null)
+                    {
+                        throw new IOException(baseName + " not found");
+                    }
+                    AFMParser parser = new AFMParser(afmStream);
+                    StandardAFMMapping[baseName] = metric = parser.Parse(true);
+                }
+            }
+
+            return metric;
         }
 
         /**
@@ -133,24 +133,24 @@ namespace PdfClown.Documents.Contents.Fonts
 		 */
         public static bool ContainsName(string baseName)
         {
-            return StandardNames.Contains(baseName);
+            return StandardMapping.ContainsKey(baseName);
         }
 
         /**
 		 * Returns the set of Standard 14 font names, including additional names.
 		 */
-        public static HashSet<string> Names
+        public static ICollection<string> Names
         {
-            get => StandardNames;
+            get => StandardMapping.Keys;
         }
 
         /**
 		 * Returns the name of the actual font which the given font name maps to.
 		 * @param baseName base name of font
 		 */
-        public static string GetMappedFontName(string baseName)
+        public static string GetMappedFontName(string fontName)
         {
-            return StandardMapping.TryGetValue(baseName, out var name) ? name : null;
+            return StandardMapping.TryGetValue(fontName, out var name) ? name : null;
         }
     }
 }

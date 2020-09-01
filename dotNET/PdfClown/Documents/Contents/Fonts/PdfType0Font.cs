@@ -582,9 +582,17 @@ namespace PdfClown.Documents.Contents.Fonts
                 // try to find the corresponding Unicode (UC2) CMap
                 if (strName != null)
                 {
-                    CMap prdCMap = CMap.Get(strName);
-                    string ucs2Name = prdCMap.Registry + "-" + prdCMap.Ordering + "-UCS2";
-                    cMapUCS2 = CMap.Get(ucs2Name);
+                    try
+                    {
+                        CMap prdCMap = CMap.Get(strName);
+                        string ucs2Name = prdCMap.Registry + "-" + prdCMap.Ordering + "-UCS2";
+                        cMapUCS2 = CMap.Get(ucs2Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Warn. Could not get {strName} UC2 map for font {Name} {ex}");
+                    }
+
                 }
             }
         }

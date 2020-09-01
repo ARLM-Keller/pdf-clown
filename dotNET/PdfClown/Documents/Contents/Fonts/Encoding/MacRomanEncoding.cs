@@ -245,6 +245,8 @@ namespace PdfClown.Documents.Contents.Fonts
             Put(180, "yen");
             Put(122, "z");
             Put(48, "zero");
+            // adding an additional mapping as defined in Appendix D of the pdf spec
+            Put(0312, "nbspace");
         }
 
         public override PdfDirectObject GetPdfObject()

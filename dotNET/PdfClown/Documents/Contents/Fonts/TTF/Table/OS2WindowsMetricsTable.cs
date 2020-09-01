@@ -153,7 +153,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * <p>For Restricted License embedding to take effect, it must be the only level of embedding
          * selected.
          */
-        public static readonly short FSTYPE_RESTRICTED = 0x0001;
+        public static readonly short FSTYPE_RESTRICTED = 0x0002;
 
         /**
          * Preview and Print embedding: the font may be embedded, and temporarily loaded on the

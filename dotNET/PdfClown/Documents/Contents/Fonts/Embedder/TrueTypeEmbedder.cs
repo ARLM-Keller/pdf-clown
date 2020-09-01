@@ -107,15 +107,13 @@ namespace PdfClown.Documents.Contents.Fonts
             if (ttf.OS2Windows != null)
             {
                 int fsType = ttf.OS2Windows.FsType;
-                int exclusive = fsType & 0x8; // bits 0-3 are a set of exclusive bits
-
-                if ((exclusive & OS2WindowsMetricsTable.FSTYPE_RESTRICTED) ==
+                if ((fsType & OS2WindowsMetricsTable.FSTYPE_RESTRICTED) ==
                                  OS2WindowsMetricsTable.FSTYPE_RESTRICTED)
                 {
                     // restricted License embedding
                     return false;
                 }
-                else if ((exclusive & OS2WindowsMetricsTable.FSTYPE_BITMAP_ONLY) ==
+                else if ((fsType & OS2WindowsMetricsTable.FSTYPE_BITMAP_ONLY) ==
                                      OS2WindowsMetricsTable.FSTYPE_BITMAP_ONLY)
                 {
                     // bitmap embedding only

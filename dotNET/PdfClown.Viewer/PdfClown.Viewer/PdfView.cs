@@ -332,8 +332,8 @@ namespace PdfClown.Viewer
         private int GetDisplayPageIndex()
         {
             var verticalValue = -(state.NavigationMatrix.TransY);
-            var startIndex = (int)Math.Ceiling(verticalValue / (Document.AvgHeigth * state.NavigationMatrix.ScaleY)) - 2;
-            return startIndex < 0 ? 0 : startIndex;
+            var page = Document.PageViews.FirstOrDefault(p => (p.Bounds.Bottom * state.NavigationMatrix.ScaleY) > verticalValue);
+            return page?.Index ?? 0;
         }
 
         private void OnFitModeChanged(PdfViewFitMode oldValue, PdfViewFitMode newValue)

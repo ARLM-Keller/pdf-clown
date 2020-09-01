@@ -70,6 +70,7 @@ namespace PdfClown.Viewer
             totalHeight = 0F;
             pageViews.Clear();
             pagesIndex.Clear();
+            int order = 0;
             foreach (var page in Pages)
             {
                 totalHeight += indent;
@@ -79,6 +80,7 @@ namespace PdfClown.Viewer
                 var pageView = new PdfPageView()
                 {
                     Document = this,
+                    Order = order++,
                     Index = page.Index,
                     Page = page,
                     Size = imageSize

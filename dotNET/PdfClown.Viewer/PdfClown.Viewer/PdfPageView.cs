@@ -19,11 +19,12 @@ namespace PdfClown.Viewer
     public class PdfPageView : IDisposable
     {
         private SKPicture picture;
-        public SKMatrix Matrix = SKMatrix.Identity;
+        private SKMatrix matrix = SKMatrix.Identity;
         private Page page;
         private SKImage image;
         private float imageScale;
         private PageAnnotations pageAnnotations;
+        private SKRect bounds;
 
         public PdfPageView()
         {
@@ -43,13 +44,24 @@ namespace PdfClown.Viewer
 
         public SKSize Size { get; set; }
 
-        public SKRect Bounds => SKRect.Create(
-            Matrix.TransX,
-            Matrix.TransY,
-            Size.Width * Matrix.ScaleX,
-            Size.Height * Matrix.ScaleY);
+        public SKRect Bounds => bounds;
 
         public int Index { get; internal set; }
+
+        public int Order { get; internal set; }
+
+        public SKMatrix Matrix
+        {
+            get => matrix;
+            set
+            {
+                if (matrix != value)
+                {
+                    matrix = value;
+                    bounds = SKRect.Create(Matrix.TransX, Matrix.TransY, Size.Width * Matrix.ScaleX, Size.Height * Matrix.ScaleY);
+                }
+            }
+        }
 
         public Annotation GetAnnotation(string name)
         {

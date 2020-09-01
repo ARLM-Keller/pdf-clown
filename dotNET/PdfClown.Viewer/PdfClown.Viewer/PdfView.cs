@@ -333,7 +333,7 @@ namespace PdfClown.Viewer
         {
             var verticalValue = -(state.NavigationMatrix.TransY);
             var page = Document.PageViews.FirstOrDefault(p => (p.Bounds.Bottom * state.NavigationMatrix.ScaleY) > verticalValue);
-            return page?.Index ?? 0;
+            return page?.Order ?? 0;
         }
 
         private void OnFitModeChanged(PdfViewFitMode oldValue, PdfViewFitMode newValue)
@@ -589,7 +589,8 @@ namespace PdfClown.Viewer
                     {
                         state.PageView = pageView;
                         state.Canvas.Save();
-                        state.Canvas.Concat(ref pageView.Matrix);
+                        var pageMatrix = pageView.Matrix;
+                        state.Canvas.Concat(ref pageMatrix);
                         var pageRect = SKRect.Create(pageView.Size);
                         state.Canvas.ClipRect(pageRect);
                         state.Canvas.DrawRect(pageRect, paintPageBackground);

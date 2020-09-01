@@ -47,19 +47,19 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public string Registry
         {
-            get => ((PdfString)Dictionary[PdfName.Registry])?.StringValue;
+            get => Dictionary.GetText(PdfName.Registry);
             set => Dictionary[PdfName.Registry] = new PdfString(registry = value);
         }
 
         public string Ordering
         {
-            get => ((PdfString)Dictionary[PdfName.Ordering])?.StringValue;
+            get => Dictionary.GetText(PdfName.Ordering);
             set => Dictionary[PdfName.Ordering] = new PdfString(value);
         }
 
         public int Supplement
         {
-            get => ((PdfInteger)Dictionary[PdfName.Supplement])?.IntValue ?? 0;
+            get => Dictionary.GetInt(PdfName.Supplement, 0);
             set => Dictionary[PdfName.Supplement] = new PdfInteger(value);
         }
 

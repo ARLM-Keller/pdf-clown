@@ -244,7 +244,7 @@ namespace PdfClown.Documents.Contents.Fonts
                     // Acrobat allows non-embedded GIDs - todo: can we find a test PDF for this?
                     Debug.WriteLine("warn: Using non-embedded GIDs in font " + Name);
                     int cid = CodeToCID(code);
-                    return cid2gid[cid];
+                    return cid < cid2gid.Length ? cid2gid[cid] : 0;
                 }
                 else
                 {

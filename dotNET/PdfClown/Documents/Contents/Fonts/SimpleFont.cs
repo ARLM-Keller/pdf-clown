@@ -265,7 +265,12 @@ namespace PdfClown.Documents.Contents.Fonts
             if (Standard14AFM != null)
             {
                 string nameInAFM = Encoding.GetName(code);
-
+                if (string.Equals("nbspace", nameInAFM, StringComparison.Ordinal))
+                {
+                    // PDFBOX-4944: nbspace is missing in AFM files,
+                    // but PDF specification tells "it is typographically the same as SPACE"
+                    nameInAFM = "space";
+                }
                 // the Adobe AFMs don't include .notdef, but Acrobat uses 250, test with PDFBOX-2334
                 if (nameInAFM == null || ".notdef".Equals(nameInAFM, StringComparison.Ordinal))
                 {

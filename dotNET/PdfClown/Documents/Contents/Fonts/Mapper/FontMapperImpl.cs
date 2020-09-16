@@ -55,7 +55,7 @@ namespace PdfClown.Documents.Contents.Fonts
             substitutes.Add("Times-Italic", new List<string> { "TimesNewRomanPS-ItalicMT", "TimesNewRomanPS-Italic", "TimesNewRoman-Italic", "LiberationSerif-Italic", "NimbusRomNo9L-ReguItal" });
             substitutes.Add("Times-BoldItalic", new List<string> { "TimesNewRomanPS-BoldItalicMT", "TimesNewRomanPS-BoldItalic", "TimesNewRoman-BoldItalic", "LiberationSerif-BoldItalic", "NimbusRomNo9L-MediItal" });
             substitutes.Add("Symbol", new List<string> { "Symbol", "SymbolMT", "StandardSymL" });
-            substitutes.Add("ZapfDingbats", new List<string> { "ZapfDingbatsITC", "Dingbats", "MS-Gothic" });
+            substitutes.Add("ZapfDingbats", new List<string> { "ZapfDingbatsITCbyBT-Regular", "ZapfDingbatsITC", "Dingbats", "MS-Gothic" });
 
             // Acrobat also uses alternative names for Standard 14 fonts, which we map to those above
             // these include names such as "Arial" and "TimesNewRoman"

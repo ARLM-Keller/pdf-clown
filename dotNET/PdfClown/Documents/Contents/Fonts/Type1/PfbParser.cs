@@ -197,7 +197,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 */
         public Span<byte> GetSegment2()
         {
-            return new Span<byte>(pfbdata, lengths[0], lengths[0] + lengths[1]);
+            return new Span<byte>(pfbdata, lengths[0], lengths[1]);
         }
     }
 }

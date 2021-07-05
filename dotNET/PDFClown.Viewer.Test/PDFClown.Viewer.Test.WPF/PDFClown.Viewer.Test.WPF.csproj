@@ -26,7 +26,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="3.1.3" />
     <PackageReference Include="SkiaSharp.Views.Forms.WPF" Version="2.80.2" />
-    <PackageReference Include="Xamarin.Forms.Platform.WPF" Version="4.8.0.1364" />
+    <PackageReference Include="Xamarin.Forms.Platform.WPF" Version="5.0.0.2012" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Xaml" />

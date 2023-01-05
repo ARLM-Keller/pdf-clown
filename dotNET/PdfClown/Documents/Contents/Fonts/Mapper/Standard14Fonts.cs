@@ -108,6 +108,8 @@ namespace PdfClown.Documents.Contents.Fonts
 		 */
         public static FontMetrics GetAFM(string fontName)
         {
+            if (fontName == null)
+                fontName = "Arial";
             if (!StandardMapping.TryGetValue(fontName, out var baseName))
                 return null;
 

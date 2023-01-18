@@ -174,13 +174,14 @@ namespace PdfClown.Viewer
                 document = value;
                 OnPropertyChanged(nameof(PagesCount));
                 UpdateMaximums();
-                CurrentPage = document.PageViews.FirstOrDefault();
-                ScrollTo(CurrentPage);
                 if (document != null)
                 {
                     document.AnnotationAdded += OnDocumentAnnotationAdded;
                     document.AnnotationRemoved += OnDocumentAnnotationRemoved;
                     document.EndOperation += OnDocumentEndOperation;
+
+                    CurrentPage = document.PageViews.FirstOrDefault();
+                    ScrollTo(CurrentPage);
                 }
             }
         }

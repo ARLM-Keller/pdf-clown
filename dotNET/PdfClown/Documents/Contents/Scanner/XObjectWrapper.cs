@@ -47,10 +47,9 @@ namespace PdfClown.Documents.Contents.Scanner
               ctm.TransX,
               scanner.ContextSize.Height - ctm.TransY,
               ctm.ScaleX,
-              Math.Abs(ctm.ScaleY)
-              );
+              Math.Abs(ctm.ScaleY));
             this.name = BaseDataObject.Name;
-            this.xObject = BaseDataObject.GetResource(scanner.ContentContext);
+            this.xObject = BaseDataObject.GetResource(scanner);
         }
 
         /**

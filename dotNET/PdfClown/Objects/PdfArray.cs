@@ -27,11 +27,12 @@ using PdfClown;
 using PdfClown.Bytes;
 using PdfClown.Files;
 using PdfClown.Tokens;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Util.Collections;
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using text = System.Text;
 
@@ -43,24 +44,16 @@ namespace PdfClown.Objects
     */
     public sealed class PdfArray : PdfDirectObject, IList<PdfDirectObject>
     {
-        #region static
-        #region fields
         private static readonly byte[] BeginArrayChunk = Encoding.Pdf.Encode(Keyword.BeginArray);
         private static readonly byte[] EndArrayChunk = Encoding.Pdf.Encode(Keyword.EndArray);
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         internal List<PdfDirectObject> items;
 
         private PdfObject parent;
         private bool updateable = true;
         private bool updated;
         private bool virtual_;
-        #endregion
 
-        #region constructors
         public PdfArray() : this(10)
         { }
 
@@ -73,7 +66,7 @@ namespace PdfClown.Objects
             : this(items.Length)
         {
             Updateable = false;
-            this.AddAll(items);
+            Extension.AddRange(this, items);
             Updateable = true;
         }
 
@@ -81,13 +74,10 @@ namespace PdfClown.Objects
             : this(items.Count())
         {
             Updateable = false;
-            this.AddAll(items);
+            Extension.AddRange(this, items);
             Updateable = true;
         }
-        #endregion
 
-        #region interface
-        #region public
         public override PdfObject Accept(IVisitor visitor, object data)
         {
             return visitor.Visit(this, data);
@@ -106,55 +96,33 @@ namespace PdfClown.Objects
                 && ((PdfArray)@object).items.Equals(items));
         }
 
-        public float GetFloat(int index, float def = 0)
-        {
-            return ((IPdfNumber)Resolve(index))?.FloatValue ?? def;
-        }
+        public IPdfNumber GetNumber(int index) => (IPdfNumber)Resolve(index);
 
-        public void SetFloat(int index, float? value)
-        {
-            this[index] = PdfReal.Get(value);
-        }
+        public float GetFloat(int index, float def = 0) => ((IPdfNumber)Resolve(index))?.FloatValue ?? def;
 
-        public double GetDouble(int index, double def = 0)
-        {
-            return ((IPdfNumber)Resolve(index))?.RawValue ?? def;
-        }
+        public float? GetNFloat(int index, float? def = null) => (Resolve(index) as IPdfNumber)?.FloatValue ?? def;
 
-        public void SetDouble(int index, double? value)
-        {
-            this[index] = PdfReal.Get(value);
-        }
+        public void SetFloat(int index, float? value) => this[index] = PdfReal.Get(value);
 
-        public int GetInt(int index, int def = 0)
-        {
-            return ((IPdfNumber)Resolve(index))?.IntValue ?? def;
-        }
+        public double GetDouble(int index, double def = 0) => ((IPdfNumber)Resolve(index))?.RawValue ?? def;
 
-        public void SetInt(int index, int? value)
-        {
-            this[index] = PdfInteger.Get(value);
-        }
+        public void SetDouble(int index, double? value) => this[index] = PdfReal.Get(value);
 
-        public bool GetBool(int index, bool def = false)
-        {
-            return ((PdfBoolean)Resolve(index))?.BooleanValue ?? def;
-        }
+        public int GetInt(int index, int def = 0) => ((IPdfNumber)Resolve(index))?.IntValue ?? def;
 
-        public void SetBool(int index, bool? value)
-        {
-            this[index] = PdfBoolean.Get(value);
-        }
+        public int? GetNInt(int index, int? def = null) => (Resolve(index) as IPdfNumber)?.IntValue ?? def;
 
-        public string GetString(int index, string def = null)
-        {
-            return ((IPdfString)Resolve(index))?.StringValue ?? def;
-        }
+        public void SetInt(int index, int? value) => this[index] = PdfInteger.Get(value);
 
-        public void SetName(int index, string value)
-        {
-            this[index] = PdfName.Get(value);
-        }
+        public bool GetBool(int index, bool def = false) => ((PdfBoolean)Resolve(index))?.BooleanValue ?? def;
+
+        public void SetBool(int index, bool? value) => this[index] = PdfBoolean.Get(value);
+
+        public string GetString(int index, string def = null) => ((IPdfString)Resolve(index))?.StringValue ?? def;
+
+        public void SetName(int index, string value) => this[index] = PdfName.Get(value);
+
+        public void SetText(int index, string value) => this[index] = PdfTextString.Get(value);
 
         /**
           <summary>Gets the value corresponding to the given index, forcing its instantiation as a direct
@@ -226,20 +194,13 @@ namespace PdfClown.Objects
             protected internal set => updated = value;
         }
 
-        public IPdfNumber GetNumber(int index)
-        {
-            return (IPdfNumber)Resolve(index);
-        }
         /**
           <summary>Gets the dereferenced value corresponding to the given index.</summary>
           <remarks>This method takes care to resolve the value returned by
           <see cref="this[int]">this[int]</see>.</remarks>
           <param name="index">Index of the item to return.</param>
         */
-        public PdfDataObject Resolve(int index)
-        {
-            return Resolve(this[index]);
-        }
+        public PdfDataObject Resolve(int index) => Resolve(this[index]);
 
         /**
           <summary>Gets the dereferenced value corresponding to the given index, forcing its
@@ -268,7 +229,7 @@ namespace PdfClown.Objects
 
         public override string ToString()
         {
-            text::StringBuilder buffer = new text::StringBuilder();
+            var buffer = new text::StringBuilder();
             {
                 // Begin.
                 buffer.Append("[ ");
@@ -297,7 +258,6 @@ namespace PdfClown.Objects
             stream.Write(EndArrayChunk);
         }
 
-        #region IList
         public int IndexOf(PdfDirectObject item)
         {
             return items.IndexOf(item);
@@ -329,10 +289,15 @@ namespace PdfClown.Objects
             }
         }
 
-        #region ICollection
         public void Add(PdfDirectObject item)
         {
             items.Add((PdfDirectObject)Include(item));
+            Update();
+        }
+
+        public void AddRange(IEnumerable<PdfDirectObject> source)
+        {
+            items.AddRange(source.Select(x => (PdfDirectObject)Include(x)));
             Update();
         }
 
@@ -342,15 +307,9 @@ namespace PdfClown.Objects
             { RemoveAt(0); }
         }
 
-        public bool Contains(PdfDirectObject item)
-        {
-            return items.Contains(item);
-        }
+        public bool Contains(PdfDirectObject item) => items.Contains(item);
 
-        public void CopyTo(PdfDirectObject[] items, int index)
-        {
-            this.items.CopyTo(items, index);
-        }
+        public void CopyTo(PdfDirectObject[] items, int index) => this.items.CopyTo(items, index);
 
         public int Count => items.Count;
 
@@ -366,24 +325,30 @@ namespace PdfClown.Objects
             return true;
         }
 
-        #region IEnumerable<PdfDirectObject>
         public IEnumerator<PdfDirectObject> GetEnumerator()
         {
             return items.GetEnumerator();
         }
 
-        #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable<PdfDirectObject>)this).GetEnumerator();
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
 
-        #region protected
+        public static PdfArray FromInts(ICollection<int> source)
+        {
+            var array = new PdfArray(source.Count);
+            array.AddRange(source.Select(p => PdfInteger.Get(p)));
+            return array;
+        }
+
+        public static PdfArray FromFloats(ICollection<float> source)
+        {
+            var array = new PdfArray(source.Count);
+            array.AddRange(source.Select(p => PdfReal.Get(p)));
+            return array;
+        }
+
         protected internal override bool Virtual
         {
             get => virtual_;
@@ -391,8 +356,5 @@ namespace PdfClown.Objects
         }
 
         public override PdfReference Reference => base.Reference;
-        #endregion
-        #endregion
-        #endregion
     }
 }

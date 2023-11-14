@@ -35,13 +35,9 @@ namespace PdfClown.Util
     */
     public class BiDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
-        #region dynamic
-        #region fields
         private readonly Dictionary<TKey, TValue> dictionary;
         private readonly Dictionary<TValue, TKey> inverseDictionary;
-        #endregion
 
-        #region constructors
         public BiDictionary()
         {
             dictionary = new Dictionary<TKey, TValue>();
@@ -63,17 +59,11 @@ namespace PdfClown.Util
             foreach (KeyValuePair<TKey, TValue> entry in this.dictionary)
             { inverseDictionary[entry.Value] = entry.Key; }
         }
-        #endregion
 
-        #region interface
-        #region public
-        public bool ContainsValue(TValue value)
-        { return inverseDictionary.ContainsKey(value); }
+        public bool ContainsValue(TValue value) => inverseDictionary.ContainsKey(value);
 
-        public virtual TKey GetKey(TValue value)
-        { TKey key; inverseDictionary.TryGetValue(value, out key); return key; }
+        public virtual TKey GetKey(TValue value) => inverseDictionary.TryGetValue(value, out var key) ? key : default(TKey);
 
-        #region IDictionary
         public void Add(TKey key, TValue value)
         {
             dictionary.Add(key, value); // Adds the entry.
@@ -86,8 +76,7 @@ namespace PdfClown.Util
             }
         }
 
-        public bool ContainsKey(TKey key)
-        { return dictionary.ContainsKey(key); }
+        public bool ContainsKey(TKey key) => dictionary.ContainsKey(key);
 
         public ICollection<TKey> Keys => dictionary.Keys;
 
@@ -128,14 +117,11 @@ namespace PdfClown.Util
             }
         }
 
-        public bool TryGetValue(TKey key, out TValue value)
-        { return dictionary.TryGetValue(key, out value); }
+        public bool TryGetValue(TKey key, out TValue value) => dictionary.TryGetValue(key, out value);
 
         public ICollection<TValue> Values => dictionary.Values;
 
-        #region ICollection
-        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> keyValuePair)
-        { Add(keyValuePair.Key, keyValuePair.Value); }
+        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> keyValuePair) => Add(keyValuePair.Key, keyValuePair.Value);
 
         public void Clear()
         {
@@ -143,8 +129,7 @@ namespace PdfClown.Util
             inverseDictionary.Clear();
         }
 
-        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> keyValuePair)
-        { return dictionary.Contains(keyValuePair); }
+        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> keyValuePair) => dictionary.Contains(keyValuePair);
 
         public void CopyTo(KeyValuePair<TKey, TValue>[] keyValuePairs, int index)
         { throw new NotImplementedException(); }
@@ -162,19 +147,8 @@ namespace PdfClown.Util
             return true;
         }
 
-        #region IEnumerable<KeyValuePair<TKey,TValue>>
-        IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
-        { return dictionary.GetEnumerator(); }
+        IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator() => dictionary.GetEnumerator();
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<KeyValuePair<TKey, TValue>>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<TKey, TValue>>)this).GetEnumerator();
     }
 }

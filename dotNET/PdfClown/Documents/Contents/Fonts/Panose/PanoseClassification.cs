@@ -15,91 +15,94 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace PdfClown.Documents.Contents.Fonts
 {
 
-	/**
+    /**
      * Represents a 10-byte <a href="http://monotype.de/services/pan2">PANOSE classification</a>.
      *
      * @author John Hewson
      */
-	public class PanoseClassification
-	{
-		private readonly byte[] bytes;
+    public class PanoseClassification
+    {
+        public static readonly int PanoseLength = 10;
 
-		public PanoseClassification(byte[] bytes)
-		{
-			this.bytes = bytes;
-		}
+        private readonly Memory<byte> bytes;
 
-		public int FamilyKind
-		{
-			get => bytes[0];
-		}
+        public PanoseClassification(Memory<byte> bytes)
+        {
+            this.bytes = bytes;
+        }
 
-		public int SerifStyle
-		{
-			get => bytes[1];
-		}
+        public Span<byte> Span => bytes.Span;
 
-		public int Weight
-		{
-			get => bytes[2];
-		}
+        public int FamilyKind
+        {
+            get => Span[0];
+        }
 
-		public int Proportion
-		{
-			get => bytes[3];
-		}
+        public int SerifStyle
+        {
+            get => Span[1];
+        }
 
-		public int Contrast
-		{
-			get => bytes[4];
-		}
+        public int Weight
+        {
+            get => Span[2];
+        }
 
-		public int StrokeVariation
-		{
-			get => bytes[5];
-		}
+        public int Proportion
+        {
+            get => Span[3];
+        }
 
-		public int ArmStyle
-		{
-			get => bytes[6];
-		}
+        public int Contrast
+        {
+            get => Span[4];
+        }
 
-		public int Letterform
-		{
-			get => bytes[7];
-		}
+        public int StrokeVariation
+        {
+            get => Span[5];
+        }
 
-		public int Midline
-		{
-			get => bytes[8];
-		}
+        public int ArmStyle
+        {
+            get => Span[6];
+        }
 
-		public int XHeight
-		{
-			get => bytes[9];
-		}
+        public int Letterform
+        {
+            get => Span[7];
+        }
 
-		public byte[] Bytes
-		{
-			get => bytes;
-		}
+        public int Midline
+        {
+            get => Span[8];
+        }
+
+        public int XHeight
+        {
+            get => Span[9];
+        }
+
+        public Memory<byte> AsMemory() => bytes;
 
 
-		public override string ToString()
-		{
-			return "{ FamilyKind = " + FamilyKind + ", " +
-					 "SerifStyle = " + SerifStyle + ", " +
-					 "Weight = " + Weight + ", " +
-					 "Proportion = " + Proportion + ", " +
-					 "Contrast = " + Contrast + ", " +
-					 "StrokeVariation = " + StrokeVariation + ", " +
-					 "ArmStyle = " + ArmStyle + ", " +
-					 "Letterform = " + Letterform + ", " +
-					 "Midline = " + Midline + ", " +
-					 "XHeight = " + XHeight + "}";
-		}
-	}
+        public override string ToString()
+        {
+            return "{ FamilyKind = " + FamilyKind + ", " +
+                     "SerifStyle = " + SerifStyle + ", " +
+                     "Weight = " + Weight + ", " +
+                     "Proportion = " + Proportion + ", " +
+                     "Contrast = " + Contrast + ", " +
+                     "StrokeVariation = " + StrokeVariation + ", " +
+                     "ArmStyle = " + ArmStyle + ", " +
+                     "Letterform = " + Letterform + ", " +
+                     "Midline = " + Midline + ", " +
+                     "XHeight = " + XHeight + "}";
+        }
+    }
 }

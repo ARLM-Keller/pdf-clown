@@ -37,7 +37,7 @@ namespace PdfClown.Samples.CLI
                     IList<ITextString> textStrings = extractor.Extract(page)[TextExtractor.DefaultArea];
                     foreach (ITextString textString in textStrings)
                     {
-                        var textStringQuad = textString.Quad.Value;
+                        var textStringQuad = textString.Quad;
                         Console.WriteLine(
                           $"Text [x:{Math.Round(textStringQuad.Left)},y:{Math.Round(textStringQuad.Top)},w:{Math.Round(textStringQuad.Width)},h:{Math.Round(textStringQuad.Height)}]: {textString.Text}");
                     }

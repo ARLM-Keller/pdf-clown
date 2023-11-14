@@ -36,9 +36,6 @@ namespace PdfClown.Objects
           <summary>Gets the underlying reference object, if available; otherwise, gets the underlying 
           data object.</summary>
         */
-        PdfDirectObject BaseObject
-        {
-            get;
-        }
+        PdfDirectObject BaseObject { get; }
     }
 }

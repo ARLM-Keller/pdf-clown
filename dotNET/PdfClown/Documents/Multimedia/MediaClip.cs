@@ -40,9 +40,6 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public abstract class MediaClip : PdfObjectWrapper<PdfDictionary>
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Wraps a clip base object into a clip object.</summary>
         */
@@ -65,39 +62,22 @@ namespace PdfClown.Documents.Multimedia
             else
                 throw new ArgumentException("It doesn't represent a valid clip object.", "baseObject");
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         protected MediaClip(Document context, PdfName subtype)
-            : base(
-            context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type, PdfName.S },
-              new PdfDirectObject[] { PdfName.MediaClip, subtype }
-              )
-            )
+            : base(context, new PdfDictionary(2)
+            {
+                { PdfName.Type, PdfName.MediaClip},
+                { PdfName.S, subtype},
+            })
         { }
 
         public MediaClip(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the actual media data.</summary>
           <returns>Either a <see cref="FullFileSpecification"/> or a <see cref="FormXObject"/>.</returns>
         */
-        public abstract PdfObjectWrapper Data
-        {
-            get;
-            set;
-        }
-        #endregion
-        #endregion
-        #endregion
+        public abstract PdfObjectWrapper Data { get; set; }
     }
 }

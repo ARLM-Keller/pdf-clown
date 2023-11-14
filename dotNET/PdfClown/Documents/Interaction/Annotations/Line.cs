@@ -34,6 +34,8 @@ using SkiaSharp;
 using PdfClown.Util.Math.Geom;
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Util;
+using System.Net;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -45,27 +47,24 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class Line : Markup
     {
-        #region static
-        #region fields
         private static readonly double DefaultLeaderLineExtension = 0;
         private static readonly double DefaultLeaderLineLength = 0;
         private static readonly double DefaultLeaderLineOffset = 0;
         private static readonly LineEndStyleEnum DefaultLineEndStyle = LineEndStyleEnum.None;
-        #endregion
-        #endregion
 
-        #region dynamic
         private SKPoint? startPoint;
         private SKPoint? endPoint;
         private SKPoint? captionOffset;
+        private SKPoint? pageStartPoint;
+        private SKPoint? pageEndPoint;
 
         private LineStartControlPoint cpStart;
         private LineEndControlPoint cpEnd;
-        #region constructors
+
         public Line(Page page, SKPoint startPoint, SKPoint endPoint, string text, DeviceRGBColor color)
             : base(page, PdfName.Line, SKRect.Create(startPoint.X, startPoint.Y, endPoint.X - startPoint.X, endPoint.Y - startPoint.Y), text)
         {
-            BaseDataObject[PdfName.L] = new PdfArray(new PdfDirectObject[] { PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0) });
+            BaseDataObject[PdfName.L] = new PdfArray(4) { PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0) };
             StartPoint = startPoint;
             EndPoint = endPoint;
             Color = color;
@@ -73,10 +72,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public Line(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets whether the contents should be shown as a caption.</summary>
         */
@@ -111,25 +107,30 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         [PDF(VersionEnum.PDF17)]
-        public SKPoint? CaptionOffset
+        public SKPoint? PageCaptionOffset
         {
-            get
-            {
-                if (captionOffset == null)
-                {
-                    var offset = (PdfArray)BaseDataObject[PdfName.CO];
-                    captionOffset = new SKPoint(offset?.GetFloat(0) ?? 0F, offset?.GetFloat(1) ?? 0F);
-                }
-                return captionOffset;
-            }
+            get => captionOffset ??= BaseDataObject[PdfName.CO] is PdfArray offset
+                    ? new SKPoint(offset.GetFloat(0), offset.GetFloat(1))
+                    : new SKPoint(0F, 0F);
             set
             {
-                var oldValue = CaptionOffset;
+                var oldValue = PageCaptionOffset;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.CO] = value == null ? null : new PdfArray(PdfReal.Get(value.Value.X), PdfReal.Get((float)value.Value.Y));
+                    BaseDataObject[PdfName.CO] = value == null
+                        ? null :
+                        new PdfArray(2) { PdfReal.Get(value.Value.X), PdfReal.Get((float)value.Value.Y) };
                     OnPropertyChanged(oldValue, value);
                 }
+            }
+        }
+
+        public SKPoint? CaptionOffset
+        {
+            get => PageCaptionOffset is SKPoint point ? PageMatrix.MapPoint(point) : null;
+            set
+            {
+                PageCaptionOffset = value is SKPoint point ? InvertPageMatrix.MapPoint(point) : null;
             }
         }
 
@@ -139,19 +140,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF14)]
         public LineEndStyleEnum StartStyle
         {
-            get
-            {
-                PdfArray endstylesObject = (PdfArray)BaseDataObject[PdfName.LE];
-                return endstylesObject != null
-                  ? LineEndStyleEnumExtension.Get((PdfName)endstylesObject[0])
+            get => BaseDataObject[PdfName.LE] is PdfArray endstylesObject
+                  ? LineEndStyleEnumExtension.Get(endstylesObject.GetString(0))
                   : DefaultLineEndStyle;
-            }
             set
             {
                 var oldValue = StartStyle;
                 if (oldValue != value)
                 {
-                    EnsureLineEndStylesObject()[0] = value.GetName();
+                    EnsureLineEndStylesObject().SetName(0, value.GetName());
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -163,19 +160,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF14)]
         public LineEndStyleEnum EndStyle
         {
-            get
-            {
-                PdfArray endstylesObject = (PdfArray)BaseDataObject[PdfName.LE];
-                return endstylesObject != null
-                  ? LineEndStyleEnumExtension.Get((PdfName)endstylesObject[1])
+            get => BaseDataObject[PdfName.LE] is PdfArray endstylesObject
+                  ? LineEndStyleEnumExtension.Get(endstylesObject.GetString(1))
                   : DefaultLineEndStyle;
-            }
             set
             {
                 var oldValue = EndStyle;
                 if (oldValue != value)
                 {
-                    EnsureLineEndStylesObject()[1] = value.GetName();
+                    EnsureLineEndStylesObject().SetName(1, value.GetName());
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -194,7 +187,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = LeaderLineExtension;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.LLE] = PdfReal.Get(value);
+                    BaseDataObject.SetDouble(PdfName.LLE, value);
                     /*
                       NOTE: If leader line extension entry is present, leader line MUST be too.
                     */
@@ -273,24 +266,60 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public SKPoint PageStartPoint
+        {
+            get => pageStartPoint ??= new SKPoint(LineData.GetFloat(0), LineData.GetFloat(1));
+            set
+            {
+                var oldValue = PageStartPoint;
+                if (oldValue != value)
+                {
+                    pageStartPoint = value;
+                    var coordinatesObject = LineData;
+                    coordinatesObject.SetFloat(0, value.X);
+                    coordinatesObject.SetFloat(1, value.Y);
+                    startPoint = null;
+                    OnPropertyChanged(coordinatesObject, coordinatesObject, nameof(LineData));
+                    RefreshBox();
+                }
+            }
+        }
+
         /**
           <summary>Gets/Sets the starting coordinates.</summary>
         */
         public SKPoint StartPoint
         {
-            get => startPoint ?? (startPoint = PageMatrix.MapPoint(new SKPoint(LineData.GetFloat(0), LineData.GetFloat(1)))).Value;
+            get => startPoint ??= PageMatrix.MapPoint(PageStartPoint);
             set
             {
                 var oldValue = StartPoint;
                 if (oldValue != value)
                 {
+                    PageStartPoint = InvertPageMatrix.MapPoint(value);
                     startPoint = value;
-                    value = InvertPageMatrix.MapPoint(value);
-                    PdfArray coordinatesObject = LineData;
-                    coordinatesObject[0] = PdfReal.Get(value.X);
-                    coordinatesObject[1] = PdfReal.Get(value.Y);
-                    OnPropertyChanged(coordinatesObject, coordinatesObject, nameof(LineData));
+                }
+            }
+        }
+
+        /**
+          <summary>Gets/Sets the ending coordinates.</summary>
+        */
+        public SKPoint PageEndPoint
+        {
+            get => pageEndPoint ??= new SKPoint(LineData.GetFloat(2), LineData.GetFloat(3));
+            set
+            {
+                var oldValue = PageEndPoint;
+                if (oldValue != value)
+                {
+                    pageEndPoint = value;
+                    var coordinatesObject = LineData;
+                    coordinatesObject.SetFloat(2, value.X);
+                    coordinatesObject.SetFloat(3, value.Y);
+                    endPoint = null;
                     RefreshBox();
+                    OnPropertyChanged(LineData, LineData, nameof(LineData));
                 }
             }
         }
@@ -300,28 +329,23 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public SKPoint EndPoint
         {
-            get => endPoint ?? (endPoint = PageMatrix.MapPoint(new SKPoint(LineData.GetFloat(2), LineData.GetFloat(3)))).Value;
+            get => endPoint ??= PageMatrix.MapPoint(PageEndPoint);
             set
             {
                 var oldValue = EndPoint;
                 if (oldValue != value)
                 {
+                    PageEndPoint = InvertPageMatrix.MapPoint(value);
                     endPoint = value;
-                    value = InvertPageMatrix.MapPoint(value);
-                    PdfArray coordinatesObject = LineData;
-                    coordinatesObject[2] = PdfReal.Get(value.X);
-                    coordinatesObject[3] = PdfReal.Get(value.Y);
-                    OnPropertyChanged(coordinatesObject, coordinatesObject, nameof(LineData));
-                    RefreshBox();
                 }
             }
         }
 
         public override bool ShowToolTip => !CaptionVisible;
 
-        public override void MoveTo(SKRect newBox)
+        public override void PageMoveTo(SKRect newBox)
         {
-            var oldBox = Box;
+            var oldBox = PageBox;
             if (oldBox.Width != newBox.Width
                || oldBox.Height != newBox.Height)
             {
@@ -332,23 +356,21 @@ namespace PdfClown.Documents.Interaction.Annotations
                 .PreConcat(SKMatrix.CreateScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height))
                 .PreConcat(SKMatrix.CreateTranslation(-oldBox.MidX, -oldBox.MidY));
 
-            StartPoint = dif.MapPoint(StartPoint);
-            EndPoint = dif.MapPoint(EndPoint);
-            base.MoveTo(newBox);
+            PageStartPoint = dif.MapPoint(PageStartPoint);
+            PageEndPoint = dif.MapPoint(PageEndPoint);
+            base.PageMoveTo(newBox);
         }
-        #endregion
 
-        #region private
         private PdfArray EnsureLineEndStylesObject()
         {
             PdfArray endStylesObject = (PdfArray)BaseDataObject[PdfName.LE];
             if (endStylesObject == null)
             {
-                BaseDataObject[PdfName.LE] = endStylesObject = new PdfArray(
-                  new PdfDirectObject[] {
-                      DefaultLineEndStyle.GetName(),
-                      DefaultLineEndStyle.GetName() }
-                  );
+                BaseDataObject[PdfName.LE] = endStylesObject = new PdfArray(2)
+                {
+                      new PdfName(DefaultLineEndStyle.GetName()),
+                      new PdfName(DefaultLineEndStyle.GetName())
+                };
             }
             return endStylesObject;
         }
@@ -359,13 +381,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             using (var paint = new SKPaint { Color = color })
             using (var path = new SKPath())
             {
-                var lineLength = SKPoint.Distance(StartPoint, EndPoint);
-                var normal = SKPoint.Normalize(EndPoint - StartPoint);
+                var lineLength = SKPoint.Distance(PageStartPoint, PageEndPoint);
+                var normal = SKPoint.Normalize(PageEndPoint - PageStartPoint);
                 var invertNormal = new SKPoint(normal.X * -1, normal.Y * -1);
 
                 Border?.Apply(paint, null);
-                path.MoveTo(StartPoint);
-                path.LineTo(EndPoint);
+                path.MoveTo(PageStartPoint);
+                path.LineTo(PageEndPoint);
 
                 if (CaptionVisible && !string.IsNullOrEmpty(Contents))
                 {
@@ -377,37 +399,37 @@ namespace PdfClown.Documents.Interaction.Annotations
 
                         canvas.DrawTextOnPath(Contents, path, new SKPoint(offset, 2), textPaint);
                         path.Rewind();
-                        path.MoveTo(StartPoint);
-                        path.LineTo(StartPoint + new SKPoint(normal.X * offset, normal.Y * offset));
+                        path.MoveTo(PageStartPoint);
+                        path.LineTo(PageStartPoint + new SKPoint(normal.X * offset, normal.Y * offset));
 
-                        path.MoveTo(EndPoint);
-                        path.LineTo(EndPoint + new SKPoint(normal.X * -offset, normal.Y * -offset));
+                        path.MoveTo(PageEndPoint);
+                        path.LineTo(PageEndPoint + new SKPoint(normal.X * -offset, normal.Y * -offset));
                     }
                 }
                 if (StartStyle == LineEndStyleEnum.OpenArrow)
                 {
-                    path.AddOpenArrow(StartPoint, normal);
+                    path.AddOpenArrow(PageStartPoint, normal);
                 }
                 else if (StartStyle == LineEndStyleEnum.ClosedArrow)
                 {
-                    path.AddCloseArrow(StartPoint, normal);
+                    path.AddCloseArrow(PageStartPoint, normal);
                 }
                 else if (StartStyle == LineEndStyleEnum.Circle)
                 {
-                    path.AddCircle(StartPoint.X, StartPoint.Y, 4);
+                    path.AddCircle(PageStartPoint.X, PageStartPoint.Y, 4);
                 }
 
                 if (EndStyle == LineEndStyleEnum.OpenArrow)
                 {
-                    path.AddOpenArrow(EndPoint, invertNormal);
+                    path.AddOpenArrow(PageEndPoint, invertNormal);
                 }
                 else if (EndStyle == LineEndStyleEnum.ClosedArrow)
                 {
-                    path.AddCloseArrow(EndPoint, invertNormal);
+                    path.AddCloseArrow(PageEndPoint, invertNormal);
                 }
                 else if (EndStyle == LineEndStyleEnum.Circle)
                 {
-                    path.AddCircle(EndPoint.X, EndPoint.Y, 4);
+                    path.AddCircle(PageEndPoint.X, PageEndPoint.Y, 4);
                 }
 
 
@@ -419,10 +441,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override void RefreshBox()
         {
             Appearance.Normal[null] = null;
-            var box = SKRect.Create(StartPoint, SKSize.Empty);
-            box.Add(EndPoint);
+            var box = SKRect.Create(PageStartPoint, SKSize.Empty);
+            box.Add(PageEndPoint);
             box.Inflate(box.Width < 5 ? 5 : 0, box.Height < 5 ? 5 : 0);
-            Box = box;
+            PageBox = box;
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()
@@ -439,9 +461,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             return cloned;
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 
     public enum LineCaptionPosition

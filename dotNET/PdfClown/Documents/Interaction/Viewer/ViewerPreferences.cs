@@ -298,9 +298,8 @@ namespace PdfClown.Documents.Interaction.Viewer
                 {
                     printPageRanges.Add(
                       new Interval<int>(
-                        ((PdfInteger)printPageRangesObject[index++]).IntValue,
-                        ((PdfInteger)printPageRangesObject[index++]).IntValue
-                        )
+                        printPageRangesObject.GetInt(index++),
+                        printPageRangesObject.GetInt(index++))
                       );
                 }
                 return printPageRanges;

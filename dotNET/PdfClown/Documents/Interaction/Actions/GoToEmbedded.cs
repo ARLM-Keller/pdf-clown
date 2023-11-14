@@ -39,16 +39,13 @@ namespace PdfClown.Documents.Interaction.Actions
       action [PDF:1.6:8.5.3].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class GoToEmbedded
-      : GotoNonLocal<Destination>
+    public sealed class GoToEmbedded : GotoNonLocal<Destination>
     {
-        #region types
         /**
           <summary>Path information to the target document [PDF:1.6:8.5.3].</summary>
         */
         public class PathElement : PdfObjectWrapper<PdfDictionary>
         {
-            #region types
             /**
               <summary>Relationship between the target and the current document [PDF:1.6:8.5.3].</summary>
             */
@@ -63,14 +60,9 @@ namespace PdfClown.Documents.Interaction.Actions
                 */
                 Child
             };
-            #endregion
 
-            #region static
-            #region fields
             private static readonly Dictionary<RelationEnum, PdfName> RelationEnumCodes;
-            #endregion
 
-            #region constructors
             static PathElement()
             {
                 RelationEnumCodes = new Dictionary<RelationEnum, PdfName>
@@ -79,10 +71,7 @@ namespace PdfClown.Documents.Interaction.Actions
                     [RelationEnum.Child] = PdfName.C
                 };
             }
-            #endregion
 
-            #region interface
-            #region private
             /**
               <summary>Gets the code corresponding to the given value.</summary>
             */
@@ -103,12 +92,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 }
                 throw new Exception("'" + value?.StringValue + "' doesn't represent a valid relation.");
             }
-            #endregion
-            #endregion
-            #endregion
 
-            #region dynamic
-            #region constructors
             /**
               <summary>Creates a new path element representing the parent of the document.</summary>
             */
@@ -148,10 +132,7 @@ namespace PdfClown.Documents.Interaction.Actions
             */
             public PathElement(PdfDirectObject baseObject) : base(baseObject)
             { }
-            #endregion
 
-            #region interface
-            #region public
             public override object Clone(Document context)
             { throw new NotImplementedException(); }
 
@@ -234,11 +215,7 @@ namespace PdfClown.Documents.Interaction.Actions
             */
             public string EmbeddedFileName
             {
-                get
-                {
-                    PdfString fileNameObject = (PdfString)BaseDataObject[PdfName.N];
-                    return fileNameObject != null ? (string)fileNameObject.Value : null;
-                }
+                get => BaseDataObject.GetString(PdfName.N);
                 set
                 {
                     if (value == null)
@@ -275,14 +252,8 @@ namespace PdfClown.Documents.Interaction.Actions
                     { BaseDataObject[PdfName.T] = value.BaseObject; }
                 }
             }
-            #endregion
-            #endregion
-            #endregion
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new instance within the specified document context, pointing to a
           destination within an embedded document.</summary>
@@ -320,20 +291,13 @@ namespace PdfClown.Documents.Interaction.Actions
 
         internal GoToEmbedded(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the path information to the target document.</summary>
         */
         public PathElement DestinationPath
         {
-            get
-            {
-                PdfDirectObject targetObject = BaseDataObject[PdfName.T];
-                return targetObject != null ? new PathElement(targetObject) : null;
-            }
+            get => Wrap<PathElement>(BaseDataObject[PdfName.T]);
             set
             {
                 if (value == null)
@@ -342,8 +306,5 @@ namespace PdfClown.Documents.Interaction.Actions
                 { BaseDataObject[PdfName.T] = value.BaseObject; }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

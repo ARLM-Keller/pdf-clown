@@ -14,7 +14,8 @@
  */
 
 using PdfClown.Documents.Interaction.Forms;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Util;
+using PdfClown.Util.Collections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -152,8 +153,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
         }
 
         public static int DecodeScan(
-          byte[] data,
-          int offset,
+          IInputStream data,
           Frame frame,
           List<Component> components,
           ushort? resetInterval,
@@ -167,7 +167,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
             var mcusPerLine = frame.McusPerLine;
             var progressive = frame.Progressive;
 
-            var startOffset = offset;
+            var startOffset = data.Position;
             int bitsData = 0,
               bitsCount = 0;
             var blockRow = 0;
@@ -183,18 +183,17 @@ namespace PdfClown.Bytes.Filters.Jpeg
                     bitsCount--;
                     return (bitsData >> bitsCount) & 1;
                 }
-                bitsData = data[offset++];
+                bitsData = data.ReadUByte();
                 if (bitsData == 0xff)
                 {
-                    var nextByte = data[offset++];
+                    var nextByte = data.ReadUByte();
                     if (nextByte != 0)
                     {
                         if (nextByte == /* DNL = */ 0xdc && parseDNLMarker)
                         {
-                            offset += 2; // Skip marker length.
+                            data.Skip(2); // Skip marker length.
 
-                            var scanLines = data.ReadUint16(offset);
-                            offset += 2;
+                            var scanLines = data.ReadUInt16();
                             if (scanLines > 0 && scanLines != frame.ScanLines)
                             {
                                 throw new DNLMarkerError(
@@ -208,12 +207,14 @@ namespace PdfClown.Bytes.Filters.Jpeg
                             if (parseDNLMarker)
                             {
                                 // NOTE: only 8-bit JPEG images are supported in this decoder.
-                                var maybeScanLines = (ushort)(blockRow * 8);
+                                var maybeScanLines = (ushort)(blockRow * (frame.Precision == 8 ? 8 : 0));
                                 // Heuristic to attempt to handle corrupt JPEG images with too
                                 // large "scanLines" parameter, by falling back to the currently
                                 // parsed number of scanLines when it's at least one order of
-                                // magnitude smaller than expected (fixes issue10880.pdf).
-                                if (maybeScanLines > 0 && maybeScanLines < frame.ScanLines / 10)
+                                // one "half" order of magnitude smaller than expected (fixes
+                                // issue10880.pdf, issue10989.pdf, issue15492.pdf).
+                                if (maybeScanLines > 0
+                                    && Math.Round(frame.ScanLines / (double)maybeScanLines) >= 5)
                                 {
                                     throw new DNLMarkerError(
                                       $"Found EOI marker (0xFFD9) while parsing scan data, possibly caused by incorrect {frame.ScanLines} parameter",
@@ -453,7 +454,6 @@ namespace PdfClown.Bytes.Filters.Jpeg
             Action<Component, int> decodeFn;
             int mcuv = 0;
             FileMarker fileMarker = null;
-            int mcuExpected;
             int h, v;
 
             if (progressive)
@@ -472,16 +472,9 @@ namespace PdfClown.Bytes.Filters.Jpeg
                 decodeFn = DecodeBaseline;
             }
 
-            if (componentsLength == 1)
-            {
-                mcuExpected = components[0].BlocksPerLine * components[0].BlocksPerColumn;
-            }
-            else
-            {
-                mcuExpected = mcusPerLine * frame.McusPerColumn;
-            }
-
-
+            int mcuExpected = componentsLength == 1
+                ? components[0].BlocksPerLine * components[0].BlocksPerColumn
+                : mcusPerLine * frame.McusPerColumn;
             while (mcuv <= mcuExpected)
             {
                 // reset interval stuff
@@ -534,7 +527,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
 
                 // find marker
                 bitsCount = 0;
-                fileMarker = FindNextFileMarker(data, offset, offset);
+                fileMarker = FindNextFileMarker(data.AsSpan(), (int)data.Position, (int)data.Position);
                 if (fileMarker == null)
                 {
                     break; // Reached the end of the image data without finding any marker.
@@ -545,12 +538,12 @@ namespace PdfClown.Bytes.Filters.Jpeg
                     // past those to attempt to find a valid marker (fixes issue4090.pdf).
                     var partialMsg = mcuToRead > 0 ? "unexpected" : "excessive";
                     Debug.WriteLine($"warn: decodeScan - {partialMsg} MCU data, current marker is: {fileMarker.Invalid}");
-                    offset = fileMarker.Offset;
+                    data.Seek(fileMarker.Offset);
                 }
                 if (fileMarker.Marker >= 0xffd0 && fileMarker.Marker <= 0xffd7)
                 {
                     // RSTx
-                    offset += 2;
+                    data.Skip(2);
                 }
                 else
                 {
@@ -558,7 +551,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
                 }
             }
 
-            return offset - startOffset;
+            return (int)(data.Position - startOffset);
         }
 
         // A port of poppler's IDCT method which in turn is taken from:
@@ -874,7 +867,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
             return component.BlockData;
         }
 
-        public static FileMarker FindNextFileMarker(byte[] data, int currentPos, int startPos)// = currentPos
+        public static FileMarker FindNextFileMarker(ReadOnlySpan<byte> data, int currentPos, int startPos)// = currentPos
         {
             var maxPos = data.Length - 1;
             var newPos = startPos < currentPos ? startPos : currentPos;
@@ -883,7 +876,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
             {
                 return null; // Don't attempt to read non-existent data and just return.
             }
-            var currentMarker = data.ReadUint16(currentPos);
+            var currentMarker = data.ReadUInt16(currentPos);
             if (currentMarker >= 0xffc0 && currentMarker <= 0xfffe)
             {
                 return new FileMarker(
@@ -892,14 +885,14 @@ namespace PdfClown.Bytes.Filters.Jpeg
                   offset: currentPos
                 );
             }
-            var newMarker = data.ReadUint16(newPos);
+            var newMarker = data.ReadUInt16(newPos);
             while (!(newMarker >= 0xffc0 && newMarker <= 0xfffe))
             {
                 if (++newPos >= maxPos)
                 {
                     return null; // Don't attempt to read non-existent data and just return.
                 }
-                newMarker = data.ReadUint16(newPos);
+                newMarker = data.ReadUInt16(newPos);
             }
             return new FileMarker(
               invalid: Convert.ToString(currentMarker, 16),
@@ -908,9 +901,29 @@ namespace PdfClown.Bytes.Filters.Jpeg
             );
         }
 
-        public void Parse(byte[] data, ushort? dnlScanLines = null)//{ dnlScanLines = null } = {}) 
+        void PrepareComponents(Frame f)
         {
-            var offset = 0;
+            var mcusPerLine = (int)Math.Ceiling((double)f.SamplesPerLine / 8 / f.MaxH);
+            var mcusPerColumn = (int)Math.Ceiling((double)f.ScanLines / 8 / f.MaxV);
+            foreach (var component in f.Components)
+            {
+                var blocksPerLine = (int)Math.Ceiling((Math.Ceiling((double)f.SamplesPerLine / 8) * component.H) / f.MaxH);
+                var blocksPerColumn = (int)Math.Ceiling((Math.Ceiling((double)f.ScanLines / 8) * component.V) / f.MaxV);
+                var blocksPerLineForMcu = mcusPerLine * component.H;
+                var blocksPerColumnForMcu = mcusPerColumn * component.V;
+
+                var blocksBufferSize =
+                  64 * blocksPerColumnForMcu * (blocksPerLineForMcu + 1);
+                component.BlockData = new short[blocksBufferSize];
+                component.BlocksPerLine = blocksPerLine;
+                component.BlocksPerColumn = blocksPerColumn;
+            }
+            f.McusPerLine = mcusPerLine;
+            f.McusPerColumn = mcusPerColumn;
+        }
+
+        public void Parse(IInputStream data, ushort? dnlScanLines = null)
+        {
             JFIF jfif = null;
             Adobe adobe = null;
             Frame frame = null;
@@ -919,67 +932,44 @@ namespace PdfClown.Bytes.Filters.Jpeg
             var quantizationTables = new Dictionary<int, ushort[]>();
             var huffmanTablesAC = new Dictionary<int, Dictionary<int, object>>();
             var huffmanTablesDC = new Dictionary<int, Dictionary<int, object>>();
+            var codeLengths = new byte[16];
 
-
-            byte[] readDataBlock()
+            Memory<byte> readDataBlock()
             {
-                var length = data.ReadUint16(offset);
-                offset += 2;
-                var endOffset = offset + length - 2;
+                var length = data.ReadUInt16();
+                var position = (int)data.Position;
+                var endOffset = position + length - 2;
 
-                var marker = FindNextFileMarker(data, endOffset, offset);
-                if (marker != null && marker.Invalid != null)
+
+                var marker = FindNextFileMarker(data.AsSpan(), endOffset, position);
+                if (marker?.Invalid != null)
                 {
                     Debug.WriteLine("warn: readDataBlock - incorrect length, current marker is: " + marker.Invalid);
                     endOffset = marker.Offset;
                 }
 
-                var array = data.SubArray(offset, endOffset);
-                offset += array.Length;
-                return array;
+                return data.ReadMemory(endOffset - position);
             }
 
-            void prepareComponents(Frame f)
-            {
-                var mcusPerLine = (int)Math.Ceiling((double)f.SamplesPerLine / 8 / f.MaxH);
-                var mcusPerColumn = (int)Math.Ceiling((double)f.ScanLines / 8 / f.MaxV);
-                for (var i = 0; i < f.Components.Count; i++)
-                {
-                    var component = f.Components[i];
-                    var blocksPerLine = (int)Math.Ceiling((Math.Ceiling((double)f.SamplesPerLine / 8) * component.H) / f.MaxH);
-                    var blocksPerColumn = (int)Math.Ceiling((Math.Ceiling((double)f.ScanLines / 8) * component.V) / f.MaxV);
-                    var blocksPerLineForMcu = mcusPerLine * component.H;
-                    var blocksPerColumnForMcu = mcusPerColumn * component.V;
 
-                    var blocksBufferSize =
-                      64 * blocksPerColumnForMcu * (blocksPerLineForMcu + 1);
-                    component.BlockData = new short[blocksBufferSize];
-                    component.BlocksPerLine = blocksPerLine;
-                    component.BlocksPerColumn = blocksPerColumn;
-                }
-                f.McusPerLine = mcusPerLine;
-                f.McusPerColumn = mcusPerColumn;
-            }
             // Some images may contain 'junk' before the SOI (start-of-image) marker.
             // Note: this seems to mainly affect inline images.
-            while (offset < data.Length)
+            while (data.Position < data.Length)
             {
                 // Find the first byte of the SOI marker (0xFFD8).
-                if (data[offset] == 0xff)
-                {                    
+                if (data.ReadUByte() == 0xff)
+                {
+                    data.Skip(-1);
                     break;
                 }
-                offset++;
             }
 
-            var fileMarker = data.ReadUint16(offset);
-            offset += 2;
+            var fileMarker = data.ReadUInt16();
             if (fileMarker != /* SOI (Start of Image) = */ 0xffd8)
             {
                 throw new JpegError("SOI not found");
             }
-            fileMarker = data.ReadUint16(offset);
-            offset += 2;
+            fileMarker = data.ReadUInt16();
 
             while (fileMarker != /* EOI (End of Image) = */ 0xffd9)
             {
@@ -1003,8 +993,8 @@ namespace PdfClown.Bytes.Filters.Jpeg
                     case 0xffee: // APP14
                     case 0xffef: // APP15
                     case 0xfffe: // COM (Comment)
-                        var appData = readDataBlock();
-
+                        var block = readDataBlock();
+                        var appData = block.Span;
                         if (fileMarker == 0xffe0)
                         {
                             // 'JFIF\x00'
@@ -1017,15 +1007,16 @@ namespace PdfClown.Bytes.Filters.Jpeg
                             )
                             {
                                 jfif = new JFIF(
-                                  version: new Version(major: appData[5], minor: appData[6]),
-                                  densityUnits: appData[7],
-                                  xDensity: (appData[8] << 8) | appData[9],
-                                  yDensity: (appData[10] << 8) | appData[11],
-                                  thumbWidth: appData[12],
-                                  thumbHeight: appData[13],
-                                  thumbData: appData.SubArray(
-                                    14,
-                                    14 + 3 * appData[12] * appData[13]
+                                  version: new Version(major: appData[5],
+                                    minor: appData[6]),
+                                    densityUnits: appData[7],
+                                    xDensity: (appData[8] << 8) | appData[9],
+                                    yDensity: (appData[10] << 8) | appData[11],
+                                    thumbWidth: appData[12],
+                                    thumbHeight: appData[13],
+                                    thumbData: block.Slice(
+                                        14,
+                                        3 * appData[12] * appData[13]
                                   )
                                 );
                             }
@@ -1053,13 +1044,12 @@ namespace PdfClown.Bytes.Filters.Jpeg
                         break;
 
                     case 0xffdb: // DQT (Define Quantization Tables)
-                        var quantizationTablesLength = data.ReadUint16(offset);
-                        offset += 2;
-                        var quantizationTablesEnd = quantizationTablesLength + offset - 2;
+                        var quantizationTablesLength = data.ReadUInt16();
+                        var quantizationTablesEnd = quantizationTablesLength + (int)data.Position - 2;
                         int z;
-                        while (offset < quantizationTablesEnd)
+                        while (data.Position < quantizationTablesEnd)
                         {
-                            var quantizationTableSpec = data[offset++];
+                            var quantizationTableSpec = data.ReadUByte();
                             var tableData = new ushort[64];
                             if (quantizationTableSpec >> 4 == 0)
                             {
@@ -1067,7 +1057,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
                                 for (j = 0; j < 64; j++)
                                 {
                                     z = DctZigZag[j];
-                                    tableData[z] = data[offset++];
+                                    tableData[z] = data.ReadUByte();
                                 }
                             }
                             else if (quantizationTableSpec >> 4 == 1)
@@ -1076,8 +1066,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
                                 for (j = 0; j < 64; j++)
                                 {
                                     z = DctZigZag[j];
-                                    tableData[z] = data.ReadUint16(offset);
-                                    offset += 2;
+                                    tableData[z] = data.ReadUInt16();
                                 }
                             }
                             else
@@ -1095,27 +1084,26 @@ namespace PdfClown.Bytes.Filters.Jpeg
                         {
                             throw new JpegError("Only single frame JPEGs supported");
                         }
-                        offset += 2; // Skip marker length.
+                        data.Skip(2); // Skip marker length.
 
                         frame = new Frame();
                         frame.Extended = fileMarker == 0xffc1;
                         frame.Progressive = fileMarker == 0xffc2;
-                        frame.Precision = data[offset++];
-                        var sofScanLines = data.ReadUint16(offset);
-                        offset += 2;
+                        frame.Precision = data.ReadUByte();
+                        var sofScanLines = data.ReadUInt16();
                         frame.ScanLines = dnlScanLines ?? sofScanLines;
-                        frame.SamplesPerLine = data.ReadUint16(offset);
-                        offset += 2;
+                        frame.SamplesPerLine = data.ReadUInt16();
                         frame.Components = new List<Component>();
                         frame.ComponentIds = new Dictionary<byte, int> { };
-                        var componentsCount = data[offset++];
+                        var componentsCount = data.ReadUByte();
                         byte componentId;
                         int maxH = 0, maxV = 0;
                         for (i = 0; i < componentsCount; i++)
                         {
-                            componentId = data[offset];
-                            var h = data[offset + 1] >> 4;
-                            var v = data[offset + 1] & 15;
+                            componentId = data.ReadUByte();
+                            var subId = data.ReadUByte();
+                            var h = subId >> 4;
+                            var v = subId & 15;
                             if (maxH < h)
                             {
                                 maxH = h;
@@ -1124,7 +1112,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
                             {
                                 maxV = v;
                             }
-                            var qId = data[offset + 2];
+                            var qId = data.ReadUByte();
                             l = frame.Components.Count();
                             frame.Components.Add(new Component(
                               h,
@@ -1133,43 +1121,36 @@ namespace PdfClown.Bytes.Filters.Jpeg
                               quantizationTable: null // See comment below.
                             ));
                             frame.ComponentIds[componentId] = l;
-                            offset += 3;
                         }
                         frame.MaxH = maxH;
                         frame.MaxV = maxV;
-                        prepareComponents(frame);
+                        PrepareComponents(frame);
                         break;
 
                     case 0xffc4: // DHT (Define Huffman Tables)
-                        var huffmanLength = data.ReadUint16(offset);
-                        offset += 2;
+                        var huffmanLength = data.ReadUInt16();
                         for (i = 2; i < huffmanLength;)
                         {
-                            var huffmanTableSpec = data[offset++];
-                            var codeLengths = new byte[16];
+                            var huffmanTableSpec = data.ReadUByte();
+                            data.Read(codeLengths);
                             var codeLengthSum = 0;
-                            for (j = 0; j < 16; j++, offset++)
+                            for (j = 0; j < 16; j++)
                             {
-                                codeLengthSum += codeLengths[j] = data[offset];
+                                codeLengthSum += codeLengths[j];
                             }
                             var huffmanValues = new byte[codeLengthSum];
-                            for (j = 0; j < codeLengthSum; j++, offset++)
-                            {
-                                huffmanValues[j] = data[offset];
-                            }
+                            data.Read(huffmanValues);
                             i += 17 + codeLengthSum;
 
-                            (huffmanTableSpec >> 4 == 0 ? huffmanTablesDC : huffmanTablesAC)[
-                              huffmanTableSpec & 15
-                            ] = BuildHuffmanTable(codeLengths, huffmanValues);
+                            var huffmanTables = huffmanTableSpec >> 4 == 0 ? huffmanTablesDC : huffmanTablesAC;
+                            huffmanTables[huffmanTableSpec & 15] = BuildHuffmanTable(codeLengths, huffmanValues);
                         }
                         break;
 
                     case 0xffdd: // DRI (Define Restart Interval)
-                        offset += 2; // Skip marker length.
+                        data.Skip(2); // Skip marker length.
 
-                        resetInterval = data.ReadUint16(offset);
-                        offset += 2;
+                        resetInterval = data.ReadUInt16();
                         break;
 
                     case 0xffda: // SOS (Start of Scan)
@@ -1179,28 +1160,29 @@ namespace PdfClown.Bytes.Filters.Jpeg
                                  // parse DNL markers during re-parsing of the JPEG scan data.
                         var parseDNLMarker = ++numSOSMarkers == 1 && dnlScanLines == null;
 
-                        offset += 2; // Skip marker length.
+                        data.Skip(2); // Skip marker length.
 
-                        var selectorsCount = data[offset++];
+                        var selectorsCount = data.ReadUByte();
                         var components = new List<Component>();
                         Component component;
                         for (i = 0; i < selectorsCount; i++)
                         {
-                            var componentIndex = frame.ComponentIds[data[offset++]];
+                            var index = data.ReadUByte();
+                            var componentIndex = frame.ComponentIds[index];
                             component = frame.Components[componentIndex];
-                            var tableSpec = data[offset++];
+                            component.Index = index;
+                            var tableSpec = data.ReadUByte();
                             component.HuffmanTableDC = huffmanTablesDC.TryGetValue(tableSpec >> 4, out var dc) ? dc : null;
                             component.HuffmanTableAC = huffmanTablesAC.TryGetValue(tableSpec & 15, out var ac) ? ac : null;
                             components.Add(component);
                         }
-                        var spectralStart = data[offset++];
-                        var spectralEnd = data[offset++];
-                        var successiveApproximation = data[offset++];
+                        var spectralStart = data.ReadUByte();
+                        var spectralEnd = data.ReadUByte();
+                        var successiveApproximation = data.ReadUByte();
                         try
                         {
                             var processed = (int)DecodeScan(
                               data,
-                              offset,
                               frame,
                               components,
                               resetInterval,
@@ -1210,14 +1192,14 @@ namespace PdfClown.Bytes.Filters.Jpeg
                               successiveApproximation & 15,
                               parseDNLMarker
                             );
-                            offset += processed;
                         }
                         catch (Exception ex)
                         {
                             if (ex is DNLMarkerError dNLMarkerError)
                             {
                                 Debug.WriteLine($"warn:{ex.Message} -- attempting to re-parse the JPEG image.");
-                                Parse(data, dnlScanLines: dNLMarkerError.scanLines);
+                                frame = null;
+                                ReParse(data, dnlScanLines: dNLMarkerError.scanLines);
                                 return;
                             }
                             else if (ex is EOIMarkerError)
@@ -1231,14 +1213,14 @@ namespace PdfClown.Bytes.Filters.Jpeg
 
                     case 0xffdc: // DNL (Define Number of Lines)
                                  // Ignore the marker, since it's being handled in "decodeScan".
-                        offset += 4;
+                        data.Skip(4);
                         break;
 
                     case 0xffff: // Fill bytes
-                        if (data[offset] != 0xff)
+                        if (data.PeekUByte(0) != 0xff)
                         {
                             // Avoid skipping a valid marker.
-                            offset--;
+                            data.Skip(-1);
                         }
                         break;
 
@@ -1247,25 +1229,24 @@ namespace PdfClown.Bytes.Filters.Jpeg
                         // block could have been eaten by the encoder, hence we fallback to
                         // "startPos = offset - 3" when looking for the next valid marker.
                         var nextFileMarker = FindNextFileMarker(
-                          data,
-                          /* currentPos = */ offset - 2,
-                          /* startPos = */ offset - 3
+                          data.AsSpan(),
+                          (int)data.Position - 2,
+                          (int)data.Position - 3
                         );
-                        if (nextFileMarker != null && nextFileMarker.Invalid != null)
+                        if (nextFileMarker?.Invalid != null)
                         {
                             Debug.WriteLine("warn: JpegImage.parse - unexpected data, current marker is: " + nextFileMarker.Invalid);
-                            offset = nextFileMarker.Offset;
+                            data.Seek(nextFileMarker.Offset);
                             break;
                         }
-                        if (offset >= data.Length - 1)
+                        if (nextFileMarker == null || data.Position >= data.Length - 1)
                         {
                             Debug.WriteLine("warn: JpegImage.parse - reached the end of the image data " + "without finding an EOI marker (0xFFD9).");
                             goto markerLoop;
                         }
                         throw new JpegError("JpegImage.parse - unknown marker: " + Convert.ToString(fileMarker, 16));
                 }
-                fileMarker = data.ReadUint16(offset);
-                offset += 2;
+                fileMarker = data.ReadUInt16();
             }
         markerLoop:
             width = frame.SamplesPerLine;
@@ -1273,10 +1254,8 @@ namespace PdfClown.Bytes.Filters.Jpeg
             this.jfif = jfif;
             this.adobe = adobe;
             components = new List<ImageComponent>();
-            for (var i = 0; i < frame.Components.Count; i++)
+            foreach (var component in frame.Components)
             {
-                var component = frame.Components[i];
-
                 // Prevent errors when DQT markers are placed after SOF{n} markers,
                 // by assigning the "quantizationTable" entry after the entire image
                 // has been parsed (fixes issue7406.pdf).
@@ -1286,6 +1265,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
                 }
 
                 components.Add(new ImageComponent(
+                    index: component.Index,
                     output: BuildComponentData(frame, component),
                     scaleX: (double)component.H / frame.MaxH,
                     scaleY: (double)component.V / frame.MaxV,
@@ -1297,10 +1277,18 @@ namespace PdfClown.Bytes.Filters.Jpeg
             //return null;
         }
 
-        byte[] GetLinearizedBlockData(int width, int height, bool isSourcePDF = false)
+        private void ReParse(IInputStream data, ushort dnlScanLines)
         {
-            double scaleX = this.width / width,
-              scaleY = this.height / height;
+            components = null;
+            GC.Collect();
+            data.Seek(0);
+            Parse(data, dnlScanLines);
+        }
+
+        Memory<byte> GetLinearizedBlockData(int width, int height, bool isSourcePDF = false)
+        {
+            double scaleX = this.width / (double)width,
+              scaleY = this.height / (double)height;
 
             ImageComponent component;
             double componentScaleX, componentScaleY, lastComponentScaleX = 0;
@@ -1397,6 +1385,14 @@ namespace PdfClown.Bytes.Filters.Jpeg
                         // then the colours should *not* be transformed.
                         return false;
                     }
+                    else if (components[0].Index == /* "R" = */ 0x52
+                          && components[1].Index == /* "G" = */ 0x47
+                          && components[2].Index == /* "B" = */ 0x42)
+                    {
+                        // If the three components are indexed as RGB in ASCII
+                        // then the colours should *not* be transformed.
+                        return false;
+                    }
                     return true;
                 }
                 // "this.numComponents != 3"
@@ -1411,8 +1407,9 @@ namespace PdfClown.Bytes.Filters.Jpeg
             }
         }
 
-        byte[] ConvertYccToRgb(byte[] data)
+        Memory<byte> ConvertYccToRgb(Memory<byte> mdata)
         {
+            var data = mdata.Span;
             byte Y, Cb, Cr;
             for (int i = 0, length = data.Length; i < length; i += 3)
             {
@@ -1423,11 +1420,12 @@ namespace PdfClown.Bytes.Filters.Jpeg
                 data[i + 1] = FiltersExtension.ToByte(Y + 135.459 - 0.344 * Cb - 0.714 * Cr);
                 data[i + 2] = FiltersExtension.ToByte(Y - 226.816 + 1.772 * Cb);
             }
-            return data;
+            return mdata;
         }
 
-        byte[] ConvertYcckToRgb(byte[] data)
+        Memory<byte> ConvertYcckToRgb(Memory<byte> mdata)
         {
+            var data = mdata.Span;
             byte Y, Cb, Cr, k;
             var offset = 0;
             for (int i = 0, length = data.Length; i < length; i += 4)
@@ -1495,11 +1493,12 @@ namespace PdfClown.Bytes.Filters.Jpeg
                   k * (-0.000343531996510555 * k + 0.24165260232407));
             }
             // Ensure that only the converted RGB data is returned.
-            return data.SubArray(0, offset);
+            return mdata.Slice(0, offset);
         }
 
-        byte[] ConvertYcckToCmyk(byte[] data)
+        Memory<byte> ConvertYcckToCmyk(Memory<byte> mdata)
         {
+            var data = mdata.Span;
             byte Y, Cb, Cr;
             for (int i = 0, length = data.Length; i < length; i += 4)
             {
@@ -1511,11 +1510,12 @@ namespace PdfClown.Bytes.Filters.Jpeg
                 data[i + 2] = FiltersExtension.ToByte(481.816 - Y - 1.772 * Cb);
                 // K in data[i + 3] is unchanged
             }
-            return data;
+            return mdata;
         }
 
-        byte[] ConvertCmykToRgb(byte[] data)
+        Memory<byte> ConvertCmykToRgb(Memory<byte> mdata)
         {
+            var data = mdata.Span;
             byte c, m, y, k;
             var offset = 0;
             for (int i = 0, length = data.Length; i < length; i += 4)
@@ -1583,10 +1583,10 @@ namespace PdfClown.Bytes.Filters.Jpeg
                   k * (0.0003435319965105553 * k + 0.7063770186160144));
             }
             // Ensure that only the converted RGB data is returned.
-            return data.SubArray(0, offset);
+            return mdata.Slice(0, offset);
         }
 
-        public byte[] GetData(int width, int height, bool forceRGB = false, bool isSourcePDF = false)
+        public Memory<byte> GetData(int width, int height, bool forceRGB = false, bool isSourcePDF = true)
         {
             //if (
             //  typeof PDFJSDev == "undefined" ||
@@ -1604,7 +1604,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
             }
             // Type of data: byte[](width * height * numComponents)
             var data = GetLinearizedBlockData(width, height, isSourcePDF);
-
+            var span = data.Span;
             if (numComponents == 1 && forceRGB)
             {
                 var dataLength = data.Length;
@@ -1612,7 +1612,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
                 var offset = 0;
                 for (var i = 0; i < dataLength; i++)
                 {
-                    var grayColor = data[i];
+                    var grayColor = span[i];
                     rgbData[offset++] = grayColor;
                     rgbData[offset++] = grayColor;
                     rgbData[offset++] = grayColor;
@@ -1656,14 +1656,16 @@ namespace PdfClown.Bytes.Filters.Jpeg
 
     internal class ImageComponent
     {
+        internal byte Index;
         internal short[] Output;
         internal double ScaleX;
         internal double ScaleY;
         internal int BlocksPerLine;
         internal int BlocksPerColumn;
 
-        public ImageComponent(short[] output, double scaleX, double scaleY, int blocksPerLine, int blocksPerColumn)
+        public ImageComponent(byte index, short[] output, double scaleX, double scaleY, int blocksPerLine, int blocksPerColumn)
         {
+            Index = index;
             Output = output;
             ScaleX = scaleX;
             ScaleY = scaleY;
@@ -1715,6 +1717,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
         internal int BlocksPerLine;
         internal int BlocksPerColumn;
         internal int Pred;
+        internal byte Index;
 
         public Component(int h, int v, byte quantizationId, ushort[] quantizationTable)
         {
@@ -1747,9 +1750,9 @@ namespace PdfClown.Bytes.Filters.Jpeg
         internal int YDensity;
         internal byte ThumbWidth;
         internal byte ThumbHeight;
-        internal byte[] ThumbData;
+        internal Memory<byte> ThumbData;
 
-        public JFIF(Version version, byte densityUnits, int xDensity, int yDensity, byte thumbWidth, byte thumbHeight, byte[] thumbData)
+        public JFIF(Version version, byte densityUnits, int xDensity, int yDensity, byte thumbWidth, byte thumbHeight, Memory<byte> thumbData)
         {
             Version = version;
             DensityUnits = densityUnits;

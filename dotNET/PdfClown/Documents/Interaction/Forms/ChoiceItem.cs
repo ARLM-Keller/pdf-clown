@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using Org.BouncyCastle.Utilities;
 using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
@@ -45,28 +46,20 @@ namespace PdfClown.Documents.Interaction.Forms
         { return baseObject?.Wrapper as ChoiceItem ?? new ChoiceItem(baseObject, choiceItems); }
 
 
-        #region fields
         private ChoiceItems items;
-        #endregion
 
-        #region constructors
-        public ChoiceItem(string value) : base(new PdfTextString(value))
+        public ChoiceItem(string value)
+            : base(new PdfTextString(value))
         { }
 
-        public ChoiceItem(Document context, string value, string text) : base(
-            context,
-            new PdfArray(
-              new PdfDirectObject[] { new PdfTextString(value), new PdfTextString(text) }
-              )
-            )
+        public ChoiceItem(Document context, string value, string text)
+            : base(context, new PdfArray(2) { new PdfTextString(value), new PdfTextString(text) })
         { }
 
-        internal ChoiceItem(PdfDirectObject baseObject, ChoiceItems items) : base(baseObject)
+        internal ChoiceItem(PdfDirectObject baseObject, ChoiceItems items)
+            : base(baseObject)
         { Items = items; }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
@@ -79,22 +72,17 @@ namespace PdfClown.Documents.Interaction.Forms
             get
             {
                 PdfDirectObject baseDataObject = BaseDataObject;
-                if (baseDataObject is PdfArray) // <value,text> pair.
-                    return (string)((PdfTextString)((PdfArray)baseDataObject)[1]).Value;
+                if (baseDataObject is PdfArray array) // <value,text> pair.
+                    return array.GetString(1);
                 else // Single text string.
-                    return (string)((PdfTextString)baseDataObject).Value;
+                    return ((IPdfString)baseDataObject).StringValue;
             }
             set
             {
                 PdfDirectObject baseDataObject = BaseDataObject;
-                if (baseDataObject is PdfTextString)
+                if (baseDataObject is PdfTextString pdfString)
                 {
-                    PdfDirectObject oldBaseDataObject = baseDataObject;
-
-                    BaseObject = baseDataObject = new PdfArray(
-                        new PdfDirectObject[] { oldBaseDataObject }
-                        );
-                    ((PdfArray)baseDataObject).Add(PdfTextString.Default);
+                    BaseObject = baseDataObject = new PdfArray(2) { pdfString, PdfTextString.Default };
 
                     if (items != null)
                     {
@@ -104,11 +92,10 @@ namespace PdfClown.Documents.Interaction.Forms
                           the previous base object with the new one within the list.
                         */
                         PdfArray itemsObject = items.BaseDataObject;
-                        itemsObject[itemsObject.IndexOf(oldBaseDataObject)] = baseDataObject;
+                        itemsObject[itemsObject.IndexOf(pdfString)] = baseDataObject;
                     }
                 }
-
-              ((PdfArray)baseDataObject)[1] = new PdfTextString(value);
+                ((PdfArray)baseDataObject).SetText(1, value);
             }
         }
 
@@ -119,24 +106,22 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                PdfDirectObject baseDataObject = BaseDataObject;
-                if (baseDataObject is PdfArray) // <value,text> pair.
-                    return (string)((PdfTextString)((PdfArray)baseDataObject)[0]).Value;
+                var baseDataObject = BaseDataObject;
+                if (BaseDataObject is PdfArray array) // <value,text> pair.
+                    return array.GetString(0);
                 else // Single text string.
-                    return (string)((PdfTextString)baseDataObject).Value;
+                    return ((IPdfString)baseDataObject).StringValue;
             }
             set
             {
                 PdfDirectObject baseDataObject = BaseDataObject;
-                if (baseDataObject is PdfArray) // <value,text> pair.
-                { ((PdfArray)baseDataObject)[0] = new PdfTextString(value); }
+                if (baseDataObject is PdfArray array) // <value,text> pair.
+                { array.SetText(0, value); }
                 else // Single text string.
                 { BaseObject = new PdfTextString(value); }
             }
         }
-        #endregion
 
-        #region internal
         internal ChoiceItems Items
         {
             set
@@ -147,7 +132,5 @@ namespace PdfClown.Documents.Interaction.Forms
                 items = value;
             }
         }
-        #endregion
-        #endregion
     }
 }

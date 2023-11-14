@@ -37,28 +37,17 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>Abstract 'go to non-local destination' action.</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public abstract class GotoNonLocal<T>
-      : GoToDestination<T>
+    public abstract class GotoNonLocal<T> : GoToDestination<T>
       where T : Destination
     {
-        #region dynamic
-        #region constructors
-        protected GotoNonLocal(
-          Document context,
-          PdfName actionType,
-          FileSpecification destinationFile,
-          T destination
-          ) : base(context, actionType, destination)
+        protected GotoNonLocal(Document context, PdfName actionType, FileSpecification destinationFile, T destination)
+            : base(context, actionType, destination)
         { DestinationFile = destinationFile; }
 
-        protected GotoNonLocal(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected GotoNonLocal(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the file in which the destination is located.</summary>
         */
@@ -76,9 +65,7 @@ namespace PdfClown.Documents.Interaction.Actions
             get
             {
                 OptionsEnum options = 0;
-                PdfDirectObject optionsObject = BaseDataObject[PdfName.NewWindow];
-                if (optionsObject != null
-                  && ((PdfBoolean)optionsObject).BooleanValue)
+                if (BaseDataObject.GetBool(PdfName.NewWindow))
                 { options |= OptionsEnum.NewWindow; }
                 return options;
             }
@@ -92,8 +79,5 @@ namespace PdfClown.Documents.Interaction.Actions
                 { BaseDataObject.Remove(PdfName.NewWindow); } // NOTE: Forcing the absence of this entry ensures that the viewer application should behave in accordance with the current user preference.
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

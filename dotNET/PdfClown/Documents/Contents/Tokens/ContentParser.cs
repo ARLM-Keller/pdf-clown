@@ -33,6 +33,8 @@ using PdfClown.Util.Parsers;
 using System;
 using System.Collections.Generic;
 using sysIO = System.IO;
+using PdfClown.Bytes;
+using PdfClown.Util;
 
 namespace PdfClown.Documents.Contents.Tokens
 {
@@ -41,27 +43,22 @@ namespace PdfClown.Documents.Contents.Tokens
     */
     public sealed class ContentParser : BaseParser
     {
-        #region dynamic
-        #region constructors
-        internal ContentParser(bytes::IInputStream stream) : base(stream)
+        internal ContentParser(IInputStream stream) : base(stream)
         { }
 
-        public ContentParser(byte[] data) : base(data)
+        public ContentParser(Memory<byte> data) : base(data)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Parses the next content object [PDF:1.6:4.1].</summary>
         */
         public ContentObject ParseContentObject()
         {
             Operation operation = ParseOperation();
-            if (operation is PaintXObject) // External object.
-                return new XObject((PaintXObject)operation);
-            else if (operation is PaintShading) // Shading.
-                return new Shading((PaintShading)operation);
+            if (operation is PaintXObject paintXObject) // External object.
+                return new XObject(paintXObject);
+            else if (operation is PaintShading paintShading) // Shading.
+                return new Shading(paintShading);
             else if (operation is BeginSubpath
               || operation is DrawRectangle) // Path.
                 return ParsePath(operation);
@@ -82,14 +79,14 @@ namespace PdfClown.Documents.Contents.Tokens
         */
         public IList<ContentObject> ParseContentObjects()
         {
-            List<ContentObject> contentObjects = new List<ContentObject>();
+            var contentObjects = new List<ContentObject>();
             while (MoveNext())
             {
                 ContentObject contentObject = ParseContentObject();
                 // Multiple-operation graphics object end?
                 if (contentObject is EndText // Text.
                   || contentObject is RestoreGraphicsState // Local graphics state.
-              //    || contentObject is EndMarkedContent // End marked-content sequence.
+                                                           //    || contentObject is EndMarkedContent // End marked-content sequence.
                   || contentObject is EndInlineImage) // Inline image.
                     return contentObjects;
 
@@ -103,40 +100,35 @@ namespace PdfClown.Documents.Contents.Tokens
         */
         public Operation ParseOperation()
         {
-            string @operator = null;
-            List<PdfDirectObject> operands = new List<PdfDirectObject>();
+            StringStream @operator = null;
+            var operands = new List<PdfDirectObject>();
             // Parsing the operation parts...
             do
             {
+                if (Position == 0 && TokenType == TokenTypeEnum.ArrayEnd)
+                    MoveNext();
                 switch (TokenType)
                 {
                     case TokenTypeEnum.Keyword:
-                        @operator = (string)Token;
+                        @operator = Token as StringStream;
                         break;
                     default:
                         operands.Add((PdfDirectObject)ParsePdfObject());
                         break;
                 }
             } while (@operator == null && MoveNext());
-            return Operation.Get(@operator, operands);
+            return @operator == null ? null : Operation.Get(@operator.AsSpan(), operands);
         }
 
         public override PdfDataObject ParsePdfObject()
         {
-            switch (TokenType)
+            if (Token is sysIO.MemoryStream memoryStream)
             {
-                case TokenTypeEnum.Literal:
-                    if (Token is string)
-                        return new PdfByteString(Encoding.Pdf.Encode((string)Token));
-                    break;
-                case TokenTypeEnum.Hex:
-                    return new PdfByteString((string)Token);
+                return new PdfByteString(memoryStream.ToArray());
             }
             return base.ParsePdfObject();
         }
-        #endregion
 
-        #region private
         private InlineImage ParseInlineImage()
         {
             /*
@@ -146,7 +138,7 @@ namespace PdfClown.Documents.Contents.Tokens
             */
             InlineImageHeader header;
             {
-                List<PdfDirectObject> operands = new List<PdfDirectObject>();
+                var operands = new List<PdfDirectObject>();
                 // Parsing the image entries...
                 while (MoveNext() && TokenType != TokenTypeEnum.Keyword) // Not keyword (i.e. end at image data beginning (ID operator)).
                 { operands.Add((PdfDirectObject)ParsePdfObject()); }
@@ -156,9 +148,9 @@ namespace PdfClown.Documents.Contents.Tokens
             InlineImageBody body;
             {
                 // [FIX:51,74] Wrong 'EI' token handling on inline image parsing.
-                bytes::IInputStream stream = Stream;
+                IInputStream stream = Stream;
                 stream.ReadByte(); // Should be the whitespace following the 'ID' token.
-                bytes::Buffer data = new bytes::Buffer();
+                var data = new ByteStream();
                 while (true)
                 {
                     int curByte = stream.ReadByte();
@@ -167,7 +159,7 @@ namespace PdfClown.Documents.Contents.Tokens
                         stream.ReadByte();
                         break;
                     }
-                    data.Append((byte)curByte);
+                    data.WriteByte((byte)curByte);
 
                 }
                 body = new InlineImageBody(data);
@@ -189,7 +181,7 @@ namespace PdfClown.Documents.Contents.Tokens
                 bool closeable = false;
                 while (MoveNext())
                 {
-                    Operation operation = ParseOperation();
+                    var operation = ParseOperation();
                     // Multiple-operation graphics object closeable?
                     if (operation is PaintPath) // Painting operation.
                     { closeable = true; }
@@ -206,8 +198,5 @@ namespace PdfClown.Documents.Contents.Tokens
             }
             return new Path(operations);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

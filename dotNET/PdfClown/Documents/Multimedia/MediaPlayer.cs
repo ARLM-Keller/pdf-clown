@@ -40,23 +40,14 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaPlayer : PdfObjectWrapper<PdfDictionary>
     {
-        #region dynamic
-        #region constructors
         public MediaPlayer(Document context) : base(
             context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type },
-              new PdfDirectObject[] { PdfName.MediaPlayerInfo }
-              )
-            )
+            new PdfDictionary(1) { { PdfName.Type, PdfName.MediaPlayerInfo } })
         { }
 
         public MediaPlayer(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the player identifier.</summary>
         */
@@ -65,8 +56,5 @@ namespace PdfClown.Documents.Multimedia
             get => Wrap<SoftwareIdentifier>(BaseDataObject.Get<PdfDictionary>(PdfName.PID));
             set => BaseDataObject[PdfName.PID] = value.BaseObject;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

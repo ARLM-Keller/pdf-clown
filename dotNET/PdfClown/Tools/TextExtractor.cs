@@ -42,7 +42,6 @@ namespace PdfClown.Tools
     */
     public sealed class TextExtractor
     {
-        #region types
         /**
           <summary>Text-to-area matching mode.</summary>
         */
@@ -103,16 +102,9 @@ namespace PdfClown.Tools
             public IList<ITextString> TextStrings => textStrings;
         }
 
-       
-        #endregion
 
-        #region static
-        #region fields
         public static readonly SKRect DefaultArea = SKRect.Create(0, 0, 0, 0);
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Converts text information into plain text.</summary>
           <param name="textStrings">Text information to convert.</param>
@@ -141,20 +133,13 @@ namespace PdfClown.Tools
             }
             return textBuilder.ToString();
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private AreaModeEnum areaMode = AreaModeEnum.Containment;
         private List<SKRect> areas;
         private float areaTolerance = 0;
         private bool dehyphenated;
         private bool sorted;
-        #endregion
 
-        #region constructors
         public TextExtractor() : this(true, false)
         { }
 
@@ -167,10 +152,7 @@ namespace PdfClown.Tools
             Dehyphenated = dehyphenated;
             Sorted = sorted;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the text-to-area matching mode.</summary>
         */
@@ -385,7 +367,7 @@ namespace PdfClown.Tools
                 foreach (ITextString textString in textStrings)
                 {
                     var textStringQuad = textString.Quad;
-                    if (toleratedArea.IntersectsWith(textStringQuad.Value))
+                    if (toleratedArea.IntersectsWith(textStringQuad))
                     {
                         TextString filteredTextString = new TextString();
                         List<TextChar> filteredTextStringChars = filteredTextString.TextChars;
@@ -417,9 +399,7 @@ namespace PdfClown.Tools
                 { Dehyphenated = false; }
             }
         }
-        #endregion
 
-        #region private
         /**
           <summary>Scans a content level looking for text.</summary>
 */
@@ -486,7 +466,7 @@ namespace PdfClown.Tools
                 // Add a new text string in case of new line!
                 if (textString != null
                   && textString.TextChars.Count > 0
-                  && !TextStringPositionComparer<ITextString>.IsOnTheSameLine(textString.Quad.Value, rawTextString.Quad.Value))
+                  && !TextStringPositionComparer<ITextString>.IsOnTheSameLine(textString.Quad, rawTextString.Quad))
                 {
                     if (dehyphenated
                       && previousTextChar.Value == '-') // Hyphened word.
@@ -560,8 +540,5 @@ namespace PdfClown.Tools
                 }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

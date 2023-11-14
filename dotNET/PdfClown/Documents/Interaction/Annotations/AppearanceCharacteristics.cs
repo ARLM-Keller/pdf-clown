@@ -41,7 +41,6 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF12)]
     public sealed class AppearanceCharacteristics : PdfObjectWrapper<PdfDictionary>
     {
-        #region types        
         /**
           <summary>Icon fit [PDF:1.6:8.6.6].</summary>
         */
@@ -110,21 +109,19 @@ namespace PdfClown.Documents.Interaction.Annotations
             /**
               <summary>Gets the code corresponding to the given value.</summary>
             */
-            private static PdfName ToCode(ScaleModeEnum value)
-            { return ScaleModeEnumCodes[value]; }
+            private static PdfName ToCode(ScaleModeEnum value) => ScaleModeEnumCodes[value];
 
             /**
               <summary>Gets the code corresponding to the given value.</summary>
             */
-            private static PdfName ToCode(ScaleTypeEnum value)
-            { return ScaleTypeEnumCodes[value]; }
+            private static PdfName ToCode(ScaleTypeEnum value) => ScaleTypeEnumCodes[value];
 
             /**
               <summary>Gets the scaling mode corresponding to the given value.</summary>
             */
             private static ScaleModeEnum ToScaleModeEnum(IPdfString value)
             {
-                if(value == null)
+                if (value == null)
                     return ScaleModeEnum.Always;
                 foreach (KeyValuePair<ScaleModeEnum, PdfName> scaleMode in ScaleModeEnumCodes)
                 {
@@ -149,6 +146,11 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return ScaleTypeEnum.Proportional;
             }
 
+            public static IconFitObject Wrap(PdfDirectObject baseObjec)
+            {
+                return (IconFitObject)(baseObjec == null ? null : baseObjec.AlternateWrapper ??= new IconFitObject(baseObjec));
+            }
+
             public IconFitObject(Document context) : base(context, new PdfDictionary())
             { }
 
@@ -160,14 +162,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             */
             public bool BorderExcluded
             {
-                get
-                {
-                    PdfBoolean borderExcludedObject = (PdfBoolean)BaseDataObject[PdfName.FB];
-                    return borderExcludedObject != null
-                      ? borderExcludedObject.RawValue
-                      : false;
-                }
-                set => BaseDataObject[PdfName.FB] = PdfBoolean.Get(value);
+                get => BaseDataObject.GetBool(PdfName.FB);
+                set => BaseDataObject.SetBool(PdfName.FB, value);
             }
 
             /**
@@ -188,6 +184,11 @@ namespace PdfClown.Documents.Interaction.Annotations
                 set => BaseDataObject[PdfName.S] = ToCode(value);
             }
 
+            public PdfArray Alignment
+            {
+                get => (PdfArray)BaseDataObject.Resolve(PdfName.A);
+                set => BaseDataObject[PdfName.A] = value;
+            }
             /**
               <summary>Gets/Sets the horizontal alignment of the icon inside the annotation box.</summary>
             */
@@ -195,26 +196,19 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 get
                 {
-                    PdfArray alignmentObject = (PdfArray)BaseDataObject[PdfName.A];
-                    if (alignmentObject == null)
-                        return XAlignmentEnum.Center;
-
-                    switch ((int)Math.Round(((IPdfNumber)alignmentObject[0]).RawValue / .5))
+                    return (int)Math.Round((Alignment?.GetDouble(0, 0.5D) ?? 0.5D) / .5) switch
                     {
-                        case 0: return XAlignmentEnum.Left;
-                        case 2: return XAlignmentEnum.Right;
-                        default: return XAlignmentEnum.Center;
-                    }
+                        0 => XAlignmentEnum.Left,
+                        2 => XAlignmentEnum.Right,
+                        _ => XAlignmentEnum.Center,
+                    };
                 }
                 set
                 {
-                    PdfArray alignmentObject = (PdfArray)BaseDataObject[PdfName.A];
+                    PdfArray alignmentObject = Alignment;
                     if (alignmentObject == null)
                     {
-                        alignmentObject = new PdfArray(
-                          new PdfDirectObject[] { PdfReal.Get(0.5), PdfReal.Get(0.5) }
-                          );
-                        BaseDataObject[PdfName.A] = alignmentObject;
+                        Alignment = alignmentObject = new PdfArray(2) { PdfReal.Get(0.5), PdfReal.Get(0.5) };
                     }
 
                     double objectValue;
@@ -224,7 +218,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         case XAlignmentEnum.Right: objectValue = 1; break;
                         default: objectValue = 0.5; break;
                     }
-                    alignmentObject[0] = PdfReal.Get(objectValue);
+                    alignmentObject.SetDouble(0, objectValue);
                 }
             }
 
@@ -235,26 +229,19 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 get
                 {
-                    PdfArray alignmentObject = (PdfArray)BaseDataObject[PdfName.A];
-                    if (alignmentObject == null)
-                        return YAlignmentEnum.Middle;
-
-                    switch ((int)Math.Round(((IPdfNumber)alignmentObject[1]).RawValue / .5))
+                    return (int)Math.Round((Alignment?.GetDouble(1, 0.5D) ?? 0.5D) / .5) switch
                     {
-                        case 0: return YAlignmentEnum.Bottom;
-                        case 2: return YAlignmentEnum.Top;
-                        default: return YAlignmentEnum.Middle;
-                    }
+                        0 => YAlignmentEnum.Bottom,
+                        2 => YAlignmentEnum.Top,
+                        _ => YAlignmentEnum.Middle,
+                    };
                 }
                 set
                 {
-                    PdfArray alignmentObject = (PdfArray)BaseDataObject[PdfName.A];
+                    PdfArray alignmentObject = Alignment;
                     if (alignmentObject == null)
                     {
-                        alignmentObject = new PdfArray(
-                          new PdfDirectObject[] { PdfReal.Get(0.5), PdfReal.Get(0.5) }
-                          );
-                        BaseDataObject[PdfName.A] = alignmentObject;
+                        Alignment = alignmentObject = new PdfArray(2) { PdfReal.Get(0.5), PdfReal.Get(0.5) };
                     }
 
                     double objectValue;
@@ -264,7 +251,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         case YAlignmentEnum.Top: objectValue = 1; break;
                         default: objectValue = 0.5; break;
                     }
-                    alignmentObject[1] = PdfReal.Get(objectValue);
+                    alignmentObject.SetDouble(1, objectValue);
                 }
             }
         }
@@ -291,19 +278,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             */
             Right = 270
         };
-        #endregion
 
-        #region dynamic
-        #region constructors
         public AppearanceCharacteristics(Document context) : base(context, new PdfDictionary())
         { }
 
         public AppearanceCharacteristics(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the widget annotation's alternate (down) caption,
           displayed when the mouse button is pressed within its active area
@@ -311,12 +292,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public string AlternateCaption
         {
-            get
-            {
-                PdfTextString alternateCaptionObject = (PdfTextString)BaseDataObject[PdfName.AC];
-                return alternateCaptionObject != null ? (string)alternateCaptionObject.Value : null;
-            }
-            set => BaseDataObject[PdfName.AC] = new PdfTextString(value);
+            get => BaseDataObject.GetString(PdfName.AC);
+            set => BaseDataObject.SetText(PdfName.AC, value);
         }
 
         /**
@@ -353,12 +330,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public AppearanceCaptionPosition CaptionPosition
         {
-            get
-            {
-                PdfInteger captionPositionObject = (PdfInteger)BaseDataObject[PdfName.TP];
-                return captionPositionObject != null ? (AppearanceCaptionPosition)captionPositionObject.RawValue : AppearanceCaptionPosition.CaptionOnly;
-            }
-            set => BaseDataObject[PdfName.TP] = PdfInteger.Get((int)value);
+            get => (AppearanceCaptionPosition)BaseDataObject.GetInt(PdfName.TP);
+            set => BaseDataObject.SetInt(PdfName.TP, (int)value);
         }
 
         /**
@@ -369,11 +342,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public IconFitObject IconFit
         {
-            get
-            {
-                PdfDirectObject iconFitObject = BaseDataObject[PdfName.IF];
-                return iconFitObject != null ? new IconFitObject(iconFitObject) : null;
-            }
+            get => IconFitObject.Wrap(BaseDataObject[PdfName.IF]);
             set => BaseDataObject[PdfName.IF] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -383,12 +352,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public string NormalCaption
         {
-            get
-            {
-                PdfTextString normalCaptionObject = (PdfTextString)BaseDataObject[PdfName.CA];
-                return normalCaptionObject != null ? (string)normalCaptionObject.Value : null;
-            }
-            set => BaseDataObject[PdfName.CA] = PdfTextString.Get(value);
+            get => BaseDataObject.GetString(PdfName.CA);
+            set => BaseDataObject.SetText(PdfName.CA, value);
         }
 
         /**
@@ -406,12 +371,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public OrientationEnum Orientation
         {
-            get
-            {
-                PdfInteger orientationObject = (PdfInteger)BaseDataObject[PdfName.R];
-                return orientationObject != null ? (OrientationEnum)orientationObject.RawValue : OrientationEnum.Up;
-            }
-            set => BaseDataObject[PdfName.R] = PdfInteger.Get((int)value);
+            get => (OrientationEnum)BaseDataObject.GetInt(PdfName.R);
+            set => BaseDataObject.SetInt(PdfName.R, (int)value);
         }
 
         /**
@@ -421,12 +382,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public string RolloverCaption
         {
-            get
-            {
-                PdfTextString rolloverCaptionObject = (PdfTextString)BaseDataObject[PdfName.RC];
-                return rolloverCaptionObject != null ? (string)rolloverCaptionObject.Value : null;
-            }
-            set => BaseDataObject[PdfName.RC] = PdfTextString.Get(value);
+            get => BaseDataObject.GetString(PdfName.RC);
+            set => BaseDataObject.SetText(PdfName.RC, value);
         }
 
         /**
@@ -439,17 +396,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => FormXObject.Wrap(BaseDataObject[PdfName.RI]);
             set => BaseDataObject[PdfName.RI] = PdfObjectWrapper.GetBaseObject(value);
         }
-        #endregion
 
-        #region private
-        private DeviceColor GetColor(PdfName key)
-        { return DeviceColor.Get((PdfArray)BaseDataObject.Resolve(key)); }
+        private DeviceColor GetColor(PdfName key) => DeviceColor.Get((PdfArray)BaseDataObject.Resolve(key));
 
-        private void SetColor(PdfName key, DeviceColor value)
-        { BaseDataObject[key] = PdfObjectWrapper.GetBaseObject(value); }
-        #endregion
-        #endregion
-        #endregion
+        private void SetColor(PdfName key, DeviceColor value) => BaseDataObject[key] = PdfObjectWrapper.GetBaseObject(value);
     }
 
     /**

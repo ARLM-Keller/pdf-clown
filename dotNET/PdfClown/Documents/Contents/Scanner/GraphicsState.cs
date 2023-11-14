@@ -34,6 +34,8 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 using PdfClown.Util.Math.Geom;
 using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Functions;
+using PdfClown.Documents.Contents.Patterns;
 
 namespace PdfClown.Documents.Contents
 {
@@ -42,8 +44,6 @@ namespace PdfClown.Documents.Contents
     */
     public sealed class GraphicsState : ICloneable
     {
-        #region dynamic
-        #region fields
         private IList<BlendModeEnum> blendMode;
         private SKMatrix ctm;
         private colors::Color fillColor;
@@ -70,9 +70,7 @@ namespace PdfClown.Documents.Contents
         private TextGraphicsState textState;
         private ContentScanner scanner;
         private static Stack<GraphicsState> stack;
-        #endregion
 
-        #region constructors
         private GraphicsState()
         { }
 
@@ -81,10 +79,6 @@ namespace PdfClown.Documents.Contents
             this.scanner = scanner;
             Initialize();
         }
-        #endregion
-
-        #region interface
-        #region public
 
         /**
          <summary>Gets/Sets the current font [PDF:1.6:5.2].</summary>
@@ -294,7 +288,11 @@ namespace PdfClown.Documents.Contents
 
         public SoftMask SMask { get; set; }
 
-        public colors.Shading Shading { get; internal set; }
+        public Patterns.Shadings.Shading Shading { get; internal set; }
+
+        public bool Knockout { get; internal set; }
+
+        public Function Function { get; internal set; }
 
         /**
   <summary>Gets the initial current transformation matrix.</summary>
@@ -315,9 +313,9 @@ namespace PdfClown.Documents.Contents
         {
             SKMatrix initialCtm;
             var rotation = contentContext.Rotation;
-            if (contentContext is colors.TilingPattern tiling
+            if (contentContext is TilingPattern tiling
                 || contentContext is FormXObject xObject
-                || contentContext is PdfType3CharProc charProc)
+                || contentContext is Type3CharProc charProc)
             {
                 return SKMatrix.Identity;
             }
@@ -331,8 +329,7 @@ namespace PdfClown.Documents.Contents
             SKSize rotatedCanvasSize = rotation.Transform(canvasSize);
             initialCtm = initialCtm.PreConcat(SKMatrix.CreateScale(
                rotatedCanvasSize.Width / contentBox.Width,
-               rotatedCanvasSize.Height / contentBox.Height
-               ));
+               rotatedCanvasSize.Height / contentBox.Height));
 
             // Origin alignment.
             initialCtm = initialCtm.PreConcat(SKMatrix.CreateTranslation(-contentBox.Left, -contentBox.Top)); //TODO: verify minimum coordinates!
@@ -377,7 +374,7 @@ namespace PdfClown.Documents.Contents
 
         public SKPaint CreateFillPaint()
         {
-            var paint = FillColorSpace?.GetPaint(FillColor, FillAlpha);
+            var paint = FillColorSpace?.GetPaint(FillColor, FillAlpha, this);
             if (paint != null)
             {
                 //paint.TextSize = (float)FontSize;
@@ -469,10 +466,18 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        public static SKMatrix GetRotationMatrix(SKRect box, int degrees)
+        public static SKMatrix GetRotationLeftBottomMatrix(SKRect box, int degrees)
         {
             var matrix = SKMatrix.CreateRotationDegrees(degrees);
             matrix = matrix.PreConcat(SKMatrix.CreateScale(1, -1));
+            var mappedBox = matrix.MapRect(box);
+            matrix = matrix.PostConcat(SKMatrix.CreateTranslation(-mappedBox.Left, -mappedBox.Top));
+            return matrix;
+        }
+
+        public static SKMatrix GetRotationMatrix(SKRect box, int degrees)
+        {
+            var matrix = SKMatrix.CreateRotationDegrees(degrees);
             var mappedBox = matrix.MapRect(box);
             matrix = matrix.PostConcat(SKMatrix.CreateTranslation(-mappedBox.Left, -mappedBox.Top));
             return matrix;
@@ -533,9 +538,6 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        #endregion
-
-        #region internal
         internal GraphicsState Clone(ContentScanner scanner)
         {
             GraphicsState state = (GraphicsState)Clone();
@@ -555,7 +557,7 @@ namespace PdfClown.Documents.Contents
             lineCap = LineCapEnum.Butt;
             lineDash = new LineDash();
             lineJoin = LineJoinEnum.Miter;
-            lineWidth = 0;
+            lineWidth = 1;
             miterLimit = 10;
             font = null;
             fontSize = 0;
@@ -600,8 +602,8 @@ namespace PdfClown.Documents.Contents
                 lineCap = lineCap,
                 lineDash = lineDash,// != null ? new LineDash(lineDash.DashArray, lineDash.DashPhase),
                 lineJoin = lineJoin,
-                lineWidth = 0,
-                miterLimit = 10,
+                lineWidth = lineWidth,
+                miterLimit = miterLimit,
                 SMask = SMask,
                 AlphaIsShape = AlphaIsShape,
                 StrokeAlpha = StrokeAlpha,
@@ -649,9 +651,5 @@ namespace PdfClown.Documents.Contents
             state.StrokeAlpha = StrokeAlpha;
         }
 
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -38,18 +38,12 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF12)]
     public sealed class NamedDestinations : NameTree<Destination>
     {
-
-        #region dynamic
-        #region constructors
         public NamedDestinations(Document context) : base(context)
         { }
 
         public NamedDestinations(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override Destination WrapValue(PdfDirectObject baseObject)
         {
             /*
@@ -66,8 +60,5 @@ namespace PdfClown.Documents
             }
             return Destination.Wrap(destinationObject);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

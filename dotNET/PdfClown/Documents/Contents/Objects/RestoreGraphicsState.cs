@@ -35,29 +35,18 @@ namespace PdfClown.Documents.Contents.Objects
       local graphics state.</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class RestoreGraphicsState
-      : Operation
+    public sealed class RestoreGraphicsState : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "Q";
 
         public static readonly RestoreGraphicsState Value = new RestoreGraphicsState();
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         private RestoreGraphicsState() : base(OperatorKeyword)
-        {
-
-        }
+        { }
 
         public override void Scan(GraphicsState state)
         {
             state?.Scanner?.RenderContext?.Restore();
         }
-        #endregion
-        #endregion
     }
 }

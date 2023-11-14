@@ -33,14 +33,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint DeviceTechnology;
         public string ManufacturerDescription;
         public string ModelDescription;
-        public void Load(Bytes.Buffer buffer)
+        public void Load(Bytes.ByteStream buffer)
         {
-            DeviceManufacturer = buffer.ReadUnsignedInt();
-            DeviceModel = buffer.ReadUnsignedInt();
+            DeviceManufacturer = buffer.ReadUInt32();
+            DeviceModel = buffer.ReadUInt32();
             DeviceAttributes.Load(buffer);
-            DeviceTechnology = buffer.ReadUnsignedInt();
-            ManufacturerDescription = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
-            ModelDescription = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
+            DeviceTechnology = buffer.ReadUInt32();
+            ManufacturerDescription = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitadedSpan());
+            ModelDescription = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitadedSpan());
         }
     }
 }

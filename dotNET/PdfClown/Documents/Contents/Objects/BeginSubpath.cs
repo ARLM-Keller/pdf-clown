@@ -37,14 +37,8 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class BeginSubpath : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "m";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <param name="point">Current point.</param>
         */
@@ -56,21 +50,16 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="pointY">Current point Y.</param>
         */
         public BeginSubpath(double pointX, double pointY)
-            : base(OperatorKeyword, new List<PdfDirectObject>(new PdfDirectObject[]
+            : base(OperatorKeyword, new List<PdfDirectObject>
               {
                   PdfReal.Get(pointX),
                   PdfReal.Get(pointY)
-              }
-              )
-            )
+              })
         { }
 
         public BeginSubpath(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the current point.</summary>
         */
@@ -78,8 +67,7 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get => new SKPoint(
                   ((IPdfNumber)operands[0]).FloatValue,
-                  ((IPdfNumber)operands[1]).FloatValue
-                  );
+                  ((IPdfNumber)operands[1]).FloatValue);
             set
             {
                 operands[0] = PdfReal.Get(value.X);
@@ -95,8 +83,5 @@ namespace PdfClown.Documents.Contents.Objects
                 pathObject.MoveTo(Point);
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

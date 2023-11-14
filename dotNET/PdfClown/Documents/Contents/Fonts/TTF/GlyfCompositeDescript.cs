@@ -26,6 +26,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
 
     using System.Diagnostics;
+    using PdfClown.Bytes;
 
 
     /**
@@ -58,8 +59,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param glyphTable the Glyphtable containing all glyphs
          * @ is thrown if something went wrong
          */
-        public GlyfCompositeDescript(TTFDataStream bais, GlyphTable glyphTable)
-             : base((short)-1, bais)
+        public GlyfCompositeDescript(IInputStream bais, GlyphTable glyphTable)
+             : base((short)-1)
         {
             this.glyphTable = glyphTable;
 
@@ -75,7 +76,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             // Are there hinting instructions to read?
             if ((comp.Flags & GlyfCompositeComp.WE_HAVE_INSTRUCTIONS) != 0)
             {
-                ReadInstructions(bais, (bais.ReadUnsignedShort()));
+                ReadInstructions(bais, (bais.ReadUInt16()));
             }
             InitDescriptions();
         }
@@ -154,9 +155,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 int n = i - c.FirstIndex;
                 int x = gd.GetXCoordinate(n);
                 int y = gd.GetYCoordinate(n);
-                short x1 = (short)c.ScaleX(x, y);
-                x1 += (short)c.XTranslate;
-                return x1;
+                return (short)(c.ScaleX(x, y) + c.XTranslate);
             }
             return 0;
         }
@@ -172,9 +171,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 int n = i - c.FirstIndex;
                 int x = gd.GetXCoordinate(n);
                 int y = gd.GetYCoordinate(n);
-                short y1 = (short)c.ScaleY(x, y);
-                y1 += (short)c.YTranslate;
-                return y1;
+                return (short)(c.ScaleY(x, y) + c.YTranslate);
             }
             return 0;
         }
@@ -229,8 +226,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 if (contourCount < 0)
                 {
                     GlyfCompositeComp c = components[components.Count - 1];
-                    contourCount = c.FirstContour +
-                        (descriptions.TryGetValue(c.GlyphIndex, out IGlyphDescription gd) ? gd.ContourCount : 0);
+                    if (!descriptions.TryGetValue(c.GlyphIndex, out IGlyphDescription gd))
+                    {
+                        Debug.WriteLine("error: missing glyph description for index " + c.GlyphIndex);
+                        contourCount = 0;
+                    }
+                    else
+                    {
+                        contourCount = c.FirstContour + gd.ContourCount;
+                    }
                 }
                 return contourCount;
             }
@@ -244,6 +248,16 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public int ComponentCount
         {
             get => components.Count;
+        }
+
+        /**
+     * Gets a view to the composite components.
+     * 
+     * @return unmodifiable list of this composite glyph's {@linkplain GlyfCompositeComp components}
+     */
+        public List<GlyfCompositeComp> Components
+        {
+            get => components;
         }
 
         private GlyfCompositeComp GetCompositeComp(int i)

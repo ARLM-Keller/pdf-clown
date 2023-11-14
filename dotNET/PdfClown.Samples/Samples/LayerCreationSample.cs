@@ -49,7 +49,7 @@ namespace PdfClown.Samples.CLI
 
             // Initialize the primitive composer (within the new page context)!
             PrimitiveComposer composer = new PrimitiveComposer(page);
-            composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Helvetica, true, false), 12);
+            composer.SetFont(FontType1.Load(document, FontType1.FamilyEnum.Helvetica, true, false), 12);
 
             // Initialize the block composer (wrapping the primitive one)!
             BlockComposer blockComposer = new BlockComposer(composer);

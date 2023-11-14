@@ -64,47 +64,47 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         };
 
-        public static ICCProfile Load(byte[] data)
+        public static ICCProfile Load(Memory<byte> data)
         {
             var profile = new ICCProfile();
             var header = new ICCHeader();
-            var buffer = new Bytes.Buffer(data);
-            header.ProfileSize = buffer.ReadUnsignedInt();
-            header.CMMTypeSignature = buffer.ReadUnsignedInt();
+            var buffer = new Bytes.ByteStream(data);
+            header.ProfileSize = buffer.ReadUInt32();
+            header.CMMTypeSignature = buffer.ReadUInt32();
             header.ProfileVersionNumber.Major = (byte)buffer.ReadByte();
             header.ProfileVersionNumber.Minor = (byte)buffer.ReadByte();
             header.ProfileVersionNumber.Reserv1 = (byte)buffer.ReadByte();
             header.ProfileVersionNumber.Reserv2 = (byte)buffer.ReadByte();
-            header.ProfileDeviceClassSignature = (ICCProfileDeviceSignatures)buffer.ReadUnsignedInt();
-            header.ColorSpaceOfData = (ICCColorSpaceSignatures)buffer.ReadUnsignedInt();
-            header.ProfileConnectionSpace = (ICCColorSpaceSignatures)buffer.ReadUnsignedInt();
+            header.ProfileDeviceClassSignature = (ICCProfileDeviceSignatures)buffer.ReadUInt32();
+            header.ColorSpaceOfData = (ICCColorSpaceSignatures)buffer.ReadUInt32();
+            header.ProfileConnectionSpace = (ICCColorSpaceSignatures)buffer.ReadUInt32();
             header.DateCreated.Load(buffer);
-            header.acsp = buffer.ReadUnsignedInt();
-            header.PrimaryPlatformSignature = (ICCPrimaryPlatformSignatures)buffer.ReadUnsignedInt();
-            header.Flags = (ICCProfileFlags)buffer.ReadUnsignedInt();
-            header.DeviceManufacturer = buffer.ReadUnsignedInt();
-            header.DeviceModel = buffer.ReadUnsignedInt();
+            header.acsp = buffer.ReadUInt32();
+            header.PrimaryPlatformSignature = (ICCPrimaryPlatformSignatures)buffer.ReadUInt32();
+            header.Flags = (ICCProfileFlags)buffer.ReadUInt32();
+            header.DeviceManufacturer = buffer.ReadUInt32();
+            header.DeviceModel = buffer.ReadUInt32();
             header.DeviceAttributes.Load(buffer);
-            header.RenderingIntent.Intents = buffer.ReadUnsignedShort();
-            header.RenderingIntent.Reserved = buffer.ReadUnsignedShort();
+            header.RenderingIntent.Intents = buffer.ReadUInt16();
+            header.RenderingIntent.Reserved = buffer.ReadUInt16();
             header.XYZ.Load(buffer);
-            header.ProfileCreatorSignature = buffer.ReadUnsignedInt();
+            header.ProfileCreatorSignature = buffer.ReadUInt32();
             header.FutureUse = new byte[44];
             buffer.Read(header.FutureUse);
             profile.Header = header;
-            var tagCount = buffer.ReadUnsignedInt();
+            var tagCount = buffer.ReadUInt32();
             for (int i = 0; i < tagCount; i++)
             {
                 var tag = new ICCTagTable();
-                tag.Signature = (ICCTagTypes)buffer.ReadUnsignedInt();
-                tag.Offset = buffer.ReadUnsignedInt();
-                tag.ElementSize = buffer.ReadUnsignedInt();
+                tag.Signature = (ICCTagTypes)buffer.ReadUInt32();
+                tag.Offset = buffer.ReadUInt32();
+                tag.ElementSize = buffer.ReadUInt32();
                 profile.Tags[tag.Signature] = tag;
             }
             foreach (var tagTable in profile.Tags.Values)
             {
                 buffer.Seek(tagTable.Offset);
-                var key = buffer.ReadUnsignedInt();
+                var key = buffer.ReadUInt32();
                 if (Types.TryGetValue(key, out var type))
                 {
                     tagTable.Tag = (ICCTag)Activator.CreateInstance(type, tagTable);

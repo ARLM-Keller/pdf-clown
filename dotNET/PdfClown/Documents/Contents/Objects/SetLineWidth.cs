@@ -36,33 +36,23 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetLineWidth : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "w";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetLineWidth(double value) : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
         public SetLineWidth(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
-        { state.LineWidth = Value; }
+        {
+            state.LineWidth = Value;
+        }
 
         public float Value
         {
             get => ((IPdfNumber)operands[0]).FloatValue;
             set => operands[0] = PdfReal.Get(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

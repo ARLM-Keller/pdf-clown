@@ -39,15 +39,9 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF11)]
     public sealed class ArticleElement : PdfObjectWrapper<PdfDictionary>
     {
-        #region dynamic
-        #region constructors
         public ArticleElement(Page page, SKRect box) : base(
             page.Document,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type },
-              new PdfDirectObject[] { PdfName.Bead }
-              )
-            )
+            new PdfDictionary(1) { { PdfName.Type, PdfName.Bead } })
         {
             page.ArticleElements.Add(this);
             Box = box;
@@ -55,10 +49,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         public ArticleElement(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the thread article this bead belongs to.</summary>
         */
@@ -136,8 +127,5 @@ namespace PdfClown.Documents.Interaction.Navigation
           <summary>Gets the previous bead.</summary>
         */
         public ArticleElement Previous => Wrap<ArticleElement>(BaseDataObject[PdfName.V]);
-        #endregion
-        #endregion
-        #endregion
     }
 }

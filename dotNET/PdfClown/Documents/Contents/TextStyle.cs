@@ -34,8 +34,6 @@ namespace PdfClown.Documents.Contents
     */
     public sealed class TextStyle
     {
-        #region dynamic
-        #region fields
         private readonly Color fillColor;
         private readonly ColorSpace fillColorSpace;
         private readonly Font font;
@@ -45,9 +43,7 @@ namespace PdfClown.Documents.Contents
         private readonly float scaleY;
         private readonly Color strokeColor;
         private readonly ColorSpace strokeColorSpace;
-        #endregion
 
-        #region constructors
         public TextStyle(
           Font font,
           float fontSize,
@@ -57,8 +53,7 @@ namespace PdfClown.Documents.Contents
           Color fillColor,
           ColorSpace fillColorSpace,
           float scaleX,
-          float scaleY
-          )
+          float scaleY)
         {
             this.font = font;
             this.fontSize = fontSize;
@@ -70,10 +65,7 @@ namespace PdfClown.Documents.Contents
             this.scaleX = scaleX;
             this.scaleY = scaleY;
         }
-        #endregion
 
-        #region interface
-        #region public
         public Color FillColor => fillColor;
 
         public ColorSpace FillColorSpace => fillColorSpace;
@@ -85,8 +77,7 @@ namespace PdfClown.Documents.Contents
         /**
           <exception cref="EncodeException"/>
         */
-        public float GetWidth(char textChar)
-        { return font.GetWidth(textChar, fontSize) * scaleX / scaleY; }
+        public float GetWidth(char textChar) => font.GetWidth(textChar, fontSize) * scaleX / scaleY;
 
         public TextRenderModeEnum RenderMode => renderMode;
 
@@ -97,8 +88,5 @@ namespace PdfClown.Documents.Contents
         public Color StrokeColor => strokeColor;
 
         public ColorSpace StrokeColorSpace => strokeColorSpace;
-        #endregion
-        #endregion
-        #endregion
     }
 }

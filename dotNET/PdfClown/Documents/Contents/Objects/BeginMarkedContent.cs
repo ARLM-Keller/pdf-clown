@@ -36,15 +36,9 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF12)]
     public sealed class BeginMarkedContent : ContentMarker
     {
-        #region static
-        #region fields
         public static readonly string PropertyListOperatorKeyword = "BDC";
         public static readonly string SimpleOperatorKeyword = "BMC";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public BeginMarkedContent(PdfName tag) : base(tag)
         { }
 
@@ -53,10 +47,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         internal BeginMarkedContent(string @operator, IList<PdfDirectObject> operands) : base(@operator, operands)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override string PropertyListOperator => PropertyListOperatorKeyword;
 
         protected override string SimpleOperator => SimpleOperatorKeyword;
@@ -65,8 +56,5 @@ namespace PdfClown.Documents.Contents.Objects
         {
             base.Scan(state);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

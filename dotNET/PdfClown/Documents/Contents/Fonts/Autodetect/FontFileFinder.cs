@@ -121,15 +121,15 @@ namespace PdfClown.Documents.Contents.Fonts.Autodetect
                 }
                 else if (file is FileInfo fileInfo)
                 {
-#if DEBUG
-                    Debug.WriteLine("debug: check Fontfile start " + file);
-#endif
                     if (CheckFontfile(fileInfo))
                     {
-#if DEBUG
-                        Debug.WriteLine("debug: check Fontfile success " + file);
-#endif
                         results.Add(fileInfo);
+                    }
+                    else
+                    {
+#if DEBUG
+                        Debug.WriteLine("debug: check Fontfile fail " + file);
+#endif
                     }
                 }
             }

@@ -19,6 +19,7 @@
 
 using System;
 using System.IO;
+using Org.BouncyCastle.Asn1.Pkcs;
 using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts.Type1
@@ -49,10 +50,10 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         private static readonly int[] PFB_RECORDS = { ASCII_MARKER, BINARY_MARKER, ASCII_MARKER };
 
         /// buffersize.
-        private static readonly int BUFFER_SIZE = 0xffff;
+        //private static readonly int BUFFER_SIZE = 0xffff;
 
         /// the parsed pfb-data.
-        private byte[] pfbdata;
+        private Memory<byte> pfbdata;
 
         /// the lengths of the records.
         private int[] lengths;
@@ -65,8 +66,9 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         /// @param filename  the file name
         /// @throws IOException if an IO-error occurs.
         public PfbParser(string filename)
-            : this(new Bytes.Buffer(new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
         {
+            using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            ParsePfb(new ByteStream(fileStream));
         }
 
         /**
@@ -74,10 +76,9 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * @param in   The input.
 		 * @throws IOException if an IO-error occurs.
 		 */
-        public PfbParser(Bytes.Buffer input)
+        public PfbParser(IInputStream input)
         {
-            byte[] pfb = ReadPfbInput(input);
-            ParsePfb(pfb);
+            ParsePfb(input);
         }
 
         /**
@@ -85,7 +86,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * @param bytes   The input.
 		 * @throws IOException if an IO-error occurs.
 		 */
-        public PfbParser(byte[] bytes)
+        public PfbParser(Memory<byte> bytes)
         {
             ParsePfb(bytes);
         }
@@ -95,41 +96,41 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * @param pfb   The pfb-Array
 		 * @throws IOException in an IO-error occurs.
 		 */
-        private void ParsePfb(byte[] pfb)
+        private void ParsePfb(Memory<byte> pfb) => ParsePfb(new ByteStream(pfb));
+
+        private void ParsePfb(IInputStream input)
         {
-            using (var input = new Bytes.Buffer(pfb))
+            input.Seek(0);
+            pfbdata = new byte[input.Length - PFB_HEADER_LENGTH];
+            lengths = new int[PFB_RECORDS.Length];
+            int pointer = 0;
+            for (int records = 0; records < PFB_RECORDS.Length; records++)
             {
-                pfbdata = new byte[pfb.Length - PFB_HEADER_LENGTH];
-                lengths = new int[PFB_RECORDS.Length];
-                int pointer = 0;
-                for (int records = 0; records < PFB_RECORDS.Length; records++)
+                if (input.ReadByte() != START_MARKER)
                 {
-                    if (input.ReadByte() != START_MARKER)
-                    {
-                        throw new IOException("Start marker missing");
-                    }
-
-                    if (input.ReadByte() != PFB_RECORDS[records])
-                    {
-                        throw new IOException("Incorrect record type");
-                    }
-
-                    int size = input.ReadByte();
-                    size += input.ReadByte() << 8;
-                    size += input.ReadByte() << 16;
-                    size += input.ReadByte() << 24;
-                    lengths[records] = size;
-                    if (pointer >= pfbdata.Length)
-                    {
-                        throw new EndOfStreamException("attempted to read past EOF");
-                    }
-                    int got = input.Read(pfbdata, pointer, size);
-                    if (got < 0)
-                    {
-                        throw new EndOfStreamException();
-                    }
-                    pointer += got;
+                    throw new IOException("Start marker missing");
                 }
+
+                if (input.ReadByte() != PFB_RECORDS[records])
+                {
+                    throw new IOException("Incorrect record type");
+                }
+
+                int size = input.ReadByte();
+                size += input.ReadByte() << 8;
+                size += input.ReadByte() << 16;
+                size += input.ReadByte() << 24;
+                lengths[records] = size;
+                if (pointer >= pfbdata.Length)
+                {
+                    throw new EndOfStreamException("attempted to read past EOF");
+                }
+                int got = input.Read(pfbdata.Span.Slice(pointer, size));
+                if (got < 0)
+                {
+                    throw new EndOfStreamException();
+                }
+                pointer += got;
             }
         }
 
@@ -139,20 +140,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * @return Returns the pdf-array.
 		 * @throws IOException if an IO-error occurs.
 		 */
-        private byte[] ReadPfbInput(Bytes.Buffer input)
-        {
-            // copy into an array
-            using (var output = new MemoryStream())
-            {
-                byte[] tmpbuf = new byte[BUFFER_SIZE];
-                int amountRead = -1;
-                while ((amountRead = input.Read(tmpbuf)) > 0)
-                {
-                    output.Write(tmpbuf, 0, amountRead);
-                }
-                return output.ToArray();
-            }
-        }
+        private Memory<byte> ReadPfbInput(ByteStream input) => input.AsMemory();
 
         /**
 		 * Returns the lengths.
@@ -164,7 +152,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * Returns the pfbdata.
 		 * @return Returns the pfbdata.
 		 */
-        public byte[] Pfbdata => pfbdata;
+        public Memory<byte> Pfbdata => pfbdata;
 
         /**
 		 * Returns the size of the pfb-data.
@@ -176,9 +164,9 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * Returns the pfb data as stream.
 		 * @return Returns the pfb data as stream.
 		 */
-        public Bytes.Buffer GetInputStream()
+        public Bytes.ByteStream GetInputStream()
         {
-            return new Bytes.Buffer(pfbdata);
+            return new Bytes.ByteStream(pfbdata);
         }
 
 
@@ -186,18 +174,18 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * Returns the first segment
 		 * @return first segment bytes
 		 */
-        public Span<byte> GetSegment1()
+        public Memory<byte> GetSegment1()
         {
-            return new Span<byte>(pfbdata, 0, lengths[0]);
+            return pfbdata.Slice(0, lengths[0]);
         }
 
         /**
 		 * Returns the second segment
 		 * @return second segment bytes
 		 */
-        public Span<byte> GetSegment2()
+        public Memory<byte> GetSegment2()
         {
-            return new Span<byte>(pfbdata, lengths[0], lengths[1]);
+            return pfbdata.Slice(lengths[0], lengths[1]);
         }
     }
 }

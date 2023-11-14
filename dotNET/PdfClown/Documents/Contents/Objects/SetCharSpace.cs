@@ -36,30 +36,16 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetCharSpace : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "Tc";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetCharSpace(double value)
-            : base(
-            OperatorKeyword,
-            new List<PdfDirectObject>(
-              new PdfDirectObject[] { PdfReal.Get(value) }
-              )
-            )
+            : base(OperatorKeyword, new List<PdfDirectObject>(1) { PdfReal.Get(value) })
         { }
 
         public SetCharSpace(IList<PdfDirectObject> operands)
             : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         { state.CharSpace = Value; }
 
@@ -68,8 +54,5 @@ namespace PdfClown.Documents.Contents.Objects
             get => ((IPdfNumber)operands[0]).FloatValue;
             set => operands[0] = PdfReal.Get(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

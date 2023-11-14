@@ -37,13 +37,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint NumberOfChannels;
         public ICCScreeningChannel[] Channels;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            Flag = (ICCScreeningFlag)buffer.ReadUnsignedInt();
-            NumberOfChannels = buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            Flag = (ICCScreeningFlag)buffer.ReadUInt32();
+            NumberOfChannels = buffer.ReadUInt32();
             Channels = new ICCScreeningChannel[NumberOfChannels];
             for (int i = 0; i < NumberOfChannels; i++)
             {

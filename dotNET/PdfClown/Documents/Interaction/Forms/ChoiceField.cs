@@ -42,8 +42,6 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public abstract class ChoiceField : Field
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new choice field within the given document context.</summary>
         */
@@ -52,10 +50,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         protected ChoiceField(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public ChoiceItems Items
         {
             get => Wrap<ChoiceItems>(BaseDataObject.Get<PdfArray>(PdfName.Opt));
@@ -140,8 +135,5 @@ namespace PdfClown.Documents.Interaction.Forms
                     throw new ArgumentException("Value MUST be either a string or an IList<string>");
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

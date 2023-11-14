@@ -38,8 +38,6 @@ namespace PdfClown.Documents.Interaction.Actions
     [PDF(VersionEnum.PDF12)]
     public sealed class PlayMovie : Action
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
@@ -52,10 +50,7 @@ namespace PdfClown.Documents.Interaction.Actions
         internal PlayMovie(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the movie to be played.</summary>
         */
@@ -79,8 +74,5 @@ namespace PdfClown.Documents.Interaction.Actions
                 BaseDataObject[PdfName.Annotation] = value.BaseObject;
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using ICSharpCode.SharpZipLib.Lzw;
 using PdfClown.Objects;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Util.Collections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -44,7 +45,19 @@ namespace PdfClown.Bytes.Filters
         //BEWARE: codeTable must be local to each method, because there is only
         // one instance of each filter
 
-        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public  Memory<byte> DecodeStream(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        {
+            var outputStream = new MemoryStream();
+            using (var lzwInputStream = new LzwInputStream(data))
+            {
+                Transform(lzwInputStream, outputStream);
+                lzwInputStream.Close();
+            }
+
+            return DecodePredictor(outputStream, parameters, header);
+        }
+
+        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             PdfDictionary decodeParams = (PdfDictionary)parameters;
             int earlyChange = decodeParams?.GetInt(PdfName.EarlyChange, 1) ?? 1;
@@ -58,11 +71,11 @@ namespace PdfClown.Bytes.Filters
             return DecodePredictor(result, parameters, header);
         }
 
-        private byte[] DoLZWDecode(Bytes.Buffer input, int earlyChange)
+        private Bytes.ByteStream DoLZWDecode(ByteStream input, int earlyChange)
         {
             List<byte[]> codeTable = new List<byte[]>();
             int chunk = 9;
-            var decoded = new Bytes.Buffer();
+            var decoded = new ByteStream();
             long nextCommand;
             long prevCommand = -1;
             try
@@ -110,10 +123,11 @@ namespace PdfClown.Bytes.Filters
             {
                 Debug.WriteLine("warn: Premature EOF input LZW stream, EOD code missing " + ex);
             }
-            return decoded.GetBuffer();
+            decoded.Seek(0);
+            return decoded;
         }
 
-        private void CheckIndexBounds(List<byte[]> codeTable, long index, Bytes.Buffer input)
+        private void CheckIndexBounds(List<byte[]> codeTable, long index, ByteStream input)
         {
             if (index < 0)
             {
@@ -125,13 +139,13 @@ namespace PdfClown.Bytes.Filters
             }
         }
 
-        public override byte[] Encode(Bytes.Buffer rawData, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(ByteStream rawData, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             List<byte[]> codeTable = CreateCodeTable();
             int chunk = 9;
 
             byte[] inputPattern = null;
-            using (var output = new Bytes.Buffer())
+            using (var output = new ByteStream())
             {
                 output.WriteBits(CLEAR_TABLE, chunk);
                 int foundCode = -1;
@@ -192,7 +206,7 @@ namespace PdfClown.Bytes.Filters
                 output.WriteBits(0, 7);
 
                 // must do or file will be empty :-(
-                return output.GetBuffer();
+                return output.AsMemory();
             }
         }
 

@@ -37,22 +37,17 @@ namespace PdfClown.Tokens
     */
     public sealed class PdfEncoding : Encoding
     {
-        #region dynamic
-        #region constructors
         internal PdfEncoding()
         { }
-        #endregion
 
-        #region interface
-        public override string Decode(byte[] value)
-        { return Charset.ISO88591.GetString(value); }
+        public override string Decode(byte[] value) => Charset.ISO88591.GetString(value);
 
-        public override string Decode(byte[] value, int index, int length)
-        { return Charset.ISO88591.GetString(value, index, length); }
+        public override string Decode(ReadOnlySpan<byte> value) => Charset.ISO88591.GetString(value);
 
-        public override byte[] Encode(string value)
-        { return Charset.ISO88591.GetBytes(value); }
-        #endregion
-        #endregion
+        public override string Decode(byte[] value, int index, int length) => Charset.ISO88591.GetString(value, index, length);
+
+        public override byte[] Encode(string value) => Charset.ISO88591.GetBytes(value);
+
+        public override void Encode(ReadOnlySpan<char> value, Span<byte> bytes) => Charset.ISO88591.GetBytes(value, bytes);
     }
 }

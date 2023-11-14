@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public class ICCColorName
@@ -31,9 +33,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public ushort[] PSCCoord;
         public ushort[] DeviceCoord;
 
-        public void Load(Bytes.Buffer buffer)
+        public void Load(ByteStream buffer)
         {
-            Name = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes(32));
+            Name = buffer.ReadString(32, System.Text.Encoding.ASCII);
         }
     }
 }

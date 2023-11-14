@@ -37,27 +37,16 @@ namespace PdfClown.Documents.Contents.Objects
     public sealed class SetMiterLimit
       : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "M";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
-        public SetMiterLimit(
-          double value
-          ) : base(OperatorKeyword, PdfReal.Get(value))
+        public SetMiterLimit(double value)
+            : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
-        public SetMiterLimit(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetMiterLimit(IList<PdfDirectObject> operands)
+            : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         { state.MiterLimit = Value; }
 
@@ -66,8 +55,5 @@ namespace PdfClown.Documents.Contents.Objects
             get => ((IPdfNumber)operands[0]).FloatValue;
             set => operands[0] = PdfReal.Get(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

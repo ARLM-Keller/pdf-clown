@@ -41,8 +41,6 @@ namespace PdfClown.Bytes.Filters
     [PDF(VersionEnum.PDF10)]
     public sealed class ASCII85Filter : Filter
     {
-        #region static
-        #region fields
         /**
           Prefix mark that identifies an encoded ASCII85 string.
         */
@@ -65,10 +63,7 @@ namespace PdfClown.Bytes.Filters
         private const int AsciiOffset = 33;
 
         private static readonly uint[] Pow85 = { 85 * 85 * 85 * 85, 85 * 85 * 85, 85 * 85, 85, 1 };
-        #endregion
 
-        #region interface
-        #region private
         private static void AppendChar(StringBuilder buffer, char data, ref int linePos)
         {
             buffer.Append(data);
@@ -89,21 +84,23 @@ namespace PdfClown.Bytes.Filters
                 buffer.Append('\n');
             }
             else
-            { linePos += data.Length; }
+            {
+                linePos += data.Length;
+            }
             buffer.Append(data);
         }
 
-        private static void DecodeBlock(byte[] decodedBlock, ref uint tuple)
-        { DecodeBlock(decodedBlock, decodedBlock.Length, ref tuple); }
+        private static void DecodeBlock(Span<byte> decodedBlock, ref uint tuple) => DecodeBlock(decodedBlock, decodedBlock.Length, ref tuple);
 
-        private static void DecodeBlock(byte[] decodedBlock, int count, ref uint tuple)
+        private static void DecodeBlock(Span<byte> decodedBlock, int count, ref uint tuple)
         {
             for (int i = 0; i < count; i++)
-            { decodedBlock[i] = (byte)(tuple >> 24 - (i * 8)); }
+            {
+                decodedBlock[i] = (byte)(tuple >> 24 - (i * 8));
+            }
         }
 
-        private static void EncodeBlock(byte[] encodedBlock, StringBuilder buffer, ref uint tuple, ref int linePos)
-        { EncodeBlock(encodedBlock, encodedBlock.Length, buffer, ref tuple, ref linePos); }
+        private static void EncodeBlock(byte[] encodedBlock, StringBuilder buffer, ref uint tuple, ref int linePos) => EncodeBlock(encodedBlock, encodedBlock.Length, buffer, ref tuple, ref linePos);
 
         private static void EncodeBlock(byte[] encodedBlock, int count, StringBuilder buffer, ref uint tuple, ref int linePos)
         {
@@ -114,39 +111,29 @@ namespace PdfClown.Bytes.Filters
             }
 
             for (int i = 0; i < count; i++)
-            { AppendChar(buffer, (char)encodedBlock[i], ref linePos); }
+            {
+                AppendChar(buffer, (char)encodedBlock[i], ref linePos);
+            }
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         internal ASCII85Filter()
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            byte[] decodedBlock = new byte[4];
-            byte[] encodedBlock = new byte[5];
+            Span<byte> decodedBlock = stackalloc byte[4];
+            Span<byte> byteBlock = stackalloc byte[1];
+            Span<char> charBlock = stackalloc char[1];
+
+            var encodedBlockLength = 5;
+            var stream = new MemoryStream();
             uint tuple = 0;
-
-            string dataString = Encoding.ASCII.GetString(data.GetBuffer()).Trim();
-
-            // Stripping prefix and suffix...
-            if (dataString.StartsWith(PrefixMark))
-            { dataString = dataString.Substring(PrefixMark.Length); }
-            if (dataString.EndsWith(SuffixMark))
-            { dataString = dataString.Substring(0, dataString.Length - SuffixMark.Length); }
-
-            MemoryStream stream = new MemoryStream();
-            int count = 0;
+            int count = 0, read = 0;
             bool processChar = false;
-            foreach (char dataChar in dataString)
+            while (data.Read(byteBlock) > 0)
             {
+                Encoding.ASCII.GetChars(byteBlock, charBlock);
+                char dataChar = charBlock[0];
                 switch (dataChar)
                 {
                     case 'z':
@@ -157,7 +144,7 @@ namespace PdfClown.Bytes.Filters
                         decodedBlock[1] = 0;
                         decodedBlock[2] = 0;
                         decodedBlock[3] = 0;
-                        stream.Write(decodedBlock, 0, decodedBlock.Length);
+                        stream.Write(decodedBlock);
                         processChar = false;
                         break;
                     case '\n':
@@ -169,9 +156,16 @@ namespace PdfClown.Bytes.Filters
                         processChar = false;
                         break;
                     default:
+                        if (dataChar == '>' && data.Position + 2 > data.Length
+                            || dataChar == '<' && read == 0
+                            || dataChar == '~' && (read == 0 || data.Position + 3 > data.Length))
+                        {
+                            processChar = false;
+                            break;
+                        }
                         if (dataChar < '!' || dataChar > 'u')
                             throw new Exception("Bad character '" + dataChar + "' found. ASCII85 only allows characters '!' to 'u'.");
-
+                        read++;
                         processChar = true;
                         break;
                 }
@@ -180,10 +174,10 @@ namespace PdfClown.Bytes.Filters
                 {
                     tuple += ((uint)(dataChar - AsciiOffset) * Pow85[count]);
                     count++;
-                    if (count == encodedBlock.Length)
+                    if (count == encodedBlockLength)
                     {
                         DecodeBlock(decodedBlock, ref tuple);
-                        stream.Write(decodedBlock, 0, decodedBlock.Length);
+                        stream.Write(decodedBlock);
                         tuple = 0;
                         count = 0;
                     }
@@ -203,10 +197,10 @@ namespace PdfClown.Bytes.Filters
                 { stream.WriteByte(decodedBlock[i]); }
             }
 
-            return stream.ToArray();
+            return stream.AsMemory();
         }
 
-        public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             byte[] decodedBlock = new byte[4];
             byte[] encodedBlock = new byte[5];
@@ -219,7 +213,7 @@ namespace PdfClown.Bytes.Filters
 
             int count = 0;
             uint tuple = 0;
-            foreach (byte dataByte in data.GetBuffer())
+            foreach (byte dataByte in data.AsMemory().Span)
             {
                 if (count >= decodedBlock.Length - 1)
                 {
@@ -247,8 +241,5 @@ namespace PdfClown.Bytes.Filters
 
             return ASCIIEncoding.UTF8.GetBytes(buffer.ToString());
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

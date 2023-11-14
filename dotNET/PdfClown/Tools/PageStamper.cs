@@ -37,15 +37,11 @@ namespace PdfClown.Tools
     */
     public sealed class PageStamper
     {
-        #region dynamic
-        #region fields
         private Page page;
 
         private PrimitiveComposer background;
         private PrimitiveComposer foreground;
-        #endregion
 
-        #region constructors
         public PageStamper() : this(null)
         { }
 
@@ -53,10 +49,7 @@ namespace PdfClown.Tools
         {
             Page = page;
         }
-        #endregion
 
-        #region interface
-        #region public
         public void Flush()
         {
             // Ensuring that there's room for the new content chunks inside the page's content stream...
@@ -132,17 +125,7 @@ namespace PdfClown.Tools
                 }
             }
         }
-        #endregion
 
-        #region private
-        private PrimitiveComposer CreateFilter()
-        {
-            return new PrimitiveComposer(
-                new ContentScanner(
-                    ContentWrapper.Wrap(page.File.Register(new PdfStream()), page)));
-        }
-        #endregion
-        #endregion
-        #endregion
+        private PrimitiveComposer CreateFilter() => new PrimitiveComposer(new ContentScanner(ContentWrapper.Wrap(page.File.Register(new PdfStream()), page)));
     }
 }

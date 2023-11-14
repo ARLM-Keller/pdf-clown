@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Util;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -326,6 +327,7 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
         {
             return ParseFontMetric(reducedDataset);
         }
+
         /**
          * This will parse a font metrics item.
          *
@@ -339,8 +341,7 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             string startFontMetrics = ReadString();
             if (!START_FONT_METRICS.Equals(startFontMetrics, StringComparison.Ordinal))
             {
-                throw new IOException("Error: The AFM file should start with " + START_FONT_METRICS +
-                                       " and not '" + startFontMetrics + "'");
+                throw new IOException($"Error: The AFM file should start with {START_FONT_METRICS} and not '{startFontMetrics}'");
             }
             fontMetrics.AFMVersion = Readfloat();
             string nextCommand;
@@ -442,38 +443,7 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
                         fontMetrics.IsFixedPitch = ReadBoolean();
                         break;
                     case START_CHAR_METRICS:
-                        int countMetrics = ReadInt();
-                        List<CharMetric> charMetrics = new List<CharMetric>(countMetrics);
-                        for (int i = 0; i < countMetrics; i++)
-                        {
-                            CharMetric charMetric = ParseCharMetric();
-                            charMetrics.Add(charMetric);
-                        }
-                        string endCharMetrics = ReadString();
-                        if (!endCharMetrics.Equals(END_CHAR_METRICS, StringComparison.Ordinal))
-                        {
-                            throw new IOException("Error: Expected '" + END_CHAR_METRICS + "' actual '" +
-                                    endCharMetrics + "'");
-                        }
-                        charMetricsRead = true;
-                        fontMetrics.CharMetrics = charMetrics;
-                        break;
-                    case START_COMPOSITES:
-                        if (!reducedDataset)
-                        {
-                            int countComposites = ReadInt();
-                            for (int i = 0; i < countComposites; i++)
-                            {
-                                Composite part = ParseComposite();
-                                fontMetrics.AddComposite(part);
-                            }
-                            string endComposites = ReadString();
-                            if (!endComposites.Equals(END_COMPOSITES, StringComparison.Ordinal))
-                            {
-                                throw new IOException("Error: Expected '" + END_COMPOSITES + "' actual '" +
-                                        endComposites + "'");
-                            }
-                        }
+                        charMetricsRead = ParseCharMetrics(fontMetrics);
                         break;
                     case START_KERN_DATA:
                         if (!reducedDataset)
@@ -481,15 +451,48 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
                             ParseKernData(fontMetrics);
                         }
                         break;
+                    case START_COMPOSITES:
+                        if (!reducedDataset)
+                        {
+                            ParseComposites(fontMetrics);
+                        }
+                        break;
                     default:
                         if (reducedDataset && charMetricsRead)
                         {
                             break;
                         }
-                        throw new IOException("Unknown AFM key '" + nextCommand + "'");
+                        throw new IOException($"Unknown AFM key '{nextCommand}'");
                 }
             }
             return fontMetrics;
+        }
+
+        private void ParseComposites(FontMetrics fontMetrics)
+        {
+            int countComposites = ReadInt();
+            for (int i = 0; i < countComposites; i++)
+            {
+                Composite part = ParseComposite();
+                fontMetrics.AddComposite(part);
+            }
+            ReadCommand(END_COMPOSITES);
+        }
+
+        private bool ParseCharMetrics(FontMetrics fontMetrics)
+        {
+            int countMetrics = ReadInt();
+            bool charMetricsRead;
+            List<CharMetric> charMetrics = new List<CharMetric>(countMetrics);
+            for (int i = 0; i < countMetrics; i++)
+            {
+                CharMetric charMetric = ParseCharMetric();
+                charMetrics.Add(charMetric);
+            }
+            ReadCommand(END_CHAR_METRICS);
+            charMetricsRead = true;
+            fontMetrics.CharMetrics = charMetrics;
+            return charMetricsRead;
         }
 
         /**
@@ -510,67 +513,60 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
                         int countTrackKern = ReadInt();
                         for (int i = 0; i < countTrackKern; i++)
                         {
-                            TrackKern kern = new TrackKern();
-                            kern.Degree = ReadInt();
-                            kern.MinPointSize = Readfloat();
-                            kern.MinKern = Readfloat();
-                            kern.MaxPointSize = Readfloat();
-                            kern.MaxKern = Readfloat();
-                            fontMetrics.AddTrackKern(kern);
+                            fontMetrics.AddTrackKern(new TrackKern
+                            {
+                                Degree = ReadInt(),
+                                MinPointSize = Readfloat(),
+                                MinKern = Readfloat(),
+                                MaxPointSize = Readfloat(),
+                                MaxKern = Readfloat()
+                            });
                         }
-                        string endTrackKern = ReadString();
-                        if (!endTrackKern.Equals(END_TRACK_KERN, StringComparison.Ordinal))
-                        {
-                            throw new IOException("Error: Expected '" + END_TRACK_KERN + "' actual '" +
-                                    endTrackKern + "'");
-                        }
+                        ReadCommand(END_TRACK_KERN);
                         break;
                     case START_KERN_PAIRS:
-                        int countKernPairs = ReadInt();
-                        for (int i = 0; i < countKernPairs; i++)
-                        {
-                            KernPair pair = ParseKernPair();
-                            fontMetrics.AddKernPair(pair);
-                        }
-                        string endKernPairs = ReadString();
-                        if (!endKernPairs.Equals(END_KERN_PAIRS, StringComparison.Ordinal))
-                        {
-                            throw new IOException("Error: Expected '" + END_KERN_PAIRS + "' actual '" +
-                                    endKernPairs + "'");
-                        }
+                        ParseKernPairs(fontMetrics);
                         break;
                     case START_KERN_PAIRS0:
-                        int countKernPairs0 = ReadInt();
-                        for (int i = 0; i < countKernPairs0; i++)
-                        {
-                            KernPair pair = ParseKernPair();
-                            fontMetrics.AddKernPair0(pair);
-                        }
-                        string endKernPairs0 = ReadString();
-                        if (!endKernPairs0.Equals(END_KERN_PAIRS, StringComparison.Ordinal))
-                        {
-                            throw new IOException("Error: Expected '" + END_KERN_PAIRS + "' actual '" +
-                                    endKernPairs0 + "'");
-                        }
+                        ParseKernPairs0(fontMetrics);
                         break;
                     case START_KERN_PAIRS1:
-                        int countKernPairs1 = ReadInt();
-                        for (int i = 0; i < countKernPairs1; i++)
-                        {
-                            KernPair pair = ParseKernPair();
-                            fontMetrics.AddKernPair1(pair);
-                        }
-                        string endKernPairs1 = ReadString();
-                        if (!endKernPairs1.Equals(END_KERN_PAIRS, StringComparison.Ordinal))
-                        {
-                            throw new IOException("Error: Expected '" + END_KERN_PAIRS + "' actual '" +
-                                    endKernPairs1 + "'");
-                        }
+                        ParseKernPairs1(fontMetrics);
                         break;
                     default:
-                        throw new IOException("Unknown kerning data type '" + nextCommand + "'");
+                        throw new IOException($"Unknown kerning data type '{nextCommand}'");
                 }
             }
+        }
+
+        private void ParseKernPairs1(FontMetrics fontMetrics)
+        {
+            int countKernPairs1 = ReadInt();
+            for (int i = 0; i < countKernPairs1; i++)
+            {
+                fontMetrics.AddKernPair1(ParseKernPair());
+            }
+            ReadCommand(END_KERN_PAIRS);
+        }
+
+        private void ParseKernPairs0(FontMetrics fontMetrics)
+        {
+            int countKernPairs0 = ReadInt();
+            for (int i = 0; i < countKernPairs0; i++)
+            {
+                fontMetrics.AddKernPair0(ParseKernPair());
+            }
+            ReadCommand(END_KERN_PAIRS);
+        }
+
+        private void ParseKernPairs(FontMetrics fontMetrics)
+        {
+            int countKernPairs = ReadInt();
+            for (int i = 0; i < countKernPairs; i++)
+            {
+                fontMetrics.AddKernPair(ParseKernPair());
+            }
+            ReadCommand(END_KERN_PAIRS);
         }
 
         /**
@@ -582,38 +578,44 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
          */
         private KernPair ParseKernPair()
         {
-            KernPair kernPair = new KernPair();
             string cmd = ReadString();
             switch (cmd)
             {
                 case KERN_PAIR_KP:
-                    kernPair.FirstKernCharacter = ReadString();
-                    kernPair.SecondKernCharacter = ReadString();
-                    kernPair.X = Readfloat();
-                    kernPair.Y = Readfloat();
-                    break;
+                    return new KernPair
+                    {
+                        FirstKernCharacter = ReadString(),
+                        SecondKernCharacter = ReadString(),
+                        X = Readfloat(),
+                        Y = Readfloat(),
+                    };
                 case KERN_PAIR_KPH:
-                    kernPair.FirstKernCharacter = HexTostring(ReadString());
-                    kernPair.SecondKernCharacter = HexTostring(ReadString());
-                    kernPair.X = Readfloat();
-                    kernPair.Y = Readfloat();
-                    break;
+                    return new KernPair
+                    {
+                        FirstKernCharacter = HexTostring(ReadString()),
+                        SecondKernCharacter = HexTostring(ReadString()),
+                        X = Readfloat(),
+                        Y = Readfloat()
+                    };
                 case KERN_PAIR_KPX:
-                    kernPair.FirstKernCharacter = ReadString();
-                    kernPair.SecondKernCharacter = ReadString();
-                    kernPair.X = Readfloat();
-                    kernPair.Y = 0;
-                    break;
+                    return new KernPair
+                    {
+                        FirstKernCharacter = ReadString(),
+                        SecondKernCharacter = ReadString(),
+                        X = Readfloat(),
+                        Y = 0
+                    };
                 case KERN_PAIR_KPY:
-                    kernPair.FirstKernCharacter = ReadString();
-                    kernPair.SecondKernCharacter = ReadString();
-                    kernPair.X = 0;
-                    kernPair.Y = Readfloat();
-                    break;
+                    return new KernPair
+                    {
+                        FirstKernCharacter = ReadString(),
+                        SecondKernCharacter = ReadString(),
+                        X = 0,
+                        Y = Readfloat()
+                    };
                 default:
-                    throw new IOException("Error expected kern pair command actual='" + cmd + "'");
+                    throw new IOException($"Error expected kern pair command actual='{cmd}'");
             }
-            return kernPair;
         }
 
         /**
@@ -629,27 +631,28 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
         {
             if (hexstring.Length < 2)
             {
-                throw new IOException("Error: Expected hex string of length >= 2 not='" + hexstring);
+                throw new IOException($"Error: Expected hex string of length >= 2 not='{hexstring}");
             }
             if (hexstring[0] != '<' ||
                 hexstring[hexstring.Length - 1] != '>')
             {
-                throw new IOException("string should be enclosed by angle brackets '" + hexstring + "'");
+                throw new IOException($"string should be enclosed by angle brackets '{hexstring}'");
             }
-            hexstring = hexstring.Substring(1, hexstring.Length - 2);
-            byte[] data = new byte[hexstring.Length / 2];
-            for (int i = 0; i < hexstring.Length; i += 2)
-            {
-                string hex = new string(hexstring[i], hexstring[i + 1]);
-                try
-                {
-                    data[i / 2] = (byte)Convert.ToInt32(hex, BITS_IN_HEX);
-                }
-                catch (Exception e)
-                {
-                    throw new IOException("Error parsing AFM file:" + e);
-                }
-            }
+            var slice = hexstring.AsSpan(1, hexstring.Length - 2);
+            byte[] data = ConvertUtils.HexToByteArray(slice);
+            //new byte[hexstring.Length / 2]
+            //for (int i = 0; i < hexstring.Length; i += 2)
+            //{
+            //    string hex = new string(hexstring[i], hexstring[i + 1]);
+            //    try
+            //    {
+            //        data[i / 2] = (byte)Convert.ToInt32(hex, BITS_IN_HEX);
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        throw new IOException($"Error parsing AFM file:{e}");
+            //    }
+            //}
             return PdfClown.Tokens.Encoding.Pdf.Decode(data);
         }
 
@@ -662,7 +665,6 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
          */
         private Composite ParseComposite()
         {
-            Composite composite = new Composite();
             string partData = ReadLine();
             var tokenizer = partData.Split(new[] { " ;" }, StringSplitOptions.None);
 
@@ -670,43 +672,31 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             string cc = tokenizer[t++];
             if (!cc.Equals(CC, StringComparison.Ordinal))
             {
-                throw new IOException("Expected '" + CC + "' actual='" + cc + "'");
+                throw new IOException($"Expected '{CC}' actual='{cc}'");
             }
             string name = tokenizer[t++];
-            composite.Name = name;
+            var composite = new Composite
+            {
+                Name = name
+            };
 
-            int partCount;
-            try
-            {
-                partCount = int.Parse(tokenizer[t++]);
-            }
-            catch (Exception e)
-            {
-                throw new IOException("Error parsing AFM document:" + e);
-            }
+            int partCount = ParseInt(tokenizer[t++]);
             for (int i = 0; i < partCount; i++)
             {
-                CompositePart part = new CompositePart();
                 string pcc = tokenizer[t++];
                 if (!pcc.Equals(PCC, StringComparison.Ordinal))
                 {
                     throw new IOException("Expected '" + PCC + "' actual='" + pcc + "'");
                 }
                 string partName = tokenizer[t++];
-                try
+                int x = ParseInt(tokenizer[t++]);
+                int y = ParseInt(tokenizer[t++]);
+                composite.AddPart(new CompositePart
                 {
-                    int x = int.Parse(tokenizer[t++]);
-                    int y = int.Parse(tokenizer[t++]);
-
-                    part.Name = partName;
-                    part.XDisplacement = x;
-                    part.YDisplacement = y;
-                    composite.AddPart(part);
-                }
-                catch (Exception e)
-                {
-                    throw new IOException("Error parsing AFM document:" + e);
-                }
+                    Name = partName,
+                    XDisplacement = x,
+                    YDisplacement = y
+                });
             }
             return composite;
         }
@@ -723,108 +713,107 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             CharMetric charMetric = new CharMetric();
             string metrics = ReadLine();
             var metricsTokenizer = metrics.Split(new char[] { ' ' });
-            try
+            for (int i = 0; i < metricsTokenizer.Length;)
             {
-                for (int i = 0; i < metricsTokenizer.Length;)
+                string nextCommand = metricsTokenizer[i++];
+                switch (nextCommand)
                 {
-                    string nextCommand = metricsTokenizer[i++];
-                    switch (nextCommand)
-                    {
-                        case CHARMETRICS_C:
-                            string charCodeC = metricsTokenizer[i++];
-                            charMetric.CharacterCode = int.Parse(charCodeC);
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_CH:
-                            //Is the hex string <FF> or FF, the spec is a little
-                            //unclear, wait and see if it breaks anything.
-                            string charCodeCH = metricsTokenizer[i++];
-                            charMetric.CharacterCode = Convert.ToInt32(charCodeCH, BITS_IN_HEX);
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_WX:
-                            charMetric.Wx = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_W0X:
-                            charMetric.W0x = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_W1X:
-                            charMetric.W1x = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_WY:
-                            charMetric.Wy = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_W0Y:
-                            charMetric.W0y = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_W1Y:
-                            charMetric.W1y = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_W:
-                            float[] w = new float[2];
-                            w[0] = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            w[1] = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            charMetric.W = w;
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_W0:
-                            float[] w0 = new float[2];
-                            w0[0] = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            w0[1] = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            charMetric.W0 = w0;
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_W1:
-                            float[] w1 = new float[2];
-                            w1[0] = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            w1[1] = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            charMetric.W1 = w1;
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_VV:
-                            float[] vv = new float[2];
-                            vv[0] = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            vv[1] = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            charMetric.Vv = vv;
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_N:
-                            charMetric.Name = metricsTokenizer[i++];
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_B:
-                            var box = new SKRect();
-                            box.Left = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            box.Bottom = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            box.Right = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            box.Top = float.Parse(metricsTokenizer[i++], CultureInfo.InvariantCulture);
-                            charMetric.BoundingBox = box;
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        case CHARMETRICS_L:
-                            Ligature lig = new Ligature();
-                            lig.Successor = metricsTokenizer[i++];
-                            lig.LigatureValue = metricsTokenizer[i++];
-                            charMetric.AddLigature(lig);
-                            VerifySemicolon(metricsTokenizer, ref i);
-                            break;
-                        default:
-                            throw new IOException("Unknown CharMetrics command '" + nextCommand + "'");
-                    }
+                    case CHARMETRICS_C:
+                        string charCodeC = metricsTokenizer[i++];
+                        charMetric.CharacterCode = ParseInt(charCodeC);
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_CH:
+                        //Is the hex string <FF> or FF, the spec is a little
+                        //unclear, wait and see if it breaks anything.
+                        string charCodeCH = metricsTokenizer[i++];
+                        charMetric.CharacterCode = ParseInt(charCodeCH, BITS_IN_HEX);
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_WX:
+                        charMetric.Wx = ParseFloat(metricsTokenizer[i++]);
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_W0X:
+                        charMetric.W0x = ParseFloat(metricsTokenizer[i++]);
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_W1X:
+                        charMetric.W1x = ParseFloat(metricsTokenizer[i++]);
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_WY:
+                        charMetric.Wy = ParseFloat(metricsTokenizer[i++]);
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_W0Y:
+                        charMetric.W0y = ParseFloat(metricsTokenizer[i++]);
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_W1Y:
+                        charMetric.W1y = ParseFloat(metricsTokenizer[i++]);
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_W:
+                        float[] w = new float[2];
+                        w[0] = ParseFloat(metricsTokenizer[i++]);
+                        w[1] = ParseFloat(metricsTokenizer[i++]);
+                        charMetric.W = w;
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_W0:
+                        float[] w0 = new float[2];
+                        w0[0] = ParseFloat(metricsTokenizer[i++]);
+                        w0[1] = ParseFloat(metricsTokenizer[i++]);
+                        charMetric.W0 = w0;
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_W1:
+                        float[] w1 = new float[2];
+                        w1[0] = ParseFloat(metricsTokenizer[i++]);
+                        w1[1] = ParseFloat(metricsTokenizer[i++]);
+                        charMetric.W1 = w1;
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_VV:
+                        float[] vv = new float[2];
+                        vv[0] = ParseFloat(metricsTokenizer[i++]);
+                        vv[1] = ParseFloat(metricsTokenizer[i++]);
+                        charMetric.Vv = vv;
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_N:
+                        charMetric.Name = metricsTokenizer[i++];
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_B:
+                        var box = new SKRect
+                        {
+                            Left = ParseFloat(metricsTokenizer[i++]),
+                            Bottom = ParseFloat(metricsTokenizer[i++]),
+                            Right = ParseFloat(metricsTokenizer[i++]),
+                            Top = ParseFloat(metricsTokenizer[i++])
+                        };
+                        charMetric.BoundingBox = box;
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    case CHARMETRICS_L:
+                        charMetric.AddLigature(new Ligature
+                        {
+                            Successor = metricsTokenizer[i++],
+                            LigatureValue = metricsTokenizer[i++]
+                        });
+                        VerifySemicolon(metricsTokenizer, ref i);
+                        break;
+                    default:
+                        throw new IOException("Unknown CharMetrics command '" + nextCommand + "'");
                 }
             }
-            catch (Exception e)
-            {
-                throw new IOException("Error: Corrupt AFM document:" + e);
-            }
+
             return charMetric;
         }
+
+
 
         /**
          * This is used to verify that a semicolon is the next token input the stream.
@@ -856,8 +845,7 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
          */
         private bool ReadBoolean()
         {
-            string theBoolean = ReadString();
-            return bool.Parse(theBoolean);
+            return bool.Parse(ReadString());
         }
 
         /**
@@ -867,14 +855,23 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
          */
         private int ReadInt()
         {
-            string theInt = ReadString();
+            return ParseInt(ReadString());
+        }
+
+        private static int ParseInt(string charCodeC)
+        {
+            return ParseInt(charCodeC, 10);
+        }
+
+        private static int ParseInt(string intValue, int radix)
+        {
             try
             {
-                return int.Parse(theInt);
+                return Convert.ToInt32(intValue, radix);
             }
             catch (Exception e)
             {
-                throw new IOException("Error parsing AFM document:" + e);
+                throw new IOException("Error parsing AFM document:" + e, e);
             }
         }
 
@@ -885,8 +882,19 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
          */
         private float Readfloat()
         {
-            string thefloat = ReadString();
-            return float.Parse(thefloat, CultureInfo.InvariantCulture);
+            return ParseFloat(ReadString());
+        }
+
+        private float ParseFloat(String floatValue)
+        {
+            try
+            {
+                return float.Parse(floatValue, CultureInfo.InvariantCulture);
+            }
+            catch (Exception e)
+            {
+                throw new IOException("Error parsing AFM document:" + e, e);
+            }
         }
 
         /**
@@ -944,6 +952,17 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             }
             return buf.ToString();
         }
+
+        private void ReadCommand(string expectedCommand)
+        {
+            string endTrackKern = ReadString();
+            if (!endTrackKern.Equals(expectedCommand, StringComparison.Ordinal))
+            {
+                throw new IOException($"Error: Expected '{expectedCommand}' actual '{endTrackKern}'");
+            }
+        }
+
+
 
         /**
          * This will determine if the byte is a whitespace character or not.

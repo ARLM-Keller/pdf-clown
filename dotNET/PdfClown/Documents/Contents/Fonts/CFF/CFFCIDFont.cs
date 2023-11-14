@@ -41,6 +41,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         private FDSelect fdSelect;
 
         private readonly Dictionary<int, CIDKeyedType2CharString> charStringCache = new Dictionary<int, CIDKeyedType2CharString>();
+        private Type2CharStringParser charStringParser = null;
 
         /**
 		 * Returns the registry value.
@@ -107,6 +108,14 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             set => fdSelect = value;
         }
 
+        protected Dictionary<string, object> GetPrivateDictionary(int gid)
+        {
+            int fdArrayIndex = fdSelect.GetFDIndex(gid);
+            return fdArrayIndex == -1
+                || fdArrayIndex >= privateDictionaries.Count
+                ? null
+                : privateDictionaries[fdArrayIndex];
+        }
 
         /**
 		 * Returns the defaultWidthX for the given GID.
@@ -115,13 +124,8 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 */
         protected virtual int GetDefaultWidthX(int gid)
         {
-            int fdArrayIndex = this.fdSelect.GetFDIndex(gid);
-            if (fdArrayIndex == -1)
-            {
-                return 1000;
-            }
-            Dictionary<string, object> privDict = this.privateDictionaries[fdArrayIndex];
-            return privDict.TryGetValue("defaultWidthX", out var defaultWidthX) ? (int)(float)defaultWidthX : 1000;
+            var privDict = GetPrivateDictionary(gid);
+            return privDict == null ? 1000 : privDict.TryGetValue("defaultWidthX", out var defaultWidthX) ? (int)(float)defaultWidthX : 1000;
         }
 
         /**
@@ -131,13 +135,8 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 */
         protected virtual int GetNominalWidthX(int gid)
         {
-            int fdArrayIndex = this.fdSelect.GetFDIndex(gid);
-            if (fdArrayIndex == -1)
-            {
-                return 0;
-            }
-            Dictionary<string, object> privDict = this.privateDictionaries[fdArrayIndex];
-            return privDict.TryGetValue("nominalWidthX", out var nominalWidthX) ? (int)(float)nominalWidthX : 0;
+            var privDict = GetPrivateDictionary(gid);
+            return privDict == null ? 0 : privDict.TryGetValue("nominalWidthX", out var nominalWidthX) ? (int)(float)nominalWidthX : 0;
         }
 
         /**
@@ -145,15 +144,10 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 *
 		 * @param gid GID
 		 */
-        private byte[][] GetLocalSubrIndex(int gid)
+        private Memory<byte>[] GetLocalSubrIndex(int gid)
         {
-            int fdArrayIndex = this.fdSelect.GetFDIndex(gid);
-            if (fdArrayIndex == -1)
-            {
-                return null;
-            }
-            Dictionary<string, object> privDict = this.privateDictionaries[fdArrayIndex];
-            return privDict.TryGetValue("Subrs", out var subrs) ? (byte[][])subrs : null;
+            var privDict = GetPrivateDictionary(gid);
+            return privDict == null ? null : privDict.TryGetValue("Subrs", out var subrs) ? (Memory<byte>[])subrs : null;
         }
 
         public Type1CharString GetType1CharString(string name)
@@ -170,24 +164,21 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         {
             if (!charStringCache.TryGetValue(cid, out CIDKeyedType2CharString type2))
             {
-                int gid = charset.GetGIDForCID(cid);
-
-                byte[] bytes = charStrings[gid];
-                if (bytes == null)
-                {
-                    bytes = charStrings[0]; // .notdef
-                }
-                List<object> type2seq = Type2CharStringParser.Parse(fontName, cid, bytes, globalSubrIndex, GetLocalSubrIndex(gid));
-                type2 = new CIDKeyedType2CharString(this, fontName, cid, gid, type2seq, GetDefaultWidthX(gid), GetNominalWidthX(gid));
+                int gid = Charset.GetGIDForCID(cid);
+                //var glyphName = Charset.GetNameForGID(gid);
+                var bytes = gid < charStrings.Length
+                    ? charStrings[gid]
+                    : charStrings[0];// .notdef
+                var type2seq = Parser.Parse(bytes, globalSubrIndex, GetLocalSubrIndex(gid), cid.ToString());
+                type2 = new CIDKeyedType2CharString(this, Name, cid, gid, type2seq, GetDefaultWidthX(gid), GetNominalWidthX(gid));
                 charStringCache[cid] = type2;
             }
             return type2;
         }
 
-        public override List<float> FontMatrix
+        private Type2CharStringParser Parser
         {
-            // our parser guarantees that FontMatrix will be present and correct in the Top DICT
-            get => topDict.TryGetValue("FontMatrix", out var array) ? (List<float>)array : null;
+            get => charStringParser ??= new Type2CharStringParser(Name);
         }
 
         public override SKPath GetPath(string selector)

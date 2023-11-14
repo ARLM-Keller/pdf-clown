@@ -37,12 +37,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public byte[] ByteValue;
         public string StringValue;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            DataFlag = buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            DataFlag = buffer.ReadUInt32();
             ByteValue = new byte[Table.ElementSize - 12];
             if (DataFlag == 0x00000000)
             {

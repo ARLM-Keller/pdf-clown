@@ -36,13 +36,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class IndexedColor : Color
     {
-        #region static
-        #region fields
         public static readonly IndexedColor Default = new IndexedColor(0);
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the color corresponding to the specified components.</summary>
           <param name="components">Color components to convert.</param>
@@ -53,23 +48,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
               ? components.Wrapper is IndexedColor color ? color : new IndexedColor(components)
               : Default;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public IndexedColor(int index)
-            : this(new PdfArray(new PdfDirectObject[] { PdfInteger.Get(index) }))
+            : this(new PdfArray(1) { PdfInteger.Get(index) })
         { }
 
         internal IndexedColor(IList<PdfDirectObject> components)//TODO:consider color space reference!
             : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
-        #endregion
 
-        #region interface
-        #region public
 
         public override IList<PdfDirectObject> Components => (PdfArray)BaseDataObject;
 
@@ -78,8 +65,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public int Index
         {
-            get => ((PdfInteger)((PdfArray)BaseDataObject)[0]).IntValue;
-            set => ((PdfArray)BaseDataObject)[0] = PdfInteger.Get(value);
+            get => ((PdfArray)BaseDataObject).GetInt(0);
+            set => ((PdfArray)BaseDataObject).SetInt(0, value);
         }
 
         public override object Clone(Document context)
@@ -87,9 +74,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             throw new NotImplementedException();
         }
 
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

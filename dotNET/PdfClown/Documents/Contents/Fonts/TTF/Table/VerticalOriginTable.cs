@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
 using System.Collections.Generic;
 using System.IO;
 
@@ -46,10 +47,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private int defaultVertOriginY;
         private Dictionary<int, int> origins;
 
-        public VerticalOriginTable(TrueTypeFont font)
-                : base(font)
-        {
-        }
+        public VerticalOriginTable()
+        { }
 
         /**
          * This will read the required data from the stream.
@@ -58,16 +57,16 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             version = data.Read32Fixed();
-            defaultVertOriginY = data.ReadSignedShort();
-            int numVertOriginYMetrics = data.ReadUnsignedShort();
+            defaultVertOriginY = data.ReadInt16();
+            int numVertOriginYMetrics = data.ReadUInt16();
             origins = new Dictionary<int, int>(numVertOriginYMetrics);
             for (int i = 0; i < numVertOriginYMetrics; ++i)
             {
-                int g = data.ReadUnsignedShort();
-                int y = data.ReadSignedShort();
+                int g = data.ReadUInt16();
+                int y = data.ReadInt16();
                 origins[g] = y;
             }
             initialized = true;

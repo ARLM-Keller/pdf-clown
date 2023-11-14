@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF.Model
 {
 
@@ -29,7 +32,23 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Model
      */
     public enum Language
     {
-        bng2,
-        beng
+        BENGALI,
+        LATIN,
+        UNSPECIFIED
+    }
+
+    public static class LanguageExtensions
+    {
+        private static readonly Dictionary<Language, string[]> langNames = new()
+        {
+            { Language.BENGALI, new string[]{ "bng2", "beng" } },
+            { Language.LATIN, new string[]{ "latn" } },
+            { Language.UNSPECIFIED, new string[]{ } }
+        };
+
+        public static string[] GetScriptNames(this Language language)
+        {
+            return langNames[language];
+        }
     }
 }

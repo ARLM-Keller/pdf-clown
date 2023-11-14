@@ -43,10 +43,6 @@ namespace PdfClown.Documents.Contents.XObjects
     [PDF(VersionEnum.PDF10)]
     public sealed class FormXObject : XObject, IContentContext
     {
-        private SKPicture picture;
-        #region static
-        #region interface
-        #region public
         public static new FormXObject Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
@@ -76,19 +72,17 @@ namespace PdfClown.Documents.Contents.XObjects
 
             return new FormXObject(baseObject);
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
+        private SKPicture picture;
+        private SKMatrix? matrix;
+
         /**
-          <summary>Creates a new form within the specified document context.</summary>
-          <param name="context">Document where to place this form.</param>
-          <param name="size">Form size.</param>
-        */
+         <summary>Creates a new form within the specified document context.</summary>
+         <param name="context">Document where to place this form.</param>
+         <param name="size">Form size.</param>
+       */
         public FormXObject(Document context, SKSize size)
-            : this(context, SKRect.Create(new SKPoint(0, 0), size))
+            : this(context, SKRect.Create(size))
         { }
 
         /**
@@ -106,43 +100,36 @@ namespace PdfClown.Documents.Contents.XObjects
         public FormXObject(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override SKMatrix Matrix
         {
-            get
+            //NOTE: Form-space-to-user-space matrix is identity [1 0 0 1 0 0] by default,
+            //but may be adjusted by setting the matrix entry in the form dictionary [PDF:1.6:4.9].
+            get => matrix ??= BaseDataObject.Header.Resolve(PdfName.Matrix) is PdfArray array
+                ? new SKMatrix
+                {
+                    ScaleX = array.GetFloat(0),
+                    SkewY = array.GetFloat(1),
+                    SkewX = array.GetFloat(2),
+                    ScaleY = array.GetFloat(3),
+                    TransX = array.GetFloat(4),
+                    TransY = array.GetFloat(5),
+                    Persp2 = 1
+                }
+                : SKMatrix.Identity;
+            set
             {
-                /*
-                  NOTE: Form-space-to-user-space matrix is identity [1 0 0 1 0 0] by default,
-                  but may be adjusted by setting the matrix entry in the form dictionary [PDF:1.6:4.9].
-                */
-                PdfArray matrix = (PdfArray)BaseDataObject.Header.Resolve(PdfName.Matrix);
-                if (matrix == null)
-                    return SKMatrix.Identity;
-                else
-                    return new SKMatrix
-                    {
-                        ScaleX = ((IPdfNumber)matrix[0]).FloatValue,
-                        SkewY = ((IPdfNumber)matrix[1]).FloatValue,
-                        SkewX = ((IPdfNumber)matrix[2]).FloatValue,
-                        ScaleY = ((IPdfNumber)matrix[3]).FloatValue,
-                        TransX = ((IPdfNumber)matrix[4]).FloatValue,
-                        TransY = ((IPdfNumber)matrix[5]).FloatValue,
-                        Persp2 = 1
-                    };
-            }
-            set => BaseDataObject.Header[PdfName.Matrix] =
-                 new PdfArray(
+                matrix = value;
+                BaseDataObject.Header[PdfName.Matrix] = new PdfArray(6)
+                {
                     PdfReal.Get(value.ScaleX),
                     PdfReal.Get(value.SkewY),
                     PdfReal.Get(value.SkewX),
                     PdfReal.Get(value.ScaleY),
                     PdfReal.Get(value.TransX),
                     PdfReal.Get(value.TransY)
-                    )
-                ;
+                };
+            }
         }
 
         public TransparencyXObject Group => Wrap<TransparencyXObject>(BaseDataObject.Header[PdfName.Group]);
@@ -153,21 +140,18 @@ namespace PdfClown.Documents.Contents.XObjects
             {
                 PdfArray box = (PdfArray)BaseDataObject.Header.Resolve(PdfName.BBox);
                 return new SKSize(
-                  ((IPdfNumber)box[2]).FloatValue - ((IPdfNumber)box[0]).FloatValue,
-                  ((IPdfNumber)box[3]).FloatValue - ((IPdfNumber)box[1]).FloatValue
+                  box.GetFloat(2) - box.GetFloat(0),
+                  box.GetFloat(3) - box.GetFloat(1)
                   );
             }
             set
             {
                 PdfArray boxObject = (PdfArray)BaseDataObject.Header.Resolve(PdfName.BBox);
-                boxObject[2] = PdfReal.Get(value.Width + ((IPdfNumber)boxObject[0]).FloatValue);
-                boxObject[3] = PdfReal.Get(value.Height + ((IPdfNumber)boxObject[1]).FloatValue);
+                boxObject[2] = PdfReal.Get(value.Width + boxObject.GetFloat(0));
+                boxObject[3] = PdfReal.Get(value.Height + boxObject.GetFloat(1));
             }
         }
-        #endregion
 
-        #region internal
-        #region IContentContext
         public SKRect Box
         {
             get => Wrap<Rectangle>(BaseDataObject.Header[PdfName.BBox]).ToRect();
@@ -182,7 +166,7 @@ namespace PdfClown.Documents.Contents.XObjects
             InvalidatePicture();
         }
 
-        public SKPicture Render(SoftMask mask = null)
+        public SKPicture Render(ContentScanner parentLevel, SoftMask mask = null)
         {
             if (picture != null)
                 return picture;
@@ -215,15 +199,18 @@ namespace PdfClown.Documents.Contents.XObjects
                     }
                 }
 
-                Render(canvas, box.Size, false);
+                Render(canvas, box.Size, false, parentLevel);
                 return picture = recorder.EndRecording();
             }
         }
 
         public void Render(SKCanvas context, SKSize size, bool clearContext = true)
+            => Render(context, size, clearContext, null);
+
+        public void Render(SKCanvas context, SKSize size, bool clearContext = true, ContentScanner baseScanner = null)
         {
             ClearContents();
-            var scanner = new ContentScanner(this, context, size)
+            var scanner = new ContentScanner(this, baseScanner, context, size)
             {
                 ClearContext = clearContext
             };
@@ -246,38 +233,29 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public List<ITextString> Strings { get; } = new List<ITextString>();
 
-        #region IAppDataHolder
-        public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.Header.Get<PdfDictionary>(PdfName.PieceInfo), this);
-
-        public DateTime? ModificationDate => (DateTime?)PdfSimpleObject<object>.GetValue(BaseDataObject.Header[PdfName.LastModified]);
-
-        public AppData GetAppData(PdfName appName)
+        public AppDataCollection AppData
         {
-            return AppData.Ensure(appName);
+            get => AppDataCollection.Wrap(BaseDataObject.Header.Get<PdfDictionary>(PdfName.PieceInfo), this);
         }
 
-        public void Touch(PdfName appName)
-        {
-            Touch(appName, DateTime.Now);
-        }
+        public DateTime? ModificationDate => BaseDataObject.Header.GetNDate(PdfName.LastModified);
+
+        public AppData GetAppData(PdfName appName) => AppData.Ensure(appName);
+
+        public void Touch(PdfName appName) => Touch(appName, DateTime.Now);
 
         public void Touch(PdfName appName, DateTime modificationDate)
         {
             GetAppData(appName).ModificationDate = modificationDate;
             BaseDataObject.Header[PdfName.LastModified] = new PdfDate(modificationDate);
         }
-        #endregion
 
-        #region IContentEntity
         public ContentObject ToInlineObject(PrimitiveComposer composer)
         {
             throw new NotImplementedException();
         }
 
-        public XObject ToXObject(Document context)
-        {
-            return (XObject)Clone(context);
-        }
+        public XObject ToXObject(Document context) => (XObject)Clone(context);
 
         internal void InvalidatePicture()
         {
@@ -285,10 +263,5 @@ namespace PdfClown.Documents.Contents.XObjects
             picture = null;
         }
 
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

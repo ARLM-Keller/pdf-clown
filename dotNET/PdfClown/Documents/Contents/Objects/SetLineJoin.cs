@@ -36,27 +36,16 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetLineJoin : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "j";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
-        public SetLineJoin(
-          LineJoinEnum value
-          ) : base(OperatorKeyword, PdfInteger.Get((int)value))
+        public SetLineJoin(LineJoinEnum value)
+            : base(OperatorKeyword, PdfInteger.Get((int)value))
         { }
 
-        public SetLineJoin(
-          IList<PdfDirectObject> operands
-          ) : base(OperatorKeyword, operands)
+        public SetLineJoin(IList<PdfDirectObject> operands)
+            : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         { state.LineJoin = Value; }
 
@@ -65,8 +54,5 @@ namespace PdfClown.Documents.Contents.Objects
             get => (LineJoinEnum)((IPdfNumber)operands[0]).Value;
             set => operands[0] = PdfInteger.Get((int)value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

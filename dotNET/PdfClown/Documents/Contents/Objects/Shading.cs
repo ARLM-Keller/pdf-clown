@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Bytes;
-using colorSpaces = PdfClown.Documents.Contents.ColorSpaces;
+using Shadings = PdfClown.Documents.Contents.Patterns.Shadings;
 using PdfClown.Objects;
 
 using System.Collections.Generic;
@@ -36,26 +36,15 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>Shading object [PDF:1.6:4.6.3].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class Shading : GraphicsObject, IResourceReference<colorSpaces::Shading>
+    public sealed class Shading : GraphicsObject, IResourceReference<Shadings::Shading>
     {
-        #region static
-        #region fields
         public static readonly string BeginOperatorKeyword = PaintShading.OperatorKeyword;
         public static readonly string EndOperatorKeyword = BeginOperatorKeyword;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public Shading(PaintShading operation) : base(operation)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        #region IResourceReference
-        public colorSpaces::Shading GetResource(IContentContext context)
-        { return Operation.GetResource(context); }
+        public Shadings::Shading GetResource(ContentScanner scanner) => Operation.GetResource(scanner);
 
         public PdfName Name
         {
@@ -65,17 +54,11 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override void Scan(GraphicsState state)
         {
-            var shading = GetResource(state.Scanner.ContentContext);
+            var shading = GetResource(state.Scanner);
             state.Shading = shading;
             base.Scan(state);
         }
-        #endregion
-        #endregion
 
-        #region private
         private PaintShading Operation => (PaintShading)Objects[0];
-        #endregion
-        #endregion
-        #endregion
     }
 }

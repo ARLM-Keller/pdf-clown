@@ -34,13 +34,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public abstract class SpecialColorSpace : ColorSpace
     {
-        #region dynamic
-        #region constructors
         //TODO:IMPL new element constructor!
 
         protected SpecialColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
-        #endregion
     }
 }

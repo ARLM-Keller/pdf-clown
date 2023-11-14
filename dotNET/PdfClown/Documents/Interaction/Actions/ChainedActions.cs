@@ -45,21 +45,14 @@ namespace PdfClown.Documents.Interaction.Actions
           This implementation hides such a complexity to the user, smoothly exposing
           just the most general case (array) yet preserving its internal state.
         */
-        #region dynamic
-        #region fields
         /**
           Parent action.
         */
         private Action parent;
-        #endregion
 
-        #region constructors
         public ChainedActions(PdfDirectObject baseObject, Action parent) : base(baseObject)
         { this.parent = parent; }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new NotImplementedException(); } // TODO:verify
 
@@ -68,7 +61,6 @@ namespace PdfClown.Documents.Interaction.Actions
         */
         public Action Parent => parent;
 
-        #region IList
         public int IndexOf(Action value)
         {
             PdfDataObject baseDataObject = BaseDataObject;
@@ -78,11 +70,9 @@ namespace PdfClown.Documents.Interaction.Actions
                 return ((PdfArray)baseDataObject).IndexOf(((Action)value).BaseObject);
         }
 
-        public void Insert(int index, Action value)
-        { EnsureArray().Insert(index, value.BaseObject); }
+        public void Insert(int index, Action value) => EnsureArray().Insert(index, value.BaseObject);
 
-        public void RemoveAt(int index)
-        { EnsureArray().RemoveAt(index); }
+        public void RemoveAt(int index) => EnsureArray().RemoveAt(index);
 
         public Action this[int index]
         {
@@ -102,12 +92,9 @@ namespace PdfClown.Documents.Interaction.Actions
             set => EnsureArray()[index] = value.BaseObject;
         }
 
-        #region ICollection
-        public void Add(Action value)
-        { EnsureArray().Add(value.BaseObject); }
+        public void Add(Action value) => EnsureArray().Add(value.BaseObject);
 
-        public void Clear()
-        { EnsureArray().Clear(); }
+        public void Clear() => EnsureArray().Clear();
 
         public bool Contains(Action value)
         {
@@ -118,10 +105,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 return ((PdfArray)baseDataObject).Contains(((Action)value).BaseObject);
         }
 
-        public void CopyTo(
-          Action[] values,
-          int index
-          )
+        public void CopyTo(Action[] values, int index)
         { throw new NotImplementedException(); }
 
         public int Count
@@ -138,37 +122,17 @@ namespace PdfClown.Documents.Interaction.Actions
 
         public bool IsReadOnly => false;
 
-        public bool Remove(
-          Action value
-          )
-        { return EnsureArray().Remove(((Action)value).BaseObject); }
+        public bool Remove(Action value) => EnsureArray().Remove(((Action)value).BaseObject);
 
-        #region IEnumerable<Action>
-        IEnumerator<Action> IEnumerable<Action>.GetEnumerator(
-          )
+        IEnumerator<Action> IEnumerable<Action>.GetEnumerator()
         {
-            for (
-              int index = 0,
-                length = Count;
-              index < length;
-              index++
-              )
+            for (int index = 0, length = Count; index < length; index++)
             { yield return this[index]; }
         }
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator(
-          )
-        { return ((IEnumerable<Action>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<Action>)this).GetEnumerator();
 
-        #region private
-        private PdfArray EnsureArray(
-          )
+        private PdfArray EnsureArray()
         {
             PdfDataObject baseDataObject = BaseDataObject;
             if (baseDataObject is PdfDictionary) // Single action.
@@ -182,8 +146,5 @@ namespace PdfClown.Documents.Interaction.Actions
             }
             return (PdfArray)baseDataObject;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

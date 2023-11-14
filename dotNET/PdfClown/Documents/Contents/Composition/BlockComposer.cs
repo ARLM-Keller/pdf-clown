@@ -53,7 +53,6 @@ namespace PdfClown.Documents.Contents.Composition
     */
     public sealed class BlockComposer
     {
-        #region types
         private sealed class Row
         {
             /**
@@ -116,8 +115,7 @@ namespace PdfClown.Documents.Contents.Composition
               object lineAlignment,
               double baseLine,
               double fontSize,
-              double scale
-              )
+              double scale)
             {
                 Type = type;
                 Container = container;
@@ -130,9 +128,7 @@ namespace PdfClown.Documents.Contents.Composition
                 Scale = scale;
             }
         }
-        #endregion
 
-        #region dynamic
         /*
           NOTE: In order to provide fine-grained alignment,
           there are 2 postproduction state levels:
@@ -153,7 +149,6 @@ namespace PdfClown.Documents.Contents.Composition
           i.e. they can't be represented inside row's or row object's local state, in order to
           facilitate parameter reuse within the same block.
         */
-        #region fields
         private readonly PrimitiveComposer baseComposer;
         private readonly ContentScanner scanner;
 
@@ -175,18 +170,13 @@ namespace PdfClown.Documents.Contents.Composition
         private LocalGraphicsState container;
 
         private double lastFontSize;
-        #endregion
 
-        #region constructors
         public BlockComposer(PrimitiveComposer baseComposer)
         {
             this.baseComposer = baseComposer;
             this.scanner = baseComposer.Scanner;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the base composer.</summary>
         */
@@ -553,9 +543,7 @@ namespace PdfClown.Documents.Contents.Composition
           <summary>Gets the vertical alignment applied to the current content block.</summary>
         */
         public YAlignmentEnum YAlignment => yAlignment;
-        #endregion
 
-        #region private
         /**
           <summary>Adds an object to the current row.</summary>
           <param name="obj">Object to add.</param>
@@ -812,8 +800,5 @@ namespace PdfClown.Documents.Contents.Composition
 
             return lineAlignment;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

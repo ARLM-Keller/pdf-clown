@@ -48,7 +48,7 @@ namespace PdfClown.Samples.CLI
             // Set default page size (A4)!
             document.PageSize = PageFormat.GetSize();
             // Add a font to the fonts collection!
-            document.Resources.Fonts[ResourceName_DefaultFont] = PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Courier, true, false);
+            document.Resources.Fonts[ResourceName_DefaultFont] = FontType1.Load(document, FontType1.FamilyEnum.Courier, true, false);
 
             // Add a page to the document!
             Page page = new Page(document); // Instantiates the page inside the document context.

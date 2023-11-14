@@ -17,8 +17,7 @@
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
-
+    using PdfClown.Bytes;
     using System.IO;
 
 
@@ -38,24 +37,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          *
          * @param isEmbedded true if the font is embedded in PDF
          */
-        public OTFParser(bool isEmbedded) : this(isEmbedded, false)
+        public OTFParser(bool isEmbedded) : base(isEmbedded)
         { }
 
-        /**
-         *  Constructor.
-         *
-         * @param isEmbedded true if the font is embedded in PDF
-         * @param parseOnDemand true if the tables of the font should be parsed on demand
-         */
-        public OTFParser(bool isEmbedded, bool parseOnDemand) : base(isEmbedded, parseOnDemand)
-        { }
-
-        public override TrueTypeFont NewFont(TTFDataStream raf)
+        public override TrueTypeFont NewFont(IInputStream raf)
         {
             return new OpenTypeFont(raf);
         }
 
-        protected override TTFTable ReadTable(TrueTypeFont font, string tag)
+        protected override TTFTable ReadTable(string tag)
         {
             // todo: this is a stub, a full implementation is needed
             switch (tag)
@@ -63,13 +53,13 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 case "BASE":
                 case "GDEF":
                 case "GPOS":
-                case "GSUB":
-                case "JSTF":
-                    return new OTLTable(font);
-                case "CFF ":
-                    return new CFFTable(font);
+                case GlyphSubstitutionTable.TAG:
+                case OTLTable.TAG:
+                    return new OTLTable();
+                case CFFTable.TAG:
+                    return new CFFTable();
                 default:
-                    return base.ReadTable(font, tag);
+                    return base.ReadTable(tag);
             }
         }
 

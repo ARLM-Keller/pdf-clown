@@ -30,11 +30,7 @@ namespace PdfClown.Objects
     */
     public abstract class PdfDataObject : PdfObject
     {
-        #region dynamic
-        #region constructors
         protected PdfDataObject()
         { }
-        #endregion
-        #endregion
     }
 }

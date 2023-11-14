@@ -36,8 +36,6 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF10)]
     public sealed class RemoteDestination : Destination
     {
-        #region dynamic
-        #region constructors
         public RemoteDestination(Document context, int pageIndex)
             : this(context, pageIndex, ModeEnum.Fit, null, null)
         { }
@@ -48,26 +46,20 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         internal RemoteDestination(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the index of the target page.</summary>
         */
         public override object Page
         {
-            get => ((PdfInteger)BaseDataObject[0]).IntValue;
+            get => BaseDataObject.GetInt(0);
             set
             {
-                if (!(value is Int32))
+                if (value is not int intValue)
                     throw new ArgumentException("It MUST be an integer number.");
 
-                BaseDataObject[0] = PdfInteger.Get((int)value);
+                BaseDataObject[0] = PdfInteger.Get(intValue);
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

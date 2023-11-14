@@ -70,6 +70,8 @@ namespace PdfClown.Documents.Contents.Fonts
             set => Dictionary.SetInt(PdfName.Flags, (int)value);
         }
 
+        public bool HasFlags => Dictionary.ContainsKey(PdfName.Flags);
+
         public bool NonSymbolic
         {
             get => (Flags & FlagsEnum.Nonsymbolic) == FlagsEnum.Nonsymbolic;
@@ -114,55 +116,55 @@ namespace PdfClown.Documents.Contents.Fonts
         public float Descent
         {
             get => Dictionary.GetFloat(PdfName.Descent, -250F);
-            set => Dictionary[PdfName.Descent] = new PdfReal(value);
+            set => Dictionary.SetFloat(PdfName.Descent, value);
         }
 
         public float? Leading
         {
-            get => ((IPdfNumber)Dictionary[PdfName.Leading])?.FloatValue;
-            set => Dictionary[PdfName.Leading] = value.HasValue ? new PdfReal((float)value) : null;
+            get => Dictionary.GetNFloat(PdfName.Leading);
+            set => Dictionary.SetFloat(PdfName.Leading, value);
         }
 
         public float? CapHeight
         {
-            get => ((IPdfNumber)Dictionary[PdfName.CapHeight])?.FloatValue;
-            set => Dictionary[PdfName.CapHeight] = value.HasValue ? new PdfReal((float)value) : null;
+            get => Dictionary.GetNFloat(PdfName.CapHeight);
+            set => Dictionary.SetFloat(PdfName.CapHeight, value);
         }
 
         public float? XHeight
         {
-            get => ((IPdfNumber)Dictionary[PdfName.XHeight])?.FloatValue;
-            set => Dictionary[PdfName.XHeight] = value.HasValue ? new PdfReal((float)value) : null;
+            get => Dictionary.GetNFloat(PdfName.XHeight);
+            set => Dictionary.SetFloat(PdfName.XHeight, value);
         }
 
         public float StemV
         {
             get => Dictionary.GetFloat(PdfName.StemV, 0F);
-            set => Dictionary[PdfName.StemV] = new PdfReal((float)value);
+            set => Dictionary.SetFloat(PdfName.StemV, value);
         }
 
         public float StemH
         {
             get => Dictionary.GetFloat(PdfName.StemH, 0F);
-            set => Dictionary[PdfName.StemH] = new PdfReal((float)value);
+            set => Dictionary.SetFloat(PdfName.StemH, value);
         }
 
         public float? AvgWidth
         {
-            get => ((IPdfNumber)Dictionary[PdfName.AvgWidth])?.FloatValue;
-            set => Dictionary[PdfName.AvgWidth] = value.HasValue ? new PdfReal((float)value) : null;
+            get => Dictionary.GetNFloat(PdfName.AvgWidth);
+            set => Dictionary.SetFloat(PdfName.AvgWidth, value);
         }
 
         public float? MaxWidth
         {
-            get => ((IPdfNumber)Dictionary[PdfName.MaxWidth])?.FloatValue;
-            set => Dictionary[PdfName.MaxWidth] = value.HasValue ? new PdfReal((float)value) : null;
+            get => Dictionary.GetNFloat(PdfName.MaxWidth);
+            set => Dictionary.SetFloat(PdfName.MaxWidth, value);
         }
 
         public float? MissingWidth
         {
-            get => ((PdfReal)Dictionary[PdfName.MissingWidth])?.FloatValue;
-            set => Dictionary[PdfName.MissingWidth] = value.HasValue ? new PdfReal((float)value) : null;
+            get => Dictionary.GetNFloat(PdfName.MissingWidth);
+            set => Dictionary.SetFloat(PdfName.MissingWidth, value);
         }
 
         public FontFile FontFile
@@ -185,20 +187,20 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public string CharSet
         {
-            get => Dictionary.Resolve(PdfName.CharSet)?.ToString();
-            set => Dictionary[PdfName.CharSet] = PdfString.Get(value);
+            get => Dictionary.GetString(PdfName.CharSet);
+            set => Dictionary.SetString(PdfName.CharSet, value);
         }
 
         //CID Font Specific
         public string Lang
         {
-            get => ((PdfName)Dictionary[PdfName.Lang])?.StringValue;
-            set => Dictionary[PdfName.Lang] = PdfName.Get(value);
+            get => Dictionary.GetString(PdfName.Lang);
+            set => Dictionary.SetName(PdfName.Lang, value);
         }
 
-        public Style Style
+        public FontStyle Style
         {
-            get => Wrap<Style>((PdfDirectObject)Dictionary.Resolve(PdfName.Style));
+            get => Wrap<FontStyle>((PdfDirectObject)Dictionary.Resolve(PdfName.Style));
             set => Dictionary[PdfName.Style] = value?.BaseObject;
         }
 
@@ -213,22 +215,6 @@ namespace PdfClown.Documents.Contents.Fonts
             get => (PdfStream)Dictionary.Resolve(PdfName.CIDSet);
             set => Dictionary[PdfName.CIDSet] = value?.Reference;
         }
-    }
 
-    public class Style : PdfObjectWrapper<PdfDictionary>
-    {
-        private Panose panose;
-
-        public Style(PdfDirectObject baseObject) : base(baseObject)
-        { }
-
-        public Style(Document document, PdfDictionary dictionary) : base(document, dictionary)
-        { }
-
-        public Panose Panose
-        {
-            get => panose ?? (panose = new Panose(((PdfString)Dictionary.Resolve(PdfName.Panose)).GetBuffer()));
-            set => Dictionary[PdfName.Panose] = new PdfString(value?.Bytes);
-        }
     }
 }

@@ -26,7 +26,6 @@
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Files;
 using PdfClown.Objects;
-using PdfClown.Util.Collections.Generic;
 
 using System;
 using System.Collections;
@@ -40,12 +39,8 @@ namespace PdfClown.Documents
     public abstract class PageElements<TItem> : Array<TItem>
         where TItem : PdfObjectWrapper<PdfDictionary>
     {
-        #region dynamic
-        #region fields
         private Page page;
-        #endregion
 
-        #region constructors
         internal PageElements(PdfDirectObject baseObject, Page page)
             : base(baseObject)
         {
@@ -57,10 +52,7 @@ namespace PdfClown.Documents
         {
             this.page = page;
         }
-        #endregion
 
-        #region interface
-        #region public
         public override void Add(TItem item)
         {
             DoAdd(item);
@@ -98,9 +90,7 @@ namespace PdfClown.Documents
             DoRemove((TItem)item);
             return true;
         }
-        #endregion
 
-        #region private
         protected internal virtual void DoAdd(TItem item)
         {
             // Link the element to its page!
@@ -112,8 +102,5 @@ namespace PdfClown.Documents
             // Unlink the element from its page!
             item.BaseDataObject.Remove(PdfName.P);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -36,15 +36,11 @@ namespace PdfClown.Documents.Contents
     */
     public sealed class TextChar
     {
-        #region dynamic
-        #region fields
         private readonly Quad quad;
         private readonly ITextString textString;
         private readonly char value;
         private readonly bool virtual_;
-        #endregion
 
-        #region constructors
         public TextChar(char value, Quad box, ITextString textString, bool virtual_)
         {
             this.value = value;
@@ -52,27 +48,19 @@ namespace PdfClown.Documents.Contents
             this.textString = textString;
             this.virtual_ = virtual_;
         }
-        #endregion
 
-        #region interface
-        #region public
         public Quad Quad => quad;
 
-        public bool Contains(char value)
-        { return this.value == value; }
+        public bool Contains(char value) => this.value == value;
 
         public TextStyle Style => TextString.Style;
 
-        public override string ToString()
-        { return Value.ToString(); }
+        public override string ToString() => Value.ToString();
 
         public char Value => value;
 
         public bool Virtual => virtual_;
 
         public ITextString TextString => textString;
-        #endregion
-        #endregion
-        #endregion
     }
 }

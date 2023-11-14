@@ -39,8 +39,6 @@ namespace PdfClown.Documents.Interaction.Forms
     public sealed class SignatureField : Field
     {
         //TODO
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new signature field within the given document context.</summary>
         */
@@ -50,10 +48,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         internal SignatureField(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <returns>A <see cref="PdfDictionary"/>.</returns>
         */
@@ -90,24 +85,21 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public string Filter
         {
-            get => ((IPdfString)ValueDictionary[PdfName.Filter])?.StringValue;
-            set => ValueDictionary[PdfName.Filter] = new PdfName(value);
+            get => ValueDictionary.GetString(PdfName.Filter);
+            set => ValueDictionary.SetName(PdfName.Filter, value);
         }
 
         public DateTime? DateM
         {
-            get => ((PdfDate)ValueDictionary[PdfName.M])?.DateValue;
-            set => ValueDictionary[PdfName.M] = value is DateTime notNullValue ? new PdfDate(notNullValue) : null;
+            get => ValueDictionary.GetNDate(PdfName.M);
+            set => ValueDictionary.SetDate(PdfName.M, value);
         }
 
         public string SignatureName
         {
-            get => ((IPdfString)ValueDictionary[PdfName.Name]).StringValue;
-            set=> ValueDictionary[PdfName.Name] = new PdfString(value);
+            get => ValueDictionary.GetString(PdfName.Name);
+            set => ValueDictionary.SetText(PdfName.Name, value);
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

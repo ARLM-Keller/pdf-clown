@@ -40,7 +40,6 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF15)]
     public sealed class Caret : Markup
     {
-        #region types
         /**
           <summary>Symbol type [PDF:1.6:8.4.5].</summary>
         */
@@ -55,26 +54,18 @@ namespace PdfClown.Documents.Interaction.Annotations
             */
             NewParagraph
         };
-        #endregion
 
-        #region static
-        #region fields
         private static readonly SymbolTypeEnum DefaultSymbolType = SymbolTypeEnum.None;
 
         private static readonly Dictionary<SymbolTypeEnum, PdfName> SymbolTypeEnumCodes;
-        #endregion
 
-        #region constructors
         static Caret()
         {
             SymbolTypeEnumCodes = new Dictionary<SymbolTypeEnum, PdfName>();
             SymbolTypeEnumCodes[SymbolTypeEnum.NewParagraph] = PdfName.P;
             SymbolTypeEnumCodes[SymbolTypeEnum.None] = PdfName.None;
         }
-        #endregion
 
-        #region interface
-        #region private
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
@@ -97,21 +88,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             return DefaultSymbolType;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public Caret(Page page, SKRect box, string text) : base(page, PdfName.Caret, box, text)
         { }
 
         internal Caret(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the symbol to be used in displaying the annotation.</summary>
         */
@@ -120,8 +103,5 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => ToSymbolTypeEnum((IPdfString)BaseDataObject[PdfName.Sy]);
             set => BaseDataObject[PdfName.Sy] = value != DefaultSymbolType ? ToCode(value) : null;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

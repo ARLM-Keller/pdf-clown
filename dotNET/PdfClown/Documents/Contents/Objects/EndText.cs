@@ -33,19 +33,11 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class EndText : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "ET";
 
         public static readonly EndText Value = new EndText();
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         private EndText() : base(OperatorKeyword)
         { }
-        #endregion
-        #endregion
     }
 }

@@ -43,8 +43,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF12)]
     public sealed class SeparationColorSpace : SpecialDeviceColorSpace
     {
-        #region static
-        #region fields
         /**
           <summary>Special colorant name referring collectively to all components available on an output
           device, including those for the standard process components.</summary>
@@ -52,19 +50,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           operators apply tint values to all available components at once.</remarks>
         */
         public static readonly string AllComponentName = (string)PdfName.All.Value;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         //TODO:IMPL new element constructor!
 
         internal SeparationColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
@@ -80,7 +71,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             </list>
           </remarks>
         */
-        public override IList<string> ComponentNames => new List<string>(new string[] { (string)((PdfName)((PdfArray)BaseDataObject)[1]).Value });
+        public override IList<string> ComponentNames => new List<string> { (string)((PdfName)((PdfArray)BaseDataObject)[1]).Value };
 
         public override Color DefaultColor => SeparationColor.Default;
 
@@ -90,8 +81,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override bool IsSpaceColor(Color color)
         { return color is SeparationColor; }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

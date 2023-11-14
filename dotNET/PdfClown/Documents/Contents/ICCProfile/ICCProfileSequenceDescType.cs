@@ -38,12 +38,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint Count;
         public List<ICCProfileDescriptionStructure> Structures;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            Count = buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            Count = buffer.ReadUInt32();
             for (int i = 0; i < Count; i++)
             {
                 var structure = new ICCProfileDescriptionStructure();

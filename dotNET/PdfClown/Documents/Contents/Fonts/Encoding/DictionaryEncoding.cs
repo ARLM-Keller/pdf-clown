@@ -17,7 +17,7 @@
  */
 using PdfClown.Objects;
 using PdfClown.Util;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Util.Collections;
 using System;
 using System.Collections.Generic;
 
@@ -60,8 +60,8 @@ namespace PdfClown.Documents.Contents.Fonts
                 throw new ArgumentException("Invalid encoding: " + baseEncoding);
             }
 
-            codeToName.AddAll(this.baseEncoding.codeToName);
-            inverted.AddAll(this.baseEncoding.inverted);
+            CodeToNameMap.AddRange(this.baseEncoding.CodeToNameMap);
+            NameToCodeMap.AddRange(this.baseEncoding.NameToCodeMap);
             ApplyDifferences();
         }
 
@@ -119,8 +119,8 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             this.baseEncoding = baseEncoding;
 
-            codeToName.AddAll(baseEncoding.codeToName);
-            inverted.AddAll(baseEncoding.inverted);
+            CodeToNameMap.AddRange(baseEncoding.CodeToNameMap);
+            NameToCodeMap.AddRange(baseEncoding.NameToCodeMap);
             ApplyDifferences();
         }
 

@@ -38,23 +38,17 @@ namespace PdfClown.Objects
     */
     public sealed class PdfByteString : PdfString
     {
-        #region dynamic
-        #region constructors
-        public PdfByteString(byte[] rawValue) : base(rawValue)
+        public PdfByteString(Memory<byte> rawValue, SerializationModeEnum serializationMode = SerializationModeEnum.Hex)
+            : base(rawValue, serializationMode)
         { }
 
         /**
           <param name="value">Hexadecimal representation of this byte string.</param>
         */
-        public PdfByteString(string value) : base(value, SerializationModeEnum.Hex)
+        public PdfByteString(string value, SerializationModeEnum serializationMode = SerializationModeEnum.Hex)
+            : base(value, serializationMode)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override object Value => ConvertUtils.ByteArrayToHex(RawValue);
-        #endregion
-        #endregion
-        #endregion
+        public override object Value => stringValue ??= ConvertUtils.ByteArrayToHex(RawValue.Span);
     }
 }

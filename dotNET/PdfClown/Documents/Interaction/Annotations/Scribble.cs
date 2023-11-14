@@ -32,6 +32,8 @@ using PdfClown.Util.Math.Geom;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using System.Linq;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -42,8 +44,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     public sealed class Scribble : Markup
     {
         private IList<SKPath> paths;
-        #region dynamic
-        #region constructors
+        private IList<SKPath> pagePaths;
         public Scribble(Page page, IList<SKPath> paths, string text, DeviceColor color)
             : base(page, PdfName.Ink, new SKRect(), text)
         {
@@ -55,10 +56,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             paths = new List<SKPath>();
         }
-        #endregion
-
-        #region interface
-        #region public
 
         public PdfArray InkList
         {
@@ -73,49 +70,18 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
         }
-
-        /**
-          <summary>Gets/Sets the coordinates of each path.</summary>
-        */
-        public IList<SKPath> Paths
+        public IList<SKPath> PagePaths
         {
-            get
-            {
-                if (paths.Count > 0)
-                    return paths;
-                PdfArray pathsObject = InkList;
-                double pageHeight = Page.Box.Height;
-                for (int pathIndex = 0, pathLength = pathsObject.Count; pathIndex < pathLength; pathIndex++)
-                {
-                    var pathObject = (PdfArray)pathsObject[pathIndex];
-                    var path = new SKPath();
-                    var pointLength = pathObject.Count;
-                    for (int pointIndex = 0; pointIndex < pointLength; pointIndex += 2)
-                    {
-                        var point = GetPoint(pageHeight, pathObject, pointIndex);
-                        if (path.IsEmpty)
-                        {
-                            path.MoveTo(point);
-                        }
-                        else
-                        {
-                            path.LineTo(point);
-                        }
-                    }
-                    paths.Add(path);
-                }
-
-                return paths;
-            }
+            get => pagePaths ??= GetPagePaths();
             set
             {
-                paths = value;
+                ClearPath(pagePaths);
+                pagePaths = value;
                 var pathsObject = new PdfArray();
-                double pageHeight = Page.Box.Height;
                 SKRect box = SKRect.Empty;
                 foreach (var path in value)
                 {
-                    PdfArray pathObject = new PdfArray();
+                    var pathObject = new PdfArray();
                     foreach (SKPoint point in path.Points)
                     {
                         if (box == SKRect.Empty)
@@ -123,19 +89,37 @@ namespace PdfClown.Documents.Interaction.Annotations
                         else
                         { box.Add(point); }
                         pathObject.Add(PdfReal.Get(point.X)); // x.
-                        pathObject.Add(PdfReal.Get(pageHeight - point.Y)); // y.
+                        pathObject.Add(PdfReal.Get(point.Y)); // y.
                     }
                     pathsObject.Add(pathObject);
                 }
-                Box = box;
+                PageBox = box;
                 InkList = pathsObject;
+                ClearPath(paths);
             }
         }
 
-        private static SKPoint GetPoint(double pageHeight, PdfArray pathObject, int pointIndex)
+
+
+        ///<summary>Gets/Sets the coordinates of each path.</summary>
+        public IList<SKPath> Paths
         {
-            return new SKPoint((float)((IPdfNumber)pathObject[pointIndex]).RawValue,
-                                        (float)(pageHeight - ((IPdfNumber)pathObject[pointIndex + 1]).RawValue));
+            get => paths ??= TransformPaths(PagePaths, PageMatrix);
+            set
+            {
+                var newPaths = new List<SKPath>();
+                TransformPaths(value, newPaths, InvertPageMatrix);
+                PagePaths = newPaths;
+                paths = value;
+            }
+        }
+
+
+        private static SKPoint GetPagePoint(PdfArray pathObject, int pointIndex)
+        {
+            return new SKPoint(
+                pathObject.GetFloat(pointIndex),
+                pathObject.GetFloat(pointIndex + 1));
         }
 
         public override void DrawSpecial(SKCanvas canvas)
@@ -144,16 +128,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             using (var paint = new SKPaint { Color = color })
             {
                 Border?.Apply(paint, null);
-                foreach (var pathData in Paths)
+                foreach (var pathData in PagePaths)
                 {
                     canvas.DrawPath(pathData, paint);
                 }
             }
         }
 
-        public override void MoveTo(SKRect newBox)
+        public override void PageMoveTo(SKRect newBox)
         {
-            var oldBox = Box;
+            var oldBox = PageBox;
             if (oldBox.Width != newBox.Width
                 || oldBox.Height != newBox.Height)
             {
@@ -164,24 +148,11 @@ namespace PdfClown.Documents.Interaction.Annotations
                 .PreConcat(SKMatrix.CreateTranslation(newBox.MidX, newBox.MidY))
                 .PreConcat(SKMatrix.CreateScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height))
                 .PreConcat(SKMatrix.CreateTranslation(-oldBox.MidX, -oldBox.MidY));
-            var oldPaths = Paths;
+            var oldPaths = PagePaths;
             var newPaths = new List<SKPath>();
-            foreach (var path in oldPaths)
-            {
-                var vertices = path.Points;
-                for (int i = 0; i < vertices.Length; i++)
-                {
-                    vertices[i] = dif.MapPoint(vertices[i]);
-                }
-                var newPath = new SKPath();
-                newPath.AddPoly(vertices, false);
-                newPaths.Add(newPath);
-            }
-            Paths = newPaths;
-            foreach (var oldPath in oldPaths)
-            {
-                oldPath.Dispose();
-            }
+            TransformPaths(oldPaths, newPaths, dif);
+            PagePaths = newPaths;
+            ClearPath(oldPaths);
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()
@@ -191,8 +162,67 @@ namespace PdfClown.Documents.Interaction.Annotations
                 yield return cpBase;
             }
         }
-        #endregion
-        #endregion
-        #endregion
+
+        private IList<SKPath> GetPagePaths()
+        {
+            var list = new List<SKPath>();
+            PdfArray pathsObject = InkList;
+            for (int pathIndex = 0, pathLength = pathsObject.Count; pathIndex < pathLength; pathIndex++)
+            {
+                var pathObject = (PdfArray)pathsObject[pathIndex];
+                var path = new SKPath();
+                var pointLength = pathObject.Count;
+                for (int pointIndex = 0; pointIndex < pointLength; pointIndex += 2)
+                {
+                    var point = GetPagePoint(pathObject, pointIndex);
+                    if (path.IsEmpty)
+                    {
+                        path.MoveTo(point);
+                    }
+                    else
+                    {
+                        path.LineTo(point);
+                    }
+                }
+                list.Add(path);
+            }
+            return list;
+        }
+
+        private void ClearPath(IList<SKPath> paths)
+        {
+            var temp = paths.ToList();
+            paths.Clear();
+            foreach (var path in temp)
+            {
+                path.Dispose();
+            }
+        }
+
+        private IList<SKPath> TransformPaths(IList<SKPath> fromPaths, SKMatrix sKMatrix)
+        {
+            IList<SKPath> toPaths = new List<SKPath>();
+            TransformPaths(fromPaths, toPaths, sKMatrix);
+            return toPaths;
+        }
+
+        private void TransformPaths(IList<SKPath> fromPaths, IList<SKPath> toPaths, SKMatrix sKMatrix)
+        {
+            ClearPath(toPaths);
+            foreach (var path in fromPaths)
+            {
+                var clone = new SKPath();
+                //path.Transform(sKMatrix, clone);
+
+                var vertices = sKMatrix.MapPoints(path.Points);
+                //for (int i = 0; i < vertices.Length; i++)
+                //{
+                //    vertices[i] = sKMatrix.MapPoint(vertices[i]);
+                //}                
+                clone.AddPoly(vertices, false);
+
+                toPaths.Add(clone);
+            }
+        }
     }
 }

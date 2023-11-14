@@ -16,7 +16,9 @@
  */
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
+    using PdfClown.Bytes;
     using System;
+    using System.Diagnostics;
     using System.IO;
 
 
@@ -28,7 +30,6 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
     public class TTFParser
     {
         private bool isEmbedded = false;
-        private bool parseOnDemandOnly = false;
 
         /**
          * Constructor.
@@ -43,20 +44,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param isEmbedded true if the font is embedded in PDF
          */
         public TTFParser(bool isEmbedded)
-        : this(isEmbedded, false)
-        {
-        }
-
-        /**
-         *  Constructor.
-         *  
-         * @param isEmbedded true if the font is embedded in PDF
-         * @param parseOnDemand true if the tables of the font should be parsed on demand
-         */
-        public TTFParser(bool isEmbedded, bool parseOnDemand)
         {
             this.isEmbedded = isEmbedded;
-            parseOnDemandOnly = parseOnDemand;
         }
 
         /**
@@ -68,42 +57,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public TrueTypeFont Parse(string ttfFile, string fontName = null)
         {
-            return Parse(new FileStream(ttfFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), fontName);
+            using var fileStream = new FileStream(ttfFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            return Parse(fileStream, fontName);
         }
 
-        /**
-         * Parse a file and return a TrueType font.
-         *
-         * @param ttfFile The TrueType font file.
-         * @return A TrueType font.
-         * @ If there is an error parsing the TrueType font.
-         */
-        public TrueTypeFont Parse(Stream ttfFile, string fontName = null)
-        {
-            var raf = new MemoryTTFDataStream(ttfFile);
-            try
-            {
-                return Parse(raf, fontName);
-            }
-            catch (IOException ex)
-            {
-                // close only on error (file is still being accessed later)
-                raf.Dispose();
-                throw ex;
-            }
-        }
+        public TrueTypeFont Parse(Stream fileStream, string fontName = null) => Parse((IInputStream)new ByteStream(fileStream), fontName);
 
-        /**
-         * Parse an input stream and return a TrueType font.
-         *
-         * @param inputStream The TTF data stream to parse from. It will be closed before returning.
-         * @return A TrueType font.
-         * @ If there is an error parsing the TrueType font.
-         */
-        public TrueTypeFont Parse(Bytes.IInputStream inputStream, string fontName = null)
-        {
-            return Parse(new MemoryTTFDataStream(inputStream), fontName);
-        }
 
         /**
          * Parse an input stream and return a TrueType font that is to be embedded.
@@ -112,10 +71,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @return A TrueType font.
          * @ If there is an error parsing the TrueType font.
          */
-        public TrueTypeFont ParseEmbedded(Bytes.Buffer inputStream, string fontName = null)
+        public TrueTypeFont ParseEmbedded(IInputStream inputStream, string fontName = null)
         {
             this.isEmbedded = true;
-            return Parse(new MemoryTTFDataStream(inputStream), fontName);
+            return Parse(inputStream, fontName);
         }
 
         /**
@@ -125,11 +84,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @return A TrueType font.
          * @ If there is an error parsing the TrueType font.
          */
-        public TrueTypeFont Parse(TTFDataStream raf, string fontName = null)
+        public TrueTypeFont Parse(IInputStream raf, string fontName = null)
         {
             if (string.Equals(raf.ReadString(4), TrueTypeCollection.TAG, StringComparison.Ordinal))
             {
-                raf.Seek(raf.CurrentPosition - 4);
+                raf.Seek(raf.Position - 4);
                 TrueTypeCollection fontCollection = new TrueTypeCollection(raf);
 
                 var nameFont = fontCollection.GetFontByName(fontName);
@@ -137,34 +96,39 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     nameFont = fontCollection.GetFontAtIndex(0);
                 return nameFont;
             }
-            raf.Seek(raf.CurrentPosition - 4);
+            raf.Seek(raf.Position - 4);
 
             TrueTypeFont font = NewFont(raf);
             font.Version = raf.Read32Fixed();
-            int numberOfTables = raf.ReadUnsignedShort();
-            int searchRange = raf.ReadUnsignedShort();
-            int entrySelector = raf.ReadUnsignedShort();
-            int rangeShift = raf.ReadUnsignedShort();
+            int numberOfTables = raf.ReadUInt16();
+            int searchRange = raf.ReadUInt16();
+            int entrySelector = raf.ReadUInt16();
+            int rangeShift = raf.ReadUInt16();
             for (int i = 0; i < numberOfTables; i++)
             {
-                TTFTable table = ReadTableDirectory(font, raf);
+                TTFTable table = ReadTableDirectory(raf);
 
                 // skip tables with zero length
                 if (table != null)
                 {
-                    font.AddTable(table);
+                    if (table.Offset + table.Length > font.OriginalDataSize)
+                    {
+                        // PDFBOX-5285 if we're lucky, this is an "unimportant" table, e.g. vmtx
+                        Debug.WriteLine($"warn: Skip table '{table.Tag}' which is oversize; offset: {table.Offset}, size: {table.Length}, font size: {font.OriginalDataSize}");
+                    }
+                    else
+                    {
+                        font.AddTable(table);
+                    }
                 }
             }
-            // parse tables if wanted
-            if (!parseOnDemandOnly)
-            {
-                ParseTables(font);
-            }
+            // parse tables
+            ParseTables(font);
 
             return font;
         }
 
-        public virtual TrueTypeFont NewFont(TTFDataStream raf)
+        public virtual TrueTypeFont NewFont(IInputStream raf)
         {
             return new TrueTypeFont(raf);
         }
@@ -185,60 +149,62 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 }
             }
 
-            bool isPostScript = AllowCFF && font.TableMap.ContainsKey(CFFTable.TAG);
+            var otf = font as OpenTypeFont;
+            var hasCFF = font.TableMap.ContainsKey(CFFTable.TAG);
+            var isOTF = otf != null;
+            var isPostScript = isOTF ? otf.IsPostScript : hasCFF;
 
             HeaderTable head = font.Header;
             if (head == null)
             {
-                throw new IOException("head is mandatory");
+                throw new IOException("head table is mandatory");
             }
 
             HorizontalHeaderTable hh = font.HorizontalHeader;
             if (hh == null)
             {
-                throw new IOException("hhead is mandatory");
+                throw new IOException("hhead table is mandatory");
             }
 
             MaximumProfileTable maxp = font.MaximumProfile;
             if (maxp == null)
             {
-                throw new IOException("maxp is mandatory");
+                throw new IOException("maxp table is mandatory");
             }
 
             PostScriptTable post = font.PostScript;
             if (post == null && !isEmbedded)
             {
                 // in an embedded font this table is optional
-                throw new IOException("post is mandatory");
+                throw new IOException("post table is mandatory");
             }
 
             if (!isPostScript)
             {
-                IndexToLocationTable loc = font.IndexToLocation;
-                if (loc == null)
+                if (font.IndexToLocation == null)
                 {
-                    throw new IOException("loca is mandatory");
+                    throw new IOException("loca table is mandatory");
                 }
 
                 if (font.Glyph == null)
                 {
-                    throw new IOException("glyf is mandatory");
+                    throw new IOException("glyf table is mandatory");
                 }
             }
 
             if (font.Naming == null && !isEmbedded)
             {
-                throw new IOException("name is mandatory");
+                throw new IOException("name table is mandatory");
             }
 
             if (font.HorizontalMetrics == null)
             {
-                throw new IOException("hmtx is mandatory");
+                throw new IOException("hmtx table is mandatory");
             }
 
             if (!isEmbedded && font.Cmap == null)
             {
-                throw new IOException("cmap is mandatory");
+                throw new IOException("cmap table is mandatory");
             }
         }
 
@@ -247,68 +213,68 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             get => false;
         }
 
-        private TTFTable ReadTableDirectory(TrueTypeFont font, TTFDataStream raf)
+        private TTFTable ReadTableDirectory(IInputStream raf)
         {
             TTFTable table;
             string tag = raf.ReadString(4);
             switch (tag)
             {
                 case CmapTable.TAG:
-                    table = new CmapTable(font);
+                    table = new CmapTable();
                     break;
                 case GlyphTable.TAG:
-                    table = new GlyphTable(font);
+                    table = new GlyphTable();
                     break;
                 case HeaderTable.TAG:
-                    table = new HeaderTable(font);
+                    table = new HeaderTable();
                     break;
                 case HorizontalHeaderTable.TAG:
-                    table = new HorizontalHeaderTable(font);
+                    table = new HorizontalHeaderTable();
                     break;
                 case HorizontalMetricsTable.TAG:
-                    table = new HorizontalMetricsTable(font);
+                    table = new HorizontalMetricsTable();
                     break;
                 case IndexToLocationTable.TAG:
-                    table = new IndexToLocationTable(font);
+                    table = new IndexToLocationTable();
                     break;
                 case MaximumProfileTable.TAG:
-                    table = new MaximumProfileTable(font);
+                    table = new MaximumProfileTable();
                     break;
                 case NamingTable.TAG:
-                    table = new NamingTable(font);
+                    table = new NamingTable();
                     break;
                 case OS2WindowsMetricsTable.TAG:
-                    table = new OS2WindowsMetricsTable(font);
+                    table = new OS2WindowsMetricsTable();
                     break;
                 case PostScriptTable.TAG:
-                    table = new PostScriptTable(font);
+                    table = new PostScriptTable();
                     break;
                 case DigitalSignatureTable.TAG:
-                    table = new DigitalSignatureTable(font);
+                    table = new DigitalSignatureTable();
                     break;
                 case KerningTable.TAG:
-                    table = new KerningTable(font);
+                    table = new KerningTable();
                     break;
                 case VerticalHeaderTable.TAG:
-                    table = new VerticalHeaderTable(font);
+                    table = new VerticalHeaderTable();
                     break;
                 case VerticalMetricsTable.TAG:
-                    table = new VerticalMetricsTable(font);
+                    table = new VerticalMetricsTable();
                     break;
                 case VerticalOriginTable.TAG:
-                    table = new VerticalOriginTable(font);
+                    table = new VerticalOriginTable();
                     break;
                 case GlyphSubstitutionTable.TAG:
-                    table = new GlyphSubstitutionTable(font);
+                    table = new GlyphSubstitutionTable();
                     break;
                 default:
-                    table = ReadTable(font, tag);
+                    table = ReadTable(tag);
                     break;
             }
             table.Tag = tag;
-            table.CheckSum = raf.ReadUnsignedInt();
-            table.Offset = raf.ReadUnsignedInt();
-            table.Length = raf.ReadUnsignedInt();
+            table.CheckSum = raf.ReadUInt32();
+            table.Offset = raf.ReadUInt32();
+            table.Length = raf.ReadUInt32();
 
             // skip tables with zero length (except glyf)
             if (table.Length == 0 && !tag.Equals(GlyphTable.TAG, StringComparison.Ordinal))
@@ -319,10 +285,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return table;
         }
 
-        protected virtual TTFTable ReadTable(TrueTypeFont font, string tag)
+        protected virtual TTFTable ReadTable(string tag)
         {
             // unknown table type but read it anyway.
-            return new TTFTable(font);
+            return new TTFTable();
         }
     }
 }

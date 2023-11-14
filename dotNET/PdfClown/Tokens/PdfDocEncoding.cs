@@ -34,7 +34,6 @@ namespace PdfClown.Tokens
     */
     public sealed class PdfDocEncoding : LatinEncoding
     {
-        #region types
         private class Chars : BiDictionary<int, char>
         {
             internal Chars()
@@ -95,24 +94,13 @@ namespace PdfClown.Tokens
                 }
             }
         }
-        #endregion
 
-        #region static
-        #region fields
         private static readonly PdfDocEncoding instance = new PdfDocEncoding();
-        #endregion
 
-        #region interface
         public static PdfDocEncoding Get()
         { return instance; }
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         private PdfDocEncoding()
         { chars = new Chars(); }
-        #endregion
-        #endregion
     }
 }

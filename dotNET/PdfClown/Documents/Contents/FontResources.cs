@@ -41,21 +41,13 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF10)]
     public sealed class FontResources : ResourceItems<Font>
     {
-        #region dynamic
-        #region constructors
         public FontResources(Document context) : base(context)
         { }
 
         public FontResources(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override Font WrapItem(PdfDirectObject baseObject)
         { return Font.Wrap(baseObject); }
-        #endregion
-        #endregion
-        #endregion
     }
 }

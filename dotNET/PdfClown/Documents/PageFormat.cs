@@ -35,7 +35,6 @@ namespace PdfClown.Documents
     */
     public sealed class PageFormat
     {
-        #region types
         /**
           <summary>Paper size.</summary>
           <remarks>
@@ -74,10 +73,7 @@ namespace PdfClown.Documents
             Portrait,
             Landscape
         }
-        #endregion
 
-        #region static
-        #region fields
         private static readonly string IsoSeriesSize_A = "A";
         private static readonly string IsoSeriesSize_B = "B";
         private static readonly string IsoSeriesSize_C = "C";
@@ -87,26 +83,20 @@ namespace PdfClown.Documents
             + IsoSeriesSize_A
             + IsoSeriesSize_B
             + IsoSeriesSize_C
-            + "])([\\d]+)"
-          );
-        #endregion
+            + "])([\\d]+)");
 
-        #region interface
-        #region public
         /**
           <summary>Gets the default page size.</summary>
           <remarks>The returned dimension corresponds to the widely-established ISO A4 standard paper
           format, portrait orientation.</remarks>
         */
-        public static SKSize GetSize()
-        { return GetSize(SizeEnum.A4); }
+        public static SKSize GetSize() => GetSize(SizeEnum.A4);
 
         /**
           <summary>Gets the page size of the given format, portrait orientation.</summary>
           <param name="size">Page size.</param>
         */
-        public static SKSize GetSize(SizeEnum size)
-        { return GetSize(size, OrientationEnum.Portrait); }
+        public static SKSize GetSize(SizeEnum size) => GetSize(size, OrientationEnum.Portrait);
 
         /**
           <summary>Gets the page size of the given format and orientation.</summary>
@@ -174,16 +164,8 @@ namespace PdfClown.Documents
                     throw new NotImplementedException("Orientation " + orientation + " not supported yet.");
             }
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
-        private PageFormat(
-          )
+        private PageFormat()
         { }
-        #endregion
-        #endregion
     }
 }

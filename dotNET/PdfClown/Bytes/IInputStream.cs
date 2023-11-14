@@ -48,7 +48,7 @@ namespace PdfClown.Bytes
         /**
           <summary>Gets the pointer position.</summary>
         */
-        long Position { get; }
+        long Position { get; set; }
 
         /**
           <summary>Reads a sequence of bytes.</summary>
@@ -56,6 +56,13 @@ namespace PdfClown.Bytes
           <param name="data">Target byte array.</param>
         */
         int Read(byte[] data);
+
+        /**
+          <summary>Reads a sequence of bytes.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+          <param name="data">Target byte array.</param>
+        */
+        int Read(Span<byte> data);
 
         /**
           <summary>Reads a sequence of bytes.</summary>
@@ -74,17 +81,18 @@ namespace PdfClown.Bytes
 
         int PeekByte();
 
+        byte PeekUByte(int offset);
         /**
           <summary>Reads an integer.</summary>
           <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
         */
-        int ReadInt();
+        int ReadInt32();
 
         /**
           <summary>Reads an unsigned integer.</summary>
           <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
         */
-        uint ReadUnsignedInt();
+        uint ReadUInt32();
 
         /**
           <summary>Reads a variable-length integer.</summary>
@@ -100,28 +108,40 @@ namespace PdfClown.Bytes
         string ReadLine();
 
         /**
-          <summary>Reads a float.</summary>
-          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-        */
-        float ReadFixed32();
-
-        /**
-          <summary>Reads a float.</summary>
-          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-        */
-        float ReadUnsignedFixed32();
-
-        /**
           <summary>Reads a short integer.</summary>
           <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
         */
-        short ReadShort();
+        short ReadInt16();
+
+        /**
+          <summary>Reads an unsigned short integer.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        ushort ReadUInt16();
+
+        /**
+          <summary>Reads a bit integer.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        long ReadInt64();
+
+        /**
+          <summary>Reads an unsigned bit integer.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        ulong ReadUInt64();
 
         /**
           <summary>Reads a signed byte integer.</summary>
           <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
         */
-        sbyte ReadSignedByte();
+        sbyte ReadSByte();
+
+        /**
+          <summary>Reads a unsigned byte integer.</summary>
+          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        */
+        byte ReadUByte();
 
         /**
           <summary>Reads a string.</summary>
@@ -130,20 +150,30 @@ namespace PdfClown.Bytes
         */
         string ReadString(int length);
 
-        /**
-          <summary>Reads an unsigned short integer.</summary>
-          <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-        */
-        ushort ReadUnsignedShort();
+        Span<byte> ReadSpan(int length);
+
+        Memory<byte> ReadMemory(int length);
+
+        void ByteAlign();
+
+        int ReadBit();
+
+        uint ReadBits(int count);
 
         /**
           <summary>Sets the pointer absolute position.</summary>
         */
-        void Seek(long position);
+        long Seek(long position);
 
         /**
           <summary>Sets the pointer relative position.</summary>
         */
         long Skip(long offset);
+
+        int Mark();
+
+        int Mark(long position);
+
+        void ResetMark();
     }
 }

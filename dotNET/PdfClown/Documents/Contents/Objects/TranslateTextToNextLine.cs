@@ -37,22 +37,13 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class TranslateTextToNextLine : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "T*";
 
         public static readonly TranslateTextToNextLine Value = new TranslateTextToNextLine();
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         private TranslateTextToNextLine() : base(OperatorKeyword)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         {
             var tlm = state.TextState.Tlm;
@@ -60,8 +51,5 @@ namespace PdfClown.Documents.Contents.Objects
             state.TextState.Tlm =
                 state.TextState.Tm = tlm;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

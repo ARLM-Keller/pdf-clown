@@ -30,6 +30,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace PdfClown.Tokens
@@ -39,23 +40,14 @@ namespace PdfClown.Tokens
     */
     internal sealed class CompressedWriter : Writer
     {
-        #region static
-        #region fields
         /**
           <summary>Maximum number of objects in individual object streams [PDF:1.7:H:19].</summary>
         */
         private static int ObjectStreamMaxEntryCount = 100;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         internal CompressedWriter(Files.File file, IOutputStream stream) : base(file, stream)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override void WriteIncremental()
         {
             // 1. Original content (header, body and previous trailer).
@@ -70,7 +62,7 @@ namespace PdfClown.Tokens
                   NOTE: Incremental xref information structure comprises multiple sections; this update adds
                   a new section.
                 */
-                XRefStream xrefStream = new XRefStream(file);
+                var xrefStream = new XRefStream(file);
 
                 // 2.1. Indirect objects.
                 IndirectObjects indirectObjects = file.IndirectObjects;
@@ -87,7 +79,7 @@ namespace PdfClown.Tokens
                 */
                 IDictionary<int, ObjectStream> extensionObjectStreams = new Dictionary<int, ObjectStream>();
                 int indirectObjectsPrecompressCount = indirectObjects.Count;
-                foreach (PdfIndirectObject indirectObject in new List<PdfIndirectObject>(indirectObjects.ModifiedObjects.Values))
+                foreach (PdfIndirectObject indirectObject in indirectObjects.ModifiedObjects.Values.ToList())
                 {
                     if (indirectObject.IsCompressible())
                     {
@@ -102,8 +94,7 @@ namespace PdfClown.Tokens
                       indirectObject,
                       xrefStream,
                       prevFreeEntry,
-                      extensionObjectStreams
-                      );
+                      extensionObjectStreams);
                 }
                 // 2.1.2. Additional object streams serialization.
                 for (int index = indirectObjectsPrecompressCount, limit = indirectObjects.Count; index < limit; index++)
@@ -112,8 +103,7 @@ namespace PdfClown.Tokens
                       indirectObjects[index],
                       xrefStream,
                       prevFreeEntry,
-                      null
-                      );
+                      null);
                 }
                 if (prevFreeEntry != null)
                 {
@@ -129,14 +119,12 @@ namespace PdfClown.Tokens
                     the file's indirect objects collection).
                   */
                   new PdfIndirectObject(
-                    file,
-                    xrefStream,
-                    xrefStreamEntry = new XRefEntry(indirectObjects.Count, 0, (int)stream.Length, XRefEntry.UsageEnum.InUse)
-                    ),
+                      file,
+                      xrefStream,
+                      xrefStreamEntry = new XRefEntry(indirectObjects.Count, 0, (int)stream.Length, XRefEntry.UsageEnum.InUse)),
                   xrefStream,
                   null,
-                  null
-                  );
+                  null);
             }
 
             // 3. Tail.
@@ -159,7 +147,7 @@ namespace PdfClown.Tokens
                   NOTE: Standard xref information structure comprises just one section; the xref stream is
                   generated on-the-fly and kept volatile not to interfere with the existing file structure.
                 */
-                XRefStream xrefStream = new XRefStream(file);
+                var xrefStream = new XRefStream(file);
 
                 // 2.1. Indirect objects.
                 IndirectObjects indirectObjects = file.IndirectObjects;
@@ -195,9 +183,7 @@ namespace PdfClown.Tokens
             // 3. Tail.
             WriteTail(xrefStreamEntry.Offset);
         }
-        #endregion
 
-        #region private
         /**
           <summary>Adds an indirect object entry to the specified xref stream.</summary>
           <param name="indirectObject">Indirect object.</param>
@@ -264,8 +250,5 @@ namespace PdfClown.Tokens
             }
             return prevFreeEntry;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

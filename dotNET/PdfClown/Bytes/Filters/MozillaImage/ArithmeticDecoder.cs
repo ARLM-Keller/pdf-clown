@@ -14,6 +14,8 @@
  */
 
 /* eslint no-var: error */
+using System;
+
 namespace PdfClown.Bytes.Filters
 {
     /**
@@ -93,23 +95,19 @@ namespace PdfClown.Bytes.Filters
             new Qe(qe:0x0001, nmps: 45, nlps: 43, switchFlag: 0 ),
             new Qe(qe:0x5601, nmps: 46, nlps: 46, switchFlag: 0 )
         };
-        private byte[] data;
-        private int bp;
-        private int dataEnd;
+        private Memory<byte> data;
         private int chigh;
         private int clow;
         private int ct;
         private int a;
+        private int bp;
 
 
         // C.3.5 Initialisation of the decoder (INITDEC)
-        public ArithmeticDecoder(byte[] data, int start, int end)
+        public ArithmeticDecoder(Memory<byte> data)
         {
             this.data = data;
-            this.bp = start;
-            this.dataEnd = end;
-
-            this.chigh = data[start];
+            this.chigh = data.Span[0];
             this.clow = 0;
 
             this.ByteIn();
@@ -123,10 +121,10 @@ namespace PdfClown.Bytes.Filters
         // C.3.4 Compressed data input (BYTEIN)
         void ByteIn()
         {
-            var data = this.data;
+            var data = this.data.Span;
             var bp = this.bp;
 
-            if (bp + 1 < dataEnd && data[bp] == 0xff)
+            if (bp + 1 < data.Length && data[bp] == 0xff)
             {
                 if (data[bp + 1] > 0x8f)
                 {
@@ -144,7 +142,7 @@ namespace PdfClown.Bytes.Filters
             else
             {
                 bp++;
-                this.clow += bp < this.dataEnd ? data[bp] << 8 : 0xff00;
+                this.clow += bp < data.Length ? data[bp] << 8 : 0xff00;
                 this.ct = 8;
                 this.bp = bp;
             }
@@ -231,7 +229,7 @@ namespace PdfClown.Bytes.Filters
         }
         sbyte ToSByte(int v)
         {
-            return (sbyte)v;
+            return unchecked((sbyte)v);
         }
     }
 }

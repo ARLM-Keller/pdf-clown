@@ -39,8 +39,6 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class RadioButton : ButtonField
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new radiobutton within the given document context.</summary>
           <param name="name"></param>
@@ -53,8 +51,7 @@ namespace PdfClown.Documents.Interaction.Forms
             Flags = EnumUtils.Mask(
               EnumUtils.Mask(Flags, FlagsEnum.Radio, true),
               FlagsEnum.NoToggleToOff,
-              true
-              );
+              true);
 
             FieldWidgets fieldWidgets = Widgets;
             for (int index = 1, length = widgets.Length; index < length; index++)
@@ -65,10 +62,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         internal RadioButton(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets whether all the field buttons can be deselected at the same time.</summary>
         */
@@ -108,8 +102,5 @@ namespace PdfClown.Documents.Interaction.Forms
                 BaseDataObject[PdfName.V] = (selected ? selectedValue : null);
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

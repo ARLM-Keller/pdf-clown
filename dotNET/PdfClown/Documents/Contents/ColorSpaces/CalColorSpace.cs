@@ -34,16 +34,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public abstract class CalColorSpace : CIEBasedColorSpace
     {
-        #region dynamic
-        #region constructors
         //TODO:IMPL new element constructor!
 
         protected CalColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the gamma of this color space.</summary>
         */
@@ -51,8 +46,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             get;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

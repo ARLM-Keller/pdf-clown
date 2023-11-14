@@ -39,8 +39,6 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class Rectangle : Shape
     {
-        #region dynamic
-        #region constructors
         public Rectangle(Page page, SKRect box, string text)
             : base(page, box, text, PdfName.Square)
         { }
@@ -48,18 +46,14 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Rectangle(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
 
-        #region interface
         public override void DrawSpecial(SKCanvas canvas)
         {
             using (var path = new SKPath())
             {
-                path.AddRect(Box);
+                path.AddRect(PageBox);
                 DrawPath(canvas, path);
             }
         }
-        #endregion
-        #endregion
     }
 }

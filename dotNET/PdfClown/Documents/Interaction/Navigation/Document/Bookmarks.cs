@@ -40,24 +40,17 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF10)]
     public sealed class Bookmarks : PdfObjectWrapper<PdfDictionary>, IList<Bookmark>
     {
-        #region dynamic
-        #region constructors
-        public Bookmarks(Document context) : base(
-            context,
-            new PdfDictionary(
-              new PdfName[2] { PdfName.Type, PdfName.Count },
-              new PdfDirectObject[2] { PdfName.Outlines, PdfInteger.Default }
-              )
-            )
+        public Bookmarks(Document context)
+            : base(context, new PdfDictionary
+            {
+                { PdfName.Type, PdfName.Outlines },
+                { PdfName.Count, PdfInteger.Default },
+            })
         { }
 
         public Bookmarks(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        #region IList
         public int IndexOf(Bookmark bookmark)
         { throw new NotImplementedException(); }
 
@@ -87,7 +80,6 @@ namespace PdfClown.Documents.Interaction.Navigation
             set => throw new NotImplementedException();
         }
 
-        #region ICollection
         public void Add(Bookmark bookmark)
         {
             /*
@@ -130,27 +122,16 @@ namespace PdfClown.Documents.Interaction.Navigation
         public void CopyTo(Bookmark[] bookmarks, int index)
         { throw new NotImplementedException(); }
 
-        public int Count
-        {
-            get
-            {
-                /*
+        /*
                   NOTE: The Count entry may be absent [PDF:1.6:8.2.2].
-                */
-                PdfInteger countObject = (PdfInteger)BaseDataObject[PdfName.Count];
-                if (countObject == null)
-                    return 0;
-
-                return countObject.RawValue;
-            }
-        }
+        */
+        public int Count => BaseDataObject.GetInt(PdfName.Count);
 
         public bool IsReadOnly => false;
 
         public bool Remove(Bookmark bookmark)
         { throw new NotImplementedException(); }
 
-        #region IEnumerable<ContentStream>
         IEnumerator<Bookmark> IEnumerable<Bookmark>.GetEnumerator()
         {
             PdfDirectObject bookmarkObject = BaseDataObject[PdfName.First];
@@ -165,23 +146,14 @@ namespace PdfClown.Documents.Interaction.Navigation
             } while (bookmarkObject != null);
         }
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator(
-          )
+        IEnumerator IEnumerable.GetEnumerator()
         { return ((IEnumerable<Bookmark>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
 
-        #region private
         /**
           <summary>Gets the count object, forcing its creation if it doesn't
           exist.</summary>
         */
-        private PdfInteger EnsureCountObject(
-          )
+        private PdfInteger EnsureCountObject()
         {
             /*
               NOTE: The Count entry may be absent [PDF:1.6:8.2.2].
@@ -192,8 +164,5 @@ namespace PdfClown.Documents.Interaction.Navigation
 
             return countObject;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

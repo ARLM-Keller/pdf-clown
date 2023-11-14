@@ -31,7 +31,7 @@ namespace PdfClown.Documents.Contents.Fonts
         /**
 		 * Constructor.
 		 */
-        public MacOSRomanEncoding() : base()
+        public MacOSRomanEncoding() 
         {
             Put(255, "notequal");
             Put(260, "infinity");

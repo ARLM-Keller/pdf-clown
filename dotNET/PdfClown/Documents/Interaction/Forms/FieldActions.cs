@@ -39,17 +39,12 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class FieldActions : PdfObjectWrapper<PdfDictionary>
     {
-        #region dynamic
-        #region constructors
         public FieldActions(Document context) : base(context, new PdfDictionary())
         { }
 
         public FieldActions(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets a JavaScript action to be performed to recalculate the value
           of this field when that of another field changes.</summary>
@@ -90,8 +85,5 @@ namespace PdfClown.Documents.Interaction.Forms
             get => (JavaScript)Action.Wrap(BaseDataObject[PdfName.V]);
             set => BaseDataObject[PdfName.V] = value.BaseObject;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -36,13 +36,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF12)]
     public sealed class SeparationColor : LeveledColor
     {
-        #region static
-        #region fields
         public static readonly SeparationColor Default = new SeparationColor(1);
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the color corresponding to the specified components.</summary>
           <param name="components">Color components to convert.</param>
@@ -53,32 +48,24 @@ namespace PdfClown.Documents.Contents.ColorSpaces
               ? components.Wrapper is SeparationColor color ? color : new SeparationColor(components)
               : Default;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SeparationColor(double intensity)
-            : this(new PdfArray(new PdfDirectObject[] { PdfReal.Get(intensity) }))
+            : this(new PdfArray(1) { PdfReal.Get(intensity) })
         //TODO:normalize value (see devicecolor)!
         { }
 
         internal SeparationColor(IList<PdfDirectObject> components)//TODO:consider color space reference!
             : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
-        #endregion
 
-        #region interface
-        #region public
 
         /**
           <summary>Gets/Sets the color intensity.</summary>
         */
         public float Intensity
         {
-            get => GetComponentValue(0);
-            set => SetComponentValue(0, value);
+            get => this[0];
+            set => this[0] = value;
         }
 
         public override object Clone(Document context)
@@ -86,8 +73,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             throw new NotImplementedException();
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -36,28 +36,16 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>Abstract 'go to destination' action.</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public abstract class GoToDestination<T>
-      : Action,
-        IGoToAction
+    public abstract class GoToDestination<T> : Action, IGoToAction
       where T : Destination
     {
-        #region dynamic
-        #region constructors
-        protected GoToDestination(
-          Document context,
-          PdfName actionType,
-          T destination
-          ) : base(context, actionType)
+        protected GoToDestination(Document context, PdfName actionType, T destination)
+            : base(context, actionType)
         { Destination = destination; }
 
-        protected GoToDestination(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected GoToDestination(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the destination to jump to.</summary>
         */
@@ -72,8 +60,5 @@ namespace PdfClown.Documents.Interaction.Actions
                 BaseDataObject[PdfName.D] = value.NamedBaseObject;
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

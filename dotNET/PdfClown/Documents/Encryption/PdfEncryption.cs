@@ -17,6 +17,7 @@
 
 using PdfClown;
 using PdfClown.Objects;
+using System;
 using System.IO;
 
 namespace PdfClown.Documents.Encryption
@@ -71,7 +72,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public static readonly int DEFAULT_VERSION = VERSION0_UNDOCUMENTED_UNSUPPORTED;
 
-        private SecurityHandler securityHandler;
+        private ISecurityHandler securityHandler;
 
         /**
 		 * creates a new empty encryption Dictionary.
@@ -95,7 +96,7 @@ namespace PdfClown.Documents.Encryption
 		 * @return a security handler instance
 		 * @throws IOException if there is no security handler available which matches the Filter
 		 */
-        public SecurityHandler SecurityHandler
+        public ISecurityHandler SecurityHandler
         {
             get
             {
@@ -173,7 +174,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public int Length
         {
-            get => Dictionary.GetInt(PdfName.Length, 40);
+            get => Dictionary.GetInt(PdfName.Length, 0);
             set => Dictionary.SetInt(PdfName.Length, value);
         }
 
@@ -212,19 +213,10 @@ namespace PdfClown.Documents.Encryption
 		*
 		* @throws IOException If there is an error setting the data.
 		*/
-        public byte[] OwnerKey
+        public Memory<byte> OwnerKey
         {
-            get
-            {
-                byte[] o = null;
-                PdfString owner = (PdfString)Dictionary.Resolve(PdfName.O);
-                if (owner != null)
-                {
-                    o = owner.GetBuffer();
-                }
-                return o;
-            }
-            set => Dictionary[PdfName.O] = new PdfString(value);
+            get => Dictionary.GetTextBytes(PdfName.O);
+            set => Dictionary.SetTextBytes(PdfName.O, value);
         }
 
 
@@ -242,19 +234,10 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error setting the data.
 		 */
-        public byte[] UserKey
+        public Memory<byte> UserKey
         {
-            get
-            {
-                byte[] u = null;
-                PdfString user = (PdfString)Dictionary.Resolve(PdfName.U);
-                if (user != null)
-                {
-                    u = user.GetBuffer();
-                }
-                return u;
-            }
-            set => Dictionary[PdfName.U] = new PdfString(value);
+            get => Dictionary.GetTextBytes(PdfName.U);
+            set => Dictionary.SetTextBytes(PdfName.U, value);
         }
 
         /**
@@ -271,19 +254,10 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error setting the data.
 		 */
-        public byte[] OwnerEncryptionKey
+        public Memory<byte> OwnerEncryptionKey
         {
-            get
-            {
-                byte[] oe = null;
-                PdfString ownerEncryptionKey = (PdfString)Dictionary.Resolve(PdfName.OE);
-                if (ownerEncryptionKey != null)
-                {
-                    oe = ownerEncryptionKey.GetBuffer();
-                }
-                return oe;
-            }
-            set => Dictionary[PdfName.OE] = new PdfString(value);
+            get => Dictionary.GetTextBytes(PdfName.OE);
+            set => Dictionary.SetTextBytes(PdfName.OE, value);
         }
 
         /**
@@ -300,19 +274,10 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error setting the data.
 		 */
-        public byte[] UserEncryptionKey
+        public Memory<byte> UserEncryptionKey
         {
-            get
-            {
-                byte[] ue = null;
-                PdfString userEncryptionKey = (PdfString)Dictionary.Resolve(PdfName.UE);
-                if (userEncryptionKey != null)
-                {
-                    ue = userEncryptionKey.GetBuffer();
-                }
-                return ue;
-            }
-            set => Dictionary[PdfName.UE] = new PdfString(value);
+            get => Dictionary.GetTextBytes(PdfName.UE);
+            set => Dictionary.SetTextBytes(PdfName.UE, value);
         }
 
         /**
@@ -341,16 +306,7 @@ namespace PdfClown.Documents.Encryption
             get
             {
                 // default is true (see 7.6.3.2 Standard Encryption Dictionary PDF 32000-1:2008)
-                bool encryptMetaData = true;
-
-                PdfObject value = Dictionary.Resolve(PdfName.EncryptMetadata);
-
-                if (value is PdfBoolean boolValue)
-                {
-                    encryptMetaData = boolValue.BooleanValue;
-                }
-
-                return encryptMetaData;
+                return Dictionary.GetBool(PdfName.EncryptMetadata, true);
             }
         }
 
@@ -443,13 +399,13 @@ namespace PdfClown.Documents.Encryption
         public PdfCryptFilterDictionary GetCryptFilterDictionary(PdfName cryptFilterName)
         {
             // See CF in "Table 20 – Entries common to all encryption dictionaries"
-            PdfObject baseObj = Dictionary.Resolve(PdfName.CF);
-            if (baseObj is PdfDictionary)
+            var baseObj = Dictionary.GetDictionary(PdfName.CF);
+            if (baseObj != null)
             {
-                PdfObject base2 = ((PdfDictionary)baseObj).Resolve(cryptFilterName);
-                if (base2 is PdfDictionary)
+                var base2 = baseObj.GetDictionary(cryptFilterName);
+                if (base2 != null)
                 {
-                    return new PdfCryptFilterDictionary((PdfDictionary)base2);
+                    return Wrap<PdfCryptFilterDictionary>(base2);
                 }
             }
             return null;
@@ -486,19 +442,9 @@ namespace PdfClown.Documents.Encryption
 		 */
         public PdfName StreamFilterName
         {
-            get
-            {
-                PdfName stmF = (PdfName)Dictionary.Resolve(PdfName.StmF);
-                if (stmF == null)
-                {
-                    stmF = PdfName.Identity;
-                }
-                return stmF;
-            }
+            get => Dictionary.GetName(PdfName.StmF, PdfName.Identity);
             set => Dictionary[PdfName.StmF] = value;
         }
-
-
 
         /**
 		 * Returns the name of the filter which is used for de/encrypting strings.
@@ -513,15 +459,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public PdfName StringFilterName
         {
-            get
-            {
-                PdfName strF = (PdfName)Dictionary.Resolve(PdfName.StrF);
-                if (strF == null)
-                {
-                    strF = PdfName.Identity;
-                }
-                return strF;
-            }
+            get => Dictionary.GetName(PdfName.StrF, PdfName.Identity);
             set => Dictionary[PdfName.StrF] = value;
         }
 
@@ -539,18 +477,9 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error setting the data.
 		 */
-        public byte[] Perms
+        public Memory<byte> Perms
         {
-            get
-            {
-                byte[] perms = null;
-                PdfString permsCosstring = (PdfString)Dictionary.Resolve(PdfName.Perms);
-                if (permsCosstring != null)
-                {
-                    perms = permsCosstring.GetBuffer();
-                }
-                return perms;
-            }
+            get => Dictionary.GetTextBytes(PdfName.Perms);
             set => Dictionary[PdfName.Perms] = new PdfString(value);
         }
 

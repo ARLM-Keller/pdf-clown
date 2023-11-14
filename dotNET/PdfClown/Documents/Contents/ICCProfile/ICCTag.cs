@@ -39,6 +39,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public ICCTagTable Table { get; set; }
 
-        public abstract void Load(Bytes.Buffer buffer);
+        public abstract void Load(Bytes.ByteStream buffer);
     }
 }

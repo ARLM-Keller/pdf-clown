@@ -45,7 +45,6 @@ namespace PdfClown.Documents.Functions
         private IList<Interval<int>> encodes;
         private List<int> sampleCounts;
         private float[] samples;
-        #region types
         public enum InterpolationOrderEnum
         {
             /**
@@ -57,19 +56,13 @@ namespace PdfClown.Documents.Functions
             */
             Cubic = 3
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         //TODO:implement function creation!
 
         internal Type0Function(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override float[] Calculate(float[] inputs)
+        public override float[] Calculate(Span<float> inputs)
         {
             //Mozilla Pdf.js
             var domains = Domains;
@@ -153,28 +146,19 @@ namespace PdfClown.Documents.Functions
         /**
           <summary>Gets the linear mapping of input values into the domain of the function's sample table.</summary>
         */
-        public IList<Interval<int>> Encodes => encodes ?? (encodes = GetIntervals<int>(
+        public IList<Interval<int>> Encodes => encodes ??= GetIntervals<int>(
                   PdfName.Encode,
                   delegate (IList<Interval<int>> intervals)
                   {
                       foreach (int sampleCount in SampleCounts)
                       { intervals.Add(new Interval<int>(0, sampleCount - 1)); }
                       return intervals;
-                  }));
+                  });
 
         /**
           <summary>Gets the order of interpolation between samples.</summary>
         */
-        public InterpolationOrderEnum Order
-        {
-            get
-            {
-                PdfInteger interpolationOrderObject = (PdfInteger)Dictionary[PdfName.Order];
-                return (interpolationOrderObject == null
-                  ? InterpolationOrderEnum.Linear
-                  : (InterpolationOrderEnum)interpolationOrderObject.RawValue);
-            }
-        }
+        public InterpolationOrderEnum Order => (InterpolationOrderEnum)Dictionary.GetInt(PdfName.Order, 1);
 
         /**
           <summary>Gets the linear mapping of sample values into the ranges of the function's output values.</summary>
@@ -184,7 +168,7 @@ namespace PdfClown.Documents.Functions
         /**
           <summary>Gets the number of bits used to represent each sample.</summary>
         */
-        public int BitsPerSample => ((PdfInteger)Dictionary[PdfName.BitsPerSample]).RawValue;
+        public int BitsPerSample => Dictionary.GetInt(PdfName.BitsPerSample);
 
         /**
           <summary>Gets the number of samples in each input dimension of the sample table.</summary>
@@ -214,7 +198,7 @@ namespace PdfClown.Documents.Functions
                 var bps = BitsPerSample;
                 var bytes = bps / 8;
                 var stream = BaseDataObject as PdfStream;
-                using (var buffer = stream.ExtractBody(true) as Bytes.Buffer)
+                using (var buffer = stream.ExtractBody(true) as Bytes.ByteStream)
                 {
                     var length = 1;
                     for (int i = 0, ii = size.Count; i < ii; i++)
@@ -229,7 +213,7 @@ namespace PdfClown.Documents.Functions
                     // 32 is a valid bps so shifting won't work
                     var sampleMul = 1.0 / (Math.Pow(2.0, bps) - 1);
 
-                    var strBytes = buffer.ReadBytes((length * bps + 7) / 8);
+                    var strBytes = buffer.ReadSpan((length * bps + 7) / 8);
                     var strIdx = 0;
                     for (int i = 0; i < length; i++)
                     {
@@ -248,10 +232,5 @@ namespace PdfClown.Documents.Functions
             }
             return samples;
         }
-
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

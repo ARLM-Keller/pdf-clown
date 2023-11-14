@@ -39,21 +39,13 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF12)]
     public sealed class PropertyListResources : ResourceItems<PropertyList>
     {
-        #region dynamic
-        #region constructors
         public PropertyListResources(Document context) : base(context)
         { }
 
         public PropertyListResources(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override PropertyList WrapItem(PdfDirectObject baseObject)
         { return PropertyList.Wrap(baseObject); }
-        #endregion
-        #endregion
-        #endregion
     }
 }

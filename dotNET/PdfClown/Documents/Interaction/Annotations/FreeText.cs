@@ -31,6 +31,7 @@ using PdfClown.Util.Math.Geom;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -43,12 +44,14 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class FreeText : Markup
     {
-        #region types
         /**
           <summary>Callout line [PDF:1.6:8.4.5].</summary>
         */
         public class CalloutLine : PdfObjectWrapper<PdfArray>
         {
+            private SKPoint? pageEnd;
+            private SKPoint? pageKnee;
+            private SKPoint? pageStart;
 
             public CalloutLine(Page page, SKPoint start, SKPoint end)
                 : this(page, start, null, end)
@@ -57,7 +60,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             public CalloutLine(Page page, SKPoint start, SKPoint? knee, SKPoint end)
                 : base(new PdfArray())
             {
-                SKMatrix matrix = page.InRotateMatrix;
+                SKMatrix matrix = page.InvertRotateMatrix;
                 PdfArray baseDataObject = BaseDataObject;
                 {
                     start = matrix.MapPoint(start);
@@ -78,37 +81,64 @@ namespace PdfClown.Documents.Interaction.Annotations
             public CalloutLine(PdfDirectObject baseObject) : base(baseObject)
             { }
 
-            public SKPoint End
+            public SKPoint PageEnd
             {
                 get
                 {
-                    PdfArray coordinates = BaseDataObject;
-                    var point = (coordinates.Count < 6)
-                        ? new SKPoint(
-                          (float)((IPdfNumber)coordinates[2]).RawValue,
-                          (float)((IPdfNumber)coordinates[3]).RawValue)
-                        : new SKPoint(
-                          (float)((IPdfNumber)coordinates[4]).RawValue,
-                          (float)((IPdfNumber)coordinates[5]).RawValue);
-
-                    return FreeText.PageMatrix.MapPoint(point);
+                    return pageEnd ??= BaseDataObject is PdfArray coordinates
+                        ? coordinates.Count < 6
+                            ? new SKPoint(
+                            coordinates.GetFloat(2),
+                            coordinates.GetFloat(3))
+                            : new SKPoint(
+                            coordinates.GetFloat(4),
+                            coordinates.GetFloat(5))
+                       : SKPoint.Empty;
                 }
                 set
                 {
+                    pageEnd = value;
                     PdfArray coordinates = BaseDataObject;
-                    var val = FreeText.InvertPageMatrix.MapPoint(value);
                     if (coordinates.Count < 6)
+                    {
+                        coordinates[2] = PdfReal.Get(value.X);
+                        coordinates[3] = PdfReal.Get(value.Y);
+                    }
+                    else
+                    {
+                        coordinates[4] = PdfReal.Get(value.X);
+                        coordinates[5] = PdfReal.Get(value.Y);
+                    }
+                }
+            }
+
+            public SKPoint End
+            {
+                get => FreeText.PageMatrix.MapPoint(PageEnd);
+                set
+                {
+                    PageEnd = FreeText.InvertPageMatrix.MapPoint(value);
+                    FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
+                    FreeText.RefreshBox();
+                }
+            }
+
+            public SKPoint? PageKnee
+            {
+                get => pageKnee ??= BaseDataObject is PdfArray coordinates
+                        ? coordinates.Count < 6
+                            ? null
+                            : new SKPoint(coordinates.GetFloat(2), coordinates.GetFloat(3))
+                            : SKPoint.Empty;
+                set
+                {
+                    pageKnee = value;
+                    PdfArray coordinates = BaseDataObject;
+                    if (value is SKPoint val)
                     {
                         coordinates[2] = PdfReal.Get(val.X);
                         coordinates[3] = PdfReal.Get(val.Y);
                     }
-                    else
-                    {
-                        coordinates[4] = PdfReal.Get(val.X);
-                        coordinates[5] = PdfReal.Get(val.Y);
-                    }
-                    FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
-                    FreeText.RefreshBox();
                 }
             }
 
@@ -116,41 +146,42 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 get
                 {
-                    PdfArray coordinates = BaseDataObject;
-                    if (coordinates.Count < 6)
-                        return null;
-
-                    return FreeText.PageMatrix.MapPoint(new SKPoint(
-                      (float)((IPdfNumber)coordinates[2]).RawValue,
-                      (float)((IPdfNumber)coordinates[3]).RawValue));
+                    var pageKnee = PageKnee;
+                    return pageKnee == null ? null : FreeText.PageMatrix.MapPoint((SKPoint)pageKnee);
                 }
                 set
                 {
-                    PdfArray coordinates = BaseDataObject;
-                    var val = FreeText.InvertPageMatrix.MapPoint(value.Value);
-                    coordinates[2] = PdfReal.Get(val.X);
-                    coordinates[3] = PdfReal.Get(val.Y);
+                    PageKnee = FreeText.InvertPageMatrix.MapPoint(value.Value);
                     FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
                     //FreeText.RefreshBox();
                 }
             }
 
-            public SKPoint Start
+            public SKPoint PageStart
             {
                 get
                 {
-                    PdfArray coordinates = BaseDataObject;
-
-                    return FreeText.PageMatrix.MapPoint(new SKPoint(
-                      (float)((IPdfNumber)coordinates[0]).RawValue,
-                      (float)((IPdfNumber)coordinates[1]).RawValue));
+                    return pageStart ??= BaseDataObject is PdfArray coordinates
+                        ? new SKPoint(
+                      coordinates.GetFloat(0),
+                      coordinates.GetFloat(1))
+                        : SKPoint.Empty;
                 }
                 set
                 {
+                    pageStart = value;
                     PdfArray coordinates = BaseDataObject;
-                    var val = FreeText.InvertPageMatrix.MapPoint(value);
-                    coordinates[0] = PdfReal.Get(val.X);
-                    coordinates[1] = PdfReal.Get(val.Y);
+                    coordinates[0] = PdfReal.Get(value.X);
+                    coordinates[1] = PdfReal.Get(value.Y);
+                }
+            }
+
+            public SKPoint Start
+            {
+                get => FreeText.PageMatrix.MapPoint(PageStart);
+                set
+                {
+                    PageStart = FreeText.InvertPageMatrix.MapPoint(value);
                     FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
                     FreeText.RefreshBox();
                 }
@@ -159,10 +190,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             public FreeText FreeText { get; internal set; }
         }
 
-        #endregion
 
-        #region static
-        #region fields
         private static readonly JustificationEnum DefaultJustification = JustificationEnum.Left;
         private TextTopLeftControlPoint cpTexcTopLeft;
         private TextTopRightControlPoint cpTexcTopRight;
@@ -173,22 +201,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         private TextLineKneeControlPoint cpLineKnee;
         private TextMidControlPoint cpTextMid;
         private SKRect? textBox;
+        private SKRect? pageTextBox;
         private bool allowRefresh = true;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public FreeText(Page page, SKRect box, string text)
             : base(page, PdfName.FreeText, box, text)
         { }
 
         public FreeText(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
-
-        #region interface
-        #region public
 
         /**
           <summary>Gets/Sets the justification to be used in displaying the annotation's text.</summary>
@@ -228,13 +249,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get
             {
-                var calloutCalloutLine = Callout;
-                var line = Wrap<CalloutLine>(calloutCalloutLine);
+                var line = Wrap<CalloutLine>(Callout);
                 if (line != null)
                 {
                     line.FreeText = this;
                 }
-
                 return line;
             }
             set
@@ -259,13 +278,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public LineEndStyleEnum LineEndStyle
         {
-            get => LineEndStyleEnumExtension.Get((PdfName)BaseDataObject[PdfName.LE]);
+            get => LineEndStyleEnumExtension.Get(BaseDataObject.GetString(PdfName.LE));
             set
             {
                 var oldValue = LineEndStyle;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.LE] = value.GetName();
+                    BaseDataObject.SetName(PdfName.LE, value.GetName());
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -279,37 +298,53 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => null;
             set => throw new NotSupportedException();
         }
-        #endregion
 
-        #region private
+        public SKRect PageTextBox
+        {
+            get => pageTextBox ??= GetPageTextBox();
+            set
+            {
+                pageTextBox = value;
+                textBox = null;
+                var bounds = Rect.ToRect();
+                Padding = new Objects.Rectangle(new SKRect(
+                    bounds.Left - value.Left,
+                    bounds.Top - value.Top,
+                    value.Right - bounds.Right,
+                    value.Bottom - bounds.Bottom));
+            }
+        }
+
+        private SKRect GetPageTextBox()
+        {
+            var bounds = Rect.ToRect();
+            var padding = Padding?.ToRect();
+            return new SKRect(
+                bounds.Left + (float)(padding?.Left ?? 0D),
+                bounds.Top + (float)(padding?.Top ?? 0D),
+                bounds.Right - (float)(padding?.Right ?? 0D),
+                bounds.Bottom - (float)(padding?.Bottom ?? 0D));
+        }
+
         public SKRect TextBox
         {
             get
             {
                 if (textBox == null)
                 {
-                    var bounds = Rect.ToRect();
-                    var diff = (PdfArray)BaseDataObject[PdfName.RD];
-                    textBox = PageMatrix.MapRect(new SKRect(
-                        bounds.Left + (diff?.GetFloat(0) ?? 0F),
-                        bounds.Top + (diff?.GetFloat(1) ?? 0F),
-                        bounds.Right - (diff?.GetFloat(2) ?? 0F),
-                        bounds.Bottom - (diff?.GetFloat(3) ?? 0F)));
+                    textBox = PageMatrix.MapRect(PageTextBox);
                 }
                 return textBox.Value;
             }
             set
             {
-                var oldValue = TextBox;
-                textBox = value;
-                var mapped = InvertPageMatrix.MapRect(value);
-                var bounds = Rect;
-                BaseDataObject[PdfName.RD] = new PdfArray(
-                    PdfReal.Get(mapped.Left - bounds.Left),
-                    PdfReal.Get(mapped.Top - bounds.Bottom),
-                    PdfReal.Get(bounds.Right - mapped.Right),
-                    PdfReal.Get(bounds.Top - mapped.Bottom));
-                OnPropertyChanged(oldValue, value);
+                if (TextBox != value)
+                {
+                    var oldValue = TextBox;
+                    PageTextBox = InvertPageMatrix.MapRect(value);
+                    textBox = value;
+                    OnPropertyChanged(oldValue, value);
+                }
             }
         }
 
@@ -319,12 +354,32 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => BaseDataObject[PdfName.RD] = value?.BaseDataObject;
         }
 
+        public SKPoint PageTextTopLeftPoint
+        {
+            get => new SKPoint(PageTextBox.Left, PageTextBox.Top);
+            set
+            {
+                PageTextBox = new SKRect(value.X, value.Y, PageTextBox.Right, PageTextBox.Bottom);
+                RefreshBox();
+            }
+        }
+
         public SKPoint TextTopLeftPoint
         {
             get => new SKPoint(TextBox.Left, TextBox.Top);
             set
             {
                 TextBox = new SKRect(value.X, value.Y, TextBox.Right, TextBox.Bottom);
+                RefreshBox();
+            }
+        }
+
+        public SKPoint PageTextTopRightPoint
+        {
+            get => new SKPoint(PageTextBox.Right, PageTextBox.Top);
+            set
+            {
+                PageTextBox = new SKRect(PageTextBox.Left, value.Y, value.X, PageTextBox.Bottom);
                 RefreshBox();
             }
         }
@@ -339,6 +394,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public SKPoint PageTextBottomLeftPoint
+        {
+            get => new SKPoint(PageTextBox.Left, PageTextBox.Bottom);
+            set
+            {
+                PageTextBox = new SKRect(value.X, PageTextBox.Top, PageTextBox.Right, value.Y);
+                RefreshBox();
+            }
+        }
+
         public SKPoint TextBottomLeftPoint
         {
             get => new SKPoint(TextBox.Left, TextBox.Bottom);
@@ -349,12 +414,35 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public SKPoint PageTextBottomRightPoint
+        {
+            get => new SKPoint(PageTextBox.Right, PageTextBox.Bottom);
+            set
+            {
+                PageTextBox = new SKRect(PageTextBox.Left, PageTextBox.Top, value.X, value.Y);
+                RefreshBox();
+            }
+        }
+
         public SKPoint TextBottomRightPoint
         {
             get => new SKPoint(TextBox.Right, TextBox.Bottom);
             set
             {
                 TextBox = new SKRect(TextBox.Left, TextBox.Top, value.X, value.Y);
+                RefreshBox();
+            }
+        }
+
+        public SKPoint PageTextMidPoint
+        {
+            get => new SKPoint(PageTextBox.MidX, PageTextBox.MidY);
+            set
+            {
+                var textBox = PageTextBox;
+                var oldMid = new SKPoint(textBox.MidX, textBox.MidY);
+                textBox.Location += value - oldMid;
+                PageTextBox = textBox;
                 RefreshBox();
             }
         }
@@ -376,8 +464,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override void DrawSpecial(SKCanvas canvas)
         {
-            var bounds = Box;
-            var textBounds = TextBox;
+            var textBounds = PageTextBox;
             var color = SKColor;
 
             using (var paint = new SKPaint { Color = color, Style = SKPaintStyle.Fill })
@@ -393,10 +480,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                     var line = Line;
                     using (var linePath = new SKPath())
                     {
-                        linePath.MoveTo(Line.Start);
-                        if (line.Knee != null)
-                            linePath.LineTo(Line.Knee.Value);
-                        linePath.LineTo(Line.End);
+                        linePath.MoveTo(Line.PageStart);
+                        if (line.PageKnee is SKPoint point)
+                            linePath.LineTo(point);
+                        linePath.LineTo(Line.PageEnd);
 
                         //if (LineStartStyle == LineEndStyleEnum.Square)
                         //{
@@ -427,13 +514,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         }
 
-        public override void MoveTo(SKRect newBox)
+        public override void PageMoveTo(SKRect newBox)
         {
             allowRefresh = false;
             Appearance.Normal[null] = null;
 
-            var oldBox = Box;
-            var oldTextBox = TextBox;
+            var oldBox = PageBox;
+            var oldTextBox = PageTextBox;
 
             var dif = SKMatrix.CreateIdentity()
                 .PreConcat(SKMatrix.CreateTranslation(newBox.MidX, newBox.MidY))
@@ -442,13 +529,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
             if (Intent == MarkupIntent.FreeTextCallout && Line != null)
             {
-                Line.Start = dif.MapPoint(Line.Start);
-                Line.End = dif.MapPoint(Line.End);
-                if (Line.Knee != null)
-                    Line.Knee = dif.MapPoint(Line.Knee.Value);
+                Line.PageStart = dif.MapPoint(Line.PageStart);
+                Line.PageEnd = dif.MapPoint(Line.PageEnd);
+                if (Line.PageKnee != null)
+                    Line.PageKnee = dif.MapPoint(Line.PageKnee.Value);
             }
-            base.MoveTo(newBox);
-            TextBox = dif.MapRect(oldTextBox);
+            base.PageMoveTo(newBox);
+            PageTextBox = dif.MapRect(oldTextBox);
             allowRefresh = true;
         }
 
@@ -456,43 +543,43 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             if (Intent == MarkupIntent.FreeTextCallout && Line != null)
             {
-                var textBox = TextBox;
+                var textBox = PageTextBox;
                 var textBoxInflate = SKRect.Inflate(textBox, 15, 15);
-                var midpoint = TextMidPoint;
-                var start = Line.Start;
+                var midpoint = PageTextMidPoint;
+                var start = Line.PageStart;
                 if (start.X > (textBox.Left - 5) && start.X < (textBox.Right + 5))
                 {
                     if (start.Y < textBox.Top)
                     {
-                        Line.End = new SKPoint(textBox.MidX, textBox.Top);
-                        if (Line.Knee != null)
+                        Line.PageEnd = new SKPoint(textBox.MidX, textBox.Top);
+                        if (Line.PageKnee != null)
                         {
-                            Line.Knee = new SKPoint(textBoxInflate.MidX, textBoxInflate.Top);
+                            Line.PageKnee = new SKPoint(textBoxInflate.MidX, textBoxInflate.Top);
                         }
                     }
                     else
                     {
-                        Line.End = new SKPoint(textBox.MidX, textBox.Bottom);
-                        if (Line.Knee != null)
+                        Line.PageEnd = new SKPoint(textBox.MidX, textBox.Bottom);
+                        if (Line.PageKnee != null)
                         {
-                            Line.Knee = new SKPoint(textBoxInflate.MidX, textBoxInflate.Bottom);
+                            Line.PageKnee = new SKPoint(textBoxInflate.MidX, textBoxInflate.Bottom);
                         }
                     }
                 }
                 else if (start.X < textBox.Left)
                 {
-                    Line.End = new SKPoint(textBox.Left, textBox.MidY);
-                    if (Line.Knee != null)
+                    Line.PageEnd = new SKPoint(textBox.Left, textBox.MidY);
+                    if (Line.PageKnee != null)
                     {
-                        Line.Knee = new SKPoint(textBoxInflate.Left, textBoxInflate.MidY);
+                        Line.PageKnee = new SKPoint(textBoxInflate.Left, textBoxInflate.MidY);
                     }
                 }
                 else
                 {
-                    Line.End = new SKPoint(textBox.Right, textBox.MidY);
-                    if (Line.Knee != null)
+                    Line.PageEnd = new SKPoint(textBox.Right, textBox.MidY);
+                    if (Line.PageKnee != null)
                     {
-                        Line.Knee = new SKPoint(textBoxInflate.Right, textBoxInflate.MidY);
+                        Line.PageKnee = new SKPoint(textBoxInflate.Right, textBoxInflate.MidY);
                     }
                 }
             }
@@ -504,23 +591,22 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return;
             allowRefresh = false;
             Appearance.Normal[null] = null;
-            var oldTextBox = TextBox;
+            var oldTextBox = PageTextBox;
             CalcLine();
-            var box = SKRect.Create(TextTopLeftPoint, SKSize.Empty);
-            box.Add(TextTopRightPoint);
-            box.Add(TextBottomRightPoint);
-            box.Add(TextBottomLeftPoint);
+            var box = SKRect.Create(PageTextTopLeftPoint, SKSize.Empty);
+            box.Add(PageTextTopRightPoint);
+            box.Add(PageTextBottomRightPoint);
+            box.Add(PageTextBottomLeftPoint);
             if (Intent == MarkupIntent.FreeTextCallout && Line != null)
             {
-                box.Add(Line.Start);
-                box.Add(Line.End);
-                if (Line.Knee != null)
-                {
-                    box.Add(Line.Knee.Value);
-                }
+                box.Add(Line.PageStart);
+                if (Line.PageKnee is SKPoint knee)
+                    box.Add(knee);
+                box.Add(Line.PageEnd);
+
             }
-            Box = box;
-            TextBox = oldTextBox;
+            PageBox = box;
+            PageTextBox = oldTextBox;
             base.RefreshBox();
             allowRefresh = true;
         }
@@ -562,9 +648,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             cloned.cpTextMid = null;
             return cloned;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     public abstract class FreeTextControlPoint : ControlPoint

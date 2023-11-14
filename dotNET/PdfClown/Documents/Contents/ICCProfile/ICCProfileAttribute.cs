@@ -38,10 +38,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return $"{Flags}";
         }
 
-        public void Load(Bytes.IBuffer buffer)
+        public void Load(Bytes.IByteStream buffer)
         {
-            Flags = (ICCProfileAttributeFlags)buffer.ReadUnsignedInt();
-            Reserved = buffer.ReadUnsignedInt();
+            Flags = (ICCProfileAttributeFlags)buffer.ReadUInt32();
+            Reserved = buffer.ReadUInt32();
         }
     }
 

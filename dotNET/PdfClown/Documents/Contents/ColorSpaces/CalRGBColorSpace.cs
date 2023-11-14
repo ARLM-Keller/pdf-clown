@@ -202,12 +202,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             MatrixProduct(BRADFORD_SCALE_INVERSE_MATRIX, LMS_D65, result);
         }
 
-        #region dynamic
-
-        private float[] blackPoint;
-        private float[] whitePoint;
         private float[] gamma;
-        private float[] matrix;
+        private SKMatrix? matrix;
         private float GR;
         private float GG;
         private float GB;
@@ -221,35 +217,28 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private float MYC;
         private float MZC;
 
-        #region constructors
         //TODO:IMPL new element constructor!
 
         internal CalRGBColorSpace(PdfDirectObject baseObject) : base(baseObject)
         {
-            blackPoint = BlackPoint;
-            whitePoint = WhitePoint;
-            gamma = Gamma;
-            var matrixData = (PdfArray)Dictionary.Resolve(PdfName.Matrix);
-            matrix = matrixData?.Select(p => ((IPdfNumber)p).FloatValue).ToArray() ?? new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+            var gamma = Gamma;
+            var matrix = Matrix;
             // Translate arguments to spec variables.
             this.GR = gamma[0];
             this.GG = gamma[1];
             this.GB = gamma[2];
 
-            this.MXA = matrix[0];
-            this.MYA = matrix[1];
-            this.MZA = matrix[2];
-            this.MXB = matrix[3];
-            this.MYB = matrix[4];
-            this.MZB = matrix[5];
-            this.MXC = matrix[6];
-            this.MYC = matrix[7];
-            this.MZC = matrix[8];
+            this.MXA = matrix.ScaleX;
+            this.MYA = matrix.SkewY;
+            this.MZA = matrix.SkewX;
+            this.MXB = matrix.ScaleY;
+            this.MYB = matrix.TransX;
+            this.MZB = matrix.TransY;
+            this.MXC = matrix.Persp0;
+            this.MYC = matrix.Persp1;
+            this.MZC = matrix.Persp2;
         }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
@@ -261,11 +250,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             get
             {
-                PdfArray gamma = (PdfArray)Dictionary[PdfName.Gamma];
-                return (gamma == null
-                  ? new float[] { 1, 1, 1 }
-                  : new float[] { gamma.GetFloat(0), gamma.GetFloat(1), gamma.GetFloat(2) }
-                  );
+                return gamma ??= (Dictionary.Resolve(PdfName.Gamma) is PdfArray array
+                  ? new float[] { array.GetFloat(0), array.GetFloat(1), array.GetFloat(2) }
+                  : new float[] { 1, 1, 1 });
             }
         }
 
@@ -273,30 +260,34 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             get
             {
-                PdfArray matrix = (PdfArray)Dictionary.Resolve(PdfName.Matrix);
-                if (matrix == null)
-                    return SKMatrix.Identity;
-                else
-                    return new SKMatrix
+                return matrix ??= Dictionary.Resolve(PdfName.Matrix) is PdfArray array
+                    ? new SKMatrix
                     {
-                        ScaleX = matrix.GetFloat(0),
-                        SkewY = matrix.GetFloat(1),
-                        SkewX = matrix.GetFloat(2),
-                        ScaleY = matrix.GetFloat(3),
-                        TransX = matrix.GetFloat(4),
-                        TransY = matrix.GetFloat(5),
-                        Persp2 = 1
-                    };
+                        ScaleX = array.GetFloat(0),
+                        SkewY = array.GetFloat(1),
+                        SkewX = array.GetFloat(2),
+                        ScaleY = array.GetFloat(3),
+                        TransX = array.GetFloat(4),
+                        TransY = array.GetFloat(5),
+                        Persp0 = array.GetFloat(6),
+                        Persp1 = array.GetFloat(7),
+                        Persp2 = array.GetFloat(8, 1F)
+                    }
+                    : SKMatrix.Identity;
             }
             set => Dictionary[PdfName.Matrix] =
-                 new PdfArray(
+                 new PdfArray(9)
+                 {
                     PdfReal.Get(value.ScaleX),
                     PdfReal.Get(value.SkewY),
                     PdfReal.Get(value.SkewX),
                     PdfReal.Get(value.ScaleY),
                     PdfReal.Get(value.TransX),
-                    PdfReal.Get(value.TransY)
-                    );
+                    PdfReal.Get(value.TransY),
+                    PdfReal.Get(value.Persp0),
+                    PdfReal.Get(value.Persp1),
+                    PdfReal.Get(value.Persp2)
+                 };
         }
 
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
@@ -312,7 +303,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return Calculate(calColor.R, calColor.G, calColor.B, alpha);
         }
 
-        public override SKColor GetSKColor(float[] components, float? alpha = null)
+        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
         {
             return Calculate(components[0], components[1], components[2], alpha);
         }
@@ -347,10 +338,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             XYZ[2] = (float)Z;
             var XYZ_Flat = new float[3];
 
-            NormalizeWhitePointToFlat(whitePoint, XYZ, XYZ_Flat);
+            NormalizeWhitePointToFlat(WhitePoint, XYZ, XYZ_Flat);
 
             var XYZ_Black = new float[3];
-            CompensateBlackPoint(blackPoint, XYZ_Flat, XYZ_Black);
+            CompensateBlackPoint(BlackPoint, XYZ_Flat, XYZ_Black);
 
             var XYZ_D65 = new float[3];
             NormalizeWhitePointToD65(FLAT_WHITEPOINT_MATRIX, XYZ_Black, XYZ_D65);
@@ -368,8 +359,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
             return skColor;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

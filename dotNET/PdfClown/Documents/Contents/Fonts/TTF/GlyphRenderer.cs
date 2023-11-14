@@ -68,8 +68,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         {
             int endPtIndex = 0;
             int endPtOfContourIndex = -1;
-            Point[] points = new Point[gd.PointCount];
-            for (int i = 0; i < gd.PointCount; i++)
+            var points = new Point[gd.PointCount];
+            for (int i = 0; i < points.Length; i++)
             {
                 if (endPtOfContourIndex == -1)
                 {

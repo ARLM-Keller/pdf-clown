@@ -37,14 +37,8 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetTextScale : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "Tz";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetTextScale(double value)
             : base(OperatorKeyword, PdfReal.Get(value))
         { }
@@ -52,10 +46,7 @@ namespace PdfClown.Documents.Contents.Objects
         public SetTextScale(IList<PdfDirectObject> operands)
             : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         { state.Scale = Value / 100F; }
 
@@ -68,8 +59,5 @@ namespace PdfClown.Documents.Contents.Objects
             get => ((IPdfNumber)operands[0]).FloatValue;
             set => operands[0] = PdfReal.Get(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

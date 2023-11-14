@@ -36,23 +36,14 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetTextLead : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "TL";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetTextLead(double value) : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
         public SetTextLead(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         { state.Lead = Value; }
 
@@ -65,8 +56,5 @@ namespace PdfClown.Documents.Contents.Objects
             get => ((IPdfNumber)operands[0]).FloatValue;
             set => operands[0] = PdfReal.Get(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

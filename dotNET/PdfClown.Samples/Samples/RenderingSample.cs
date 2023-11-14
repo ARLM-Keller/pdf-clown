@@ -36,7 +36,7 @@ namespace PdfClown.Samples.CLI
 
                 using (var stream = new SKFileWStream(GetOutputPath("ContentRenderingSample.png")))
                 {
-                    SKPixmap.Encode(stream, image, SKEncodedImageFormat.Png, 100);
+                    image.Encode(stream, SKEncodedImageFormat.Png, 100);
                 };
             }
         }

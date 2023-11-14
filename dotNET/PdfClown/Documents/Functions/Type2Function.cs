@@ -45,17 +45,12 @@ namespace PdfClown.Documents.Functions
         private float[] _c0;
         private float[] _c1;
         private List<float[]> outputBounds;
-        #region dynamic
-        #region constructors
         //TODO:implement function creation!
 
         internal Type2Function(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override float[] Calculate(float[] inputs)
+        public override float[] Calculate(Span<float> inputs)
         {
             var n = Exponent;
             var c0 = C0;
@@ -65,7 +60,7 @@ namespace PdfClown.Documents.Functions
             for (int i = 0; i < domains.Count; i++)
             {
                 var domain = domains[i];
-                inputs[i] = Math.Min(Math.Max(inputs[i], domain.Low), domain.High);
+                inputs[i] = ClipToRange(inputs[i], domain.Low, domain.High);
             }
             var outCount = ranges?.Count ?? c0.Length;
             var result = new float[outCount];
@@ -77,7 +72,7 @@ namespace PdfClown.Documents.Functions
                 var exponenta = n == 1
                     ? Linear(x, domains[0].Low, domains[0].High, c0[i], c1[i])
                     : Exponential(x, c0[i], c1[i], inputN);
-                result[i] = Math.Min(Math.Max(exponenta, range?.Low ?? 0F), range?.High ?? 1F);
+                result[i] = ClipToRange(exponenta, range?.Low ?? 0F, range?.High ?? 1F);
             }
             return result;// new float[] { inputs[0], inputs[0], inputs[0], inputs[0] };
         }
@@ -124,7 +119,7 @@ namespace PdfClown.Documents.Functions
         /**
           <summary>Gets the interpolation exponent.</summary>
         */
-        public float Exponent => ((IPdfNumber)Dictionary[PdfName.N]).FloatValue;
+        public float Exponent => Dictionary.GetFloat(PdfName.N);
 
         public float[] C0
         {
@@ -142,7 +137,7 @@ namespace PdfClown.Documents.Functions
                     {
                         _c0 = new float[c0.Count];
                         for (int index = 0, length = c0.Count; index < length; index++)
-                        { _c0[index] = ((IPdfNumber)c0[index]).FloatValue; }
+                        { _c0[index] = c0.GetFloat(index); }
                     }
                 }
                 return _c0;
@@ -165,16 +160,11 @@ namespace PdfClown.Documents.Functions
                     {
                         _c1 = new float[c1.Count];
                         for (int index = 0, length = c1.Count; index < length; index++)
-                        { _c1[index] = ((IPdfNumber)c1[index]).FloatValue; }
+                        { _c1[index] = c1.GetFloat(index); }
                     }
                 }
                 return _c1;
             }
         }
-
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -21,6 +21,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
     using System.IO;
     using System.Diagnostics;
+    using PdfClown.Bytes;
 
 
     /**
@@ -29,6 +30,17 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
      */
     public class GlyfSimpleDescript : GlyfDescript
     {
+
+        /**
+         * Constructor for an empty description.
+         * 
+         * @throws IOException is thrown if something went wrong
+         */
+        public GlyfSimpleDescript()
+            : base(0)
+        {
+            pointCount = 0;
+        }
 
         /**
          * Log instance.
@@ -49,8 +61,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param x0 the initial X-position
          * @ is thrown if something went wrong
          */
-        public GlyfSimpleDescript(short numberOfContours, TTFDataStream bais, short x0)
-            : base(numberOfContours, bais)
+        public GlyfSimpleDescript(short numberOfContours, IInputStream bais, short x0)
+            : base(numberOfContours)
         {
 
             /*
@@ -65,7 +77,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
 
             // Simple glyph description
-            endPtsOfContours = bais.ReadUnsignedShortArray(numberOfContours);
+            endPtsOfContours = bais.ReadUShortArray(numberOfContours);
 
             int lastEndPt = endPtsOfContours[numberOfContours - 1];
             if (numberOfContours == 1 && lastEndPt == 65535)
@@ -81,7 +93,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             xCoordinates = new short[pointCount];
             yCoordinates = new short[pointCount];
 
-            int instructionCount = bais.ReadUnsignedShort();
+            int instructionCount = bais.ReadUInt16();
             ReadInstructions(bais, instructionCount);
             ReadFlags(pointCount, bais);
             ReadCoords(pointCount, bais, x0);
@@ -138,7 +150,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * The table is stored as relative values, but we'll store them as absolutes.
          */
-        private void ReadCoords(int count, TTFDataStream bais, short x0)
+        private void ReadCoords(int count, IInputStream bais, short x0)
         {
             short x = x0;
             short y = 0;
@@ -148,18 +160,18 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 {
                     if ((flags[i] & X_SHORT_VECTOR) != 0)
                     {
-                        x += (short)bais.ReadUnsignedByte();
+                        x += (short)bais.ReadByte();
                     }
                 }
                 else
                 {
                     if ((flags[i] & X_SHORT_VECTOR) != 0)
                     {
-                        x += (short)-((short)bais.ReadUnsignedByte());
+                        x -= (short)bais.ReadByte();
                     }
                     else
                     {
-                        x += bais.ReadSignedShort();
+                        x += bais.ReadInt16();
                     }
                 }
                 xCoordinates[i] = x;
@@ -171,18 +183,18 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 {
                     if ((flags[i] & Y_SHORT_VECTOR) != 0)
                     {
-                        y += (short)bais.ReadUnsignedByte();
+                        y += (short)bais.ReadByte();
                     }
                 }
                 else
                 {
                     if ((flags[i] & Y_SHORT_VECTOR) != 0)
                     {
-                        y += (short)-((short)bais.ReadUnsignedByte());
+                        y -= (short)bais.ReadUByte();
                     }
                     else
                     {
-                        y += bais.ReadSignedShort();
+                        y += bais.ReadInt16();
                     }
                 }
                 yCoordinates[i] = y;
@@ -192,14 +204,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * The flags are run-length encoded.
          */
-        private void ReadFlags(int flagCount, TTFDataStream bais)
+        private void ReadFlags(int flagCount, IInputStream bais)
         {
             for (int index = 0; index < flagCount; index++)
             {
-                flags[index] = (byte)bais.ReadUnsignedByte();
+                flags[index] = (byte)bais.ReadByte();
                 if ((flags[index] & REPEAT) != 0)
                 {
-                    int repeats = bais.ReadUnsignedByte();
+                    int repeats = bais.ReadByte();
                     for (int i = 1; i <= repeats && index + i < flags.Length; i++)
                     {
                         flags[index + i] = flags[index];

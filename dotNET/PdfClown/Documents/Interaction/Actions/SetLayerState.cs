@@ -40,10 +40,8 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>'Set the state of one or more optional content groups' action [PDF:1.6:8.5.3].</summary>
     */
     [PDF(VersionEnum.PDF15)]
-    public sealed class SetLayerState
-      : Action
+    public sealed class SetLayerState : Action
     {
-        #region types
         public enum StateModeEnum
         {
             On,
@@ -191,7 +189,6 @@ namespace PdfClown.Documents.Interaction.Actions
             public LayerStates(PdfDirectObject baseObject) : base(baseObject)
             { Initialize(); }
 
-            #region IList<LayerState>
             public int IndexOf(LayerState item)
             { return items.IndexOf(item); }
 
@@ -244,9 +241,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 }
             }
 
-            public LayerState this[
-              int index
-              ]
+            public LayerState this[int index]
             {
                 get => items[index];
                 set
@@ -256,10 +251,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 }
             }
 
-            #region ICollection<LayerState>
-            public void Add(
-              LayerState item
-              )
+            public void Add(LayerState item)
             {
                 PdfArray baseDataObject = BaseDataObject;
                 // Low-level definition.
@@ -271,8 +263,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 item.Attach(this);
             }
 
-            public void Clear(
-              )
+            public void Clear()
             {
                 // Low-level definition.
                 BaseDataObject.Clear();
@@ -282,24 +273,17 @@ namespace PdfClown.Documents.Interaction.Actions
                 items.Clear();
             }
 
-            public bool Contains(
-              LayerState item
-              )
+            public bool Contains(LayerState item)
             { return items.Contains(item); }
 
-            public void CopyTo(
-              LayerState[] items,
-              int index
-              )
+            public void CopyTo(LayerState[] items, int index)
             { throw new NotImplementedException(); }
 
             public int Count => items.Count;
 
             public bool IsReadOnly => false;
 
-            public bool Remove(
-              LayerState item
-              )
+            public bool Remove(LayerState item)
             {
                 int index = IndexOf(item);
                 if (index == -1)
@@ -309,19 +293,11 @@ namespace PdfClown.Documents.Interaction.Actions
                 return true;
             }
 
-            #region IEnumerable<LayerState>
-            public IEnumerator<LayerState> GetEnumerator(
-              )
+            public IEnumerator<LayerState> GetEnumerator()
             { return items.GetEnumerator(); }
 
-            #region IEnumerable
-            IEnumerator IEnumerable.GetEnumerator(
-              )
+            IEnumerator IEnumerable.GetEnumerator()
             { return this.GetEnumerator(); }
-            #endregion
-            #endregion
-            #endregion
-            #endregion
 
             /**
               <summary>Gets the position of the initial base item corresponding to the specified layer
@@ -407,10 +383,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 { items.Add(new LayerState(mode.Value, layers, this)); }
             }
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
@@ -433,18 +406,12 @@ namespace PdfClown.Documents.Interaction.Actions
 
         internal SetLayerState(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public LayerStates States
         {
             get => new LayerStates(BaseDataObject[PdfName.State]);
             set => BaseDataObject[PdfName.State] = value.BaseObject;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     internal static class StateModeEnumExtension

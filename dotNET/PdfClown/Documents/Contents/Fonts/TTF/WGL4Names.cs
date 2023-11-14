@@ -19,10 +19,6 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
-
-
-
     /**
      * Windows Glyph List 4 (WGL4) names for Mac glyphs.
      */
@@ -98,6 +94,40 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private WGL4Names()
         {
+        }
+
+        /**
+     * Returns the index of the glyph with the given name.
+     * 
+     * @param name the name of the glyph
+     * @return the index of the given glyph name or null for an invalid glyph name
+     */
+        public static bool GetGlyphIndex(string name, out int index)
+        {
+            return MAC_GLYPH_NAMES_INDICES.TryGetValue(name, out index);
+        }
+
+        /**
+         * Returns the name of the glyph at the given index.
+         * 
+         * @param index the index of the glyph
+         * @return the name of the glyph at the given index or null fo an invalid glyph index
+         */
+        public static string GetGlyphName(int index)
+        {
+            return index >= 0 && index < NUMBER_OF_MAC_GLYPHS ? MAC_GLYPH_NAMES[index] : null;
+        }
+
+        /**
+         * Returns a new array with all glyph names.
+         * 
+         * @return the array with all glyph names
+         */
+        public static string[] GetAllNames()
+        {
+            string[] glyphNames = new string[NUMBER_OF_MAC_GLYPHS];
+            Array.Copy(MAC_GLYPH_NAMES, 0, glyphNames, 0, NUMBER_OF_MAC_GLYPHS);
+            return glyphNames;
         }
     }
 }

@@ -45,8 +45,6 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF11)]
     public abstract class Markup : Annotation
     {
-        #region dynamic
-        #region constructors
         protected Markup(Page page, PdfName subtype, SKRect box, string text)
             : base(page, subtype, box, text)
         {
@@ -56,11 +54,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         protected Markup(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
-
-        #region interface
-        #region public
-
 
         /**
           <summary>Gets/Sets the annotation editor. It is displayed as a text label in the title bar of
@@ -88,7 +81,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public override DateTime? CreationDate
         {
-            get => BaseDataObject.GetDate(PdfName.CreationDate);
+            get => BaseDataObject.GetNDate(PdfName.CreationDate);
             set
             {
                 var oldValue = CreationDate;
@@ -225,7 +218,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public SkiaSharp.SKColor? InteriorSKColor
+        public SKColor? InteriorSKColor
         {
             get => InteriorColor == null ? (SKColor?)null : DeviceColorSpace.CalcSKColor(InteriorColor, Alpha);
             set
@@ -264,19 +257,18 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         protected FormXObject ResetAppearance()
         {
-            return ResetAppearance(Rect.ToRect());
+            return ResetAppearance(PageBox);
         }
 
         protected FormXObject ResetAppearance(SKRect box)
         {
             var boxSize = SKRect.Create(box.Width, box.Height);
-            FormXObject normalAppearance;
             AppearanceStates normalAppearances = Appearance.Normal;
-            normalAppearance = normalAppearances[null];
+            FormXObject normalAppearance = normalAppearances[null];
             if (normalAppearance != null)
             {
                 normalAppearance.Box = boxSize;
-                normalAppearance.BaseDataObject.Body.Clear();
+                normalAppearance.BaseDataObject.Body.SetLength(0);
                 normalAppearance.ClearContents();
             }
             else
@@ -292,10 +284,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             return base.GetBounds(pageMatrix);
         }
-        #endregion
-
-        #endregion
-        #endregion
     }
 
     /**

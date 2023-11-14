@@ -39,20 +39,12 @@ namespace PdfClown.Objects
     public abstract class NameTree<TValue> : Tree<PdfString, TValue>
         where TValue : PdfObjectWrapper
     {
-        #region dynamic
-        #region constructors
         protected NameTree(Document context) : base(context)
         { }
 
         protected NameTree(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override PdfName PairsKey => PdfName.Names;
-        #endregion
-        #endregion
-        #endregion
     }
 }

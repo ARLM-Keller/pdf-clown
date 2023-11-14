@@ -36,9 +36,6 @@ namespace PdfClown.Objects
           <param name="data">Supplemental data.</param>
           <returns>Result object.</returns>
         */
-        PdfObject Accept(
-          IVisitor visitor,
-          object data
-          );
+        PdfObject Accept(IVisitor visitor, object data);
     }
 }

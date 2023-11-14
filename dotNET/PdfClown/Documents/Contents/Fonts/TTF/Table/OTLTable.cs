@@ -23,11 +23,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
      */
     public class OTLTable : TTFTable
     {
+        public const string TAG = "JSTF";
         // todo: this is a stub, a full implementation is needed
 
-        public OTLTable(TrueTypeFont font)
-                : base(font)
-        {
-        }
+        public OTLTable()
+        { }
     }
 }

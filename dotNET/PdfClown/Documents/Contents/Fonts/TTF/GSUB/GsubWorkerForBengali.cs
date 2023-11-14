@@ -16,7 +16,7 @@
  */
 
 using PdfClown.Documents.Contents.Fonts.TTF.Model;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Util.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -73,11 +73,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
             {
                 if (!gsubData.IsFeatureSupported(feature))
                 {
-                    Debug.WriteLine("debug: the feature " + feature + " was not found");
+                    Debug.WriteLine($"info: the feature {feature} was not found");
                     continue;
                 }
 
-                Debug.WriteLine("debug: applying the feature " + feature);
+                Debug.WriteLine($"info: applying the feature {feature}");
 
                 ScriptFeature scriptFeature = gsubData.GetFeature(feature);
 
@@ -96,7 +96,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 
         private List<int> RepositionBeforeHalfGlyphIds(List<int> originalGlyphIds)
         {
-            List<int> repositionedGlyphIds = new List<int>(originalGlyphIds);
+            var repositionedGlyphIds = new List<int>(originalGlyphIds);
 
             for (int index = 1; index < originalGlyphIds.Count; index++)
             {
@@ -113,17 +113,17 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 
         private List<int> RepositionBeforeAndAfterSpanGlyphIds(List<int> originalGlyphIds)
         {
-            List<int> repositionedGlyphIds = new List<int>(originalGlyphIds);
+            var repositionedGlyphIds = new List<int>(originalGlyphIds);
 
             for (int index = 1; index < originalGlyphIds.Count; index++)
             {
                 int glyphId = originalGlyphIds[index];
-                if (beforeAndAfterSpanGlyphIds.TryGetValue(glyphId, out BeforeAndAfterSpanComponent beforeAndAfterSpanComponent))
+                if (beforeAndAfterSpanGlyphIds.TryGetValue(glyphId, out BeforeAndAfterSpanComponent component))
                 {
                     int previousGlyphId = originalGlyphIds[index - 1];
                     repositionedGlyphIds[index] = previousGlyphId;
-                    repositionedGlyphIds[index - 1] = GetGlyphId(beforeAndAfterSpanComponent.beforeComponentCharacter);
-                    repositionedGlyphIds[index + 1] = GetGlyphId(beforeAndAfterSpanComponent.afterComponentCharacter);
+                    repositionedGlyphIds[index - 1] = GetGlyphId(component.beforeComponentCharacter);
+                    repositionedGlyphIds[index + 1] = GetGlyphId(component.afterComponentCharacter);
                 }
             }
             return repositionedGlyphIds;
@@ -131,11 +131,18 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 
         private List<int> ApplyGsubFeature(ScriptFeature scriptFeature, List<int> originalGlyphs)
         {
+            var allGlyphIdsForSubstitution = scriptFeature.AllGlyphIdsForSubstitution;
+            if (allGlyphIdsForSubstitution.Count == 0)
+            {
+                // not stopping here results in really weird output, the regex goes wild
+                Debug.WriteLine($"debug: getAllGlyphIdsForSubstitution() for {scriptFeature.Name} is empty");
+                return originalGlyphs;
+            }
             GlyphArraySplitter glyphArraySplitter = new GlyphArraySplitterRegexImpl(scriptFeature.AllGlyphIdsForSubstitution);
 
-            List<List<int>> tokens = glyphArraySplitter.Split(originalGlyphs);
+            var tokens = glyphArraySplitter.Split(originalGlyphs);
 
-            List<int> gsubProcessedGlyphs = new List<int>();
+            var gsubProcessedGlyphs = new List<int>(tokens.Count);
 
             foreach (List<int> chunk in tokens)
             {
@@ -147,18 +154,16 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
                 }
                 else
                 {
-                    gsubProcessedGlyphs.AddAll(chunk);
+                    Extension.AddRange(gsubProcessedGlyphs, chunk);
                 }
             }
-
-            Debug.WriteLine($"debug: originalGlyphs: {originalGlyphs}, gsubProcessedGlyphs: {gsubProcessedGlyphs}");
 
             return gsubProcessedGlyphs;
         }
 
         private List<int> GetBeforeHalfGlyphIds()
         {
-            List<int> glyphIds = new List<int>();
+            var glyphIds = new List<int>(BEFORE_HALF_CHARS.Length);
 
             foreach (char character in BEFORE_HALF_CHARS)
             {
@@ -185,7 +190,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 
         private Dictionary<int, BeforeAndAfterSpanComponent> GetBeforeAndAfterSpanGlyphIds()
         {
-            Dictionary<int, BeforeAndAfterSpanComponent> result = new Dictionary<int, BeforeAndAfterSpanComponent>(BEFORE_AND_AFTER_SPAN_CHARS.Length);
+            var result = new Dictionary<int, BeforeAndAfterSpanComponent>(BEFORE_AND_AFTER_SPAN_CHARS.Length);
 
             foreach (BeforeAndAfterSpanComponent beforeAndAfterSpanComponent in BEFORE_AND_AFTER_SPAN_CHARS)
             {

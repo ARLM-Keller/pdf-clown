@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public class ICCCrdInfoType : ICCTag
@@ -44,21 +46,21 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint RenderingIntent3Lenght;
         public string RenderingIntent3;
 
-        public override void Load(PdfClown.Bytes.Buffer buffer)
+        public override void Load(ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            ProductNameLength = buffer.ReadUnsignedInt();
-            ProductName = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes((int)ProductNameLength));
-            RenderingIntent0Lenght = buffer.ReadUnsignedInt();
-            RenderingIntent0 = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes((int)RenderingIntent0Lenght));
-            RenderingIntent1Lenght = buffer.ReadUnsignedInt();
-            RenderingIntent1 = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes((int)RenderingIntent1Lenght));
-            RenderingIntent2Lenght = buffer.ReadUnsignedInt();
-            RenderingIntent2 = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes((int)RenderingIntent2Lenght));
-            RenderingIntent3Lenght = buffer.ReadUnsignedInt();
-            RenderingIntent3 = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes((int)RenderingIntent3Lenght));
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            ProductNameLength = buffer.ReadUInt32();
+            ProductName = buffer.ReadString((int)ProductNameLength, System.Text.Encoding.ASCII);
+            RenderingIntent0Lenght = buffer.ReadUInt32();
+            RenderingIntent0 = buffer.ReadString((int)RenderingIntent0Lenght, System.Text.Encoding.ASCII);
+            RenderingIntent1Lenght = buffer.ReadUInt32();
+            RenderingIntent1 = buffer.ReadString((int)RenderingIntent1Lenght, System.Text.Encoding.ASCII);
+            RenderingIntent2Lenght = buffer.ReadUInt32();
+            RenderingIntent2 = buffer.ReadString((int)RenderingIntent2Lenght, System.Text.Encoding.ASCII);
+            RenderingIntent3Lenght = buffer.ReadUInt32();
+            RenderingIntent3 = buffer.ReadString((int)RenderingIntent3Lenght, System.Text.Encoding.ASCII);
 
         }
     }

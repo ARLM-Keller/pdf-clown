@@ -51,7 +51,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private void ExportAttachment(IBuffer data, string filename)
+        private void ExportAttachment(IByteStream data, string filename)
         {
             string outputPath = GetOutputPath(filename);
             FileStream outputStream;
@@ -63,7 +63,7 @@ namespace PdfClown.Samples.CLI
             try
             {
                 BinaryWriter writer = new BinaryWriter(outputStream);
-                writer.Write(data.ToByteArray());
+                writer.Write(data.ToArray());
                 writer.Close();
                 outputStream.Close();
             }

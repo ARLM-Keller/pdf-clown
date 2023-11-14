@@ -40,16 +40,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public ICCStandardIlluminantTypes Illuminant;
 
 
-        public override void Load(PdfClown.Bytes.Buffer buffer)
+        public override void Load(PdfClown.Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            StandardObserver = (ICCStandardObserverTypes)buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            StandardObserver = (ICCStandardObserverTypes)buffer.ReadUInt32();
             Backing.Load(buffer);
-            Geometry = (ICCMeasurementGeometryTypes)buffer.ReadUnsignedInt();
-            Flare = (ICCMeasurementFlareTypes)buffer.ReadUnsignedInt();
-            Illuminant = (ICCStandardIlluminantTypes)buffer.ReadUnsignedInt();
+            Geometry = (ICCMeasurementGeometryTypes)buffer.ReadUInt32();
+            Flare = (ICCMeasurementFlareTypes)buffer.ReadUInt32();
+            Illuminant = (ICCStandardIlluminantTypes)buffer.ReadUInt32();
         }
     }
 }

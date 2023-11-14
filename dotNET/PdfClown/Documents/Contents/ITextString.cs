@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Contents
         /**
           <summary>Gets the text string bounds.</summary>
         */
-        Quad? Quad { get; }
+        Quad Quad { get; }
         /**
           <summary>Gets the decoded text.</summary>
         */

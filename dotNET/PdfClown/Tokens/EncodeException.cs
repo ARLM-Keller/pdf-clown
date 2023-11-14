@@ -30,33 +30,22 @@ namespace PdfClown.Tokens
     /**
       <summary>Exception thrown in case of missing code-to-character mapping.</summary>
     */
-    public class EncodeException
-      : Exception
+    public class EncodeException : Exception
     {
-        #region dynamic
-        #region fields
         private int index;
         private string text;
-        #endregion
 
-        #region constructors
-        public EncodeException(
-          char textChar
-        ) : this(new String(textChar, 1), 0)
+        public EncodeException(char textChar)
+            : this(new String(textChar, 1), 0)
         { }
 
-        public EncodeException(
-          string text,
-          int index
-          ) : base(String.Format("Missing code mapping for character {0} ('{1}') at position {2} in \"{3}\"", (int)text[index], text[index], index, text))
+        public EncodeException(string text, int index)
+            : base(String.Format("Missing code mapping for character {0} ('{1}') at position {2} in \"{3}\"", (int)text[index], text[index], index, text))
         {
             this.text = text;
             this.index = index;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the position of the missing character in the string to encode.</summary>
         */
@@ -71,8 +60,5 @@ namespace PdfClown.Tokens
           <summary>Gets the missing character.</summary>
         */
         public char UndefinedChar => text[index];
-        #endregion
-        #endregion
-        #endregion
     }
 }

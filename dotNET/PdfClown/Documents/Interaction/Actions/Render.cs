@@ -38,10 +38,8 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>'Control the playing of multimedia content' action [PDF:1.6:8.5.3].</summary>
     */
     [PDF(VersionEnum.PDF15)]
-    public sealed class Render
-      : Action
+    public sealed class Render : Action
     {
-        #region types
         public enum OperationEnum
         {
             /**
@@ -65,32 +63,22 @@ namespace PdfClown.Documents.Interaction.Actions
             */
             PlayResume
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public Render(
-          Screen screen,
-          OperationEnum operation,
-          Rendition rendition
-          ) : base(screen.Document, PdfName.Rendition)
+        public Render(Screen screen, OperationEnum operation, Rendition rendition)
+            : base(screen.Document, PdfName.Rendition)
         {
             Operation = operation;
             Screen = screen;
             Rendition = rendition;
         }
 
-        internal Render(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal Render(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the operation to perform when the action is triggered.</summary>
         */
@@ -175,9 +163,6 @@ namespace PdfClown.Documents.Interaction.Actions
                 JavaScript.SetScript(baseDataObject, PdfName.JS, value);
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     internal static class OperationEnumExtension

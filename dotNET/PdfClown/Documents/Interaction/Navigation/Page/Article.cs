@@ -39,23 +39,13 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF11)]
     public sealed class Article : PdfObjectWrapper<PdfDictionary>
     {
-        #region dynamic
-        #region constructors
-        public Article(Document context) : base(
-            context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type },
-              new PdfDirectObject[] { PdfName.Thread }
-              )
-            )
+        public Article(Document context)
+            : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Thread } })
         { context.Articles.Add(this); }
 
         public Article(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Deletes this thread removing also its reference in the document's collection.</summary>
         */
@@ -82,8 +72,5 @@ namespace PdfClown.Documents.Interaction.Navigation
             get => Wrap<Information>(BaseDataObject.Get<PdfDictionary>(PdfName.I));
             set => BaseDataObject[PdfName.I] = PdfObjectWrapper.GetBaseObject(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

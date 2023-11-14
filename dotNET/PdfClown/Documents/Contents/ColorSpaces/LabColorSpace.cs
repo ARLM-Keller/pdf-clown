@@ -46,10 +46,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class LabColorSpace : CIEBasedColorSpace
     {
-        #region dynamic
-        private float[] blackPoint;
-        private float[] whitePoint;
-        private IList<Interval<float>> range;
+        private List<Interval<float>> range;
         private float XW;
         private float YW;
         private float ZW;
@@ -60,19 +57,17 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private float XB;
         private float YB;
         private float ZB;
-        #region constructors
+
         //TODO:IMPL new element constructor!
 
         internal LabColorSpace(PdfDirectObject baseObject) : base(baseObject)
         {
-            blackPoint = BlackPoint;
-            whitePoint = WhitePoint;
-            range = Ranges;// || [-100, 100, -100, 100];
+            var range = Ranges;// || [-100, 100, -100, 100];
 
             // Translate args to spec variables
-            this.XW = whitePoint[0];
-            this.YW = whitePoint[1];
-            this.ZW = whitePoint[2];
+            this.XW = WhitePoint[0];
+            this.YW = WhitePoint[1];
+            this.ZW = WhitePoint[2];
             this.amin = range[0].Low;
             this.amax = range[0].High;
             this.bmin = range[1].Low;
@@ -80,14 +75,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
             // These are here just for completeness - the spec doesn't offer any
             // formulas that use BlackPoint in Lab
-            this.XB = blackPoint[0];
-            this.YB = blackPoint[1];
-            this.ZB = blackPoint[2];
+            this.XB = BlackPoint[0];
+            this.YB = BlackPoint[1];
+            this.ZB = BlackPoint[2];
         }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
@@ -112,29 +104,32 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             get
             {
-                var ranges = new List<Interval<float>>();
+                if (range == null)
                 {
-                    // 1. L* component.
-                    ranges.Add(new Interval<float>(0F, 100F));
+                    range = new List<Interval<float>>();
+                    {
+                        // 1. L* component.
+                        range.Add(new Interval<float>(0F, 100F));
 
-                    PdfArray rangesObject = (PdfArray)Dictionary[PdfName.Range];
-                    if (rangesObject == null)
-                    {
-                        // 2. a* component.
-                        ranges.Add(new Interval<float>(-100F, 100F));
-                        // 3. b* component.
-                        ranges.Add(new Interval<float>(-100F, 100F));
-                    }
-                    else
-                    {
-                        // 2/3. a*/b* components.
-                        for (int index = 0, length = rangesObject.Count; index < length; index += 2)
+                        PdfArray rangesObject = (PdfArray)Dictionary[PdfName.Range];
+                        if (rangesObject == null)
                         {
-                            ranges.Add(new Interval<float>(rangesObject.GetFloat(index), rangesObject.GetFloat(index + 1)));
+                            // 2. a* component.
+                            range.Add(new Interval<float>(-100F, 100F));
+                            // 3. b* component.
+                            range.Add(new Interval<float>(-100F, 100F));
+                        }
+                        else
+                        {
+                            // 2/3. a*/b* components.
+                            for (int index = 0, length = rangesObject.Count; index < length; index += 2)
+                            {
+                                range.Add(new Interval<float>(rangesObject.GetFloat(index), rangesObject.GetFloat(index + 1)));
+                            }
                         }
                     }
                 }
-                return ranges;
+                return range;
             }
         }
 
@@ -150,7 +145,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return Calculate(labColor.L, labColor.A, labColor.B, null, alpha);
         }
 
-        public override SKColor GetSKColor(float[] components, float? alpha = null)
+        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
         {
             return Calculate(components[0], components[1], components[2], null, alpha);
         }
@@ -246,9 +241,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
             return skColor;
         }
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

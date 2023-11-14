@@ -16,6 +16,7 @@
  */
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
+    using PdfClown.Bytes;
     using System.Collections.Generic;
     using System.IO;
 
@@ -34,13 +35,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private Dictionary<int, GlyphData> glyphs = new Dictionary<int, GlyphData>();
 
         // lazy table reading
-        private TTFDataStream data;
+        private IInputStream data;
         private IndexToLocationTable loca;
         private int numGlyphs;
+        private int cached = 0;
+        private HorizontalMetricsTable hmt = null;
 
-        public GlyphTable(TrueTypeFont font) : base(font)
-        {
-        }
+        public GlyphTable()
+        { }
 
         /**
          * This will read the required data from the stream.
@@ -49,7 +51,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             loca = ttf.IndexToLocation;
             numGlyphs = ttf.NumberOfGlyphs;
@@ -57,7 +59,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             glyphs = new Dictionary<int, GlyphData>();
 
             // we don't actually read the complete table here because it can contain tens of thousands of glyphs
-            this.data = data;
+            data.Seek(Offset);
+            var dataBytes = data.ReadMemory((int)Length);
+            this.data = new ByteStream(dataBytes);
+
+            // PDFBOX-5460: read hmtx table early to avoid deadlock if getGlyph() locks "data"
+            // and then locks TrueTypeFont to read this table, while another thread
+            // locks TrueTypeFont and then tries to lock "data"
+            hmt = ttf.HorizontalMetrics;
+
             initialized = true;
         }
 
@@ -66,57 +76,57 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          *
          * @ If there is an error reading the data.
          */
-        public Dictionary<int, GlyphData> Glyphs
-        {
-            get
-            {
-                // PDFBOX-4219: synchronize on data because it is accessed by several threads
-                // when PDFBox is accessing a standard 14 font for the first time
-                lock (data)
-                {
-                    // the glyph offsets
-                    long[] offsets = loca.Offsets;
+        //public Dictionary<int, GlyphData> Glyphs
+        //{
+        //    get
+        //    {
+        //        // PDFBOX-4219: synchronize on data because it is accessed by several threads
+        //        // when PDFBox is accessing a standard 14 font for the first time
+        //        lock (data)
+        //        {
+        //            // the glyph offsets
+        //            long[] offsets = loca.Offsets;
 
-                    // the end of the glyph table
-                    // should not be 0, but sometimes is, see PDFBOX-2044
-                    // structure of this table: see
-                    // https://developer.apple.com/fonts/TTRefMan/RM06/Chap6loca.html
-                    long endOfGlyphs = offsets[numGlyphs];
-                    long offset = Offset;
-                    if (glyphs == null)
-                    {
-                        glyphs = new Dictionary<int, GlyphData>();
-                    }
+        //            // the end of the glyph table
+        //            // should not be 0, but sometimes is, see PDFBOX-2044
+        //            // structure of this table: see
+        //            // https://developer.apple.com/fonts/TTRefMan/RM06/Chap6loca.html
+        //            long endOfGlyphs = offsets[numGlyphs];
+        //            long offset = Offset;
+        //            if (glyphs == null)
+        //            {
+        //                glyphs = new Dictionary<int, GlyphData>();
+        //            }
 
-                    for (int gid = 0; gid < numGlyphs; gid++)
-                    {
-                        // end of glyphs reached?
-                        if (endOfGlyphs != 0 && endOfGlyphs == offsets[gid])
-                        {
-                            break;
-                        }
-                        // the current glyph isn't defined
-                        // if the next offset is equal or smaller to the current offset
-                        if (offsets[gid + 1] <= offsets[gid])
-                        {
-                            continue;
-                        }
-                        if (glyphs.TryGetValue(gid, out _))
-                        {
-                            // already cached
-                            continue;
-                        }
+        //            for (int gid = 0; gid < numGlyphs; gid++)
+        //            {
+        //                // end of glyphs reached?
+        //                if (endOfGlyphs != 0 && endOfGlyphs == offsets[gid])
+        //                {
+        //                    break;
+        //                }
+        //                // the current glyph isn't defined
+        //                // if the next offset is equal or smaller to the current offset
+        //                if (offsets[gid + 1] <= offsets[gid])
+        //                {
+        //                    continue;
+        //                }
+        //                if (glyphs.TryGetValue(gid, out _))
+        //                {
+        //                    // already cached
+        //                    continue;
+        //                }
 
-                        data.Seek(offset + offsets[gid]);
+        //                data.Seek(offset + offsets[gid]);
 
-                        glyphs[gid] = GetGlyphData(gid);
-                    }
-                    initialized = true;
-                    return glyphs;
-                }
-            }
-            set => glyphs = value;
-        }
+        //                glyphs[gid] = GetGlyphData(gid);
+        //            }
+        //            initialized = true;
+        //            return glyphs;
+        //        }
+        //    }
+        //    set => glyphs = value;
+        //}
 
         /**
          * Returns the data for the glyph with the given GID.
@@ -136,6 +146,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 return gdata;
             }
 
+            GlyphData glyph;
             // PDFBOX-4219: synchronize on data because it is accessed by several threads
             // when PDFBox is accessing a standard 14 font for the first time
             lock (data)
@@ -146,19 +157,23 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 if (offsets[gid] == offsets[gid + 1])
                 {
                     // no outline
-                    return null;
+                    // PDFBOX-5135: can't return null, must return an empty glyph because
+                    // sometimes this is used in a composite glyph.
+                    glyph = new GlyphData();
+                    glyph.InitEmptyData();
                 }
+                else
+                {
+                    // save
+                    long currentPosition = data.Position;
 
-                // save
-                long currentPosition = data.CurrentPosition;
+                    data.Seek(offsets[gid]);
 
-                data.Seek(Offset + offsets[gid]);
+                    glyph = GetGlyphData(gid);
 
-                GlyphData glyph = GetGlyphData(gid);
-
-                // restore
-                data.Seek(currentPosition);
-
+                    // restore
+                    data.Seek(currentPosition);
+                }
                 if (glyphs != null)
                 {
                     glyphs[gid] = glyph;
@@ -171,7 +186,6 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private GlyphData GetGlyphData(int gid)
         {
             GlyphData glyph = new GlyphData();
-            HorizontalMetricsTable hmt = font.HorizontalMetrics;
             int leftSideBearing = hmt == null ? 0 : hmt.GetLeftSideBearing(gid);
             glyph.InitData(this, data, leftSideBearing);
             // resolve composite glyph

@@ -42,7 +42,6 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF12)]
     public sealed class Widget : Annotation
     {
-        #region types
         /**
           <summary>Highlighting mode [PDF:1.6:8.4.5].</summary>
         */
@@ -69,14 +68,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             */
             Toggle
         };
-        #endregion
 
-        #region static
-        #region fields
         private static readonly Dictionary<HighlightModeEnum, PdfName> HighlightModeEnumCodes;
-        #endregion
 
-        #region constructors
         static Widget()
         {
             HighlightModeEnumCodes = new Dictionary<HighlightModeEnum, PdfName>
@@ -88,10 +82,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 [HighlightModeEnum.Toggle] = PdfName.T
             };
         }
-        #endregion
 
-        #region interface
-        #region private
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
@@ -112,12 +103,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             return HighlightModeEnum.Invert;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new generic widget.</summary>
         */
@@ -139,15 +125,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             var appearance = new Appearance(page.Document);
             Appearance = appearance;
             AppearanceStates normalAppearance = appearance.Normal;
-            normalAppearance[new PdfName(name)] = new FormXObject(page.Document, Box.Size);
+            normalAppearance[new PdfName(name)] = new FormXObject(page.Document, PageBox.Size);
         }
 
         internal Widget(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override AnnotationActions Actions
         {
             get => WidgetActions.Wrap(this, BaseDataObject.Get<PdfDictionary>(PdfName.AA));
@@ -194,13 +177,10 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public string DefaultAppearence
         {
-            get => ((IPdfString)BaseDataObject[PdfName.DA]).StringValue;
-            set => BaseDataObject[PdfName.DA] = new PdfString(value);
+            get => BaseDataObject.GetString(PdfName.DA);
+            set => BaseDataObject.SetString(PdfName.DA, value);
         }
 
         public Field Field { get; internal set; }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -33,18 +33,10 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class BeginText : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "BT";
 
         public static readonly BeginText Value = new BeginText();
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         private BeginText() : base(OperatorKeyword) { }
-        #endregion
-        #endregion
     }
 }

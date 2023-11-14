@@ -35,28 +35,18 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>'Jump to a specified bead on an article thread' action [PDF:1.6:8.5.3].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class GoToThread
-      : Action,
-        IGoToAction
+    public sealed class GoToThread : Action, IGoToAction
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToThread(
-          Document context
-          ) : base(context, PdfName.Thread)
+        public GoToThread(Document context)
+            : base(context, PdfName.Thread)
         { }
 
-        internal GoToThread(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal GoToThread(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #endregion
-        #endregion
     }
 }

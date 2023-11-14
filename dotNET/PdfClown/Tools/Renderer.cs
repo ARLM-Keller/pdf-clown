@@ -40,17 +40,11 @@ namespace PdfClown.Tools
     */
     public sealed class Renderer
     {
-        #region types
         /**
           <summary>Printable document.</summary>
           <remarks>It wraps a page collection for printing purposes.</remarks>
         */
 
-        #endregion
-
-        #region dynamic
-        #region interface
-        #region public
         /**
           <summary>Prints silently the specified document.</summary>
           <param name="document">Document to print.</param>
@@ -162,8 +156,5 @@ namespace PdfClown.Tools
                 contentContext.Render(canvas, size);
             return image;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -36,15 +36,13 @@ namespace PdfClown.Documents.Contents.Entities
     */
     public abstract class Image : Entity
     {
-        #region static
-        #region interface
-        #region public
         public static Image Get(string path)
         {
-            return Get(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            return Get(new ByteStream(stream));
         }
 
-        public static Image Get(System.IO.Stream stream)
+        public static Image Get(Stream stream)
         {
             // Get the format identifier!
             byte[] formatMarkerBytes = new byte[2];
@@ -60,26 +58,16 @@ namespace PdfClown.Documents.Contents.Entities
             else // Unknown.
             { return null; }
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private int bitsPerComponent;
         private int height;
         private int width;
 
-        private System.IO.Stream stream;
-        #endregion
+        private Stream stream;
 
-        #region constructors
-        protected Image(System.IO.Stream stream)
+        protected Image(Stream stream)
         { this.stream = stream; }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the number of bits per color component
           [PDF:1.6:4.8.2].</summary>
@@ -107,15 +95,10 @@ namespace PdfClown.Documents.Contents.Entities
             get => width;
             protected set => width = value;
         }
-        #endregion
 
-        #region protected
         /**
           <summary>Gets the underlying stream.</summary>
         */
-        protected System.IO.Stream Stream => stream;
-        #endregion
-        #endregion
-        #endregion
+        protected Stream Stream => stream;
     }
 }

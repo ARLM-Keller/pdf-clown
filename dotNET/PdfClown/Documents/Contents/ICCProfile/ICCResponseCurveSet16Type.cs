@@ -40,17 +40,17 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint[] Offsets;
         public List<ICCCurveStructure> Structures;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            NumberOfChannels = buffer.ReadUnsignedShort();
-            CountTypes = buffer.ReadUnsignedShort();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            NumberOfChannels = buffer.ReadUInt16();
+            CountTypes = buffer.ReadUInt16();
             Offsets = new uint[CountTypes];
             for (int i = 0; i < CountTypes; i++)
             {
-                Offsets[i] = buffer.ReadUnsignedInt();
+                Offsets[i] = buffer.ReadUInt32();
             }
             for (int i = 0; i < CountTypes; i++)
             {

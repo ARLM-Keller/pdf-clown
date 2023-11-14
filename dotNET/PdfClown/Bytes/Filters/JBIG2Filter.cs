@@ -31,18 +31,12 @@ using System.IO;
 
 namespace PdfClown.Bytes.Filters
 {
-    //BitMiracle.LibTiff not implement JBIG2!!!!!!!!!!!!
     public sealed class JBIG2Filter : Filter
     {
-        #region dynamic
-        #region constructors
         internal JBIG2Filter()
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             var jbig2Image = new Jbig2Image();
 
@@ -52,12 +46,11 @@ namespace PdfClown.Bytes.Filters
                 var globalsStream = parametersDict.Resolve(PdfName.JBIG2Globals);
                 if (globalsStream is PdfStream pdfStream)
                 {
-                    var globals = pdfStream.ExtractBody(true).GetBuffer();
-                    chunks.Add(new ImageChunk(data: globals, start: 0, end: globals.Length));
+                    var globals = pdfStream.ExtractBody(true);
+                    chunks.Add(new ImageChunk(data: globals));
                 }
             }
-            var buffer = data.GetBuffer();
-            chunks.Add(new ImageChunk(data: buffer, start: 0, end: buffer.Length));
+            chunks.Add(new ImageChunk(data: data));
             var imageData = jbig2Image.ParseChunks(chunks);
             var dataLength = imageData.Length;
 
@@ -69,16 +62,10 @@ namespace PdfClown.Bytes.Filters
             return imageData;
         }
 
-        public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            return data.GetBuffer();
+            return data.AsMemory();
         }
-        #endregion
-
-        #region private
-        #endregion
-        #endregion
-        #endregion
     }
 
 

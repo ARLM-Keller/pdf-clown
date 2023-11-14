@@ -43,7 +43,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB
 
         public override int DoSubstitution(int gid, int coverageIndex)
         {
-            throw new NotSupportedException();
+            throw new NotSupportedException("not applicable");
         }
 
         public LigatureSetTable[] LigatureSetTables

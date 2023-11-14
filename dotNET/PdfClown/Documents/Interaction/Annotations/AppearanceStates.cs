@@ -48,14 +48,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                 ? (AppearanceStates)(baseObject.AlternateWrapper ??= new AppearanceStates(statesKey, appearance))
             : new AppearanceStates(statesKey, appearance);
         }
-        #region dynamic
-        #region fields
         private Appearance appearance;
 
         private PdfName statesKey;
-        #endregion
 
-        #region constructors
         public AppearanceStates(PdfName statesKey, Appearance appearance)
         {
             BaseObject = appearance.BaseDataObject[statesKey];
@@ -65,10 +61,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public AppearanceStates(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the appearance associated to these states.</summary>
         */
@@ -86,7 +79,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         //     )
         //   {return BaseDataObject.GetKey(value.BaseObject);}
 
-        #region IDictionary
         public void Add(PdfName key, FormXObject value)
         { EnsureDictionary()[key] = value.BaseObject; }
 
@@ -160,12 +152,9 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public ICollection<FormXObject> Values => throw new NotImplementedException();
 
-        #region ICollection
-        void ICollection<KeyValuePair<PdfName, FormXObject>>.Add(KeyValuePair<PdfName, FormXObject> entry)
-        { Add(entry.Key, entry.Value); }
+        void ICollection<KeyValuePair<PdfName, FormXObject>>.Add(KeyValuePair<PdfName, FormXObject> entry) => Add(entry.Key, entry.Value);
 
-        public void Clear()
-        { EnsureDictionary().Clear(); }
+        public void Clear() => EnsureDictionary().Clear();
 
         bool ICollection<KeyValuePair<PdfName, FormXObject>>.Contains(KeyValuePair<PdfName, FormXObject> entry)
         {
@@ -200,7 +189,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         public bool Remove(KeyValuePair<PdfName, FormXObject> entry)
         { throw new NotImplementedException(); }
 
-        #region IEnumerable<KeyValuePair<PdfName,FormXObject>>
         IEnumerator<KeyValuePair<PdfName, FormXObject>> IEnumerable<KeyValuePair<PdfName, FormXObject>>.GetEnumerator()
         {
             PdfDataObject baseDataObject = BaseDataObject;
@@ -225,17 +213,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<KeyValuePair<PdfName, FormXObject>>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<PdfName, FormXObject>>)this).GetEnumerator();
 
-        #region private
         private PdfDictionary EnsureDictionary()
         {
             PdfDataObject baseDataObject = BaseDataObject;
@@ -250,7 +229,5 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             return (PdfDictionary)baseDataObject;
         }
-        #endregion
-        #endregion
     }
 }

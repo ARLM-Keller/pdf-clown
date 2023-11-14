@@ -465,7 +465,7 @@ namespace PdfClown.Bytes.Filters.CCITT
           new []{2, 2}, new []{2, 2}, new []{2, 2}, new []{2, 2 }
         };
 
-        private Bytes.Buffer source;
+        private IInputStream source;
         private bool eof;
         private int encoding;
         private bool eoline;
@@ -490,7 +490,7 @@ namespace PdfClown.Bytes.Filters.CCITT
          * @param {Object} [options] - Decoding options.
          */
         // eslint-disable-next-line no-shadow
-        public CCITTFaxDecoder(Bytes.Buffer source, CCITTFaxParams options)
+        public CCITTFaxDecoder(IInputStream source, CCITTFaxParams options)
         {
             this.source = source;
             eof = false;

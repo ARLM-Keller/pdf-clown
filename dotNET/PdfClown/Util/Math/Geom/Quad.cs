@@ -34,10 +34,7 @@ namespace PdfClown.Util.Math.Geom
     */
     public struct Quad
     {
-        #region static
         public static readonly Quad Empty = new Quad(SKRect.Empty);
-        #region interface
-        #region public
         public static Quad Union(Quad value, Quad value2)
         {
             return value.Union(value2);
@@ -49,19 +46,11 @@ namespace PdfClown.Util.Math.Geom
             return temp.Transform(ref matrix);
         }
 
-        #endregion
-        #endregion
-        #endregion
-
-        #region dynamic
-        #region fields
         private SKPoint pointTopLeft;
         private SKPoint pointTopRight;
         private SKPoint pointBottomRight;
         private SKPoint pointBottomLeft;
-        #endregion
 
-        #region constructors
         public Quad(SKRect rectangle)
             : this(new SKPoint(rectangle.Left, rectangle.Top),
                   new SKPoint(rectangle.Right, rectangle.Top),
@@ -84,10 +73,6 @@ namespace PdfClown.Util.Math.Geom
             this.pointBottomLeft = pointBottomLeft;
         }
 
-        #endregion
-
-        #region interface
-        #region public
         public SKPoint TopLeft => pointTopLeft;
 
         public SKPoint TopRight => pointTopRight;
@@ -130,9 +115,7 @@ namespace PdfClown.Util.Math.Geom
         {
             return new[] { pointTopLeft, pointTopRight, pointBottomRight, pointBottomLeft };
         }
-        #endregion
 
-        #region private
         public SKPath GetPath()
         {
             var path = new SKPath();//FillMode.Alternate
@@ -211,6 +194,13 @@ namespace PdfClown.Util.Math.Geom
                 || SKLine.FindIntersection(new SKLine(pointTopRight, pointBottomRight), value, true) != null
                 || SKLine.FindIntersection(new SKLine(pointBottomRight, pointBottomLeft), value, true) != null
                 || SKLine.FindIntersection(new SKLine(pointBottomLeft, pointTopLeft), value, true) != null;
+        }
+
+        public bool ContainsOrIntersect(Quad value)
+        {
+            return Contains(value)
+                || value.Contains(this)
+                || IntersectsWith(value);
         }
 
         public bool Contains(Quad value)
@@ -325,8 +315,5 @@ namespace PdfClown.Util.Math.Geom
             //}
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -32,6 +32,7 @@ using PdfClown.Util;
 using System;
 using System.IO;
 using System.Net;
+using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Files
 {
@@ -41,7 +42,6 @@ namespace PdfClown.Documents.Files
     [PDF(VersionEnum.PDF11)]
     public sealed class FullFileSpecification : FileSpecification
     {
-        #region types
         /**
           <summary>Standard file system.</summary>
         */
@@ -56,17 +56,10 @@ namespace PdfClown.Documents.Files
             */
             URL
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         internal FullFileSpecification(Document context, string path) : base(
             context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type },
-              new PdfDirectObject[] { PdfName.Filespec }
-              )
-            )
+            new PdfDictionary(1) { { PdfName.Type, PdfName.Filespec } })
         {
             Path = path;
         }
@@ -83,10 +76,7 @@ namespace PdfClown.Documents.Files
 
         internal FullFileSpecification(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the identifier of the file.</summary>
         */
@@ -165,7 +155,7 @@ namespace PdfClown.Documents.Files
             set => BaseDictionary.SetBool(PdfName.V, value);
         }
 
-        public override bytes::IInputStream GetInputStream()
+        public override IInputStream GetInputStream()
         {
             if (PdfName.URL.Equals(BaseDictionary[PdfName.FS])) // Remote resource [PDF:1.7:3.10.4].
             {
@@ -176,7 +166,7 @@ namespace PdfClown.Documents.Files
                 { throw new Exception("Failed to instantiate URL for " + Path, e); }
                 WebClient webClient = new WebClient();
                 try
-                { return new bytes::Buffer(webClient.OpenRead(fileUrl)); }
+                { return new ByteStream(webClient.OpenRead(fileUrl)); }
                 catch (Exception e)
                 { throw new Exception("Failed to open input stream for " + Path, e); }
             }
@@ -184,7 +174,7 @@ namespace PdfClown.Documents.Files
                 return base.GetInputStream();
         }
 
-        public override bytes::IOutputStream GetOutputStream()
+        public override IOutputStream GetOutputStream()
         {
             if (PdfName.URL.Equals(BaseDictionary[PdfName.FS])) // Remote resource [PDF:1.7:3.10.4].
             {
@@ -195,7 +185,7 @@ namespace PdfClown.Documents.Files
                 { throw new Exception("Failed to instantiate URL for " + Path, e); }
                 WebClient webClient = new WebClient();
                 try
-                { return new bytes::Stream(webClient.OpenWrite(fileUrl)); }
+                { return new StreamContainer(webClient.OpenWrite(fileUrl)); }
                 catch (Exception e)
                 { throw new Exception("Failed to open output stream for " + Path, e); }
             }
@@ -203,9 +193,7 @@ namespace PdfClown.Documents.Files
                 return base.GetOutputStream();
         }
 
-        #endregion
 
-        #region private
         private PdfDictionary BaseDictionary => (PdfDictionary)BaseDataObject;
 
         /**
@@ -251,9 +239,6 @@ namespace PdfClown.Documents.Files
             embeddedFilesObject[key] = value.BaseObject;
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 
     internal static class StandardFileSystemEnumExtension

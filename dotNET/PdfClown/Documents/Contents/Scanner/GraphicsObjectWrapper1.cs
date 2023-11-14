@@ -37,27 +37,17 @@ namespace PdfClown.Documents.Contents.Scanner
     */
     public abstract class GraphicsObjectWrapper<TDataObject> : GraphicsObjectWrapper where TDataObject : ContentObject
     {
-        #region dynamic
-        #region fields
         private TDataObject baseDataObject;
-        #endregion
 
-        #region constructors
         protected GraphicsObjectWrapper(TDataObject baseDataObject)
         {
             this.baseDataObject = baseDataObject;
             baseDataObject.Wrapper = this;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the underlying data object.</summary>
         */
         public TDataObject BaseDataObject => baseDataObject;
-        #endregion
-        #endregion
-        #endregion
     }
 }

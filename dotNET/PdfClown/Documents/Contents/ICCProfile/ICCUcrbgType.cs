@@ -39,27 +39,27 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public ushort[] BGCurves;
         public string Charactes;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
 
-            CountUCRCurves = buffer.ReadUnsignedInt();
+            CountUCRCurves = buffer.ReadUInt32();
             UCRCurves = new ushort[CountUCRCurves];
             for (int i = 0; i < CountUCRCurves; i++)
             {
-                UCRCurves[i] = buffer.ReadUnsignedShort();
+                UCRCurves[i] = buffer.ReadUInt16();
             }
 
-            CountBGCurves = buffer.ReadUnsignedInt();
+            CountBGCurves = buffer.ReadUInt32();
             BGCurves = new ushort[CountBGCurves];
             for (int i = 0; i < CountBGCurves; i++)
             {
-                BGCurves[i] = buffer.ReadUnsignedShort();
+                BGCurves[i] = buffer.ReadUInt16();
             }
 
-            Charactes = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
+            Charactes = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitadedSpan());
         }
     }
 }

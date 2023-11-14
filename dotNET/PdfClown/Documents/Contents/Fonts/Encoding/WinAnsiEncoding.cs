@@ -256,12 +256,12 @@ namespace PdfClown.Documents.Contents.Fonts
             Put(48, "zero");
             // adding some additional mappings as defined in Appendix D of the pdf spec
             Put(0240, "nbspace");
-            Put(0255, "hyphen");
+            Put(0255, "sfthyphen");
             // From the PDF specification:
             // In WinAnsiEncoding, all unused codes greater than 40 map to the bullet character.
             for (int i = 041; i <= 255; i++)
             {
-                if (!codeToName.ContainsKey(i))
+                if (!CodeToNameMap.ContainsKey(i))
                 {
                     Put(i, "bullet");
                 }

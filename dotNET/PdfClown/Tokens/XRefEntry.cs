@@ -32,7 +32,6 @@ namespace PdfClown.Tokens
     */
     public class XRefEntry : ICloneable
     {
-        #region types
         /**
           <summary>Cross-reference table entry usage [PDF:1.6:3.4.3].</summary>
         */
@@ -51,10 +50,7 @@ namespace PdfClown.Tokens
             */
             InUseCompressed
         }
-        #endregion
 
-        #region static
-        #region fields
         /**
           <summary>Unreusable generation [PDF:1.6:3.4.3].</summary>
         */
@@ -68,19 +64,13 @@ namespace PdfClown.Tokens
           <summary>Undefined object stream number.</summary>
         */
         public static readonly int UndefinedStreamNumber = -1;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private int number;
         private int generation;
         private int offset;
         private int streamNumber;
         private UsageEnum usage;
-        #endregion
 
-        #region constructors
         /**
           <summary>Instantiates a new in-use ordinary (uncompressed) object entry.</summary>
           <param name="number">Object number.</param>
@@ -121,10 +111,7 @@ namespace PdfClown.Tokens
             this.usage = usage;
             this.streamNumber = streamNumber;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the generation number.</summary>
         */
@@ -176,14 +163,9 @@ namespace PdfClown.Tokens
             internal set => usage = value;
         }
 
-        #region ICloneable
         public object Clone()
         {
             return MemberwiseClone();
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -36,15 +36,11 @@ namespace PdfClown.Objects
         /**
           <summary>Gets the value dictionary associated to the specified type.</summary>
         */
-        PdfObjectWrapper Get(
-          Type type
-          );
+        PdfObjectWrapper Get(Type type);
 
         /**
           <summary>Gets the value associated to the specified key for the specified type.</summary>
         */
-        T Get<T>(
-          TKey key
-          ) where T : PdfObjectWrapper;
+        T Get<T>(TKey key) where T : PdfObjectWrapper;
     }
 }

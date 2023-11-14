@@ -47,7 +47,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
     class Type1Lexer
     {
 
-        private readonly Bytes.Buffer buffer;
+        private readonly Bytes.ByteStream buffer;
         private Token aheadToken;
         private int openParens = 0;
 
@@ -56,9 +56,9 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * @param bytes Header-less .pfb segment
 		 * @throws IOException
 		 */
-        public Type1Lexer(byte[] bytes)
+        public Type1Lexer(Memory<byte> bytes)
         {
-            buffer = new Bytes.Buffer(bytes);
+            buffer = new Bytes.ByteStream(bytes);
             aheadToken = ReadToken(null);
         }
 
@@ -78,9 +78,19 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * Returns the next token without consuming it.
 		 * @return The next token
 		 */
-        public Token PeekToken()
+        public Token PeekToken
         {
-            return aheadToken;
+            get => aheadToken;
+        }
+
+        /**
+        * Checks if the kind of the next token equals the given one without consuming it.
+        * 
+        * @return true if the kind of the next token equals the given one
+        */
+        public bool PeekKind(TokenKind kind)
+        {
+            return aheadToken?.Kind == kind;
         }
 
         /**
@@ -266,10 +276,10 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             else if (sb.Length == 0 || !hasDigit)
             {
                 // failure
-                buffer.Reset();
+                buffer.ResetMark();
                 return null;
             }
-            else
+            else if (c != 'e' && c != 'E')
             {
                 // integer
                 buffer.Seek(buffer.Position - 1);
@@ -282,10 +292,10 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 sb.Append(c);
                 c = GetChar();
             }
-            else
+            else if (c != 'e' && c != 'E')
             {
                 // failure
-                buffer.Reset();
+                buffer.ResetMark();
                 return null;
             }
 
@@ -297,7 +307,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
 
             // optional E
-            if (c == 'E')
+            if (c == 'E' || c == 'e')
             {
                 sb.Append(c);
                 c = GetChar();
@@ -318,7 +328,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 else
                 {
                     // failure
-                    buffer.Reset();
+                    buffer.ResetMark();
                     return null;
                 }
 
@@ -357,7 +367,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                     c == '{' || c == '}' ||
                     c == '/' || c == '%')
                 {
-                    buffer.Reset();
+                    buffer.ResetMark();
                     break;
                 }
                 else
@@ -442,7 +452,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                         {
                             string num = new string(new char[] { c1, GetChar(), GetChar() });
                             int code = Convert.ToInt32(num, 8);
-                            sb.Append((char)(int)code);
+                            sb.Append((char)code);
                         }
                         break;
                     case '\r':

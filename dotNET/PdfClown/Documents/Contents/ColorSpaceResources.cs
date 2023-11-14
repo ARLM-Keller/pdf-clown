@@ -40,21 +40,13 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF10)]
     public sealed class ColorSpaceResources : ResourceItems<ColorSpace>
     {
-        #region dynamic
-        #region constructors
         public ColorSpaceResources(Document context) : base(context)
         { }
 
         public ColorSpaceResources(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override ColorSpace WrapItem(PdfDirectObject baseObject)
         { return ColorSpace.Wrap(baseObject); }
-        #endregion
-        #endregion
-        #endregion
     }
 }

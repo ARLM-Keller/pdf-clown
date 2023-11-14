@@ -30,10 +30,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint Size;
         public uint Count;
         public ICCDeviceSetting[] Setttings;
-        internal void Load(Bytes.Buffer buffer)
+        internal void Load(Bytes.ByteStream buffer)
         {
-            Size = buffer.ReadUnsignedInt();
-            Count = buffer.ReadUnsignedInt();
+            Size = buffer.ReadUInt32();
+            Count = buffer.ReadUInt32();
             Setttings = new ICCDeviceSetting[Count];
             for (int i = 0; i < Count; i++)
             {

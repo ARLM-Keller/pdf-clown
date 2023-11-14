@@ -39,9 +39,6 @@ namespace PdfClown.Objects
     */
     public abstract class PdfObjectWrapper : IPdfObjectWrapper
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Gets the PDF object backing the specified wrapper.</summary>
           <param name="wrapper">Object to extract the base from.</param>
@@ -80,16 +77,8 @@ namespace PdfClown.Objects
                 : default(T);
         }
 
-        #endregion
-        #endregion
-        #endregion
-
-        #region dynamic
-        #region fields
         private PdfDirectObject baseObject;
-        #endregion
 
-        #region constructors
         /**
           <summary>Instantiates an empty wrapper.</summary>
         */
@@ -110,10 +99,7 @@ namespace PdfClown.Objects
             if (baseObject is PdfReference reference && reference.DataObject != null)
                 reference.DataObject.Wrapper = this;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets a clone of the object, registered inside the specified document context using
           the default object cloner.</summary>
@@ -155,10 +141,7 @@ namespace PdfClown.Objects
           returns.</remarks>
           <returns>Whether the object was removed from its document context.</returns>
         */
-        public virtual bool Delete()
-        {
-            return baseObject.Delete();
-        }
+        public virtual bool Delete() => baseObject.Delete();
 
         /**
           <summary>Gets the document context.</summary>
@@ -177,26 +160,19 @@ namespace PdfClown.Objects
         */
         public File File => baseObject.File;
 
-        public override int GetHashCode()
-        {
-            return baseObject.GetHashCode();
-        }
+        public override int GetHashCode() => baseObject.GetHashCode();
 
         public override string ToString()
         {
             return $"{GetType().Name} {{{(BaseObject is PdfReference ? (PdfObject)BaseObject.DataContainer : BaseObject)}}}";
         }
 
-        #region IPdfObjectWrapper
         public virtual PdfDirectObject BaseObject
         {
             get => baseObject;
             protected set => baseObject = value;
         }
-        #endregion
-        #endregion
 
-        #region protected
         /**
           <summary>Checks whether the specified feature is compatible with the
             <see cref="Document.Version">document's conformance version</see>.</summary>
@@ -314,9 +290,6 @@ namespace PdfClown.Objects
             PdfString name = RetrieveName();
             return name != null ? name : BaseObject;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     /**
@@ -343,8 +316,6 @@ namespace PdfClown.Objects
     public abstract class PdfObjectWrapper<TDataObject> : PdfObjectWrapper
       where TDataObject : PdfDataObject
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Instantiates an empty wrapper.</summary>
         */
@@ -382,10 +353,7 @@ namespace PdfClown.Objects
         protected PdfObjectWrapper(File context, TDataObject baseDataObject)
             : this(context != null ? context.Register(baseDataObject) : (PdfDirectObject)(PdfDataObject)baseDataObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the underlying data object.</summary>
         */
@@ -425,9 +393,7 @@ namespace PdfClown.Objects
                 dictionary[PdfName.Metadata] = PdfObjectWrapper.GetBaseObject(value);
             }
         }
-        #endregion
 
-        #region private
         protected virtual PdfDictionary Dictionary
         {
             get
@@ -441,8 +407,5 @@ namespace PdfClown.Objects
                     return null;
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

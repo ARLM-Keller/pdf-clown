@@ -28,6 +28,7 @@ using PdfClown.Objects;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -37,8 +38,6 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class ShowTextToNextLine : ShowText
     {
-        #region static
-        #region fields
         /**
           <summary>Specifies no text state parameter
           (just uses the current settings).</summary>
@@ -49,11 +48,7 @@ namespace PdfClown.Documents.Contents.Objects
           (setting the corresponding parameters in the text state).</summary>
         */
         public static readonly string SpaceOperatorKeyword = "''";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <param name="text">Text encoded using current font's encoding.</param>
         */
@@ -73,10 +68,7 @@ namespace PdfClown.Documents.Contents.Objects
         public ShowTextToNextLine(string @operator, IList<PdfDirectObject> operands)
             : base(@operator, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the character spacing.</summary>
         */
@@ -96,10 +88,22 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        public override byte[] Text
+        private PdfString String
         {
-            get => ((PdfString)operands[@operator.Equals(SimpleOperatorKeyword, StringComparison.Ordinal) ? 0 : 2]).RawValue;
-            set => operands[@operator.Equals(SimpleOperatorKeyword, StringComparison.Ordinal) ? 0 : 2] = new PdfByteString(value);
+            get => (PdfString)operands[@operator.Equals(SimpleOperatorKeyword, StringComparison.Ordinal) ? 0 : 2];
+            set => operands[@operator.Equals(SimpleOperatorKeyword, StringComparison.Ordinal) ? 0 : 2] = value;
+        }
+
+        public override Memory<byte> Text
+        {
+            get => String.RawValue;
+            set => String = new PdfByteString(value);
+        }
+
+        public override IEnumerable<PdfDirectObject> Value
+        {
+            get => Enumerable.Repeat(String, 1);
+            set => String = value.FirstOrDefault() as PdfString;
         }
 
         /**
@@ -120,9 +124,7 @@ namespace PdfClown.Documents.Contents.Objects
                 operands[0] = PdfReal.Get(value.Value);
             }
         }
-        #endregion
 
-        #region private
         private void EnsureSpaceOperation()
         {
             if (@operator.Equals(SimpleOperatorKeyword, StringComparison.Ordinal))
@@ -132,8 +134,5 @@ namespace PdfClown.Documents.Contents.Objects
                 operands.Insert(1, PdfReal.Get(0));
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

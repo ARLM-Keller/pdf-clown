@@ -31,27 +31,31 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
      */
     public class CFFType1Font : CFFFont, IType1CharStringReader, IEncodedFont
     {
-        private readonly Dictionary<string, object> privateDict = new Dictionary<string, object>(StringComparer.Ordinal);
+        private readonly Dictionary<string, object> privateDict = new(StringComparer.Ordinal);
         private CFFEncoding encoding;
 
-        private readonly Dictionary<int, Type2CharString> charStringCache = new Dictionary<int, Type2CharString>();
+        private readonly Dictionary<int, Type2CharString> charStringCache = new();
+        //private readonly PrivateType1CharStringReader reader = new PrivateType1CharStringReader();
+        private Type2CharStringParser charStringParser = null;
+
+        private int? defaultWidthX;
+        private int? nominalWidthX;
+        private Memory<byte>[] localSubrIndex;
 
         public override SKPath GetPath(string name)
         {
             return GetType1CharString(name).Path;
         }
 
-
         public override float GetWidth(string name)
         {
             return GetType1CharString(name).Width;
         }
 
-
         public override bool HasGlyph(string name)
         {
-            int sid = charset.GetSID(name);
-            int gid = charset.GetGIDForSID(sid);
+            int sid = Charset.GetSID(name);
+            int gid = Charset.GetGIDForSID(sid);
             return gid != 0;
         }
 
@@ -84,8 +88,8 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         public int NameToGID(string name)
         {
             // some fonts have glyphs beyond their encoding, so we look up by charset SID
-            int sid = charset.GetSID(name);
-            return charset.GetGIDForSID(sid);
+            int sid = Charset.GetSID(name);
+            return Charset.GetGIDForSID(sid);
         }
 
         /**
@@ -106,21 +110,19 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         {
             if (!charStringCache.TryGetValue(gid, out Type2CharString type2))
             {
-                byte[] bytes = null;
-                if (gid < charStrings.Length)
-                {
-                    bytes = charStrings[gid];
-                }
-                if (bytes == null)
-                {
-                    // .notdef
-                    bytes = charStrings[0];
-                }
-                List<object> type2seq = Type2CharStringParser.Parse(fontName, name, bytes, globalSubrIndex, LocalSubrIndex);
-                type2 = new Type2CharString(this, fontName, name, gid, type2seq, GetDefaultWidthX(), GetNominalWidthX());
+                var bytes = gid < charStrings.Length
+                    ? charStrings[gid]
+                    : charStrings[0];
+                List<object> type2seq = Parser.Parse(bytes, globalSubrIndex, LocalSubrIndex, name);
+                type2 = new Type2CharString(this, Name, name, gid, type2seq, GetDefaultWidthX(), GetNominalWidthX());
                 charStringCache[gid] = type2;
             }
             return type2;
+        }
+
+        private Type2CharStringParser Parser
+        {
+            get => charStringParser ??= new Type2CharStringParser(Name);
         }
 
         /**
@@ -139,7 +141,6 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 * @param name the given key
 		 * @param value the given value
 		 */
-        // todo: can't we just accept a Dictionary?
         public void AddToPrivateDict(string name, object value)
         {
             if (value != null)
@@ -159,43 +160,29 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             set => encoding = (CFFEncoding)value;
         }
 
-        private byte[][] LocalSubrIndex
+        private Memory<byte>[] LocalSubrIndex
         {
-            get => (byte[][])(privateDict.TryGetValue("Subrs", out var array) ? array : null);
+            get => localSubrIndex ??= privateDict.TryGetValue("Subrs", out var array) ? (Memory<byte>[])array : null;
         }
 
         // helper for looking up keys/values
         private object GetProperty(string name)
         {
-            if (topDict.TryGetValue(name, out var topDictValue))
-            {
-                return topDictValue;
-            }
-            if (privateDict.TryGetValue(name, out var privateDictValue))
-            {
-                return privateDictValue;
-            }
-            return null;
+            return topDict.TryGetValue(name, out var topDictValue)
+                ? topDictValue
+                : privateDict.TryGetValue(name, out var privateDictValue)
+                    ? privateDictValue
+                    : null;
         }
 
         private int GetDefaultWidthX()
         {
-            var num = GetProperty("defaultWidthX");
-            if (num == null)
-            {
-                return 1000;
-            }
-            return (int)(float)num;
+            return defaultWidthX ??= (int)(float)(GetProperty("defaultWidthX") ?? 1000F);
         }
 
         private int GetNominalWidthX()
         {
-            var num = GetProperty("nominalWidthX");
-            if (num == null)
-            {
-                return 0;
-            }
-            return (int)(float)num;
+            return nominalWidthX ??= (int)(float)(GetProperty("nominalWidthX") ?? 0F);
         }
     }
 }

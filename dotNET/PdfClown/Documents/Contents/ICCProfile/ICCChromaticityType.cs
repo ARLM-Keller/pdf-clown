@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public class ICCChromaticityType : ICCTag
@@ -39,13 +41,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public XYCoord Channel3;
         public XYCoord[] OtherChannels;
 
-        public override void Load(PdfClown.Bytes.Buffer buffer)
+        public override void Load(PdfClown.Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            NumberOfDeviceChannels = buffer.ReadUnsignedShort();
-            PhosphorOrColorantType = (ICCPhosphorOrColorantTypes)buffer.ReadUnsignedShort();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            NumberOfDeviceChannels = buffer.ReadUInt16();
+            PhosphorOrColorantType = (ICCPhosphorOrColorantTypes)buffer.ReadUInt16();
             Channel1.X = buffer.ReadFixed32();
             Channel1.Y = buffer.ReadFixed32();
             Channel2.X = buffer.ReadFixed32();

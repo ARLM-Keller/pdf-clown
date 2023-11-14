@@ -28,6 +28,7 @@ using PdfClown.Objects;
 using PdfClown.Util.Parsers;
 
 using System;
+using System.IO;
 
 namespace PdfClown.Tokens
 {
@@ -36,17 +37,12 @@ namespace PdfClown.Tokens
     */
     public class BaseParser : PostScriptParser
     {
-        #region dynamic
-        #region constructors
         protected BaseParser(IInputStream stream) : base(stream)
         { }
 
-        protected BaseParser(byte[] data) : base(data)
+        protected BaseParser(Memory<byte> data) : base(data)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override bool MoveNext()
         {
             bool moved;
@@ -56,18 +52,24 @@ namespace PdfClown.Tokens
                 if (tokenType == TokenTypeEnum.Comment)
                     continue; // Comments are ignored.
 
-                if (tokenType == TokenTypeEnum.Literal)
+                if (tokenType == TokenTypeEnum.Literal
+                    && Token is MemoryStream stream)
                 {
-                    string literalToken = (string)Token;
-                    if (literalToken.StartsWith(Keyword.DatePrefix, StringComparison.Ordinal)) // Date.
+                    var bytes = (ReadOnlySpan<byte>)stream.AsSpan();
+                    if (bytes.Length > 5)
                     {
-                        /*
-                          NOTE: Dates are a weak extension to the PostScript language.
-                        */
-                        try
-                        { Token = PdfDate.ToDate(literalToken); }
-                        catch (ParseException)
-                        {/* NOOP: gently degrade to a common literal. */}
+                        Span<char> chars = stackalloc char[2];
+                        Charset.ISO88591.GetChars(bytes.Slice(0, 2), chars);
+                        if (MemoryExtensions.Equals(chars, Keyword.DatePrefix, StringComparison.Ordinal))
+                        {
+                            Span<char> full = stackalloc char[bytes.Length];
+                            Charset.ISO88591.GetChars(bytes, full);
+                            ///NOTE: Dates are a weak extension to the PostScript language.
+                            try
+                            { Token = PdfDate.ToDate(full); }
+                            catch (ParseException)
+                            {/* NOOP: gently degrade to a common literal. */}
+                        }
                     }
                 }
                 break;
@@ -85,10 +87,10 @@ namespace PdfClown.Tokens
                 case TokenTypeEnum.Integer:
                     return PdfInteger.Get((int)Token);
                 case TokenTypeEnum.Name:
-                    return new PdfName((string)Token, true);
+                    return new PdfName(Token.ToString(), true);
                 case TokenTypeEnum.DictionaryBegin:
                     {
-                        PdfDictionary dictionary = new PdfDictionary();
+                        var dictionary = new PdfDictionary();
                         dictionary.Updateable = false;
                         while (true)
                         {
@@ -96,7 +98,7 @@ namespace PdfClown.Tokens
                             MoveNext(); if (TokenType == TokenTypeEnum.DictionaryEnd) break;
                             PdfName key = (PdfName)ParsePdfObject();
                             // Value.
-                            MoveNext();
+                            MoveNext(); if (TokenType == TokenTypeEnum.DictionaryEnd) break;
                             PdfDirectObject value = (PdfDirectObject)ParsePdfObject();
                             // Add the current entry to the dictionary!
                             if (dictionary.ContainsKey(key))
@@ -110,7 +112,7 @@ namespace PdfClown.Tokens
                     }
                 case TokenTypeEnum.ArrayBegin:
                     {
-                        PdfArray array = new PdfArray();
+                        var array = new PdfArray();
                         array.Updateable = false;
                         while (true)
                         {
@@ -123,12 +125,12 @@ namespace PdfClown.Tokens
                         return array;
                     }
                 case TokenTypeEnum.Literal:
-                    if (Token is DateTime)
-                        return PdfDate.Get((DateTime)Token);
+                    if (Token is DateTime dateTime)
+                        return PdfDate.Get(dateTime);
                     else
-                        return new PdfTextString(Token == null ? null : Encoding.Pdf.Encode((string)Token));
+                        return new PdfTextString(BytesToken.ToArray());
                 case TokenTypeEnum.Hex:
-                    return new PdfTextString((string)Token, PdfString.SerializationModeEnum.Hex);
+                    return new PdfTextString(BytesToken.ToArray(), PdfString.SerializationModeEnum.Hex);
                 case TokenTypeEnum.Real:
                     return PdfReal.Get((double)Token);
                 case TokenTypeEnum.Boolean:
@@ -136,7 +138,7 @@ namespace PdfClown.Tokens
                 case TokenTypeEnum.Null:
                     return null;
                 default:
-                    throw new PostScriptParseException(String.Format("Unknown type beginning: '{0}'", Token), this);
+                    throw new PostScriptParseException($"Unknown type beginning: '{Token}'", this);
             }
         }
 
@@ -150,9 +152,6 @@ namespace PdfClown.Tokens
             MoveNext(offset);
             return ParsePdfObject();
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }
 

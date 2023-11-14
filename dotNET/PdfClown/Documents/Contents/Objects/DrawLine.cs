@@ -37,14 +37,8 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class DrawLine : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "l";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <param name="point">Final endpoint.</param>
         */
@@ -56,15 +50,12 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="pointY">Final endpoint Y.</param>
         */
         public DrawLine(double pointX, double pointY)
-            : base(OperatorKeyword, new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(pointX), PdfReal.Get(pointY) }))
+            : base(OperatorKeyword, new List<PdfDirectObject>(2) { PdfReal.Get(pointX), PdfReal.Get(pointY) })
         { }
 
         public DrawLine(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the final endpoint.</summary>
         */
@@ -90,8 +81,5 @@ namespace PdfClown.Documents.Contents.Objects
                 pathObject.LineTo(Point);
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

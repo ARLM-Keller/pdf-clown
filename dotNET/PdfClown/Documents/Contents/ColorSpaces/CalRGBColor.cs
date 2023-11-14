@@ -36,40 +36,31 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class CalRGBColor : LeveledColor
     {
-        #region static
-        #region fields
         public static readonly CalRGBColor Black = new CalRGBColor(0, 0, 0);
         public static readonly CalRGBColor White = new CalRGBColor(1, 1, 1);
 
         public static readonly CalRGBColor Default = Black;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public CalRGBColor(double r, double g, double b)
-            : this(new PdfArray(
+            : this(new PdfArray(3)
+            {
                     PdfReal.Get(NormalizeComponent(r)),
                     PdfReal.Get(NormalizeComponent(g)),
                     PdfReal.Get(NormalizeComponent(b))
-              )
-            )
+            })
         { }
 
         internal CalRGBColor(IList<PdfDirectObject> components)//TODO:colorspace?
             : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the red component.</summary>
         */
         public float R
         {
-            get => GetComponentValue(0);
-            set => SetComponentValue(0, value);
+            get => this[0];
+            set => this[0] = value;
         }
 
         /**
@@ -77,8 +68,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public float G
         {
-            get => GetComponentValue(1);
-            set => SetComponentValue(1, value);
+            get => this[1];
+            set => this[1] = value;
         }
 
         /**
@@ -86,8 +77,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public float B
         {
-            get => GetComponentValue(2);
-            set => SetComponentValue(2, value);
+            get => this[2];
+            set => this[2] = value;
         }
 
         public override object Clone(Document context)
@@ -96,8 +87,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         }
 
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

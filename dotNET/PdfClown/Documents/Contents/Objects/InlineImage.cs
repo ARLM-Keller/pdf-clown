@@ -39,28 +39,19 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class InlineImage : GraphicsObject, IImageObject
     {
-        #region static
-        #region fields
         public static readonly string BeginOperatorKeyword = BeginInlineImage.OperatorKeyword;
         public static readonly string EndOperatorKeyword = EndInlineImage.OperatorKeyword;
 
         private static readonly string DataOperatorKeyword = "ID";
         private SKBitmap image;
         private IContentContext Context;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public InlineImage(InlineImageHeader header, InlineImageBody body)
         {
             objects.Add(header);
             objects.Add(body);
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the image body.</summary>
         */
@@ -88,7 +79,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public bool ImageMask => bool.TryParse(ImageHeader.ImageMask, out var isMask) ? isMask : false;
 
-        public IBuffer Data => ImageBody.Value;
+        public IByteStream Data => ImageBody.Value;
 
         public float[] Decode => ImageHeader.Decode;
 
@@ -156,8 +147,5 @@ namespace PdfClown.Documents.Contents.Objects
             stream.Write(EndOperatorKeyword);
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

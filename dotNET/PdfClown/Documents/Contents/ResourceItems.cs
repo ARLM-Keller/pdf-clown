@@ -41,34 +41,24 @@ namespace PdfClown.Documents.Contents
     public abstract class ResourceItems<TValue> : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, TValue>, IDictionary
         where TValue : PdfObjectWrapper
     {
-        #region dynamic
-        #region constructors
         protected ResourceItems(Document context) : base(context, new PdfDictionary())
         { }
 
         public ResourceItems(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           Gets the key associated to a given value.
         */
-        public PdfName GetKey(TValue value)
-        { return BaseDataObject.GetKey(value.BaseObject); }
+        public PdfName GetKey(TValue value) => BaseDataObject.GetKey(value.BaseObject);
 
-        #region IDictionary
-        public void Add(PdfName key, TValue value)
-        { BaseDataObject.Add(key, value.BaseObject); }
+        public void Add(PdfName key, TValue value) => BaseDataObject.Add(key, value.BaseObject);
 
-        public bool ContainsKey(PdfName key)
-        { return BaseDataObject.ContainsKey(key); }
+        public bool ContainsKey(PdfName key) => BaseDataObject.ContainsKey(key);
 
         public ICollection<PdfName> Keys => BaseDataObject.Keys;
 
-        public bool Remove(PdfName key)
-        { return BaseDataObject.Remove(key); }
+        public bool Remove(PdfName key) => BaseDataObject.Remove(key);
 
         public TValue this[PdfName key]
         {
@@ -76,8 +66,7 @@ namespace PdfClown.Documents.Contents
             set => BaseDataObject[key] = value.BaseObject;
         }
 
-        public bool TryGetValue(PdfName key, out TValue value)
-        { return ((value = this[key]) != null || ContainsKey(key)); }
+        public bool TryGetValue(PdfName key, out TValue value) => ((value = this[key]) != null || ContainsKey(key));
 
         public ICollection<TValue> Values
         {
@@ -96,15 +85,11 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        #region ICollection
-        void ICollection<KeyValuePair<PdfName, TValue>>.Add(KeyValuePair<PdfName, TValue> entry)
-        { Add(entry.Key, entry.Value); }
+        void ICollection<KeyValuePair<PdfName, TValue>>.Add(KeyValuePair<PdfName, TValue> entry) => Add(entry.Key, entry.Value);
 
-        public void Clear()
-        { BaseDataObject.Clear(); }
+        public void Clear() => BaseDataObject.Clear();
 
-        bool ICollection<KeyValuePair<PdfName, TValue>>.Contains(KeyValuePair<PdfName, TValue> entry)
-        { return entry.Value.BaseObject.Equals(BaseDataObject[entry.Key]); }
+        bool ICollection<KeyValuePair<PdfName, TValue>>.Contains(KeyValuePair<PdfName, TValue> entry) => entry.Value.BaseObject.Equals(BaseDataObject[entry.Key]);
 
         public void CopyTo(KeyValuePair<PdfName, TValue>[] entries, int index)
         { throw new NotImplementedException(); }
@@ -125,61 +110,34 @@ namespace PdfClown.Documents.Contents
 
         object IDictionary.this[object key] { get => this[(PdfName)key]; set => this[(PdfName)key] = (TValue)value; }
 
-        public bool Remove(KeyValuePair<PdfName, TValue> entry)
-        {
-            return BaseDataObject.Remove(new KeyValuePair<PdfName, PdfDirectObject>(entry.Key, entry.Value.BaseObject));
-        }
+        public bool Remove(KeyValuePair<PdfName, TValue> entry) => BaseDataObject.Remove(new KeyValuePair<PdfName, PdfDirectObject>(entry.Key, entry.Value.BaseObject));
 
-        #region IEnumerable<KeyValuePair<PdfName,TValue>>
         IEnumerator<KeyValuePair<PdfName, TValue>> IEnumerable<KeyValuePair<PdfName, TValue>>.GetEnumerator()
         {
             foreach (PdfName key in Keys)
             { yield return new KeyValuePair<PdfName, TValue>(key, this[key]); }
         }
 
-        #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
         { return ((IEnumerable<KeyValuePair<PdfName, TValue>>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
 
-        #region protected
         /**
           <summary>Wraps a base object within its corresponding high-level representation.</summary>
         */
-        protected virtual TValue WrapItem(PdfDirectObject baseObject)
-        { return Wrap<TValue>(baseObject); }
+        protected virtual TValue WrapItem(PdfDirectObject baseObject) => Wrap<TValue>(baseObject);
 
-        void IDictionary.Add(object key, object value)
-        {
-            Add((PdfName)key, (TValue)value);
-        }
+        void IDictionary.Add(object key, object value) => Add((PdfName)key, (TValue)value);
 
-        bool IDictionary.Contains(object key)
-        {
-            return ContainsKey((PdfName)key);
-        }
+        bool IDictionary.Contains(object key) => ContainsKey((PdfName)key);
 
-        IDictionaryEnumerator IDictionary.GetEnumerator()
-        {
-            return new DictionaryEnurator(this);
-        }
+        IDictionaryEnumerator IDictionary.GetEnumerator() => new DictionaryEnurator(this);
 
-        void IDictionary.Remove(object key)
-        {
-            Remove((PdfName)key);
-        }
+        void IDictionary.Remove(object key) => Remove((PdfName)key);
 
         void ICollection.CopyTo(Array array, int index)
         {
             throw new NotImplementedException();
         }
-        #endregion
-        #endregion
-        #endregion
 
         internal class DictionaryEnurator : IDictionaryEnumerator
         {

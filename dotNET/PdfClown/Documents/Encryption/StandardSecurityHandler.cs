@@ -17,9 +17,12 @@
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
+using PdfClown.Bytes;
+using PdfClown.Documents.Contents.Composition;
 using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Tokens;
+using PdfClown.Util;
 using PdfClown.Util.IO;
 using System;
 using System.ComponentModel;
@@ -36,8 +39,15 @@ namespace PdfClown.Documents.Encryption
      * @author Benoit Guillon
      * @author Manuel Kasper
      */
-    public sealed class StandardSecurityHandler : SecurityHandler
+    public sealed class StandardSecurityHandler : SecurityHandler<StandardProtectionPolicy>
     {
+        private const int Revision1 = 1;
+        private const int Revision2 = 2;
+        private const int Revision3 = 3;
+        private const int Revision4 = 4;
+        private const int Revision5 = 5;
+        private const int Revision6 = 6;
+
         /** Type of security handler. */
         public static readonly string FILTER = "Standard";
 
@@ -59,55 +69,22 @@ namespace PdfClown.Documents.Encryption
         // hashes used for Algorithm 2.B, depending on remainder from E modulo 3
         private static readonly string[] HASHES_2B = new string[] { "SHA256", "SHA384", "SHA512" };
 
-        private static readonly int DEFAULT_VERSION = 1;
-
-        private StandardProtectionPolicy policy;
+        private static readonly DateTime Jan1st1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         /**
 		 * Constructor.
 		 */
-        public StandardSecurityHandler()
-        {
-        }
+        public StandardSecurityHandler() : base()
+        { }
 
         /**
 		 * Constructor used for encryption.
 		 *
 		 * @param p The protection policy.
 		 */
-        public StandardSecurityHandler(StandardProtectionPolicy p)
-        {
-            policy = p;
-            keyLength = policy.EncryptionKeyLength;
-        }
-
-        /**
-		 * Computes the version number of the StandardSecurityHandler based on the encryption key
-		 * length. See PDF Spec 1.6 p 93 and
-		 * <a href="https://www.adobe.com/content/dam/acom/en/devnet/pdf/adobe_supplement_iso32000.pdf">PDF
-		 * 1.7 Supplement ExtensionLevel: 3</a> and
-		 * <a href="http://intranet.pdfa.org/wp-content/uploads/2016/08/ISO_DIS_32000-2-DIS4.pdf">PDF
-		 * Spec 2.0</a>.
-		 *
-		 * @return The computed version number.
-		 */
-        private int ComputeVersionNumber()
-        {
-            if (keyLength == 40)
-            {
-                return DEFAULT_VERSION;
-            }
-            else if (keyLength == 128 && policy.IsPreferAES)
-            {
-                return 4;
-            }
-            else if (keyLength == 256)
-            {
-                return 5;
-            }
-
-            return 2;
-        }
+        public StandardSecurityHandler(StandardProtectionPolicy policy)
+            : base(policy)
+        { }
 
         /**
 		 * Computes the revision version of the StandardSecurityHandler to
@@ -120,24 +97,26 @@ namespace PdfClown.Documents.Encryption
 		 */
         private int ComputeRevisionNumber(int version)
         {
-            if (version < 2 && !policy.Permissions.HasAnyRevision3PermissionSet)
+            var protectionPolicy = ProtectionPolicy;
+            var permissions = protectionPolicy.Permissions;
+            if (version < Revision2 && !permissions.HasAnyRevision3PermissionSet)
             {
-                return 2;
+                return Revision2;
             }
-            if (version == 5)
+            if (version == Revision5)
             {
                 // note about revision 5: "Shall not be used. This value was used by a deprecated Adobe extension."
-                return 6;
+                return Revision6;
             }
-            if (version == 4)
+            if (version == Revision4)
             {
-                return 4;
+                return Revision4;
             }
-            if (version == 2 || version == 3 || policy.Permissions.HasAnyRevision3PermissionSet)
+            if (version == Revision2 || version == Revision3 || permissions.HasAnyRevision3PermissionSet)
             {
-                return 3;
+                return Revision3;
             }
-            return 4;
+            return Revision4;
         }
 
         /**
@@ -155,135 +134,155 @@ namespace PdfClown.Documents.Encryption
 
         public override void PrepareForDecryption(PdfEncryption encryption, PdfArray documentIDArray, DecryptionMaterial decryptionMaterial)
         {
-            if (!(decryptionMaterial is StandardDecryptionMaterial))
+            if (!(decryptionMaterial is StandardDecryptionMaterial material))
             {
                 throw new IOException("Decryption material is not compatible with the document");
             }
 
             // This is only used with security version 4 and 5.
-            if (encryption.Version >= 4)
+            if (encryption.Version >= Revision4)
             {
-                SetStreamFilterName(encryption.StreamFilterName);
-                SetStringFilterName(encryption.StreamFilterName);
+                StreamFilterName = encryption.StreamFilterName;
+                StringFilterName = encryption.StringFilterName;
             }
-            SetDecryptMetadata(encryption.IsEncryptMetaData);
-            StandardDecryptionMaterial material = (StandardDecryptionMaterial)decryptionMaterial;
+            DecryptMetadata = encryption.IsEncryptMetaData;
 
             string password = material.Password ?? string.Empty;
 
             int dicPermissions = encryption.Permissions;
             int dicRevision = encryption.Revision;
-            int dicLength = encryption.Version == 1 ? 5 : encryption.Length / 8;
+            int dicLength = encryption.Version == Revision1 ? Revision5 : encryption.Length / 8;
 
-            byte[] documentIDBytes = GetDocumentIDBytes(documentIDArray);
+            if (encryption.Version == Revision4 || encryption.Version == Revision5)
+            {
+                // detect whether AES encryption is used. This assumes that the encryption algo is 
+                // stored in the PDCryptFilterDictionary
+                // However, crypt filters are used only when V is 4 or 5.
+                var stdCryptFilterDictionary = encryption.StdCryptFilterDictionary;
+                if (stdCryptFilterDictionary != null)
+                {
+                    var cryptFilterMethod = stdCryptFilterDictionary.CryptFilterMethod;
+                    if (PdfName.AESV2.Equals(cryptFilterMethod))
+                    {
+                        dicLength = 128 / 8;
+                        IsAES = true;
+                        if (encryption.BaseDataObject.ContainsKey(PdfName.Length))
+                        {
+                            // PDFBOX-5345
+                            int newLength = encryption.Length / 8;
+                            if (newLength < dicLength)
+                            {
+                                Debug.WriteLine($"warn: Using {newLength} bytes key length instead of {dicLength} in AESV2 encryption?!");
+                                dicLength = newLength;
+                            }
+                        }
+                    }
+                    if (PdfName.AESV3.Equals(cryptFilterMethod))
+                    {
+                        dicLength = 256 / 8;
+                        IsAES = true;
+                        if (encryption.BaseDataObject.ContainsKey(PdfName.Length))
+                        {
+                            // PDFBOX-5345
+                            int newLength = encryption.Length / 8;
+                            if (newLength < dicLength)
+                            {
+                                Debug.WriteLine($"warn: Using {newLength} bytes key length instead of {dicLength} in AESV3 encryption?!");
+                                dicLength = newLength;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            var documentIDBytes = GetDocumentIDBytes(documentIDArray);
 
             // we need to know whether the meta data was encrypted for password calculation
             bool encryptMetadata = encryption.IsEncryptMetaData;
 
-            byte[] userKey = encryption.UserKey;
-            byte[] ownerKey = encryption.OwnerKey;
-            byte[] ue = null, oe = null;
+            var userKey = encryption.UserKey.Span;
+            var ownerKey = encryption.OwnerKey.Span;
+            ReadOnlySpan<byte> ue = null, oe = null;
 
             var passwordCharset = Charset.ISO88591;
-            if (dicRevision == 6 || dicRevision == 5)
+            if (dicRevision == Revision6 || dicRevision == Revision5)
             {
                 passwordCharset = Charset.UTF8;
-                ue = encryption.UserEncryptionKey;
-                oe = encryption.OwnerEncryptionKey;
+                ue = encryption.UserEncryptionKey.Span;
+                oe = encryption.OwnerEncryptionKey.Span;
             }
 
-            if (dicRevision == 6)
+            if (dicRevision == Revision6)
             {
                 password = SaslPrep.SaslPrepQuery(password); // PDFBOX-4155
             }
-
-            AccessPermission currentAccessPermission;
 
             if (IsOwnerPassword(passwordCharset.GetBytes(password), userKey, ownerKey,
                                      dicPermissions, documentIDBytes, dicRevision,
                                      dicLength, encryptMetadata))
             {
-                currentAccessPermission = AccessPermission.getOwnerAccessPermission();
-                CurrentAccessPermission = currentAccessPermission;
+                CurrentAccessPermission = AccessPermission.GetOwnerAccessPermission();
 
-                byte[] computedPassword;
-                if (dicRevision == 6 || dicRevision == 5)
-                {
-                    computedPassword = passwordCharset.GetBytes(password);
-                }
-                else
-                {
-                    computedPassword = GetUserPassword(passwordCharset.GetBytes(password),
+                ReadOnlySpan<byte> computedPassword = dicRevision == Revision6 || dicRevision == Revision5
+                    ? (ReadOnlySpan<byte>)passwordCharset.GetBytes(password)
+                    : GetUserPassword(passwordCharset.GetBytes(password),
                             ownerKey, dicRevision, dicLength);
-                }
-
-                encryptionKey =
-                    ComputeEncryptedKey(
+                EncryptionKey = ComputeEncryptedKey(
                         computedPassword,
                         ownerKey, userKey, oe, ue,
                         dicPermissions,
                         documentIDBytes,
                         dicRevision,
                         dicLength,
-                        encryptMetadata, true);
+                        encryptMetadata, true)
+                    .ToArray();
             }
             else if (IsUserPassword(passwordCharset.GetBytes(password), userKey, ownerKey,
                                dicPermissions, documentIDBytes, dicRevision,
                                dicLength, encryptMetadata))
             {
-                currentAccessPermission = new AccessPermission(dicPermissions);
-                currentAccessPermission.IsReadOnly = true;
-                CurrentAccessPermission = currentAccessPermission;
 
-                encryptionKey = ComputeEncryptedKey(
-                    passwordCharset.GetBytes(password),
-                    ownerKey, userKey, oe, ue,
-                    dicPermissions,
-                    documentIDBytes,
-                    dicRevision,
-                    dicLength,
-                    encryptMetadata, false);
+                CurrentAccessPermission = new AccessPermission(dicPermissions)
+                {
+                    IsReadOnly = true
+                };
+
+                EncryptionKey = ComputeEncryptedKey(
+                        passwordCharset.GetBytes(password),
+                        ownerKey, userKey, oe, ue,
+                        dicPermissions,
+                        documentIDBytes,
+                        dicRevision,
+                        dicLength,
+                        encryptMetadata, false)
+                    .ToArray();
             }
             else
             {
                 throw new InvalidPasswordException("Cannot decrypt PDF, the password is incorrect");
             }
 
-            if (dicRevision == 6 || dicRevision == 5)
-
+            if (dicRevision == Revision6 || dicRevision == Revision5)
             {
                 ValidatePerms(encryption, dicPermissions, encryptMetadata);
             }
-
-            if (encryption.Version == 4 || encryption.Version == 5)
-            {
-                // detect whether AES encryption is used. This assumes that the encryption algo is 
-                // stored in the PDCryptFilterDictionary
-                // However, crypt filters are used only when V is 4 or 5.
-                var stdCryptFilterDictionary = encryption.StdCryptFilterDictionary;
-
-                if (stdCryptFilterDictionary != null)
-                {
-                    PdfName cryptFilterMethod = stdCryptFilterDictionary.CryptFilterMethod;
-                    IsAES = PdfName.AESV2.Equals(cryptFilterMethod) ||
-                           PdfName.AESV3.Equals(cryptFilterMethod);
-                }
-            }
         }
 
-        private byte[] GetDocumentIDBytes(PdfArray documentIDArray)
+        private ReadOnlySpan<byte> GetDocumentIDBytes(PdfArray documentIDArray)
         {
             //some documents may not have document id, see
             //test\encryption\encrypted_doc_no_id.pdf
-            byte[] documentIDBytes;
-            if (documentIDArray != null && documentIDArray.Count >= 1)
+            ReadOnlySpan<byte> documentIDBytes;
+            if (documentIDArray != null
+                && documentIDArray.Count >= 1
+                && documentIDArray.Resolve(0) is PdfString id)
             {
-                PdfString id = (PdfString)documentIDArray.Resolve(0);
-                documentIDBytes = id.GetBuffer();
+                documentIDBytes = id.RawValue.Span;
             }
             else
             {
-                documentIDBytes = new byte[0];
+                documentIDBytes = ReadOnlySpan<byte>.Empty;
             }
             return documentIDBytes;
         }
@@ -297,16 +296,17 @@ namespace PdfClown.Documents.Encryption
                 // "Decrypt the 16-byte Perms string using AES-256 in ECB mode with an 
                 // initialization vector of zero and the file encryption key as the key."
                 //@SuppressWarnings({ "squid:S4432"})
-                byte[] perms = null;
-                using (var cipher = new RijndaelManaged())
+                Span<byte> perms = null;
+                using var cipher = Aes.Create("AES");
+                cipher.Mode = CipherMode.ECB;
+                cipher.Key = EncryptionKey;
+                cipher.Padding = PaddingMode.None;
+                using (var mstream = new ByteStream(encryption.Perms))
+                using (var ostream = new MemoryStream())
+                using (var stream = new CryptoStream(mstream, cipher.CreateDecryptor(), CryptoStreamMode.Read))
                 {
-                    cipher.Mode = CipherMode.ECB;
-                    cipher.Key = encryptionKey;
-                    cipher.Padding = PaddingMode.None;
-                    using (var decriptor = cipher.CreateDecryptor())
-                    {
-                        perms = decriptor.DoFinal(encryption.Perms);
-                    }
+                    stream.CopyTo(ostream);
+                    perms = ostream.AsSpan();
                 }
 
                 // "Verify that bytes 9-11 of the result are the characters ‘a’, ‘d’, ‘b’."
@@ -317,8 +317,8 @@ namespace PdfClown.Documents.Encryption
 
                 // "Bytes 0-3 of the decrypted Perms entry, treated as a little-endian integer, 
                 // are the user permissions. They should match the value in the P key."
-                int permsP = perms[0] & 0xFF | (perms[1] & 0xFF) << 8 | (perms[2] & 0xFF) << 16 |
-                        (perms[3] & 0xFF) << 24;
+                // perms[0] & 0xFF | (perms[1] & 0xFF) << 8 | (perms[2] & 0xFF) << 16 | (perms[3] & 0xFF) << 24
+                int permsP = ConvertUtils.ReadInt32(perms, 0, ByteOrderEnum.LittleEndian);
 
                 if (permsP != dicPermissions)
                 {
@@ -355,29 +355,29 @@ namespace PdfClown.Documents.Encryption
             int revision = ComputeRevisionNumber(version);
             encryptionDictionary.Filter = FILTER;
             encryptionDictionary.Version = version;
-            if (version != 4 && version != 5)
+            if (version != Revision4 && version != Revision5)
             {
                 // remove CF, StmF, and StrF entries that may be left from a previous encryption
                 encryptionDictionary.RemoveV45filters();
             }
             encryptionDictionary.Revision = revision;
-            encryptionDictionary.Length = keyLength;
+            encryptionDictionary.Length = KeyLength;
 
-            string ownerPassword = policy.OwnerPassword ?? string.Empty;
-            string userPassword = policy.UserPassword ?? string.Empty;
+            string ownerPassword = ProtectionPolicy.OwnerPassword ?? string.Empty;
+            string userPassword = ProtectionPolicy.UserPassword ?? string.Empty;
             // If no owner password is set, use the user password instead.
             if (ownerPassword.Length == 0)
             {
                 ownerPassword = userPassword;
             }
 
-            int permissionInt = policy.Permissions.PermissionBytes;
+            int permissionInt = ProtectionPolicy.Permissions.PermissionBytes;
 
             encryptionDictionary.Permissions = permissionInt;
 
-            int length = keyLength / 8;
+            int length = KeyLength / 8;
 
-            if (revision == 6)
+            if (revision == Revision6)
             {
                 // PDFBOX-4155
                 ownerPassword = SaslPrep.SaslPrepStored(ownerPassword);
@@ -387,7 +387,7 @@ namespace PdfClown.Documents.Encryption
             else
 
             {
-                PrepareEncryptionDictRev2345(ownerPassword, userPassword, encryptionDictionary, permissionInt,
+                PrepareEncryptionDictRev234(ownerPassword, userPassword, encryptionDictionary, permissionInt,
                         document, revision, length);
             }
 
@@ -399,75 +399,66 @@ namespace PdfClown.Documents.Encryption
         {
             try
             {
-                SecureRandom rnd = new SecureRandom();
-                using (var cipher = new RijndaelManaged())
+                var rnd = new SecureRandom();
+                using (var cipher = Aes.Create("AES"))
                 {
                     cipher.Mode = CipherMode.CBC;
                     cipher.Padding = PaddingMode.None;
                     // make a random 256-bit file encryption key
-                    encryptionKey = new byte[32];
-                    rnd.NextBytes(encryptionKey);
+                    EncryptionKey = new byte[32];
+                    rnd.NextBytes(EncryptionKey);
 
                     // Algorithm 8a: Compute U
-                    byte[] userPasswordBytes = Truncate127(Charset.UTF8.GetBytes(userPassword));
+                    var userPasswordBytes = Truncate127(Charset.UTF8.GetBytes(userPassword));
                     byte[] userValidationSalt = new byte[8];
                     byte[] userKeySalt = new byte[8];
                     rnd.NextBytes(userValidationSalt);
                     rnd.NextBytes(userKeySalt);
-                    byte[] hashU = ComputeHash2B(Concat(userPasswordBytes, userValidationSalt), userPasswordBytes, null);
-                    byte[] u = Concat(hashU, userValidationSalt, userKeySalt);
+                    var hashU = ComputeHash2B(Concat(userPasswordBytes, userValidationSalt), userPasswordBytes, null);
+                    var u = Concat(hashU, userValidationSalt, userKeySalt);
 
                     // Algorithm 8b: Compute UE
-                    byte[] hashUE = ComputeHash2B(Concat(userPasswordBytes, userKeySalt), userPasswordBytes, null);
+                    var hashUE = ComputeHash2B(Concat(userPasswordBytes, userKeySalt), userPasswordBytes, null);
                     byte[] ue = null;
 
-                    using (var enciptor = cipher.CreateEncryptor(hashUE, new byte[16]))// "an initialization vector of zero"
-                    { ue = enciptor.DoFinal(encryptionKey); }
+                    using (var enciptor = cipher.CreateEncryptor(hashUE.ToArray(), new byte[16]))// "an initialization vector of zero"
+                    { ue = enciptor.DoFinal(EncryptionKey); }
 
                     // Algorithm 9a: Compute O
-                    byte[] ownerPasswordBytes = Truncate127(Charset.UTF8.GetBytes(ownerPassword));
+                    var ownerPasswordBytes = Truncate127(Charset.UTF8.GetBytes(ownerPassword));
                     byte[] ownerValidationSalt = new byte[8];
                     byte[] ownerKeySalt = new byte[8];
                     rnd.NextBytes(ownerValidationSalt);
                     rnd.NextBytes(ownerKeySalt);
-                    byte[] hashO = ComputeHash2B(Concat(ownerPasswordBytes, ownerValidationSalt, u), ownerPasswordBytes, u);
-                    byte[] o = Concat(hashO, ownerValidationSalt, ownerKeySalt);
+                    var hashO = ComputeHash2B(Concat(ownerPasswordBytes, ownerValidationSalt, u), ownerPasswordBytes, u);
+                    var o = Concat(hashO, ownerValidationSalt, ownerKeySalt);
 
                     // Algorithm 9b: Compute OE
-                    byte[] hashOE = ComputeHash2B(Concat(ownerPasswordBytes, ownerKeySalt, u), ownerPasswordBytes, u);
+                    var hashOE = ComputeHash2B(Concat(ownerPasswordBytes, ownerKeySalt, u), ownerPasswordBytes, u);
                     byte[] oe = null;
-                    using (var enciptor = cipher.CreateEncryptor(hashOE, new byte[16]))// "an initialization vector of zero"
-                    { oe = enciptor.DoFinal(encryptionKey); }
+                    using (var enciptor = cipher.CreateEncryptor(hashOE.ToArray(), new byte[16]))// "an initialization vector of zero"
+                    { oe = enciptor.DoFinal(EncryptionKey); }
 
                     // Set keys and other required constants in encryption dictionary
-                    encryptionDictionary.UserKey = u;
+                    encryptionDictionary.UserKey = u.ToArray();
                     encryptionDictionary.UserEncryptionKey = ue;
-                    encryptionDictionary.OwnerKey = o;
+                    encryptionDictionary.OwnerKey = o.ToArray();
                     encryptionDictionary.OwnerEncryptionKey = oe;
 
                     PrepareEncryptionDictAES(encryptionDictionary, PdfName.AESV3);
 
                     // Algorithm 10: compute "Perms" value
                     byte[] perms = new byte[16];
-                    perms[0] = (byte)permissionInt;
-                    perms[1] = (byte)((uint)permissionInt >> 8);
-                    perms[2] = (byte)((uint)permissionInt >> 16);
-                    perms[3] = (byte)((uint)permissionInt >> 24);
-                    perms[4] = (byte)0xFF;
-                    perms[5] = (byte)0xFF;
-                    perms[6] = (byte)0xFF;
-                    perms[7] = (byte)0xFF;
+                    ConvertUtils.WriteInt32(perms.AsSpan(0, 4), permissionInt, ByteOrderEnum.LittleEndian);
+                    Array.Fill(perms, (byte)0xFF, 4, 4);
                     perms[8] = (byte)'T';    // we always encrypt Metadata
                     perms[9] = (byte)'a';
                     perms[10] = (byte)'d';
                     perms[11] = (byte)'b';
-                    for (int i = 12; i <= 15; i++)
-                    {
-                        perms[i] = (byte)rnd.NextInt();
-                    }
+                    rnd.NextBytes(perms, 12, 4);
 
                     byte[] permsEnc = null;
-                    using (var enciptor = cipher.CreateEncryptor(encryptionKey, new byte[16])) // "an initialization vector of zero"
+                    using (var enciptor = cipher.CreateEncryptor(EncryptionKey, new byte[16])) // "an initialization vector of zero"
                     { permsEnc = enciptor.DoFinal(perms); }
 
                     encryptionDictionary.Perms = permsEnc;
@@ -480,7 +471,7 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        private void PrepareEncryptionDictRev2345(string ownerPassword, string userPassword,
+        private void PrepareEncryptionDictRev234(string ownerPassword, string userPassword,
                 PdfEncryption encryptionDictionary, int permissionInt, Document document,
                 int revision, int length)
         {
@@ -489,10 +480,9 @@ namespace PdfClown.Documents.Encryption
             //check if the document has an id yet.  If it does not then generate one
             if (idArray == null || idArray.BaseDataObject.Count < 2)
             {
-                DateTime Jan1st1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                using (var md = MD5.Create())
+                using (var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5))
                 {
-                    BigInteger time = new BigInteger((DateTime.UtcNow - Jan1st1970).TotalMilliseconds.ToString());
+                    var time = new BigInteger((DateTime.UtcNow - Jan1st1970).TotalMilliseconds.ToString());
                     md.Update(time.ToByteArray());
                     md.Update(Charset.ISO88591.GetBytes(ownerPassword));
                     md.Update(Charset.ISO88591.GetBytes(userPassword));
@@ -510,21 +500,22 @@ namespace PdfClown.Documents.Encryption
 
             PdfString id = idArray.BaseID;
 
-            byte[] ownerBytes = ComputeOwnerPassword(
+            var ownerBytes = ComputeOwnerPassword(
                     Charset.ISO88591.GetBytes(ownerPassword),
                     Charset.ISO88591.GetBytes(userPassword), revision, length);
 
-            byte[] userBytes = ComputeUserPassword(
+            var userBytes = ComputeUserPassword(
                     Charset.ISO88591.GetBytes(userPassword),
-                    ownerBytes, permissionInt, id.GetBuffer(), revision, length, true);
+                    ownerBytes, permissionInt, id.RawValue.Span, revision, length, true);
 
-            encryptionKey = ComputeEncryptedKey(Charset.ISO88591.GetBytes(userPassword), ownerBytes,
-                        null, null, null, permissionInt, id.GetBuffer(), revision, length, true, false);
+            EncryptionKey = ComputeEncryptedKey(Charset.ISO88591.GetBytes(userPassword), ownerBytes,
+                        null, null, null, permissionInt, id.RawValue.Span, revision, length, true, false)
+                .ToArray();
 
-            encryptionDictionary.OwnerKey = ownerBytes;
-            encryptionDictionary.UserKey = userBytes;
+            encryptionDictionary.OwnerKey = ownerBytes.ToArray();
+            encryptionDictionary.UserKey = userBytes.ToArray();
 
-            if (revision == 4)
+            if (revision == Revision4)
             {
                 PrepareEncryptionDictAES(encryptionDictionary, PdfName.AESV2);
             }
@@ -534,7 +525,7 @@ namespace PdfClown.Documents.Encryption
         {
             var cryptFilterDictionary = new PdfCryptFilterDictionary(encryptionDictionary.File);
             cryptFilterDictionary.CryptFilterMethod = aesVName;
-            cryptFilterDictionary.Length = keyLength;
+            cryptFilterDictionary.Length = KeyLength;
             encryptionDictionary.StdCryptFilterDictionary = cryptFilterDictionary;
             encryptionDictionary.StreamFilterName = PdfName.StdCF;
             encryptionDictionary.StringFilterName = PdfName.StdCF;
@@ -557,83 +548,110 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @ If there is an error accessing data.
 		 */
-        public bool IsOwnerPassword(byte[] ownerPassword, byte[] user, byte[] owner,
-                                       int permissions, byte[] id, int encRevision, int keyLengthInBytes,
+        public bool IsOwnerPassword(ReadOnlySpan<byte> ownerPassword, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner,
+                                       int permissions, ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes,
                                        bool encryptMetadata)
         {
-            if (encRevision == 6 || encRevision == 5)
+            switch (encRevision)
             {
-                byte[] truncatedOwnerPassword = Truncate127(ownerPassword);
+                case Revision2:
+                case Revision3:
+                case Revision4:
+                    return IsOwnerPassword234(ownerPassword, user, owner, permissions, id, encRevision, keyLengthInBytes, encryptMetadata);
+                case Revision6:
+                case Revision5:
+                    return IsOwnerPassword56(ownerPassword, user, owner, encRevision);
+                default:
+                    throw new IOException("Unknown Encryption Revision " + encRevision);
 
-                byte[] oHash = new byte[32];
-                byte[] oValidationSalt = new byte[8];
-                Array.Copy(owner, 0, oHash, 0, 32);
-                Array.Copy(owner, 32, oValidationSalt, 0, 8);
+            }
+        }
 
-                byte[] hash;
-                if (encRevision == 5)
-                {
-                    hash = ComputeSHA256(truncatedOwnerPassword, oValidationSalt, user);
-                }
-                else
-                {
-                    hash = ComputeHash2A(truncatedOwnerPassword, oValidationSalt, user);
-                }
+        private bool IsOwnerPassword234(ReadOnlySpan<byte> ownerPassword, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner, int permissions,
+           ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes, bool encryptMetadata)
+        {
+            var userPassword = GetUserPassword234(ownerPassword, owner, encRevision, keyLengthInBytes);
+            return IsUserPassword234(userPassword, user, owner, permissions, id, encRevision, keyLengthInBytes, encryptMetadata);
+        }
 
-                return hash.AsSpan().SequenceEqual(oHash.AsSpan());
+        private bool IsOwnerPassword56(ReadOnlySpan<byte> ownerPassword, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner, int encRevision)
+        {
+            if (owner.Length < 40)
+            {
+                // PDFBOX-5104
+                throw new IOException("Owner password is too short");
+            }
+            var truncatedOwnerPassword = Truncate127(ownerPassword);
+            var oHash = owner.Slice(0, 32);
+            var oValidationSalt = owner.Slice(32, 8);
+
+            if (encRevision == Revision5)
+            {
+                return MemoryExtensions.SequenceEqual(ComputeSHA256(truncatedOwnerPassword, oValidationSalt, user), oHash);
             }
             else
-
             {
-                byte[] userPassword = GetUserPassword(ownerPassword, owner, encRevision, keyLengthInBytes);
-                return IsUserPassword(userPassword, user, owner, permissions, id, encRevision, keyLengthInBytes,
-                                       encryptMetadata);
+                return MemoryExtensions.SequenceEqual(ComputeHash2A(truncatedOwnerPassword, oValidationSalt, user), oHash);
             }
         }
 
         /**
-		 * Get the user password based on the owner password.
-		 *
-		 * @param ownerPassword The plaintext owner password.
-		 * @param owner The o entry of the encryption dictionary.
-		 * @param encRevision The encryption revision number.
-		 * @param length The key length.
-		 *
-		 * @return The u entry of the encryption dictionary.
-		 *
-		 * @ If there is an error accessing data while generating the user password.
-		 */
-        public byte[] GetUserPassword(byte[] ownerPassword, byte[] owner, int encRevision, int length)
+     * Get the user password based on the owner password.
+     *
+     * @param ownerPassword The plaintext owner password.
+     * @param owner The o entry of the encryption dictionary.
+     * @param encRevision The encryption revision number.
+     * @param length The key length.
+     *
+     * @return The u entry of the encryption dictionary.
+     *
+     * @throws IOException If there is an error accessing data while generating the user password.
+     */
+        public ReadOnlySpan<byte> GetUserPassword(ReadOnlySpan<byte> ownerPassword, ReadOnlySpan<byte> owner, int encRevision,
+                                       int length)
         {
-            using (MemoryStream result = new MemoryStream())
+            // TODO ?!?!
+            if (encRevision == Revision5 || encRevision == Revision6)
             {
-                byte[] rc4Key = ComputeRC4key(ownerPassword, encRevision, length);
-
-                if (encRevision == 2)
-                {
-                    EncryptDataRC4(rc4Key, owner, result);
-                }
-                else if (encRevision == 3 || encRevision == 4)
-                {
-                    byte[] iterationKey = new byte[rc4Key.Length];
-                    byte[] otemp = new byte[owner.Length];
-                    Array.Copy(owner, 0, otemp, 0, owner.Length);
-
-                    for (int i = 19; i >= 0; i--)
-                    {
-                        Array.Copy(rc4Key, 0, iterationKey, 0, rc4Key.Length);
-                        for (int j = 0; j < iterationKey.Length; j++)
-                        {
-                            iterationKey[j] = (byte)(iterationKey[j] ^ (byte)i);
-                        }
-                        result.Reset();
-                        EncryptDataRC4(iterationKey, otemp, result);
-                        otemp = result.ToArray();
-                    }
-                }
-                return result.ToArray();
+                return new byte[0];
+            }
+            else
+            {
+                return GetUserPassword234(ownerPassword, owner, encRevision, length);
             }
         }
+
+        private ReadOnlySpan<byte> GetUserPassword234(ReadOnlySpan<byte> ownerPassword, ReadOnlySpan<byte> owner, int encRevision, int length)
+        {
+            var result = new ByteStream(owner.Length);
+            var rc4Key = ComputeRC4key(ownerPassword, encRevision, length);
+
+            if (encRevision == Revision2)
+            {
+                EncryptDataRC4(rc4Key, owner, result);
+            }
+            else if (encRevision == Revision3 || encRevision == Revision4)
+            {
+                byte[] iterationKey = new byte[rc4Key.Length];
+                result.Write(owner);
+
+                for (int i = 19; i >= 0; i--)
+                {
+                    rc4Key.CopyTo(iterationKey);
+                    for (int j = 0; j < iterationKey.Length; j++)
+                    {
+                        iterationKey[j] = (byte)(iterationKey[j] ^ (byte)i);
+                    }
+
+                    var otemp = result.ToArray();
+                    result.SetLength(0);
+
+                    EncryptDataRC4(iterationKey, otemp, result);
+                }
+            }
+            return result.AsSpan();
+        }
+
 
         /**
 		 * Compute the encryption key.
@@ -654,114 +672,96 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @ If there is an error with encryption.
 		 */
-        public byte[] ComputeEncryptedKey(byte[] password, byte[] o, byte[] u, byte[] oe, byte[] ue,
-                                          int permissions, byte[] id, int encRevision, int keyLengthInBytes,
+        public ReadOnlySpan<byte> ComputeEncryptedKey(ReadOnlySpan<byte> password, ReadOnlySpan<byte> o, ReadOnlySpan<byte> u, ReadOnlySpan<byte> oe, ReadOnlySpan<byte> ue,
+                                          int permissions, ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes,
                                           bool encryptMetadata, bool isOwnerPassword)
         {
-            if (encRevision == 6 || encRevision == 5)
-            {
-                return ComputeEncryptedKeyRev56(password, isOwnerPassword, o, u, oe, ue, encRevision);
-            }
-            else
-            {
-                return ComputeEncryptedKeyRev234(password, o, permissions, id, encryptMetadata, keyLengthInBytes, encRevision);
-            }
+            return encRevision == Revision6 || encRevision == Revision5
+                ? ComputeEncryptedKeyRev56(password, isOwnerPassword, o, u, oe, ue, encRevision)
+                : ComputeEncryptedKeyRev234(password, o, permissions, id, encryptMetadata, keyLengthInBytes, encRevision);
         }
 
-        private byte[] ComputeEncryptedKeyRev234(byte[] password, byte[] o, int permissions,
-                byte[] id, bool encryptMetadata, int length, int encRevision)
+        private ReadOnlySpan<byte> ComputeEncryptedKeyRev234(ReadOnlySpan<byte> password, ReadOnlySpan<byte> o, int permissions,
+                ReadOnlySpan<byte> id, bool encryptMetadata, int length, int encRevision)
         {
             //Algorithm 2, based on MD5
 
             //PDFReference 1.4 pg 78
-            byte[] padded = TruncateOrPad(password);
+            var padded = TruncateOrPad(password);
 
-            using (var md = MD5.Create())
+            using var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+            md.Update(padded);
+
+            md.Update(o);
+
+            md.Update((byte)permissions);
+            md.Update((byte)((uint)permissions >> 8));
+            md.Update((byte)((uint)permissions >> 16));
+            md.Update((byte)((uint)permissions >> 24));
+
+            md.Update(id);
+
+            //(Security handlers of revision 4 or greater) If document metadata is not being
+            // encrypted, pass 4 bytes with the value 0xFFFFFFFF to the MD5 hash function.
+            //see 7.6.3.3 Algorithm 2 Step f of PDF 32000-1:2008
+            if (encRevision == Revision4 && !encryptMetadata)
             {
-                md.Update(padded);
-
-                md.Update(o);
-
-                md.Update((byte)permissions);
-                md.Update((byte)((uint)permissions >> 8));
-                md.Update((byte)((uint)permissions >> 16));
-                md.Update((byte)((uint)permissions >> 24));
-
-                md.Update(id);
-
-                //(Security handlers of revision 4 or greater) If document metadata is not being
-                // encrypted, pass 4 bytes with the value 0xFFFFFFFF to the MD5 hash function.
-                //see 7.6.3.3 Algorithm 2 Step f of PDF 32000-1:2008
-                if (encRevision == 4 && !encryptMetadata)
-                {
-                    md.Update(new byte[] { (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff });
-                }
-                byte[] digest = md.Digest();
-
-                if (encRevision == 3 || encRevision == 4)
-                {
-                    for (int i = 0; i < 50; i++)
-                    {
-                        using (var mdi = MD5.Create())
-                            digest = mdi.Digest(digest, 0, length);
-                    }
-                }
-
-                byte[] result = new byte[length];
-                Array.Copy(digest, 0, result, 0, length);
-                return result;
+                md.Update(new byte[] { (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff });
             }
+            byte[] digest = md.Digest();
+
+            if (encRevision == Revision3 || encRevision == Revision4)
+            {
+                for (int i = 0; i < 50; i++)
+                {
+                    digest = md.Digest(digest, 0, length);
+                }
+            }
+
+            return digest.AsSpan(0, length);
         }
 
-        private byte[] ComputeEncryptedKeyRev56(byte[] password, bool isOwnerPassword,
-                byte[] o, byte[] u, byte[] oe, byte[] ue, int encRevision)
+        private ReadOnlySpan<byte> ComputeEncryptedKeyRev56(ReadOnlySpan<byte> password, bool isOwnerPassword,
+                ReadOnlySpan<byte> o, ReadOnlySpan<byte> u, ReadOnlySpan<byte> oe, ReadOnlySpan<byte> ue, int encRevision)
         {
-            byte[] hash, fileKeyEnc;
+            ReadOnlySpan<byte> hash, fileKeyEnc;
 
             if (isOwnerPassword)
             {
-                byte[] oKeySalt = new byte[8];
-                Array.Copy(o, 40, oKeySalt, 0, 8);
+                var oKeySalt = o.Slice(40, 8);
 
-                if (encRevision == 5)
-                {
-                    hash = ComputeSHA256(password, oKeySalt, u);
-                }
-                else
-                {
-                    hash = ComputeHash2A(password, oKeySalt, u);
-                }
+                hash = encRevision == Revision5
+                    ? ComputeSHA256(password, oKeySalt, u)
+                    : ComputeHash2A(password, oKeySalt, u);
 
                 fileKeyEnc = oe;
             }
             else
             {
-                byte[] uKeySalt = new byte[8];
-                Array.Copy(u, 40, uKeySalt, 0, 8);
+                var uKeySalt = u.Slice(40, 8);
 
-                if (encRevision == 5)
-                {
-                    hash = ComputeSHA256(password, uKeySalt, null);
-                }
-                else
-                {
-                    hash = ComputeHash2A(password, uKeySalt, null);
-                }
+                hash = encRevision == Revision5
+                    ? ComputeSHA256(password, uKeySalt, null)
+                    : ComputeHash2A(password, uKeySalt, null);
 
                 fileKeyEnc = ue;
             }
             try
             {
-                using (var cipher = new RijndaelManaged())
+                var bufferKey = fileKeyEnc.ToArray();
+                using (var cipher = Aes.Create("AES"))
                 {
                     //cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(hash, "AES"), new IvParameterSpec());
                     cipher.Mode = CipherMode.CBC;
                     cipher.Padding = PaddingMode.None;
-                    cipher.Key = hash;
+                    cipher.Key = hash.ToArray();
                     cipher.IV = new byte[16];
-                    using (var decriptor = cipher.CreateDecryptor(cipher.Key, cipher.IV))
+                    using (var tempStream = new ByteStream(bufferKey))
+                    using (var outStream = new MemoryStream())
+                    using (var cryptoStream = new CryptoStream(tempStream, cipher.CreateDecryptor(), CryptoStreamMode.Read))
                     {
-                        return decriptor.DoFinal(fileKeyEnc);
+                        cryptoStream.CopyTo(outStream);
+                        return outStream.AsSpan();
                     }
                 }
             }
@@ -787,51 +787,50 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @ if the password could not be computed
 		 */
-        public byte[] ComputeUserPassword(byte[] password, byte[] owner, int permissions,
-                                          byte[] id, int encRevision, int keyLengthInBytes,
+        public ReadOnlySpan<byte> ComputeUserPassword(ReadOnlySpan<byte> password, ReadOnlySpan<byte> owner, int permissions,
+                                          ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes,
                                           bool encryptMetadata)
         {
-            using (MemoryStream result = new MemoryStream())
+            // TODO!?!?
+            if (encRevision == Revision5 || encRevision == Revision6)
             {
-                byte[] encKey = ComputeEncryptedKey(password, owner, null, null, null, permissions,
-                        id, encRevision, keyLengthInBytes, encryptMetadata, true);
-
-                if (encRevision == 2)
-                {
-                    EncryptDataRC4(encKey, ENCRYPT_PADDING, result);
-                }
-                else if (encRevision == 3 || encRevision == 4)
-                {
-                    using (var md = MD5.Create())
-                    {
-                        md.Update(ENCRYPT_PADDING);
-                        md.Update(id);
-                        result.Write(md.Digest());
-
-                        byte[] iterationKey = new byte[encKey.Length];
-                        for (int i = 0; i < 20; i++)
-                        {
-                            Array.Copy(encKey, 0, iterationKey, 0, iterationKey.Length);
-                            for (int j = 0; j < iterationKey.Length; j++)
-                            {
-                                iterationKey[j] = (byte)(iterationKey[j] ^ i);
-                            }
-                            using (MemoryStream input = new MemoryStream(result.ToArray()))
-                            {
-                                result.Reset();
-                                EncryptDataRC4(iterationKey, input, result);
-                            }
-                        }
-
-                        byte[] finalResult = new byte[32];
-                        Array.Copy(result.ToArray(), 0, finalResult, 0, 16);
-                        Array.Copy(ENCRYPT_PADDING, 0, finalResult, 16, 16);
-                        result.Reset();
-                        result.Write(finalResult);
-                    }
-                }
-                return result.ToArray();
+                return new byte[0];
             }
+
+            using var result = new ByteStream(32);
+            var encKey = ComputeEncryptedKeyRev234(password, owner, permissions,
+                    id, encryptMetadata, keyLengthInBytes, encRevision);
+
+            if (encRevision == Revision2)
+            {
+                EncryptDataRC4(encKey, ENCRYPT_PADDING, result);
+            }
+            else if (encRevision == Revision3 || encRevision == Revision4)
+            {
+                var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+                md.Update(ENCRYPT_PADDING);
+                md.Update(id);
+                result.Write(md.Digest());
+
+                byte[] iterationKey = new byte[encKey.Length];
+                for (int i = 0; i < 20; i++)
+                {
+                    encKey.CopyTo(iterationKey);
+                    for (int j = 0; j < iterationKey.Length; j++)
+                    {
+                        iterationKey[j] = (byte)(iterationKey[j] ^ i);
+                    }
+                    var input = result.ToArray();
+                    result.SetLength(0);
+                    EncryptDataRC4(iterationKey, input, result);
+                }
+
+                byte[] finalResult = new byte[32];
+                result.AsMemory().Slice(0, 16).CopyTo(finalResult);
+                ENCRYPT_PADDING.AsSpan(0, 16).CopyTo(finalResult.AsSpan(16, 16));
+                return finalResult;
+            }
+            return result.AsSpan();
         }
 
         /**
@@ -846,64 +845,56 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @ if the owner password could not be computed
 		 */
-        public byte[] ComputeOwnerPassword(byte[] ownerPassword, byte[] userPassword,
+        public ReadOnlySpan<byte> ComputeOwnerPassword(ReadOnlySpan<byte> ownerPassword, ReadOnlySpan<byte> userPassword,
                                            int encRevision, int length)
         {
-            if (encRevision == 2 && length != 5)
+            if (encRevision == Revision2 && length != Revision5)
             {
                 throw new IOException("Expected length=5 actual=" + length);
             }
 
-            byte[] rc4Key = ComputeRC4key(ownerPassword, encRevision, length);
-            byte[] paddedUser = TruncateOrPad(userPassword);
+            var rc4Key = ComputeRC4key(ownerPassword, encRevision, length);
+            var paddedUser = TruncateOrPad(userPassword);
 
-            using (MemoryStream encrypted = new MemoryStream())
+            using var output = new MemoryStream();
+            EncryptDataRC4(rc4Key, paddedUser, output);
+
+            if (encRevision == Revision3 || encRevision == Revision4)
             {
-                EncryptDataRC4(rc4Key, new MemoryStream(paddedUser), encrypted);
-
-                if (encRevision == 3 || encRevision == 4)
+                byte[] iterationKey = new byte[rc4Key.Length];
+                for (int i = 1; i < 20; i++)
                 {
-                    byte[] iterationKey = new byte[rc4Key.Length];
-                    for (int i = 1; i < 20; i++)
+                    rc4Key.CopyTo(iterationKey);
+                    for (int j = 0; j < iterationKey.Length; j++)
                     {
-                        Array.Copy(rc4Key, 0, iterationKey, 0, rc4Key.Length);
-                        for (int j = 0; j < iterationKey.Length; j++)
-                        {
-                            iterationKey[j] = (byte)(iterationKey[j] ^ (byte)i);
-                        }
-                        using (MemoryStream input = new MemoryStream(encrypted.ToArray()))
-                        {
-                            encrypted.Reset();
-                            EncryptDataRC4(iterationKey, input, encrypted);
-                        }
+                        iterationKey[j] = (byte)(iterationKey[j] ^ (byte)i);
                     }
-                }
+                    var input = output.ToArray();
+                    output.Reset();
 
-                return encrypted.ToArray();
+                    EncryptDataRC4(iterationKey, input, output);
+                }
             }
+
+            return output.AsSpan();
         }
 
         // steps (a) to (d) of "Algorithm 3: Computing the encryption dictionary’s O (owner password) value".
-        private byte[] ComputeRC4key(byte[] ownerPassword, int encRevision, int length)
+        private ReadOnlySpan<byte> ComputeRC4key(ReadOnlySpan<byte> ownerPassword, int encRevision, int length)
         {
-            using (var md = MD5.Create())
+            using var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+            byte[] digest = md.Digest(TruncateOrPad(ownerPassword));
+            if (encRevision == Revision3 || encRevision == Revision4)
             {
-                byte[] digest = md.Digest(TruncateOrPad(ownerPassword));
-                if (encRevision == 3 || encRevision == 4)
+                for (int i = 0; i < 50; i++)
                 {
-                    for (int i = 0; i < 50; i++)
-                    {
-                        // this deviates from the spec - however, omitting the length
-                        // parameter prevents the file to be opened in Adobe Reader
-                        // with the owner password when the key length is 40 bit (= 5 bytes)
-                        using (var mdi = MD5.Create())
-                            digest = mdi.Digest(digest, 0, length);
-                    }
+                    // this deviates from the spec - however, omitting the length
+                    // parameter prevents the file to be opened in Adobe Reader
+                    // with the owner password when the key length is 40 bit (= 5 bytes)
+                    digest = md.Digest(digest, 0, length);
                 }
-                byte[] rc4Key = new byte[length];
-                Array.Copy(digest, 0, rc4Key, 0, length);
-                return rc4Key;
             }
+            return digest.AsSpan(0, length);
         }
 
 
@@ -914,13 +905,12 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @return The padded or truncated password.
 		 */
-        private byte[] TruncateOrPad(byte[] password)
+        private ReadOnlySpan<byte> TruncateOrPad(ReadOnlySpan<byte> password)
         {
             byte[] padded = new byte[ENCRYPT_PADDING.Length];
             int bytesBeforePad = Math.Min(password.Length, padded.Length);
-            Array.Copy(password, 0, padded, 0, bytesBeforePad);
-            Array.Copy(ENCRYPT_PADDING, 0, padded, bytesBeforePad,
-                              ENCRYPT_PADDING.Length - bytesBeforePad);
+            password.CopyTo(padded.AsSpan(0, bytesBeforePad));
+            ENCRYPT_PADDING.AsSpan(0, ENCRYPT_PADDING.Length - bytesBeforePad).CopyTo(padded.AsSpan(bytesBeforePad));
             return padded;
         }
 
@@ -940,61 +930,46 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @ If there is an error accessing data.
 		 */
-        public bool IsUserPassword(byte[] password, byte[] user, byte[] owner, int permissions,
-                                      byte[] id, int encRevision, int keyLengthInBytes, bool encryptMetadata)
+        public bool IsUserPassword(ReadOnlySpan<byte> password, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner, int permissions,
+                                      ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes, bool encryptMetadata)
         {
             switch (encRevision)
             {
-                case 2:
-                case 3:
-                case 4:
+                case Revision2:
+                case Revision3:
+                case Revision4:
                     return IsUserPassword234(password, user, owner, permissions, id, encRevision,
                                              keyLengthInBytes, encryptMetadata);
-                case 5:
-                case 6:
+                case Revision5:
+                case Revision6:
                     return IsUserPassword56(password, user, encRevision);
                 default:
                     throw new IOException("Unknown Encryption Revision " + encRevision);
             }
         }
 
-        private bool IsUserPassword234(byte[] password, byte[] user, byte[] owner, int permissions,
-                byte[] id, int encRevision, int length, bool encryptMetadata)
-
-
+        private bool IsUserPassword234(ReadOnlySpan<byte> password, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner, int permissions,
+                ReadOnlySpan<byte> id, int encRevision, int length, bool encryptMetadata)
         {
-            byte[] passwordBytes = ComputeUserPassword(password, owner, permissions, id, encRevision,
+            var passwordBytes = ComputeUserPassword(password, owner, permissions, id, encRevision,
                                                        length, encryptMetadata);
-            if (encRevision == 2)
+            return encRevision switch
             {
-                return user.AsSpan().SequenceEqual(passwordBytes.AsSpan());
-            }
-            else
-            {
-                // compare first 16 bytes only
-                return user.AsSpan(0, 16).SequenceEqual(passwordBytes.AsSpan(0, 16));
-            }
+                Revision2 => user.SequenceEqual(passwordBytes),
+                _ => user.Slice(0, 16).SequenceEqual(passwordBytes.Slice(0, 16))
+            };
         }
 
-        private bool IsUserPassword56(byte[] password, byte[] user, int encRevision)
+        private bool IsUserPassword56(ReadOnlySpan<byte> password, ReadOnlySpan<byte> user, int encRevision)
         {
-            byte[] truncatedPassword = Truncate127(password);
-            byte[] uHash = new byte[32];
-            byte[] uValidationSalt = new byte[8];
-            Array.Copy(user, 0, uHash, 0, 32);
-            Array.Copy(user, 32, uValidationSalt, 0, 8);
+            var truncatedPassword = Truncate127(password);
+            var uHash = user.Slice(0, 32);
+            var uValidationSalt = user.Slice(32, 8);
 
-            byte[] hash;
-            if (encRevision == 5)
-            {
-                hash = ComputeSHA256(truncatedPassword, uValidationSalt, null);
-            }
-            else
-            {
-                hash = ComputeHash2A(truncatedPassword, uValidationSalt, null);
-            }
-
-            return hash.AsSpan().SequenceEqual(uHash.AsSpan());
+            var hash = encRevision == Revision5
+                ? ComputeSHA256(truncatedPassword, uValidationSalt, ReadOnlySpan<byte>.Empty)
+                : ComputeHash2A(truncatedPassword, uValidationSalt, ReadOnlySpan<byte>.Empty);
+            return hash.SequenceEqual(uHash);
         }
 
         /**
@@ -1013,21 +988,14 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @ If there is an error accessing data.
 		 */
-        public bool IsUserPassword(string password, byte[] user, byte[] owner, int permissions,
-                                      byte[] id, int encRevision, int keyLengthInBytes, bool encryptMetadata)
+        public bool IsUserPassword(string password, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner, int permissions,
+                                      ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes, bool encryptMetadata)
         {
-            if (encRevision == 6 || encRevision == 5)
-
-            {
-                return IsUserPassword(Charset.UTF8.GetBytes(password), user, owner, permissions, id,
-                        encRevision, keyLengthInBytes, encryptMetadata);
-            }
-            else
-
-            {
-                return IsUserPassword(Charset.ISO88591.GetBytes(password), user, owner, permissions, id,
-                        encRevision, keyLengthInBytes, encryptMetadata);
-            }
+            var passwordBytes = encRevision == Revision6 || encRevision == Revision5
+                ? Charset.UTF8.GetBytes(password)
+                : Charset.ISO88591.GetBytes(password);
+            return IsUserPassword(passwordBytes, user, owner, permissions, id,
+                    encRevision, keyLengthInBytes, encryptMetadata);
         }
 
         /**
@@ -1046,118 +1014,77 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @ If there is an error accessing data.
 		 */
-        public bool IsOwnerPassword(string password, byte[] user, byte[] owner, int permissions,
-                                       byte[] id, int encRevision, int keyLengthInBytes, bool encryptMetadata)
+        public bool IsOwnerPassword(string password, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner, int permissions,
+                                       ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes, bool encryptMetadata)
         {
             return IsOwnerPassword(Charset.ISO88591.GetBytes(password), user, owner, permissions, id,
                                    encRevision, keyLengthInBytes, encryptMetadata);
         }
 
         // Algorithm 2.A from ISO 32000-1
-        private byte[] ComputeHash2A(byte[] password, byte[] salt, byte[] u)
+        private ReadOnlySpan<byte> ComputeHash2A(ReadOnlySpan<byte> password, ReadOnlySpan<byte> salt, ReadOnlySpan<byte> u)
         {
-            byte[] userKey;
-            if (u == null)
-            {
-                userKey = new byte[0];
-            }
-            else if (u.Length < 48)
-            {
-                throw new IOException("Bad U length");
-            }
-            else if (u.Length > 48)
-            {
-                // must truncate
-                userKey = new byte[48];
-                Array.Copy(u, 0, userKey, 0, 48);
-            }
-            else
-            {
-                userKey = u;
-            }
-
-            byte[] truncatedPassword = Truncate127(password);
-            byte[] input = Concat(truncatedPassword, salt, userKey);
+            var userKey = AdjustUserKey(u);
+            var truncatedPassword = Truncate127(password);
+            var input = Concat(truncatedPassword, salt, userKey);
             return ComputeHash2B(input, truncatedPassword, userKey);
         }
 
         // Algorithm 2.B from ISO 32000-2
-        private static byte[] ComputeHash2B(byte[] input, byte[] password, byte[] userKey)
+        private static ReadOnlySpan<byte> ComputeHash2B(ReadOnlySpan<byte> input, ReadOnlySpan<byte> password, ReadOnlySpan<byte> userKey)
         {
             try
             {
-                var md = (HashAlgorithm)SHA256.Create();
-                byte[] k = md.Digest(input);
+                var md = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+                Span<byte> k = md.Digest(input);
 
                 byte[] e = null;
-                for (int round = 0; round < 64 || ((int)e[e.Length - 1] & 0xFF) > round - 32; round++)
+                for (int round = 0; round < 64 || (e[^1] & 0xFF) > round - 32; round++)
                 {
-                    byte[] k1;
-                    if (userKey != null && userKey.Length >= 48)
-                    {
-                        k1 = new byte[64 * (password.Length + k.Length + 48)];
-                    }
-                    else
-                    {
-                        k1 = new byte[64 * (password.Length + k.Length)];
-                    }
+                    byte[] k1 = (!userKey.IsEmpty && userKey.Length >= 48)
+                        ? new byte[64 * (password.Length + k.Length + 48)]
+                        : new byte[64 * (password.Length + k.Length)];
 
                     int pos = 0;
                     for (int i = 0; i < 64; i++)
                     {
-                        Array.Copy(password, 0, k1, pos, password.Length);
+                        password.CopyTo(k1.AsSpan(pos, password.Length));
                         pos += password.Length;
-                        Array.Copy(k, 0, k1, pos, k.Length);
+                        k.CopyTo(k1.AsSpan(pos, k.Length));
                         pos += k.Length;
                         if (userKey != null && userKey.Length >= 48)
                         {
-                            Array.Copy(userKey, 0, k1, pos, 48);
+                            userKey.CopyTo(k1.AsSpan(pos, 48));
                             pos += 48;
                         }
                     }
 
-                    byte[] kFirst = new byte[16];
-                    byte[] kSecond = new byte[16];
-                    Array.Copy(k, 0, kFirst, 0, 16);
-                    Array.Copy(k, 16, kSecond, 0, 16);
+                    using var cipher = Aes.Create("AES");
+                    cipher.Mode = CipherMode.CBC;
+                    cipher.Padding = PaddingMode.None;
+                    cipher.Key = k.Slice(0, 16).ToArray();
+                    cipher.IV = k.Slice(16, 16).ToArray();
+                    //cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+                    using (var ecriptor = cipher.CreateEncryptor())
+                        e = ecriptor.DoFinal(k1);
 
-                    using (var cipher = new RijndaelManaged())
+                    var bi = new BigInteger(1, e.AsSpan(0, 16).ToArray());
+                    var remainder = bi.Mod(new BigInteger("3"));
+                    string nextHash = HASHES_2B[remainder.IntValue];
+                    //md = MessageDigest.getInstance(nextHash);
+                    md.Dispose();
+                    switch (nextHash)
                     {
-                        cipher.Mode = CipherMode.CBC;
-                        cipher.Key = kFirst;
-                        cipher.IV = kSecond;
-                        cipher.Padding = PaddingMode.None;
-                        //cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
-                        using (var ecriptor = cipher.CreateEncryptor())
-                            e = ecriptor.DoFinal(k1);
-
-                        byte[] eFirst = new byte[16];
-                        Array.Copy(e, 0, eFirst, 0, 16);
-                        BigInteger bi = new BigInteger(1, eFirst);
-                        BigInteger remainder = bi.Mod(new BigInteger("3"));
-                        string nextHash = HASHES_2B[remainder.IntValue];
-                        //md = MessageDigest.getInstance(nextHash);
-                        md.Dispose();
-                        switch (nextHash)
-                        {
-                            case "SHA256": md = SHA256.Create(); break;
-                            case "SHA384": md = SHA256.Create(); break;
-                            case "SHA512": md = SHA256.Create(); break;
-                        }
-                        k = md.Digest(e);
+                        case "SHA256": md = IncrementalHash.CreateHash(HashAlgorithmName.SHA256); break;
+                        case "SHA384": md = IncrementalHash.CreateHash(HashAlgorithmName.SHA384); break;
+                        case "SHA512": md = IncrementalHash.CreateHash(HashAlgorithmName.SHA512); break;
                     }
+                    k = md.Digest(e);
                 }
-
-                if (k.Length > 32)
-                {
-                    byte[] kTrunc = new byte[32];
-                    Array.Copy(k, 0, kTrunc, 0, 32);
-                    return kTrunc;
-                }
-                else
-                {
-                    return k;
-                }
+                md.Dispose();
+                return k.Length > 32
+                    ? k.Slice(0, 32)
+                    : k;
             }
             catch (Exception e)
             {
@@ -1166,16 +1093,14 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        private static byte[] ComputeSHA256(byte[] input, byte[] password, byte[] userKey)
+        private static ReadOnlySpan<byte> ComputeSHA256(ReadOnlySpan<byte> input, ReadOnlySpan<byte> password, ReadOnlySpan<byte> userKey)
         {
             try
             {
-                using (var md = SHA256.Create())
-                {
-                    md.Update(input);
-                    md.Update(password);
-                    return userKey == null ? md.Digest() : md.Digest(userKey);
-                }
+                using var md = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+                md.Update(input);
+                md.Update(password);
+                return md.Digest(AdjustUserKey(userKey));
             }
             catch (Exception e)
             {
@@ -1183,32 +1108,48 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        private static byte[] Concat(byte[] a, byte[] b)
+        private static ReadOnlySpan<byte> AdjustUserKey(ReadOnlySpan<byte> u)
+        {
+            if (u.IsEmpty)
+            {
+                return Array.Empty<byte>();
+            }
+            if (u.Length < 48)
+            {
+                throw new IOException("Bad U length");
+            }
+            if (u.Length > 48)
+            {
+                // must truncate
+                return u[..48];
+            }
+            return u;
+        }
+
+        private static ReadOnlySpan<byte> Concat(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
         {
             byte[] o = new byte[a.Length + b.Length];
-            Array.Copy(a, 0, o, 0, a.Length);
-            Array.Copy(b, 0, o, a.Length, b.Length);
+            a.CopyTo(o);
+            b.CopyTo(o.AsSpan(a.Length));
             return o;
         }
 
-        private static byte[] Concat(byte[] a, byte[] b, byte[] c)
+        private static ReadOnlySpan<byte> Concat(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b, ReadOnlySpan<byte> c)
         {
             byte[] o = new byte[a.Length + b.Length + c.Length];
-            Array.Copy(a, 0, o, 0, a.Length);
-            Array.Copy(b, 0, o, a.Length, b.Length);
-            Array.Copy(c, 0, o, a.Length + b.Length, c.Length);
+            a.CopyTo(o);
+            b.CopyTo(o.AsSpan(a.Length));
+            c.CopyTo(o.AsSpan(a.Length + b.Length));
             return o;
         }
 
-        private static byte[] Truncate127(byte[] inp)
+        private static ReadOnlySpan<byte> Truncate127(ReadOnlySpan<byte> inp)
         {
             if (inp.Length <= 127)
             {
                 return inp;
             }
-            byte[] trunc = new byte[127];
-            Array.Copy(inp, 0, trunc, 0, 127);
-            return trunc;
+            return inp.Slice(0, 127);
         }
 
         private static void LogIfStrongEncryptionMissing()
@@ -1224,15 +1165,6 @@ namespace PdfClown.Documents.Encryption
             {
                 Debug.WriteLine("debug: AES Algorithm not available " + ex);
             }
-        }
-
-        /**
-		 * {@inheritDoc}
-		 */
-
-        public override bool HasProtectionPolicy()
-        {
-            return policy != null;
         }
     }
 }

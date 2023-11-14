@@ -37,14 +37,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public ICCXYZNumber Surround;
         public uint MeasurmentType;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
             Illuminant.Load(buffer);
             Surround.Load(buffer);
-            MeasurmentType = buffer.ReadUnsignedInt();
+            MeasurmentType = buffer.ReadUInt32();
         }
     }
 }

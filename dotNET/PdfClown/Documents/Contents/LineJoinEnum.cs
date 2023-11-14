@@ -51,9 +51,7 @@ namespace PdfClown.Documents.Contents
 
     internal static class LineJoinEnumExtension
     {
-        public static SKStrokeJoin ToSkia(
-          this LineJoinEnum lineJoin
-          )
+        public static SKStrokeJoin ToSkia(this LineJoinEnum lineJoin)
         {
             switch (lineJoin)
             {

@@ -44,7 +44,7 @@ namespace PdfClown.Samples.CLI
                             if (header[PdfName.Filter].Equals(PdfName.DCTDecode)) // JPEG image.
                             {
                                 // Get the image data (keeping it encoded)!
-                                IBuffer body = ((PdfStream)dataObject).GetBody(false);
+                                IByteStream body = ((PdfStream)dataObject).GetBody(false);
                                 // Export the image!
                                 ExportImage(
                                   body,
@@ -60,7 +60,7 @@ namespace PdfClown.Samples.CLI
         }
 
         private void ExportImage(
-          IBuffer data,
+          IByteStream data,
           string filename
           )
         {
@@ -74,7 +74,7 @@ namespace PdfClown.Samples.CLI
             try
             {
                 BinaryWriter writer = new BinaryWriter(outputStream);
-                writer.Write(data.ToByteArray());
+                writer.Write(data.ToArray());
                 writer.Close();
                 outputStream.Close();
             }

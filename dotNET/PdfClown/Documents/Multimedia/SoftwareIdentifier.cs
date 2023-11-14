@@ -67,8 +67,8 @@ namespace PdfClown.Documents.Multimedia
                 get
                 {
                     IList<int> numbers = new List<int>();
-                    foreach (PdfDirectObject numberObject in BaseDataObject)
-                    { numbers.Add(((PdfInteger)numberObject).IntValue); }
+                    foreach (IPdfNumber numberObject in BaseDataObject)
+                    { numbers.Add(numberObject.IntValue); }
                     return numbers;
                 }
             }

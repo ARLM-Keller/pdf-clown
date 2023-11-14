@@ -42,6 +42,7 @@ using SkiaSharp;
 using io = System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using PdfClown.Documents.Contents.Fonts.TTF;
 
 namespace PdfClown.Documents
 {
@@ -51,9 +52,6 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF10)]
     public sealed class Document : PdfObjectWrapper<PdfDictionary>, IAppDataHolder
     {
-        #region static
-        #region interface
-        #region public
         public static T Resolve<T>(PdfDirectObject baseObject) where T : PdfObjectWrapper
         {
             if (typeof(Destination).IsAssignableFrom(typeof(T)))
@@ -61,20 +59,13 @@ namespace PdfClown.Documents
             else
                 throw new NotSupportedException("Type '" + typeof(T).Name + "' wrapping is not supported.");
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         internal Dictionary<PdfDirectObject, object> Cache = new Dictionary<PdfDirectObject, object>();
 
         private DocumentConfiguration configuration;
-        #endregion
 
-        #region constructors
         internal Document(File context) :
-            base(context, new PdfDictionary(new PdfName[1] { PdfName.Type }, new PdfDirectObject[1] { PdfName.Catalog }))
+            base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Catalog } })
         {
             configuration = new DocumentConfiguration(this);
 
@@ -94,10 +85,7 @@ namespace PdfClown.Documents
         internal Document(PdfDirectObject baseObject)// Catalog.
             : base(baseObject)
         { configuration = new DocumentConfiguration(this); }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the document's behavior in response to trigger events.</summary>
         */
@@ -239,9 +227,8 @@ namespace PdfClown.Documents
                 PdfArray mediaBox = MediaBox;
                 return mediaBox != null
                   ? new SKSize(
-                    (int)((IPdfNumber)mediaBox[2]).RawValue,
-                    (int)((IPdfNumber)mediaBox[3]).RawValue
-                    )
+                    (int)mediaBox.GetDouble(2),
+                    (int)mediaBox.GetDouble(3))
                   : (SKSize?)null;
             }
             set
@@ -383,7 +370,6 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.ViewerPreferences] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        #region IAppDataHolder
         public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PieceInfo), this);
 
         public AppData GetAppData(PdfName appName)
@@ -399,21 +385,18 @@ namespace PdfClown.Documents
             GetAppData(appName).ModificationDate = modificationDate;
             Information.ModificationDate = modificationDate;
         }
-        #endregion
-        #endregion
 
-        #region private
+        internal void RegisterTrueTypeFontForClosing(TrueTypeFont ttf)
+        {
+            throw new NotImplementedException();
+        }
+
         /**
           <summary>Gets the default media box.</summary>
         */
         private PdfArray MediaBox =>
-                /*
-NOTE: Document media box MUST be associated with the page-tree root node in order to be
-inheritable by all the pages.
-*/
+                //NOTE: Document media box MUST be associated with the page-tree root node in order to be
+                //inheritable by all the pages.
                 (PdfArray)((PdfDictionary)BaseDataObject.Resolve(PdfName.Pages)).Resolve(PdfName.MediaBox);
-        #endregion
-        #endregion
-        #endregion
     }
 }

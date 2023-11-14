@@ -39,14 +39,8 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF11)]
     public sealed class SetStrokeColorSpace : Operation, IResourceReference<ColorSpace>
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "CS";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetStrokeColorSpace(PdfName name)
             : base(OperatorKeyword, name)
         { }
@@ -54,32 +48,14 @@ namespace PdfClown.Documents.Contents.Objects
         public SetStrokeColorSpace(IList<PdfDirectObject> operands)
             : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the <see cref="ColorSpace">color space</see> resource to be set.</summary>
           <param name="context">Content context.</param>
         */
-        public ColorSpace GetColorSpace(IContentContext context)
-        { return GetResource(context); }
+        public ColorSpace GetColorSpace(ContentScanner context) => GetResource(context);
 
-        public override void Scan(GraphicsState state)
-        {
-            // 1. Color space.
-            state.StrokeColorSpace = GetColorSpace(state.Scanner.ContentContext);
-
-            // 2. Initial color.
-            /*
-              NOTE: The operation also sets the current stroking color
-              to its initial value, which depends on the color space [PDF:1.6:4.5.7].
-            */
-            state.StrokeColor = state.StrokeColorSpace.DefaultColor;
-        }
-
-        #region IResourceReference
-        public ColorSpace GetResource(IContentContext context)
+        public ColorSpace GetResource(ContentScanner context)
         {
             /*
               NOTE: The names DeviceGray, DeviceRGB, DeviceCMYK, and Pattern always identify
@@ -96,7 +72,20 @@ namespace PdfClown.Documents.Contents.Objects
             else if (name.Equals(PdfName.Pattern))
                 return PatternColorSpace.Default;
             else
-                return context.Resources.ColorSpaces[name];
+                return context.ContentContext.Resources.ColorSpaces[name];
+        }
+
+        public override void Scan(GraphicsState state)
+        {
+            // 1. Color space.
+            state.StrokeColorSpace = GetColorSpace(state.Scanner);
+
+            // 2. Initial color.
+            /*
+              NOTE: The operation also sets the current stroking color
+              to its initial value, which depends on the color space [PDF:1.6:4.5.7].
+            */
+            state.StrokeColor = state.StrokeColorSpace.DefaultColor;
         }
 
         public PdfName Name
@@ -104,9 +93,5 @@ namespace PdfClown.Documents.Contents.Objects
             get => (PdfName)operands[0];
             set => operands[0] = value;
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

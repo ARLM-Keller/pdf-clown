@@ -39,7 +39,6 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF11)]
     public sealed class ArticleElements : PdfObjectWrapper<PdfDictionary>, IList<ArticleElement>
     {
-        #region types
         private sealed class ElementCounter : ElementEvaluator
         {
             public int Count => index + 1;
@@ -141,17 +140,10 @@ namespace PdfClown.Documents.Interaction.Navigation
             public void Dispose()
             { }
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         public ArticleElements(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        #region IList<ArticleElement>
         public int IndexOf(ArticleElement @object)
         {
             if (@object == null)
@@ -176,8 +168,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             { Link(@object.BaseDataObject, bead); }
         }
 
-        public void RemoveAt(int index)
-        { Unlink(this[index].BaseDataObject); }
+        public void RemoveAt(int index) => Unlink(this[index].BaseDataObject);
 
         public ArticleElement this[int index]
         {
@@ -197,7 +188,6 @@ namespace PdfClown.Documents.Interaction.Navigation
             set => throw new NotImplementedException();
         }
 
-        #region ICollection<TItem>
         public void Add(ArticleElement @object)
         {
             PdfDictionary itemBead = @object.BaseDataObject;
@@ -214,8 +204,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         public void Clear()
         { throw new NotImplementedException(); }
 
-        public bool Contains(ArticleElement @object)
-        { return IndexOf(@object) >= 0; }
+        public bool Contains(ArticleElement @object) => IndexOf(@object) >= 0;
 
         public void CopyTo(ArticleElement[] objects, int index)
         { throw new NotImplementedException(); }
@@ -241,20 +230,10 @@ namespace PdfClown.Documents.Interaction.Navigation
             return true;
         }
 
-        #region IEnumerable<ArticleElement>
-        public IEnumerator<ArticleElement> GetEnumerator()
-        { return new Enumerator(this); }
+        public IEnumerator<ArticleElement> GetEnumerator() => new Enumerator(this);
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<ArticleElement>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<ArticleElement>)this).GetEnumerator();
 
-        #region private
         private PdfDictionary FirstBead
         {
             get => (PdfDictionary)BaseDataObject.Resolve(PdfName.F);
@@ -322,8 +301,5 @@ namespace PdfClown.Documents.Interaction.Navigation
             else // No more elements.
             { FirstBead = null; }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

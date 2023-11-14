@@ -58,12 +58,8 @@ namespace PdfClown.Documents.Contents.Composition
     */
     public sealed class PrimitiveComposer
     {
-        #region dynamic
-        #region fields
         private ContentScanner scanner;
-        #endregion
 
-        #region constructors
         public PrimitiveComposer(ContentScanner scanner)
         {
             Scanner = scanner;
@@ -71,10 +67,7 @@ namespace PdfClown.Documents.Contents.Composition
 
         public PrimitiveComposer(IContentContext context) : this(new ContentScanner(context.Contents))
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Adds a content object.</summary>
           <returns>The added content object.</returns>
@@ -833,7 +826,7 @@ namespace PdfClown.Documents.Contents.Composition
                   composite fonts are always treated as multi-byte encodings which require explicit word
                   spacing adjustment.
                 */
-                double wordSpaceAdjust = font is fonts::PdfType0Font ? -state.WordSpace * 1000 * state.Scale / fontSize : 0;
+                double wordSpaceAdjust = font is fonts::FontType0 ? -state.WordSpace * 1000 * state.Scale / fontSize : 0;
 
                 // Vertical alignment.
                 double y;
@@ -892,15 +885,16 @@ namespace PdfClown.Documents.Contents.Composition
                             { Add(new objects::ShowSimpleText(font.Encode(textLine))); }
                             else // Adjusted text.
                             {
-                                var textParams = new List<Object>();
+                                var textParams = new List<PdfDirectObject>();
                                 for (int spaceIndex = 0, lastSpaceIndex = -1; spaceIndex > -1; lastSpaceIndex = spaceIndex)
                                 {
                                     spaceIndex = textLine.IndexOf(' ', lastSpaceIndex + 1);
                                     // Word space adjustment.
                                     if (lastSpaceIndex > -1)
-                                    { textParams.Add(wordSpaceAdjust); }
+                                    { textParams.Add(PdfReal.Get(wordSpaceAdjust)); }
                                     // Word.
-                                    textParams.Add(font.Encode(textLine.Substring(lastSpaceIndex + 1, (spaceIndex > -1 ? spaceIndex + 1 : textLine.Length) - (lastSpaceIndex + 1))));
+                                    var l = (spaceIndex > -1 ? spaceIndex + 1 : textLine.Length) - (lastSpaceIndex + 1);
+                                    textParams.Add(new PdfByteString(font.Encode(textLine.AsSpan(lastSpaceIndex + 1, l))));
                                 }
                                 Add(new objects::ShowAdjustedText(textParams));
                             }
@@ -940,12 +934,12 @@ namespace PdfClown.Documents.Contents.Composition
         public Link ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation, actions::Action action)
         {
             IContentContext contentContext = Scanner.ContentContext;
-            if (!(contentContext is Page))
+            if (contentContext is not Page page)
                 throw new Exception("Links can be shown only on page contexts.");
 
             SKRect linkBox = ShowText(value, location, xAlignment, yAlignment, rotation).GetBounds();
 
-            var link = new Link((Page)contentContext, linkBox, null, action)
+            var link = new Link(page, linkBox, null, action)
             { Layer = GetLayer() };
             return link;
         }
@@ -1139,9 +1133,7 @@ namespace PdfClown.Documents.Contents.Composition
         {
             ApplyMatrix(1, 0, 0, 1, distanceX, distanceY);
         }
-        #endregion
 
-        #region private
         private void ApplyState_(PdfName name)
         {
             Add(new objects::ApplyExtGState(name));
@@ -1255,7 +1247,7 @@ namespace PdfClown.Documents.Contents.Composition
                 {
                     var marker = (objects::ContentMarker)markedContent.Header;
                     if (PdfName.OC.Equals(marker.Tag))
-                        return (LayerEntity)marker.GetProperties(Scanner.ContentContext);
+                        return (LayerEntity)marker.GetProperties(Scanner);
                 }
                 parentLevel = parentLevel.ParentLevel;
             }
@@ -1366,8 +1358,5 @@ namespace PdfClown.Documents.Contents.Composition
         {
             Add(objects::TranslateTextToNextLine.Value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

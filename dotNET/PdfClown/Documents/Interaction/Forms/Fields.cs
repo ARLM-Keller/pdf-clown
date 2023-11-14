@@ -42,21 +42,14 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class Fields : PdfObjectWrapper<PdfArray>, IDictionary<string, Field>, IEnumerable<Field>
     {
-        #region dynamic
-        #region constructors
         public Fields(Document context) : base(context, new PdfArray())
         { }
 
         public Fields(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public void Add(Field value)
-        { BaseDataObject.Add(value.BaseObject); }
+        public void Add(Field value) => BaseDataObject.Add(value.BaseObject);
 
-        #region IDictionary
         public void Add(string key, Field value)
         { throw new NotImplementedException(); }
 
@@ -150,12 +143,9 @@ namespace PdfClown.Documents.Interaction.Forms
             }
         }
 
-        #region ICollection
-        void ICollection<KeyValuePair<string, Field>>.Add(KeyValuePair<string, Field> entry)
-        { Add(entry.Key, entry.Value); }
+        void ICollection<KeyValuePair<string, Field>>.Add(KeyValuePair<string, Field> entry) => Add(entry.Key, entry.Value);
 
-        public void Clear()
-        { BaseDataObject.Clear(); }
+        public void Clear() => BaseDataObject.Clear();
 
         bool ICollection<KeyValuePair<string, Field>>.Contains(KeyValuePair<string, Field> entry)
         { throw new NotImplementedException(); }
@@ -170,7 +160,6 @@ namespace PdfClown.Documents.Interaction.Forms
         public bool Remove(KeyValuePair<string, Field> entry)
         { throw new NotImplementedException(); }
 
-        #region IEnumerable<KeyValuePair<string,Field>>
         IEnumerator<KeyValuePair<string, Field>> IEnumerable<KeyValuePair<string, Field>>.GetEnumerator()
         {
             IEnumerator<PdfDirectObject> fieldObjectsIterator = BaseDataObject.GetEnumerator();
@@ -193,18 +182,8 @@ namespace PdfClown.Documents.Interaction.Forms
             }
         }
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        #region private
         private void RetrieveValues(PdfArray fieldObjects, IList<Field> values)
         {
             foreach (PdfReference fieldReference in fieldObjects)
@@ -230,8 +209,5 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             return type.Name + ((IEnumerable<Field>)this).Count(x => type.IsAssignableFrom(x.GetType()));
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

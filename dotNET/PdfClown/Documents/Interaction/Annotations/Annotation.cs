@@ -42,6 +42,7 @@ using PdfClown.Util.Math.Geom;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Globalization;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 //using System.Diagnostics;
 
 namespace PdfClown.Documents.Interaction.Annotations
@@ -55,17 +56,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         private Page page;
         private string name;
         private SKColor? color;
-        private SKRect? boxCache;
+        private SKRect? box;
         protected BottomRightControlPoint cpBottomRight;
         protected BottomLeftControlPoint cpBottomLeft;
         protected TopRightControlPoint cpTopRight;
         protected TopLeftControlPoint cpTopLeft;
+        private SKRect? pageBox;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Wraps an annotation base object into an annotation object.</summary>
           <param name="baseObject">Annotation base object.</param>
@@ -134,25 +133,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return new GenericAnnotation(baseObject);
         }
 
-        #endregion
-        #endregion
-        #endregion
-
-        #region dynamic
-        #region constructors
         protected Annotation(Page page, PdfName subtype, SKRect box, string text)
-            : base(
-                  page.Document,
-                  new PdfDictionary(
-                      new PdfName[] { PdfName.Type, PdfName.Subtype, PdfName.Border },
-                      new PdfDirectObject[]
-                      {
-                          PdfName.Annot,
-                          subtype,
-                          new PdfArray(new PdfDirectObject[]{PdfInteger.Default, PdfInteger.Default, PdfInteger.Default}) // NOTE: Hide border by default.
-                      }
-                      )
-                  )
+            : base(page.Document,
+                  new PdfDictionary(3)
+                  {
+                      { PdfName.Type, PdfName.Annot },
+                      { PdfName.Subtype, subtype },
+                      { PdfName.Border, new PdfArray(3){ PdfInteger.Default, PdfInteger.Default, PdfInteger.Default } }// NOTE: Hide border by default.
+                  })
         {
             GenerateName();
             Page = page;
@@ -164,10 +152,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public Annotation(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public virtual string Author
         {
             get => string.Empty;
@@ -274,23 +259,38 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public virtual SKRect PageBox
+        {
+            get => pageBox ??= Rect?.ToRect() ?? SKRect.Empty;
+            set
+            {
+                pageBox = new SKRect((float)Math.Round(value.Left, 4),
+                                      (float)Math.Round(value.Top, 4),
+                                      (float)Math.Round(value.Right, 4),
+                                      (float)Math.Round(value.Bottom, 4));
+                Rect = new Objects.Rectangle(pageBox.Value);
+                box = null;
+            }
+        }
+
         /**
           <summary>Gets/Sets the location of the annotation on the page in default user space units.
           </summary>
         */
         public virtual SKRect Box
         {
-            get => boxCache ?? (boxCache = PageMatrix.MapRect(Rect?.ToRect() ?? SKRect.Empty)).Value;
+            get => box ??= PageMatrix.MapRect(PageBox);
             set
             {
                 var oldValue = Box;
-                boxCache = new SKRect((float)Math.Round(value.Left, 4),
+                var box = new SKRect((float)Math.Round(value.Left, 4),
                                       (float)Math.Round(value.Top, 4),
                                       (float)Math.Round(value.Right, 4),
                                       (float)Math.Round(value.Bottom, 4));
-                if (!oldValue.Equals(boxCache.Value))
+                if (!oldValue.Equals(box))
                 {
-                    Rect = new Objects.Rectangle(InvertPageMatrix.MapRect(boxCache.Value));
+                    PageBox = InvertPageMatrix.MapRect(box);
+                    this.box = box;
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -369,7 +369,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public virtual DateTime? ModificationDate
         {
             //NOTE: Despite PDF date being the preferred format, loose formats are tolerated by the spec.
-            get => BaseDataObject.GetDate(PdfName.M);
+            get => BaseDataObject.GetNDate(PdfName.M);
             set
             {
                 var oldValue = ModificationDate;
@@ -388,7 +388,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF14)]
         public virtual string Name
         {
-            get => name ?? (name = BaseDataObject.GetString(PdfName.NM) ?? string.Empty);
+            get => name ??= BaseDataObject.GetString(PdfName.NM) ?? string.Empty;
             set
             {
                 var oldValue = Name;
@@ -407,7 +407,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF13)]
         public virtual Page Page
         {
-            get => page ?? (page = Wrap<Page>(BaseDataObject[PdfName.P]));
+            get => page ??= Wrap<Page>(BaseDataObject[PdfName.P]);
             set
             {
                 page = null;
@@ -416,7 +416,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     return;
                 }
-                boxCache = null;
+                box = null;
                 oldPage?.Annotations.Remove(this);
                 page = value;
                 if (page != null)
@@ -508,7 +508,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        #region ILayerable
         [PDF(VersionEnum.PDF15)]
         public virtual LayerEntity Layer
         {
@@ -523,18 +522,26 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
         }
-        #endregion
 
         protected SKMatrix PageMatrix
         {
-            get => Page?.RotateMatrix ?? GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0);
+            get => Page?.RotateMatrix ?? GraphicsState.GetRotationLeftBottomMatrix(SKRect.Create(Document.GetSize()), 0);
         }
 
         protected SKMatrix InvertPageMatrix
         {
-            get => Page?.InRotateMatrix ?? (GraphicsState.GetRotationMatrix(SKRect.Create(Document.GetSize()), 0).TryInvert(out var inverted) ? inverted : SKMatrix.Identity);
+            get => Page?.InvertRotateMatrix ?? (GraphicsState.GetRotationLeftBottomMatrix(SKRect.Create(Document.GetSize()), 0).TryInvert(out var inverted) ? inverted : SKMatrix.Identity);
         }
 
+        public SKPoint PageTopLeftPoint
+        {
+            get => new SKPoint(PageBox.Left, PageBox.Top);
+            set
+            {
+                var rect = new SKRect(value.X, value.Y, PageBox.Right, PageBox.Bottom);
+                PageMoveTo(rect);
+            }
+        }
 
         public SKPoint TopLeftPoint
         {
@@ -543,6 +550,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 var rect = new SKRect(value.X, value.Y, Box.Right, Box.Bottom);
                 MoveTo(rect);
+            }
+        }
+
+        public SKPoint PageTopRightPoint
+        {
+            get => new SKPoint(PageBox.Right, PageBox.Top);
+            set
+            {
+                var rect = new SKRect(PageBox.Left, value.Y, value.X, PageBox.Bottom);
+                PageMoveTo(rect);
             }
         }
 
@@ -556,6 +573,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public SKPoint PageBottomLeftPoint
+        {
+            get => new SKPoint(PageBox.Left, PageBox.Bottom);
+            set
+            {
+                var rect = new SKRect(value.X, PageBox.Top, PageBox.Right, value.Y);
+                PageMoveTo(rect);
+            }
+        }
+
         public SKPoint BottomLeftPoint
         {
             get => new SKPoint(Box.Left, Box.Bottom);
@@ -563,6 +590,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 var rect = new SKRect(value.X, Box.Top, Box.Right, value.Y);
                 MoveTo(rect);
+            }
+        }
+
+        public SKPoint PageBottomRightPoint
+        {
+            get => new SKPoint(PageBox.Right, PageBox.Bottom);
+            set
+            {
+                var rect = new SKRect(PageBox.Left, PageBox.Top, value.X, value.Y);
+                PageMoveTo(rect);
             }
         }
 
@@ -576,9 +613,15 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public virtual void MoveTo(SKRect newBox)
+        public void MoveTo(SKRect newBox)
         {
-            Box = newBox;
+            PageMoveTo(InvertPageMatrix.MapRect(newBox));
+            box = newBox;
+        }
+
+        public virtual void PageMoveTo(SKRect newBox)
+        {
+            PageBox = newBox;
         }
         /**
           <summary>Deletes this annotation removing also its reference on the page.</summary>
@@ -609,10 +652,6 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public List<Annotation> Replies { get; set; } = new List<Annotation>();
 
-
-        #endregion
-
-        #region private
         protected RotationEnum GetPageRotation()
         {
             return Page?.Rotation ?? RotationEnum.Downward;
@@ -640,7 +679,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             var bounds = Rect.ToRect();
             var appearanceBounds = appearance.Box;
-            var picture = appearance.Render();
+            var picture = appearance.Render(null);
 
             var matrix = appearance.Matrix;
 
@@ -652,10 +691,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             a = a.PostConcat(SKMatrix.CreateTranslation(bounds.Left - quadA.Left, bounds.Top - quadA.Top));
 
             matrix = matrix.PostConcat(a);
-
-            var self = PageMatrix;
-            canvas.Save();
-            canvas.Concat(ref self);
 
             if (Alpha < 1)
             {
@@ -669,7 +704,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 canvas.DrawPicture(picture, ref matrix);
             }
-            canvas.Restore();
         }
 
         public virtual SKRect GetBounds(SKMatrix matrix)
@@ -723,133 +757,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             yield return cpTopRight ?? (cpTopRight = new TopRightControlPoint { Annotation = this });
             yield return cpBottomLeft ?? (cpBottomLeft = new BottomLeftControlPoint { Annotation = this });
             yield return cpBottomRight ?? (cpBottomRight = new BottomRightControlPoint { Annotation = this });
-        }
-        #endregion
-        #endregion
-        #endregion
-    }
-
-    /**
-      <summary>Annotation flags [PDF:1.6:8.4.2].</summary>
-    */
-    [Flags]
-    public enum AnnotationFlagsEnum
-    {
-        /**
-          <summary>Hide the annotation, both on screen and on print,
-          if it does not belong to one of the standard annotation types
-          and no annotation handler is available.</summary>
-        */
-        Invisible = 0x1,
-        /**
-          <summary>Hide the annotation, both on screen and on print
-          (regardless of its annotation type or whether an annotation handler is available).</summary>
-        */
-        Hidden = 0x2,
-        /**
-          <summary>Print the annotation when the page is printed.</summary>
-        */
-        Print = 0x4,
-        /**
-          <summary>Do not scale the annotation's appearance to match the magnification of the page.</summary>
-        */
-        NoZoom = 0x8,
-        /**
-          <summary>Do not rotate the annotation's appearance to match the rotation of the page.</summary>
-        */
-        NoRotate = 0x10,
-        /**
-          <summary>Hide the annotation on the screen.</summary>
-        */
-        NoView = 0x20,
-        /**
-          <summary>Do not allow the annotation to interact with the user.</summary>
-        */
-        ReadOnly = 0x40,
-        /**
-          <summary>Do not allow the annotation to be deleted or its properties to be modified by the user.</summary>
-        */
-        Locked = 0x80,
-        /**
-          <summary>Invert the interpretation of the NoView flag.</summary>
-        */
-        ToggleNoView = 0x100,
-        /**
-          <summary>Do not allow the contents of the annotation to be modified by the user.</summary>
-        */
-        LockedContents = 0x200
-    }
-
-
-    public class DetailedPropertyChangedEventArgs : PropertyChangedEventArgs
-    {
-        public DetailedPropertyChangedEventArgs(object oldValue, object newValue, string propertyName)
-            : base(propertyName)
-        {
-            OldValue = oldValue;
-            NewValue = newValue;
-        }
-
-        public object OldValue { get; }
-        public object NewValue { get; }
-    }
-
-    public abstract class ControlPoint
-    {
-        private const int r = 3;
-
-        public Annotation Annotation { get; set; }
-        public abstract SKPoint Point { get; set; }
-        public SKRect Bounds
-        {
-            get
-            {
-                var point = Point;
-                return new SKRect(point.X - r, point.Y - r, point.X + r, point.Y + r);
-            }
-        }
-
-        public virtual ControlPoint Clone(Annotation annotation)
-        {
-            var cloned = (ControlPoint)this.MemberwiseClone();
-            cloned.Annotation = annotation;
-            return cloned;
-        }
-    }
-
-    public class TopLeftControlPoint : ControlPoint
-    {
-        public override SKPoint Point
-        {
-            get => Annotation.TopLeftPoint;
-            set => Annotation.TopLeftPoint = value;
-        }
-    }
-
-    public class TopRightControlPoint : ControlPoint
-    {
-        public override SKPoint Point
-        {
-            get => Annotation.TopRightPoint;
-            set => Annotation.TopRightPoint = value;
-        }
-    }
-
-    public class BottomLeftControlPoint : ControlPoint
-    {
-        public override SKPoint Point
-        {
-            get => Annotation.BottomLeftPoint;
-            set => Annotation.BottomLeftPoint = value;
-        }
-    }
-
-    public class BottomRightControlPoint : ControlPoint
-    {
-        public override SKPoint Point
-        {
-            get => Annotation.BottomRightPoint;
-            set => Annotation.BottomRightPoint = value;
         }
     }
 

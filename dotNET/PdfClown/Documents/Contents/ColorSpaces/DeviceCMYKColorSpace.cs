@@ -38,27 +38,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceCMYKColorSpace : DeviceColorSpace
     {
-        #region static
-        #region fields
         /*
           NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
           of the contextual resource dictionary) [PDF:1.6:4.5.7].
         */
         public static readonly DeviceCMYKColorSpace Default = new DeviceCMYKColorSpace(PdfName.DeviceCMYK);
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public DeviceCMYKColorSpace(Document context) : base(context, PdfName.DeviceCMYK)
         { }
 
         internal DeviceCMYKColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
@@ -78,7 +69,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return Calculate(cmykColor.C, cmykColor.M, cmykColor.Y, cmykColor.K, alpha);
         }
 
-        public override SKColor GetSKColor(float[] components, float? alpha = null)
+        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
         {
             return Calculate(components[0], components[1], components[2], components[3], alpha);
         }
@@ -152,8 +143,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return skColor;
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

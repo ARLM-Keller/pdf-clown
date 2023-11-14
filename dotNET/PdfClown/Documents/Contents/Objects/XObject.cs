@@ -37,31 +37,19 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class XObject : GraphicsObject, IResourceReference<xObjects::XObject>
     {
-        #region static
-        #region fields
         public static readonly string BeginOperatorKeyword = PaintXObject.OperatorKeyword;
         public static readonly string EndOperatorKeyword = BeginOperatorKeyword;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public XObject(PaintXObject operation) : base(operation)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the scanner for this object's contents.</summary>
           <param name="context">Scanning context.</param>
         */
-        public ContentScanner GetScanner(ContentScanner context)
-        { return Operation.GetScanner(context); }
+        public ContentScanner GetScanner(ContentScanner context) => Operation.GetScanner(context);
 
-        #region IResourceReference
-        public xObjects::XObject GetResource(IContentContext context)
-        { return Operation.GetResource(context); }
+        public xObjects::XObject GetResource(ContentScanner context) => Operation.GetResource(context);
 
         public PdfName Name
         {
@@ -73,13 +61,7 @@ namespace PdfClown.Documents.Contents.Objects
         {
             base.Scan(state);
         }
-        #endregion
-        #endregion
 
-        #region private
         private PaintXObject Operation => (PaintXObject)Objects[0];
-        #endregion
-        #endregion
-        #endregion
     }
 }

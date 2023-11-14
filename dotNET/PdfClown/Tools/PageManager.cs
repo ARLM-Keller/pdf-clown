@@ -121,7 +121,7 @@ namespace PdfClown.Tools
                     visitedReferences.Add(reference);
 
                     // Calculate the data size of the current object!
-                    IOutputStream buffer = new Buffer();
+                    IOutputStream buffer = new ByteStream();
                     reference.IndirectObject.WriteTo(buffer, reference.File);
                     dataSize += buffer.Length;
                 }

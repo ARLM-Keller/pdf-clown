@@ -39,25 +39,17 @@ namespace PdfClown.Documents.Contents.Objects
       but replaces it.</remarks>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetTextMatrix
-      : Operation
+    public sealed class SetTextMatrix : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "Tm";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetTextMatrix(SKMatrix value)
             : this(value.ScaleX,
                   value.SkewY,
                   value.SkewX,
                   value.ScaleY,
                   value.TransX,
-                  value.TransY
-                  )
+                  value.TransY)
         { }
 
         public SetTextMatrix(double a, double b, double c, double d, double e, double f)
@@ -67,16 +59,12 @@ namespace PdfClown.Documents.Contents.Objects
                   PdfReal.Get(c),
                   PdfReal.Get(d),
                   PdfReal.Get(e),
-                  PdfReal.Get(f)
-                  )
+                  PdfReal.Get(f))
         { }
 
         public SetTextMatrix(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         {
             state.TextState.Tm =
@@ -93,8 +81,5 @@ namespace PdfClown.Documents.Contents.Objects
             TransY = ((IPdfNumber)operands[5]).FloatValue,
             Persp2 = 1
         };
-        #endregion
-        #endregion
-        #endregion
     }
 }

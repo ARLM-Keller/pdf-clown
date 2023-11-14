@@ -60,7 +60,7 @@ namespace PdfClown.Documents.Contents.Layers
                     return null;
 
                 PdfDirectObject firstObject = BaseDataObject[0];
-                return firstObject is PdfString ? ((PdfString)firstObject).StringValue : null;
+                return firstObject is PdfString stringObject ? stringObject.StringValue : null;
             }
             set
             {

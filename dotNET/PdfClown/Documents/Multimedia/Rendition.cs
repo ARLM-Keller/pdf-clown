@@ -45,7 +45,6 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public abstract class Rendition : PdfObjectWrapper<PdfDictionary>, IPdfNamedObjectWrapper
     {
-        #region types
         /**
           <summary>Rendition viability [PDF:1.7:9.1.2].</summary>
         */
@@ -58,7 +57,7 @@ namespace PdfClown.Documents.Multimedia
               <summary>Gets the minimum system's bandwidth (in bits per second).</summary>
               <remarks>Equivalent to SMIL's systemBitrate attribute.</remarks>
             */
-            public int? Bandwidth => (int?)PdfInteger.GetValue(MediaCriteria[PdfName.R]);
+            public int? Bandwidth => MediaCriteria.GetNInt(PdfName.R);
 
             /**
               <summary>Gets the minimum screen color depth (in bits per pixel).</summary>
@@ -69,7 +68,7 @@ namespace PdfClown.Documents.Multimedia
                 get
                 {
                     PdfDictionary screenDepthObject = (PdfDictionary)MediaCriteria[PdfName.D];
-                    return screenDepthObject != null ? ((PdfInteger)screenDepthObject[PdfName.V]).IntValue : (int?)null;
+                    return screenDepthObject != null ? screenDepthObject.GetInt(PdfName.V) : (int?)null;
                 }
             }
 
@@ -88,9 +87,8 @@ namespace PdfClown.Documents.Multimedia
                     PdfArray screenSizeValueObject = (PdfArray)screenSizeObject[PdfName.V];
                     return screenSizeValueObject != null
                       ? new SKSize(
-                        ((PdfInteger)screenSizeValueObject[0]).IntValue,
-                        ((PdfInteger)screenSizeValueObject[1]).IntValue
-                        )
+                        screenSizeValueObject.GetInt(0),
+                        screenSizeValueObject.GetInt(1))
                       : (SKSize?)null;
                 }
             }
@@ -142,33 +140,45 @@ namespace PdfClown.Documents.Multimedia
               <summary>Gets whether to hear audio descriptions.</summary>
               <remarks>Equivalent to SMIL's systemAudioDesc attribute.</remarks>
             */
-            public bool AudioDescriptionEnabled => (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.A]);
+            public bool AudioDescriptionEnabled
+            {
+                get => MediaCriteria.GetBool(PdfName.A);
+                set => MediaCriteria.SetBool(PdfName.A, value);
+            }
 
             /**
               <summary>Gets whether to hear audio overdubs.</summary>
             */
-            public bool AudioOverdubEnabled => (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.O]);
+            public bool AudioOverdubEnabled
+            {
+                get => MediaCriteria.GetBool(PdfName.O);
+                set => MediaCriteria.SetBool(PdfName.O, value);
+            }
 
             /**
               <summary>Gets whether to see subtitles.</summary>
             */
-            public bool SubtitleEnabled => (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.S]);
+            public bool SubtitleEnabled
+            {
+                get => MediaCriteria.GetBool(PdfName.S);
+                set => MediaCriteria.SetBool(PdfName.S, value);
+            }
 
             /**
               <summary>Gets whether to see text captions.</summary>
               <remarks>Equivalent to SMIL's systemCaptions attribute.</remarks>
             */
-            public bool TextCaptionEnabled => (bool)PdfBoolean.GetValue(MediaCriteria[PdfName.C]);
+            public bool TextCaptionEnabled
+            {
+                get => MediaCriteria.GetBool(PdfName.C);
+                set => MediaCriteria.SetBool(PdfName.C, value);
+            }
 
             private PdfDictionary MediaCriteria => BaseDataObject.Resolve<PdfDictionary>(PdfName.C);
 
             //TODO:setters!
         }
-        #endregion
 
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Wraps a rendition base object into a rendition object.</summary>
           <param name="baseObject">Rendition base object.</param>
@@ -180,7 +190,8 @@ namespace PdfClown.Documents.Multimedia
                 return null;
             if (baseObject.Wrapper is Rendition rendition)
                 return rendition;
-            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is Rendition referenceRendition)
+            if (baseObject is PdfReference pdfReference
+                && pdfReference.DataObject?.Wrapper is Rendition referenceRendition)
             {
                 baseObject.Wrapper = referenceRendition;
                 return referenceRendition;
@@ -194,55 +205,42 @@ namespace PdfClown.Documents.Multimedia
             else
                 throw new ArgumentException("It doesn't represent a valid clip object.", "baseObject");
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
-        protected Rendition(Document context, PdfName subtype) : base(
-            context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type, PdfName.S },
-              new PdfDirectObject[] { PdfName.Rendition, subtype }
-              )
-            )
+        protected Rendition(Document context, PdfName subtype)
+            : base(context, new PdfDictionary
+            {
+                { PdfName.Type, PdfName.Rendition },
+                { PdfName.S, subtype },
+            })
         { }
 
         public Rendition(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the preferred options the renderer should attempt to honor without affecting
           its viability [PDF:1.7:9.1.1].</summary>
-        */
+*/
         public Viability Preferences
         {
-            get => new Viability(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
+            get => Wrap<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
             set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
         }
 
         /**
           <summary>Gets/Sets the minimum requirements the renderer must honor in order to be considered
           viable [PDF:1.7:9.1.1].</summary>
-        */
+*/
         public Viability Requirements
         {
-            get => new Viability(BaseDataObject.Get<PdfDictionary>(PdfName.MH));
+            get => Wrap<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.MH));
             set => BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        #region IPdfNamedObjectWrapper
         public PdfString Name => RetrieveName();
 
         public PdfDirectObject NamedBaseObject => RetrieveNamedBaseObject();
-        #endregion
-        #endregion
 
-        #region protected
         protected override PdfString RetrieveName()
         {
             /*
@@ -252,8 +250,5 @@ namespace PdfClown.Documents.Multimedia
             */
             return (PdfString)BaseDataObject[PdfName.N];
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

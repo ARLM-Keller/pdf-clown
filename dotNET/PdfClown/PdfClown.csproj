@@ -4,7 +4,7 @@
     <OutputType>Library</OutputType>
     <AssemblyName>PdfClown</AssemblyName>
     <RootNamespace>PdfClown</RootNamespace>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <Version>0.2.2.0</Version>
     <LangVersion>9</LangVersion>
     <Company>Stefano Chizzolini</Company>
@@ -15,6 +15,10 @@
     <Copyright>Copyright 2006-2015 Stefano Chizzolini</Copyright>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Documents\Contents\Fonts\CffParser.cs" />    
+    <Compile Remove="Documents\Contents\Fonts\FontFactory.cs" />        
+  </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\Comment.svg" />
     <None Remove="Assets\comments.svg" />
@@ -504,10 +508,12 @@
     <EmbeddedResource Include="Assets\PushPin.svg" />
     <EmbeddedResource Include="Assets\Tag.svg" />
   </ItemGroup>
+   
   <ItemGroup>
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <PackageReference Include="SkiaSharp" Version="2.88.5" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
-  </ItemGroup>
+  </ItemGroup> 
+ 
 </Project>

@@ -3,25 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfClown.Viewer.Test.UWP", "PdfClown.Viewer.Test\PdfClown.Viewer.Test.UWP\PdfClown.Viewer.Test.UWP.csproj", "{4184D5D8-7441-4E13-B687-D42DDFA64934}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfClown", "PdfClown\PdfClown.csproj", "{DBED0809-EE4C-45B0-92FA-E4789ECC2AEC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfClown.Samples", "PdfClown.Samples\PdfClown.Samples.csproj", "{BDBDC0A1-6937-4BB6-964D-DDC62CE2832F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfClown.Viewer", "PdfClown.Viewer\PdfClown.Viewer\PdfClown.Viewer.csproj", "{9A089A04-AD30-48DB-839F-9F1332BA36BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfClown.Viewer.Droid", "PdfClown.Viewer\PdfClown.Viewer.Droid\PdfClown.Viewer.Droid.csproj", "{6DFFA141-89F5-4882-A3F5-BC280E545A8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfClown.Viewer.Droid", "PdfClown.Viewer\PdfClown.Viewer.Droid\PdfClown.Viewer.Droid.csproj", "{6DFFA141-89F5-4882-A3F5-BC280E545A8D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfClown.Viewer.iOS", "PdfClown.Viewer\PdfClown.Viewer.iOS\PdfClown.Viewer.iOS.csproj", "{DE7256C7-E047-4BD0-B172-A040274E3611}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfClown.Viewer.UWP", "PdfClown.Viewer\PdfClown.Viewer.UWP\PdfClown.Viewer.UWP.csproj", "{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfClown.Viewer.WPF", "PdfClown.Viewer\PdfClown.Viewer.WPF\PdfClown.Viewer.WPF.csproj", "{A4862F12-66AA-4FB1-8EA7-BF6821C48830}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfClown.Viewer.Test", "PdfClown.Viewer.Test\PdfClown.Viewer.Test\PdfClown.Viewer.Test.csproj", "{20515F2A-8968-4D98-B93D-462C8DFEE754}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfClown.Viewer.Test.Droid", "PdfClown.Viewer.Test\PdfClown.Viewer.Test.Droid\PdfClown.Viewer.Test.Droid.csproj", "{5544DED3-FDEB-4331-8FF7-C8225D253500}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfClown.Viewer.Test.Droid", "PdfClown.Viewer.Test\PdfClown.Viewer.Test.Droid\PdfClown.Viewer.Test.Droid.csproj", "{5544DED3-FDEB-4331-8FF7-C8225D253500}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfClown.Viewer.Test.iOS", "PdfClown.Viewer.Test\PdfClown.Viewer.Test.iOS\PdfClown.Viewer.Test.iOS.csproj", "{920D41A5-ACC0-4D7E-A7FC-2B40AAD14619}"
 EndProject
@@ -47,27 +43,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|ARM.ActiveCfg = Debug|ARM
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|ARM.Build.0 = Debug|ARM
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|ARM.Deploy.0 = Debug|ARM
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|iPhone.ActiveCfg = Debug|x86
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|iPhoneSimulator.ActiveCfg = Debug|x86
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|x64.ActiveCfg = Debug|x64
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|x64.Build.0 = Debug|x64
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|x64.Deploy.0 = Debug|x64
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|x86.ActiveCfg = Debug|x86
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|x86.Build.0 = Debug|x86
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Debug|x86.Deploy.0 = Debug|x86
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Release|Any CPU.ActiveCfg = Release|x86
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Release|ARM.ActiveCfg = Release|ARM
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Release|ARM.Build.0 = Release|ARM
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Release|iPhone.ActiveCfg = Release|x86
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Release|iPhoneSimulator.ActiveCfg = Release|x86
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Release|x64.ActiveCfg = Release|x64
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Release|x64.Build.0 = Release|x64
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Release|x86.ActiveCfg = Release|x86
-		{4184D5D8-7441-4E13-B687-D42DDFA64934}.Release|x86.Build.0 = Release|x86
 		{DBED0809-EE4C-45B0-92FA-E4789ECC2AEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DBED0809-EE4C-45B0-92FA-E4789ECC2AEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBED0809-EE4C-45B0-92FA-E4789ECC2AEC}.Debug|ARM.ActiveCfg = Debug|Any CPU
@@ -180,24 +155,6 @@ Global
 		{DE7256C7-E047-4BD0-B172-A040274E3611}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 		{DE7256C7-E047-4BD0-B172-A040274E3611}.Release|x64.ActiveCfg = Release|iPhone
 		{DE7256C7-E047-4BD0-B172-A040274E3611}.Release|x86.ActiveCfg = Release|iPhone
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Debug|ARM.ActiveCfg = Debug|ARM
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Debug|ARM.Build.0 = Debug|ARM
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Debug|iPhone.ActiveCfg = Debug|x86
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Debug|iPhoneSimulator.ActiveCfg = Debug|x86
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Debug|x64.ActiveCfg = Debug|x64
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Debug|x64.Build.0 = Debug|x64
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Debug|x86.ActiveCfg = Debug|x86
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Debug|x86.Build.0 = Debug|x86
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Release|Any CPU.ActiveCfg = Release|x86
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Release|ARM.ActiveCfg = Release|ARM
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Release|ARM.Build.0 = Release|ARM
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Release|iPhone.ActiveCfg = Release|x86
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Release|iPhoneSimulator.ActiveCfg = Release|x86
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Release|x64.ActiveCfg = Release|x64
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Release|x64.Build.0 = Release|x64
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Release|x86.ActiveCfg = Release|x86
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED}.Release|x86.Build.0 = Release|x86
 		{A4862F12-66AA-4FB1-8EA7-BF6821C48830}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A4862F12-66AA-4FB1-8EA7-BF6821C48830}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4862F12-66AA-4FB1-8EA7-BF6821C48830}.Debug|ARM.ActiveCfg = Debug|Any CPU
@@ -327,11 +284,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{4184D5D8-7441-4E13-B687-D42DDFA64934} = {1495404D-2CED-47BD-948E-6F18B15E8586}
 		{9A089A04-AD30-48DB-839F-9F1332BA36BD} = {B2A018BE-E6B1-4E16-B7EB-069BFCCF3A46}
 		{6DFFA141-89F5-4882-A3F5-BC280E545A8D} = {B2A018BE-E6B1-4E16-B7EB-069BFCCF3A46}
 		{DE7256C7-E047-4BD0-B172-A040274E3611} = {B2A018BE-E6B1-4E16-B7EB-069BFCCF3A46}
-		{A91CECC2-1D41-46C4-8CCA-05C3A938F5ED} = {B2A018BE-E6B1-4E16-B7EB-069BFCCF3A46}
 		{A4862F12-66AA-4FB1-8EA7-BF6821C48830} = {B2A018BE-E6B1-4E16-B7EB-069BFCCF3A46}
 		{20515F2A-8968-4D98-B93D-462C8DFEE754} = {1495404D-2CED-47BD-948E-6F18B15E8586}
 		{5544DED3-FDEB-4331-8FF7-C8225D253500} = {1495404D-2CED-47BD-948E-6F18B15E8586}

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
@@ -58,10 +59,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private short metricDataFormat;
         private int numberOfVMetrics;
 
-        public VerticalHeaderTable(TrueTypeFont font)
-                : base(font)
-        {
-        }
+        public VerticalHeaderTable()
+        { }
 
         /**
          * This will read the required data from the stream.
@@ -70,25 +69,25 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             version = data.Read32Fixed();
-            ascender = data.ReadSignedShort();
-            descender = data.ReadSignedShort();
-            lineGap = data.ReadSignedShort();
-            advanceHeightMax = data.ReadUnsignedShort();
-            minTopSideBearing = data.ReadSignedShort();
-            minBottomSideBearing = data.ReadSignedShort();
-            yMaxExtent = data.ReadSignedShort();
-            caretSlopeRise = data.ReadSignedShort();
-            caretSlopeRun = data.ReadSignedShort();
-            caretOffset = data.ReadSignedShort();
-            reserved1 = data.ReadSignedShort();
-            reserved2 = data.ReadSignedShort();
-            reserved3 = data.ReadSignedShort();
-            reserved4 = data.ReadSignedShort();
-            metricDataFormat = data.ReadSignedShort();
-            numberOfVMetrics = data.ReadUnsignedShort();
+            ascender = data.ReadInt16();
+            descender = data.ReadInt16();
+            lineGap = data.ReadInt16();
+            advanceHeightMax = data.ReadUInt16();
+            minTopSideBearing = data.ReadInt16();
+            minBottomSideBearing = data.ReadInt16();
+            yMaxExtent = data.ReadInt16();
+            caretSlopeRise = data.ReadInt16();
+            caretSlopeRun = data.ReadInt16();
+            caretOffset = data.ReadInt16();
+            reserved1 = data.ReadInt16();
+            reserved2 = data.ReadInt16();
+            reserved3 = data.ReadInt16();
+            reserved4 = data.ReadInt16();
+            metricDataFormat = data.ReadInt16();
+            numberOfVMetrics = data.ReadUInt16();
             initialized = true;
         }
 

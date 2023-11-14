@@ -31,12 +31,13 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
      */
     public abstract class CFFFont : BaseFont
     {
-        protected string fontName;
-        protected readonly Dictionary<string, object> topDict = new Dictionary<string, object>(StringComparer.Ordinal);
-        protected CFFCharset charset;
-        protected byte[][] charStrings;
-        protected byte[][] globalSubrIndex;
+        private string fontName;
+        private CFFCharset charset;
         private CFFParser.IByteSource source;
+        private SKRect? fontBBox;
+        protected readonly Dictionary<string, object> topDict = new Dictionary<string, object>(StringComparer.Ordinal);
+        protected Memory<byte>[] charStrings;
+        protected Memory<byte>[] globalSubrIndex;
 
         /**
 		 * The name of the font.
@@ -69,12 +70,19 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 */
         public override SKRect FontBBox
         {
-            get
-            {
-                List<float> numbers = (List<float>)topDict["FontBBox"];
-                var rect = new SKRect(numbers[0], numbers[1], numbers[2], numbers[3]);
-                return rect;
-            }
+            get => fontBBox ??= GetBBox();
+        }
+
+        private SKRect GetBBox()
+        {
+            var numbers = (List<float>)topDict["FontBBox"];
+            return new SKRect(numbers[0], numbers[1], numbers[2], numbers[3]);
+        }
+
+        public override List<float> FontMatrix
+        {
+            // our parser guarantees that FontMatrix will be present and correct in the Top DICT
+            get => topDict.TryGetValue("FontMatrix", out var array) ? (List<float>)array : null;
         }
 
         /**
@@ -93,7 +101,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 *
 		 * @return the dictionary
 		 */
-        public byte[][] CharStringBytes
+        public Memory<byte>[] CharStringBytes
         {
             get => charStrings;
             set => charStrings = value;
@@ -110,7 +118,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         /**
 		 * Returns the CFF data.
 		 */
-        public byte[] Data
+        public Memory<byte> Data
         {
             get => source.GetBytes();
         }
@@ -129,7 +137,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 * 
 		 * @return the dictionary
 		 */
-        public byte[][] GlobalSubrIndex
+        public Memory<byte>[] GlobalSubrIndex
         {
             get => globalSubrIndex;
             set => globalSubrIndex = value;

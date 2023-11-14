@@ -41,21 +41,13 @@ namespace PdfClown.Documents
         public static PageLabels Wrap(PdfDirectObject baseObject)
         { return baseObject?.Wrapper as PageLabels ?? new PageLabels(baseObject); }
 
-        #region dynamic
-        #region constructors
         public PageLabels(Document context) : base(context)
         { }
 
         internal PageLabels(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override PageLabel WrapValue(PdfDirectObject baseObject)
         { return Wrap<PageLabel>(baseObject); }
-        #endregion
-        #endregion
-        #endregion
     }
 }

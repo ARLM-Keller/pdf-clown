@@ -206,7 +206,7 @@ namespace PdfClown.Documents.Contents.Entities
         {
             ContentObject barcodeObject = composer.BeginLocalState();
             {
-                fonts::Font font = fonts::PdfType1Font.Load(composer.Scanner.Contents.Document, fonts::PdfType1Font.FamilyEnum.Helvetica, false, false);
+                fonts::Font font = fonts::FontType1.Load(composer.Scanner.Contents.Document, fonts::FontType1.FamilyEnum.Helvetica, false, false);
                 double fontSize = (DigitGlyphWidth / font.GetWidth(code.Substring(0, 1), 1));
 
                 // 1. Bars.

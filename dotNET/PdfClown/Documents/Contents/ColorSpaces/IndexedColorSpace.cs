@@ -39,24 +39,17 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class IndexedColorSpace : SpecialColorSpace
     {
-        #region dynamic
-        #region fields
         private IDictionary<int, Color> baseColors = new Dictionary<int, Color>();
         private IDictionary<int, SKColor> baseSKColors = new Dictionary<int, SKColor>();
         private byte[] baseComponentValues;
         private ColorSpace baseSpace;
         private int? componentCount;
-        #endregion
 
-        #region constructors
         //TODO:IMPL new element constructor!
 
         internal IndexedColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the base color space in which the values in the color table
           are to be interpreted.</summary>
@@ -102,14 +95,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return baseColor;
         }
 
-        public SKColor GetBaseSKColor(float[] color)
+        public SKColor GetBaseSKColor(ReadOnlySpan<float> color)
         {
             int colorIndex = (int)color[0];
             if (!baseSKColors.TryGetValue(colorIndex, out var baseColor))
             {
                 ColorSpace baseSpace = BaseSpace;
                 int componentCount = BaseSpaceComponentCount;
-                var components = new float[componentCount];
+                Span<float> components = stackalloc float[componentCount];
                 {
                     int componentValueIndex = colorIndex * componentCount;
                     byte[] baseComponentValues = BaseComponentValues;
@@ -118,7 +111,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                         var byteValue = componentValueIndex < baseComponentValues.Length
                             ? baseComponentValues[componentValueIndex]
                             : 0;
-                        var value = ((int)byteValue & 0xff) / 255F;
+                        var value = (byteValue & 0xff) / 255F;
                         components[componentIndex] = value;
                         componentValueIndex++;
                     }
@@ -139,7 +132,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return BaseSpace.GetSKColor(GetBaseColor((IndexedColor)color), alpha);
         }
 
-        public override SKColor GetSKColor(float[] components, float? alpha = null)
+        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
         {
             var color = GetBaseSKColor(components);
             if (alpha != null)
@@ -149,14 +142,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return color;
         }
 
-        public override SKPaint GetPaint(Color color, float? alpha = null)
+        public override SKPaint GetPaint(Color color, float? alpha = null, GraphicsState state = null)
         {
-            return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color), alpha);
+            return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color), alpha, state);
         }
 
-        #endregion
-
-        #region private
         /**
           <summary>Gets the color table.</summary>
         */
@@ -169,18 +159,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     var value = ((PdfArray)BaseDataObject).Resolve(3);
                     if (value is IDataWrapper wrapper)
                     {
-                        baseComponentValues = wrapper.GetBuffer();
+                        baseComponentValues = wrapper.GetArrayBuffer();
                     }
                     else if (value is PdfStream stream)
                     {
-                        baseComponentValues = stream.GetBody(true).GetBuffer();
+                        baseComponentValues = stream.GetBody(true).GetArrayBuffer();
                     }
                 }
                 return baseComponentValues;
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

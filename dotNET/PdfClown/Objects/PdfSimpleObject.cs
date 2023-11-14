@@ -36,9 +36,6 @@ namespace PdfClown.Objects
     */
     public abstract class PdfSimpleObject<TValue> : PdfDirectObject, IPdfSimpleObject<TValue>
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Gets the object equivalent to the given value.</summary>
         */
@@ -68,20 +65,19 @@ namespace PdfClown.Objects
         public static double? GetDoubleValue(PdfObject obj)
         {
             object value = GetValue(obj);
-            if (value == null || value is Double)
-                return (double?)value;
-            else
-                return Convert.ToDouble(value);
+            return value switch
+            {
+                null => null,
+                double dValue => dValue,
+                _ => Convert.ToDouble(value)
+            };
         }
 
         /**
           <summary>Gets the value corresponding to the given object.</summary>
           <param name="obj">Object to extract the value from.</param>
         */
-        public static Object GetValue(PdfObject obj)
-        {
-            return GetValue(obj, null);
-        }
+        public static object GetValue(PdfObject obj) => GetValue(obj, null);
 
         /**
           <summary>Gets the value corresponding to the given object.</summary>
@@ -98,22 +94,12 @@ namespace PdfClown.Objects
             }
             return value ?? defaultValue;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
-        private TValue value;
-        #endregion
+        protected TValue value;
 
-        #region constructors
         public PdfSimpleObject()
         { }
-        #endregion
 
-        #region interface
-        #region public
         public sealed override PdfObject Parent
         {
             get => null;  // NOTE: As simple objects are immutable, no parent can be associated.
@@ -150,17 +136,14 @@ namespace PdfClown.Objects
             get => value;
             protected set => this.value = (TValue)value;
         }
-        #endregion
 
-        #region protected
         protected internal override bool Virtual
         {
             get => false;
             set {/* NOOP */}
         }
 
-        public override PdfObject Clone(File context)
-        { return this; } // NOTE: Simple objects are immutable.
+        public override PdfObject Clone(File context) => this;  // NOTE: Simple objects are immutable.
 
         public override bool Equals(object @object)
         {
@@ -170,23 +153,11 @@ namespace PdfClown.Objects
                 && ((PdfSimpleObject<TValue>)@object).RawValue.Equals(RawValue));
         }
 
-        public override int GetHashCode()
-        {
-            return RawValue.GetHashCode();
-        }
+        public override int GetHashCode() => RawValue.GetHashCode();
 
-        public override PdfObject Swap(PdfObject other)
-        {
-            throw new NotSupportedException("Immutable object");
-        }
+        public override PdfObject Swap(PdfObject other) => throw new NotSupportedException("Immutable object");
 
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
+        public override string ToString() => Value.ToString();
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

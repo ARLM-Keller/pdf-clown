@@ -39,19 +39,11 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF15)]
     public sealed class Polyline : VertexShape
     {
-        #region dynamic
-        #region constructors
         public Polyline(Page page, SKRect box, string text)
             : base(page, box, text, PdfName.PolyLine)
         { }
 
         public Polyline(PdfDirectObject baseObject) : base(baseObject)
-        { }
-        #endregion
-
-        #region interface
-        
-        #endregion
-        #endregion
+        { }        
     }
 }

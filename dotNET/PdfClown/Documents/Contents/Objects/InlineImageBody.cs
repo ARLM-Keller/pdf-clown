@@ -36,21 +36,12 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class InlineImageBody : Operation
     {
-        #region static
-        #region fields
-        private IBuffer value;
-        #endregion
-        #endregion
+        private IByteStream value;
 
-        #region dynamic
-        #region constructors
-        public InlineImageBody(IBuffer value) : base(null)
+        public InlineImageBody(IByteStream value) : base(null)
         { this.value = value; }
-        #endregion
 
-        #region interface
-        #region public
-        public IBuffer Value
+        public IByteStream Value
         {
             get => value;
             set => this.value = value;
@@ -58,8 +49,5 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override void WriteTo(IOutputStream stream, Document context)
         { stream.Write(value); }
-        #endregion
-        #endregion
-        #endregion
     }
 }

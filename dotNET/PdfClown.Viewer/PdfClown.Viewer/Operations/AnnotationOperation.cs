@@ -1,4 +1,5 @@
 ﻿using PdfClown.Documents.Interaction.Annotations;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Util.Reflection;
 using SkiaSharp;
 using System;

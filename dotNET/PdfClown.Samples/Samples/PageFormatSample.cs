@@ -31,7 +31,7 @@ namespace PdfClown.Samples.CLI
 
         private void Populate(Document document)
         {
-            PdfType1Font bodyFont = PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Courier, true, false);
+            FontType1 bodyFont = FontType1.Load(document, FontType1.FamilyEnum.Courier, true, false);
 
             Pages pages = document.Pages;
             PageFormat.SizeEnum[] pageFormats = (PageFormat.SizeEnum[])Enum.GetValues(typeof(PageFormat.SizeEnum));

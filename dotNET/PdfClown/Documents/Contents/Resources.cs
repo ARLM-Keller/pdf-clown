@@ -26,6 +26,8 @@
 using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Patterns;
+using PdfClown.Documents.Contents.Patterns.Shadings;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Files;
 using PdfClown.Objects;
@@ -43,17 +45,12 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF10)]
     public sealed class Resources : PdfObjectWrapper<PdfDictionary>, ICompositeDictionary<PdfName>
     {
-        #region dynamic
-        #region constructors
         public Resources(Document context) : base(context, new PdfDictionary())
         { }
 
         public Resources(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public ColorSpaceResources ColorSpaces
         {
             get => Wrap<ColorSpaceResources>(BaseDataObject.Get<PdfDictionary>(PdfName.ColorSpace));
@@ -102,7 +99,6 @@ namespace PdfClown.Documents.Contents
             set => BaseDataObject[PdfName.XObject] = value.BaseObject;
         }
 
-        #region ICompositeDictionary
         public PdfObjectWrapper Get(Type type)
         {
             if (typeof(ColorSpace).IsAssignableFrom(type))
@@ -128,9 +124,5 @@ namespace PdfClown.Documents.Contents
             PdfObjectWrapper resources = Get(typeof(T));
             return resources is IDictionary dictionary ? (T)dictionary[key] : default(T);
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
@@ -46,10 +47,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private int maxComponentElements;
         private int maxComponentDepth;
 
-        public MaximumProfileTable(TrueTypeFont font)
-            : base(font)
-        {
-        }
+        public MaximumProfileTable()
+        { }
 
         /**
          * @return Returns the maxComponentDepth.
@@ -193,23 +192,26 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             version = data.Read32Fixed();
-            numGlyphs = data.ReadUnsignedShort();
-            maxPoints = data.ReadUnsignedShort();
-            maxContours = data.ReadUnsignedShort();
-            maxCompositePoints = data.ReadUnsignedShort();
-            maxCompositeContours = data.ReadUnsignedShort();
-            maxZones = data.ReadUnsignedShort();
-            maxTwilightPoints = data.ReadUnsignedShort();
-            maxStorage = data.ReadUnsignedShort();
-            maxFunctionDefs = data.ReadUnsignedShort();
-            maxInstructionDefs = data.ReadUnsignedShort();
-            maxStackElements = data.ReadUnsignedShort();
-            maxSizeOfInstructions = data.ReadUnsignedShort();
-            maxComponentElements = data.ReadUnsignedShort();
-            maxComponentDepth = data.ReadUnsignedShort();
+            numGlyphs = data.ReadUInt16();
+            if (version >= 1.0f)
+            {
+                maxPoints = data.ReadUInt16();
+                maxContours = data.ReadUInt16();
+                maxCompositePoints = data.ReadUInt16();
+                maxCompositeContours = data.ReadUInt16();
+                maxZones = data.ReadUInt16();
+                maxTwilightPoints = data.ReadUInt16();
+                maxStorage = data.ReadUInt16();
+                maxFunctionDefs = data.ReadUInt16();
+                maxInstructionDefs = data.ReadUInt16();
+                maxStackElements = data.ReadUInt16();
+                maxSizeOfInstructions = data.ReadUInt16();
+                maxComponentElements = data.ReadUInt16();
+                maxComponentDepth = data.ReadUInt16();
+            }
             initialized = true;
         }
     }

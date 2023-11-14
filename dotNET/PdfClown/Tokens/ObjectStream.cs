@@ -41,7 +41,6 @@ namespace PdfClown.Tokens
     */
     public sealed class ObjectStream : PdfStream, IDictionary<int, PdfDataObject>
     {
-        #region types
         private sealed class ObjectEntry
         {
             internal PdfDataObject dataObject;
@@ -79,10 +78,7 @@ namespace PdfClown.Tokens
                 }
             }
         }
-        #endregion
 
-        #region dynamic
-        #region fields
         /**
           <summary>Compressed objects map.</summary>
           <remarks>This map is initially populated with offset values;
@@ -90,20 +86,15 @@ namespace PdfClown.Tokens
         */
         private IDictionary<int, ObjectEntry> entries;
         private FileParser parser;
-        #endregion
 
-        #region constructors
         public ObjectStream()
-            : base(new PdfDictionary(new PdfName[] { PdfName.Type }, new PdfDirectObject[] { PdfName.ObjStm }))
+            : base(new PdfDictionary() { { PdfName.Type, PdfName.ObjStm } })
         { }
 
-        public ObjectStream(PdfDictionary header, IBuffer body)
+        public ObjectStream(PdfDictionary header, IByteStream body)
             : base(header, body)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override PdfObject Accept(IVisitor visitor, object data)
         {
             return visitor.Visit(this, data);
@@ -128,7 +119,6 @@ namespace PdfClown.Tokens
             base.WriteTo(stream, context);
         }
 
-        #region IDictionary
         public void Add(int key, PdfDataObject value)
         {
             Entries.Add(key, new ObjectEntry(value, parser));
@@ -174,7 +164,6 @@ namespace PdfClown.Tokens
             }
         }
 
-        #region ICollection
         void ICollection<KeyValuePair<int, PdfDataObject>>.Add(KeyValuePair<int, PdfDataObject> entry)
         {
             Add(entry.Key, entry.Value);
@@ -212,23 +201,15 @@ namespace PdfClown.Tokens
                 return false;
         }
 
-        #region IEnumerable<KeyValuePair<int,PdfDataObject>>
         IEnumerator<KeyValuePair<int, PdfDataObject>> IEnumerable<KeyValuePair<int, PdfDataObject>>.GetEnumerator()
         {
             foreach (int key in Keys)
             { yield return new KeyValuePair<int, PdfDataObject>(key, this[key]); }
         }
 
-        #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
         { return ((IEnumerable<KeyValuePair<int, PdfDataObject>>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
 
-        #region private
         private IDictionary<int, ObjectEntry> Entries
         {
             get
@@ -237,12 +218,12 @@ namespace PdfClown.Tokens
                 {
                     entries = new Dictionary<int, ObjectEntry>();
 
-                    IBuffer body = Body;
+                    IByteStream body = Body;
                     if (body.Length > 0)
                     {
                         parser = new FileParser(Body, File);
-                        int baseOffset = ((PdfInteger)Header[PdfName.First]).IntValue;
-                        for (int index = 0, length = ((PdfInteger)Header[PdfName.N]).IntValue; index < length; index++)
+                        int baseOffset = Header.GetInt(PdfName.First);
+                        for (int index = 0, length = Header.GetInt(PdfName.N); index < length; index++)
                         {
                             int objectNumber = ((PdfInteger)parser.ParsePdfObject(1)).IntValue;
                             int objectOffset = baseOffset + ((PdfInteger)parser.ParsePdfObject(1)).IntValue;
@@ -263,8 +244,8 @@ namespace PdfClown.Tokens
             int dataByteOffset;
             {
                 // Serializing the entries into the stream buffer...
-                IBuffer indexBuffer = new Bytes.Buffer();
-                IBuffer dataBuffer = new Bytes.Buffer();
+                IByteStream indexBuffer = new Bytes.ByteStream();
+                IByteStream dataBuffer = new Bytes.ByteStream();
                 IndirectObjects indirectObjects = File.IndirectObjects;
                 int objectIndex = -1;
                 File context = File;
@@ -283,9 +264,10 @@ namespace PdfClown.Tokens
                     int entryValueOffset = (int)dataBuffer.Length;
 
                     // Index.
-                    indexBuffer
-                      .Append(objectNumber.ToString()).Append(Chunk.Space) // Object number.
-                      .Append(entryValueOffset.ToString()).Append(Chunk.Space); // Byte offset (relative to the first one).
+                    indexBuffer.Write(objectNumber.ToString());
+                    indexBuffer.Write(Chunk.Space);
+                    indexBuffer.Write(entryValueOffset.ToString());
+                    indexBuffer.Write(Chunk.Space);
 
                     // Data.
                     entry.Value.DataObject.WriteTo(dataBuffer, context);
@@ -293,15 +275,15 @@ namespace PdfClown.Tokens
                 }
 
                 // Get the stream buffer!
-                IBuffer body = Body;
+                IByteStream body = Body;
 
                 // Delete the old entries!
-                body.Clear();
+                body.SetLength(0);
 
                 // Add the new entries!
-                body.Append(indexBuffer);
+                body.Write(indexBuffer);
                 dataByteOffset = (int)body.Length;
-                body.Append(dataBuffer);
+                body.Write(dataBuffer);
             }
 
             // 2. Header.
@@ -311,8 +293,5 @@ namespace PdfClown.Tokens
                 header[PdfName.First] = PdfInteger.Get(dataByteOffset);
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

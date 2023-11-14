@@ -36,12 +36,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint Reserved = 0x00000000;
         public uint Count = 0x00000000;
         public List<ICCPlatformEncoding> Platforms;
-        public override void Load(PdfClown.Bytes.Buffer buffer)
+        public override void Load(PdfClown.Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            Count = buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            Count = buffer.ReadUInt32();
             for (int i = 0; i < Count; i++)
             {
                 var platform = new ICCPlatformEncoding();

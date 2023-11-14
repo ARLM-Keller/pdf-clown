@@ -37,12 +37,8 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public abstract class CompositeObject : ContentObject
     {
-        #region dynamic
-        #region fields
         protected IList<ContentObject> objects;
-        #endregion
 
-        #region constructors
         protected CompositeObject()
         {
             this.objects = new List<ContentObject>();
@@ -65,10 +61,7 @@ namespace PdfClown.Documents.Contents.Objects
         {
             this.objects = objects;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the object header.</summary>
         */
@@ -105,9 +98,7 @@ namespace PdfClown.Documents.Contents.Objects
                 obj.WriteTo(stream, context);
             }
         }
-        #endregion
 
-        #region protected
         /**
           <summary>Creates the rendering object corresponding to this container.</summary>
         */
@@ -130,8 +121,5 @@ namespace PdfClown.Documents.Contents.Objects
             scanner.ChildLevel.Render(context, scanner.CanvasSize, CreateRenderObject());
             return true;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

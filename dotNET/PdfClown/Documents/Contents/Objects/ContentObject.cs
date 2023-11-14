@@ -34,10 +34,6 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public abstract class ContentObject
     {
-        #region dynamic
-        #region interface
-        #region public
-
         /**
           <summary>Get the graphics wrapper cache.</summary>
         */
@@ -58,8 +54,5 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public abstract void WriteTo(IOutputStream stream, Document context);
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

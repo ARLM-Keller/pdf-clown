@@ -41,8 +41,6 @@ namespace PdfClown.Documents
     */
     public sealed class DocumentConfiguration
     {
-        #region dynamic
-        #region fields
         private CompatibilityModeEnum compatibilityMode = CompatibilityModeEnum.Loose;
         private EncodingFallbackEnum encodingFallback = EncodingFallbackEnum.Substitution;
         private string stampPath;
@@ -50,15 +48,10 @@ namespace PdfClown.Documents
         private Document document;
 
         private IDictionary<StandardStampEnum, FormXObject> importedStamps;
-        #endregion
 
-        #region constructors
         internal DocumentConfiguration(Document document)
         { this.document = document; }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the document's version compatibility mode.</summary>
         */
@@ -188,9 +181,6 @@ namespace PdfClown.Documents
                 stampPath = value;
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }
 

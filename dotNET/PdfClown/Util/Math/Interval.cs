@@ -103,5 +103,11 @@ namespace PdfClown.Util.Math
         {
             return $"{Low} - {High}";
         }
+
+        public T Clamp(T value) => value.CompareTo(Low) < 0
+            ? Low
+            : value.CompareTo(High) > 0
+                ? High
+                : value;
     }
 }

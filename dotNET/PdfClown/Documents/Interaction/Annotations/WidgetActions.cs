@@ -45,17 +45,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             return new WidgetActions(annotation, baseObject);
         }
 
-        #region dynamic
-        #region constructors
         public WidgetActions(Annotation parent) : base(parent)
         { }
 
         internal WidgetActions(Annotation parent, PdfDirectObject baseObject) : base(parent, baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new system::NotImplementedException(); } // TODO: verify parent reference.
 
@@ -77,8 +72,5 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => BaseDataObject[PdfName.Fo] = value.BaseObject;
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

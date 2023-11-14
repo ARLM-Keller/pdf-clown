@@ -38,30 +38,18 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetDeviceGrayStrokeColor : SetStrokeColor
     {
-        #region static
-        #region fields
         public static readonly new string OperatorKeyword = "G";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetDeviceGrayStrokeColor(DeviceGrayColor value) : base(OperatorKeyword, value)
         { }
 
         public SetDeviceGrayStrokeColor(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         {
             state.StrokeColorSpace = DeviceGrayColorSpace.Default;
             base.Scan(state);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

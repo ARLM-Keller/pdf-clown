@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private readonly TrueTypeFont lastResortFont;
 
         /** Dictionary of PostScript name substitutes, in priority order. */
-        private readonly Dictionary<string, List<string>> substitutes = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        private readonly Dictionary<string, List<string>> substitutes = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
         public FontMapperImpl()
         {
@@ -59,11 +59,11 @@ namespace PdfClown.Documents.Contents.Fonts
 
             // Acrobat also uses alternative names for Standard 14 fonts, which we map to those above
             // these include names such as "Arial" and "TimesNewRoman"
-            foreach (string baseName in Standard14Fonts.Names)
+            foreach (string baseName in Standard14Fonts.GetNames())
             {
                 if (!substitutes.ContainsKey(baseName))
                 {
-                    string mappedName = Standard14Fonts.GetMappedFontName(baseName);
+                    string mappedName = Standard14Fonts.GetMappedFontString(baseName);
                     substitutes.Add(baseName, CopySubstitutes(mappedName));
                 }
             }
@@ -78,7 +78,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     throw new IOException("Error loading resource: " + ttfName);
                 }
-                TTFParser ttfParser = new TTFParser();
+                var ttfParser = new TTFParser();
                 lastResortFont = ttfParser.Parse(ttfStream);
             }
             catch (IOException e)
@@ -124,7 +124,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         private Dictionary<string, FontInfo> CreateFontInfoByName(IEnumerable<FontInfo> fontInfoList)
         {
-            Dictionary<string, FontInfo> map = new Dictionary<string, FontInfo>(StringComparer.Ordinal);
+            var map = new Dictionary<string, FontInfo>(StringComparer.OrdinalIgnoreCase);
             foreach (FontInfo info in fontInfoList)
             {
                 foreach (string name in GetPostScriptNames(info.PostScriptName))
@@ -140,7 +140,7 @@ namespace PdfClown.Documents.Contents.Fonts
          */
         private HashSet<string> GetPostScriptNames(string postScriptName)
         {
-            HashSet<string> names = new HashSet<string>(StringComparer.Ordinal);
+            HashSet<string> names = new HashSet<string>(2, StringComparer.OrdinalIgnoreCase);
 
             // built-in PostScript name
             names.Add(postScriptName);

@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public class ICCNamedColor2Type : ICCTag
@@ -40,16 +42,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public string Suffix;
         public string FirstColor;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            VendorSpecificFlag = buffer.ReadUnsignedInt();
-            Count = buffer.ReadUnsignedInt();
-            DeviceCoordinates = buffer.ReadUnsignedInt();
-            Prefix = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes(32));
-            Suffix = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes(32));
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            VendorSpecificFlag = buffer.ReadUInt32();
+            Count = buffer.ReadUInt32();
+            DeviceCoordinates = buffer.ReadUInt32();
+            Prefix = buffer.ReadString(32, System.Text.Encoding.ASCII);
+            Suffix = buffer.ReadString(32, System.Text.Encoding.ASCII);
 
             //....color coordinates. Color space of data
         }

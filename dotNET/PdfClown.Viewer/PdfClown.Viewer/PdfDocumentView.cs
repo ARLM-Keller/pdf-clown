@@ -136,7 +136,6 @@ namespace PdfClown.Viewer
         {
             if (File != null)
             {
-
                 ClearPages();
                 File.Dispose();
                 File = null;

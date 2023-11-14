@@ -16,7 +16,6 @@
 using PdfClown.Bytes.Filters.Jpeg;
 using PdfClown.Bytes.Filters.Jpx;
 using PdfClown.Objects;
-using PdfClown.Util.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,19 +25,17 @@ namespace PdfClown.Bytes.Filters
 {
     public sealed class DCTFilter : Filter
     {
-        #region dynamic
-        #region constructors
         internal DCTFilter()
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             var imageParams = header;
-            var dictHeight = ((IPdfNumber)(header[PdfName.Height] ?? header[PdfName.H])).IntValue;
-            var dictWidth = ((IPdfNumber)(header[PdfName.Width] ?? header[PdfName.W])).IntValue;
+            var dictionary = header as PdfDictionary;
+            var dictHeight = dictionary?.GetNInt(PdfName.Height) ?? dictionary?.GetNInt(PdfName.H)
+                ?? ((IPdfNumber)(header[PdfName.Height] ?? header[PdfName.H])).IntValue;
+            var dictWidth = dictionary?.GetNInt(PdfName.Width) ?? dictionary?.GetNInt(PdfName.W)
+                ?? ((IPdfNumber)(header[PdfName.Width] ?? header[PdfName.W])).IntValue;
             var bitsPerComponent = ((IPdfNumber)imageParams[PdfName.BitsPerComponent])?.IntValue ?? 8;
             var flag = imageParams[PdfName.ImageMask] as PdfBoolean;
             var jpegOptions = new JpegOptions(decodeTransform: null, colorTransform: null);
@@ -70,26 +67,22 @@ namespace PdfClown.Bytes.Filters
             // Fetching the 'ColorTransform' entry, if it exists.
             if (parameters is PdfDictionary paramDict)
             {
-                var colorTransform = paramDict[PdfName.ColorTransform];
-                if (colorTransform is IPdfNumber number)
-                {
-                    jpegOptions.ColorTransform = number.IntValue;
-                }
+                jpegOptions.ColorTransform = paramDict.GetNInt(PdfName.ColorTransform);
             }
             var jpegImage = new JpegImage(jpegOptions);
 
-            jpegImage.Parse(data.GetBuffer());
+            jpegImage.Parse(data);
             var buffer = jpegImage.GetData(width: dictWidth, height: dictHeight, forceRGB: false, isSourcePDF: true);
             return buffer;
         }
 
-        public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(Bytes.ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             throw new NotSupportedException();
         }
 
 
-        bool GetMaybeValidDimensions(Bytes.Buffer data, IDictionary<PdfName, PdfDirectObject> dict)
+        bool GetMaybeValidDimensions(Bytes.ByteStream data, IDictionary<PdfName, PdfDirectObject> dict)
         {
             var dictHeight = ((IPdfNumber)(dict[PdfName.Height] ?? dict[PdfName.H])).IntValue;
             var startPos = data.Position;
@@ -115,8 +108,8 @@ namespace PdfClown.Bytes.Filters
 
                         data.Position += 2; // Skip marker length.
                         data.Position += 1; // Skip precision.
-                        var scanLines = data.ReadUnsignedShort();
-                        var samplesPerLine = data.ReadUnsignedShort();
+                        var scanLines = data.ReadUInt16();
+                        var samplesPerLine = data.ReadUInt16();
 
                         // Letting the browser handle the JPEG decoding, on the main-thread,
                         // will cause a *large* increase in peak memory usage since there's
@@ -205,7 +198,7 @@ namespace PdfClown.Bytes.Filters
                     case 0xef: // APP15
                     /* falls through */
                     case 0xfe: // COM
-                        var markerLength = data.ReadUnsignedShort();
+                        var markerLength = data.ReadUInt16();
                         if (markerLength > 2)
                         {
                             data.Skip(markerLength - 2); // Jump to the next marker.
@@ -236,11 +229,6 @@ namespace PdfClown.Bytes.Filters
 
             return validDimensions;
         }
-        #endregion
 
-        #region private
-        #endregion
-        #endregion
-        #endregion
     }
 }

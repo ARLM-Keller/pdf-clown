@@ -35,28 +35,18 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>'Go to the next page of the document' action [PDF:1.6:8.5.3].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class GoToNextPage
-      : NamedAction,
-        IGoToAction
+    public sealed class GoToNextPage : NamedAction, IGoToAction
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToNextPage(
-          Document context
-          ) : base(context, PdfName.NextPage)
+        public GoToNextPage(Document context)
+            : base(context, PdfName.NextPage)
         { }
 
-        internal GoToNextPage(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal GoToNextPage(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #endregion
-        #endregion
     }
 }

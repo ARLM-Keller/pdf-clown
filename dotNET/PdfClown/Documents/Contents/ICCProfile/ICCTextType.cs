@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public class ICCTextType : ICCTag
@@ -35,12 +37,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint Reserved = 0x00000000;
         public string Value;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            Value = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes((int)Table.ElementSize - 8));
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            Value = buffer.ReadString((int)Table.ElementSize - 8, System.Text.Encoding.ASCII);
         }
     }
 }

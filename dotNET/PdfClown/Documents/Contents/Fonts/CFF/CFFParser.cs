@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
+using PdfClown.Tokens;
 using PdfClown.Util;
-using PdfClown.Util.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,11 +34,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
      */
     public class CFFParser
     {
-
+        private static readonly List<float> DefaultMatrixArray = new List<float>(6) { 0.001F, 0F, 0F, 0.001F, 0F, 0F };
+        private static readonly List<float> DefaultBBoxArray = new List<float>(4) { 0, 0, 0, 0 };
         private const string TAG_OTTO = "OTTO";
         private const string TAG_TTCF = "ttcf";
         private const string TAG_TTFONLY = "\u0000\u0001\u0000\u0000";
-
+        private const string KeySubRS = "Subrs";
         private string[] stringIndex = null;
         private IByteSource source;
 
@@ -52,7 +54,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             /**
              * Returns the source bytes. May be called more than once.
              */
-            byte[] GetBytes();
+            Memory<byte> GetBytes();
         }
 
         /**
@@ -63,12 +65,15 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 * //@return the parsed CFF fonts
 		 * //@throws IOException If there is an error reading from the stream
 		 */
-        public List<CFFFont> Parse(byte[] bytes, IByteSource source)
+        public List<CFFFont> Parse(Memory<byte> bytes, IByteSource source) => Parse(new ByteStream(bytes), source);
+
+        public List<CFFFont> Parse(Memory<byte> bytes) => Parse(new ByteStream(bytes));
+
+        public List<CFFFont> Parse(IInputStream input, IByteSource source)
         {
             this.source = source;
-            return Parse(bytes);
+            return Parse(input);
         }
-
         /**
 		 * Parse CFF font using a byte array as input.
 		 * 
@@ -76,16 +81,14 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 * //@return the parsed CFF fonts
 		 * //@throws IOException If there is an error reading from the stream
 		 */
-        public List<CFFFont> Parse(byte[] bytes)
+        public List<CFFFont> Parse(IInputStream input)
         {
-            CFFDataInput input = new CFFDataInput(bytes);
-
             string firstTag = ReadTagName(input);
             // try to determine which kind of font we have
             switch (firstTag)
             {
                 case TAG_OTTO:
-                    input = CreateTaggedCFFDataInput(input, bytes);
+                    input = CreateTaggedCFFStream(input);
                     break;
                 case TAG_TTCF:
                     throw new IOException("True Type Collection fonts are not supported.");
@@ -97,22 +100,22 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
 
             //@SuppressWarnings("unused")
-            Header header = ReadHeader(input);
-            string[] nameIndex = ReadStringIndexData(input);
-            if (nameIndex == null)
+            var header = ReadHeader(input);
+            var nameIndex = ReadStringIndexData(input);
+            if (nameIndex.Length == 0)
             {
                 throw new IOException("Name index missing in CFF font");
             }
-            byte[][] topDictIndex = ReadIndexData(input);
-            if (topDictIndex == null)
+            var topDictIndex = ReadIndexData(input);
+            if (topDictIndex.Length == 0)
             {
                 throw new IOException("Top DICT INDEX missing in CFF font");
             }
 
             stringIndex = ReadStringIndexData(input);
-            byte[][] globalSubrIndex = ReadIndexData(input);
+            var globalSubrIndex = ReadIndexData(input);
 
-            List<CFFFont> fonts = new List<CFFFont>();
+            var fonts = new List<CFFFont>(nameIndex.Length);
             for (int i = 0; i < nameIndex.Length; i++)
             {
                 CFFFont font = ParseFont(input, nameIndex[i], topDictIndex[i]);
@@ -123,17 +126,14 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return fonts;
         }
 
-        private CFFDataInput CreateTaggedCFFDataInput(CFFDataInput input, byte[] bytes)
+        private IInputStream CreateTaggedCFFStream(IInputStream input)
         {
             // this is OpenType font containing CFF data
             // so find CFF tag
-            short numTables = input.ReadShort();
-            //@SuppressWarnings({"unused", "squid:S1854"})
-            short searchRange = input.ReadShort();
-            //@SuppressWarnings({"unused", "squid:S1854"})
-            short entrySelector = input.ReadShort();
-            //@SuppressWarnings({"unused", "squid:S1854"})
-            short rangeShift = input.ReadShort();
+            short numTables = input.ReadInt16();
+            short searchRange = input.ReadInt16();
+            short entrySelector = input.ReadInt16();
+            short rangeShift = input.ReadInt16();
             for (int q = 0; q < numTables; q++)
             {
                 string tagName = ReadTagName(input);
@@ -143,42 +143,42 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 long Length = ReadLong(input);
                 if ("CFF ".Equals(tagName, StringComparison.Ordinal))
                 {
-                    byte[] bytes2 = bytes.CopyOfRange((int)offset, (int)(offset + Length));
-                    return new CFFDataInput(bytes2);
+                    var bytes2 = input.AsMemory().Slice((int)offset, (int)Length);
+                    return new ByteStream(bytes2);
                 }
             }
             throw new IOException("CFF tag not found in this OpenType font.");
         }
 
-        private static string ReadTagName(CFFDataInput input)
+        private static string ReadTagName(IInputStream input)
         {
-            byte[] b = input.ReadBytes(4);
-            return PdfClown.Tokens.Encoding.Pdf.Decode(b);
+            return input.ReadString(4, Charset.ISO88591);
         }
 
-        private static long ReadLong(CFFDataInput input)
+        private static long ReadLong(IInputStream input)
         {
-            return (input.ReadCard16() << 16) | input.ReadCard16();
+            return (input.ReadUInt16() << 16) | input.ReadUInt16();
         }
 
-        private static Header ReadHeader(CFFDataInput input)
+        private static Header ReadHeader(IInputStream input)
         {
-            Header cffHeader = new Header();
-            cffHeader.major = input.ReadCard8();
-            cffHeader.minor = input.ReadCard8();
-            cffHeader.hdrSize = input.ReadCard8();
-            cffHeader.offSize = input.ReadOffSize();
-            return cffHeader;
+            return new Header
+            {
+                major = input.ReadUByte(),
+                minor = input.ReadUByte(),
+                hdrSize = input.ReadUByte(),
+                offSize = input.ReadUByte()
+            };
         }
 
-        private static int[] ReadIndexDataOffsets(CFFDataInput input)
+        private static int[] ReadIndexDataOffsets(IInputStream input)
         {
-            int count = input.ReadCard16();
+            int count = input.ReadUInt16();
             if (count == 0)
             {
-                return null;
+                return Array.Empty<int>();
             }
-            int offSize = input.ReadOffSize();
+            int offSize = input.ReadUByte();
             int[] offsets = new int[count + 1];
             for (int i = 0; i <= count; i++)
             {
@@ -192,29 +192,29 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return offsets;
         }
 
-        private static byte[][] ReadIndexData(CFFDataInput input)
+        private static Memory<byte>[] ReadIndexData(IInputStream input)
         {
             int[] offsets = ReadIndexDataOffsets(input);
-            if (offsets == null)
+            if (offsets.Length == 0)
             {
-                return null;
+                return Array.Empty<Memory<byte>>();
             }
             int count = offsets.Length - 1;
-            byte[][] indexDataValues = new byte[count][];
+            var indexDataValues = new Memory<byte>[count];
             for (int i = 0; i < count; i++)
             {
-                int Length = offsets[i + 1] - offsets[i];
-                indexDataValues[i] = input.ReadBytes(Length);
+                int length = offsets[i + 1] - offsets[i];
+                indexDataValues[i] = input.ReadMemory(length);
             }
             return indexDataValues;
         }
 
-        private static string[] ReadStringIndexData(CFFDataInput input)
+        private static string[] ReadStringIndexData(IInputStream input)
         {
             int[] offsets = ReadIndexDataOffsets(input);
-            if (offsets == null)
+            if (offsets.Length == 0)
             {
-                return null;
+                return Array.Empty<string>();
             }
             int count = offsets.Length - 1;
             string[] indexDataValues = new string[count];
@@ -227,12 +227,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                             i + ": offsets[" + (i + 1) + "]=" + offsets[i + 1] +
                             ", offsets[" + i + "]=" + offsets[i]);
                 }
-                indexDataValues[i] = PdfClown.Tokens.Encoding.Pdf.Decode(input.ReadBytes(Length));
+                indexDataValues[i] = input.ReadString(Length, Charset.ISO88591);
             }
             return indexDataValues;
         }
 
-        private static DictData ReadDictData(CFFDataInput input)
+        private static DictData ReadDictData(IInputStream input)
         {
             DictData dict = new DictData();
             while (input.HasRemaining())
@@ -242,27 +242,31 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return dict;
         }
 
-        private static DictData ReadDictData(CFFDataInput input, int dictSize)
+        private static DictData ReadDictData(IInputStream input, int offset, int dictSize)
         {
             DictData dict = new DictData();
-            int endPosition = input.Position + dictSize;
-            while (input.Position < endPosition)
+            if (dictSize > 0)
             {
-                dict.Add(ReadEntry(input));
+                input.Seek(offset);
+                int endPosition = offset + dictSize;
+                while (input.Position < endPosition)
+                {
+                    dict.Add(ReadEntry(input));
+                }
             }
             return dict;
         }
 
-        private static DictData.Entry ReadEntry(CFFDataInput input)
+        private static DictData.Entry ReadEntry(IInputStream input)
         {
-            DictData.Entry entry = new DictData.Entry();
+            var entry = new DictData.Entry();
             while (true)
             {
-                byte b0 = input.ReadUnsignedByte();
+                byte b0 = input.ReadUByte();
 
                 if (b0 >= 0 && b0 <= 21)
                 {
-                    entry.CFFOperator = ReadOperator(input, b0);
+                    entry.operatorName = ReadOperator(input, b0);
                     break;
                 }
                 else if (b0 == 28 || b0 == 29)
@@ -271,7 +275,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 }
                 else if (b0 == 30)
                 {
-                    entry.Operands.Add(ReadRealNumber(input, b0));
+                    entry.Operands.Add(ReadRealNumber(input));
                 }
                 else if (b0 >= 32 && b0 <= 254)
                 {
@@ -279,37 +283,32 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 }
                 else
                 {
-                    throw new IOException("invalid DICT data b0 byte: " + b0);
+                    Debug.WriteLine("invalid DICT data b0 byte: " + b0);
+                    break;
                 }
             }
             return entry;
         }
 
-        private static CFFOperator ReadOperator(CFFDataInput input, byte b0)
-        {
-            var key = ReadOperatorKey(input, b0);
-            return CFFOperator.GetOperator(key);
-        }
-
-        private static ByteArray ReadOperatorKey(CFFDataInput input, byte b0)
+        private static string ReadOperator(IInputStream input, byte b0)
         {
             if (b0 == 12)
             {
-                byte b1 = input.ReadUnsignedByte();
-                return new ByteArray(b0, b1);
+                byte b1 = input.ReadUByte();
+                return CFFOperator.GetOperator(b0, b1);
             }
-            return new ByteArray(b0);
+            return CFFOperator.GetOperator(b0);
         }
 
-        private static int ReadIntegerNumber(CFFDataInput input, byte b0)
+        private static int ReadIntegerNumber(IInputStream input, byte b0)
         {
             if (b0 == 28)
             {
-                return (int)input.ReadShort();
+                return (int)input.ReadInt16();
             }
             else if (b0 == 29)
             {
-                return input.ReadInt();
+                return input.ReadInt32();
             }
             else if (b0 >= 32 && b0 <= 246)
             {
@@ -317,12 +316,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
             else if (b0 >= 247 && b0 <= 250)
             {
-                int b1 = input.ReadUnsignedByte();
+                int b1 = input.ReadUByte();
                 return (b0 - 247) * 256 + b1 + 108;
             }
             else if (b0 >= 251 && b0 <= 254)
             {
-                int b1 = input.ReadUnsignedByte();
+                int b1 = input.ReadUByte();
                 return -(b0 - 251) * 256 - b1 - 108;
             }
             else
@@ -334,16 +333,18 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         /**
          * //@param b0  
          */
-        private static float ReadRealNumber(CFFDataInput input, byte b0)
+        private static float ReadRealNumber(IInputStream input)
         {
             var sb = new StringBuilder();
             bool done = false;
             bool exponentMissing = false;
             bool hasExponent = false;
+            Span<int> nibbles = stackalloc int[2];
             while (!done)
             {
-                byte b = input.ReadUnsignedByte();
-                int[] nibbles = { b / 16, b % 16 };
+                byte b = input.ReadUByte();
+                nibbles[0] = b / 16;
+                nibbles[1] = b % 16;
                 foreach (int nibble in nibbles)
                 {
                     switch (nibble)
@@ -362,7 +363,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                             exponentMissing = false;
                             break;
                         case 0xa:
-                            sb.Append(".");
+                            sb.Append('.');
                             break;
                         case 0xb:
                             if (hasExponent)
@@ -370,7 +371,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                                 Debug.WriteLine("warn: duplicate 'E' ignored after " + sb);
                                 break;
                             }
-                            sb.Append("E");
+                            sb.Append('E');
                             exponentMissing = true;
                             hasExponent = true;
                             break;
@@ -380,14 +381,14 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                                 Debug.WriteLine("warn: duplicate 'E-' ignored after " + sb);
                                 break;
                             }
-                            sb.Append("E-");
+                            sb.Append('E').Append('-');
                             exponentMissing = true;
                             hasExponent = true;
                             break;
                         case 0xd:
                             break;
                         case 0xe:
-                            sb.Append("-");
+                            sb.Append('-');
                             break;
                         case 0xf:
                             done = true;
@@ -402,13 +403,19 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 // the exponent is missing, just Append "0" to avoid an exception
                 // not sure if 0 is the correct value, but it seems to fit
                 // see PDFBOX-1522
-                sb.Append("0");
+                sb.Append('0');
+            }
+            if (sb.Length > 1
+                && sb[^1] == '-')
+            {
+                sb.Length--;
             }
             var text = sb.ToString();
             if (text.Length == 0 || text == "E-0")
             {
                 return 0f;
             }
+
             try
             {
                 return float.Parse(sb.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture);
@@ -419,14 +426,14 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        private CFFFont ParseFont(CFFDataInput input, string name, byte[] topDictIndex)
+        private CFFFont ParseFont(IInputStream input, string name, Memory<byte> topDictIndex)
         {
             // top dict
-            CFFDataInput topDictInput = new CFFDataInput(topDictIndex);
-            DictData topDict = ReadDictData(topDictInput);
+            var topDictInput = new ByteStream(topDictIndex);
+            var topDict = ReadDictData(topDictInput);
 
             // we don't support synthetic fonts
-            DictData.Entry syntheticBaseEntry = topDict.GetEntry("SyntheticBase");
+            var syntheticBaseEntry = topDict.GetEntry("SyntheticBase");
             if (syntheticBaseEntry != null)
             {
                 throw new IOException("Synthetic Fonts are not supported");
@@ -437,11 +444,14 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             bool isCIDFont = topDict.GetEntry("ROS") != null;
             if (isCIDFont)
             {
-                font = new CFFCIDFont();
-                DictData.Entry rosEntry = topDict.GetEntry("ROS");
-                ((CFFCIDFont)font).Registry = ReadString((int)rosEntry.GetNumber(0));
-                ((CFFCIDFont)font).Ordering = ReadString((int)rosEntry.GetNumber(1));
-                ((CFFCIDFont)font).Supplement = (int)rosEntry.GetNumber(2);
+                var rosEntry = topDict.GetEntry("ROS");
+                var cidFont = new CFFCIDFont
+                {
+                    Registry = ReadString((int)rosEntry.GetNumber(0)),
+                    Ordering = ReadString((int)rosEntry.GetNumber(1)),
+                    Supplement = (int)rosEntry.GetNumber(2)
+                };
+                font = cidFont;
             }
             else
             {
@@ -465,20 +475,20 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             font.AddValueToTopDict("UnderlineThickness", topDict.GetNumber("UnderlineThickness", 50));
             font.AddValueToTopDict("PaintType", topDict.GetNumber("PaintType", 0));
             font.AddValueToTopDict("CharstringType", topDict.GetNumber("CharstringType", 2));
-            font.AddValueToTopDict("FontMatrix", topDict.GetArray("FontMatrix", new List<float> { 0.001F, 0F, 0F, 0.001F, 0F, 0F }));
+            font.AddValueToTopDict("FontMatrix", topDict.GetArray("FontMatrix", DefaultMatrixArray));
             font.AddValueToTopDict("UniqueID", topDict.GetNumber("UniqueID", null));
-            font.AddValueToTopDict("FontBBox", topDict.GetArray("FontBBox", new List<float> { 0, 0, 0, 0 }));
+            font.AddValueToTopDict("FontBBox", topDict.GetArray("FontBBox", DefaultBBoxArray));
             font.AddValueToTopDict("StrokeWidth", topDict.GetNumber("StrokeWidth", 0));
             font.AddValueToTopDict("XUID", topDict.GetArray("XUID", null));
 
             // charstrings index
-            DictData.Entry charStringsEntry = topDict.GetEntry("CharStrings");
+            var charStringsEntry = topDict.GetEntry("CharStrings");
             int charStringsOffset = (int)charStringsEntry.GetNumber(0);
             input.Position = charStringsOffset;
-            byte[][] charStringsIndex = ReadIndexData(input);
+            var charStringsIndex = ReadIndexData(input);
 
             // charset
-            DictData.Entry charsetEntry = topDict.GetEntry("charset");
+            var charsetEntry = topDict.GetEntry("charset");
             CFFCharset charset;
             if (charsetEntry != null)
             {
@@ -495,16 +505,16 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 {
                     charset = CFFExpertSubsetCharset.Instance;
                 }
-                else if (charStringsIndex != null)
+                else if (charStringsIndex.Length > 0)
                 {
                     input.Position = charsetId;
-                    charset = readCharset(input, charStringsIndex.Length, isCIDFont);
+                    charset = ReadCharset(input, charStringsIndex.Length, isCIDFont);
                 }
                 // that should not happen
                 else
                 {
                     Debug.WriteLine("debug: Couldn't read CharStrings index - returning empty charset instead");
-                    charset = new EmptyCharset(0);
+                    charset = new EmptyCharsetType1();
                 }
 
             }
@@ -512,10 +522,8 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             {
                 if (isCIDFont)
                 {
-                    // CharStrings index could be null if the index data couldnÄt be read
-                    int numEntries = charStringsIndex == null ? 0 : charStringsIndex.Length;
                     // a CID font with no charset does not default to any predefined charset
-                    charset = new EmptyCharset(numEntries);
+                    charset = new EmptyCharsetCID(charStringsIndex.Length);
                 }
                 else
                 {
@@ -533,7 +541,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
                 // CharStrings index could be null if the index data couldn't be read
                 int numEntries = 0;
-                if (charStringsIndex == null)
+                if (charStringsIndex.Length == 0)
                 {
                     Debug.WriteLine("debug: Couldn't read CharStrings index - parsing CIDFontDicts with number of char strings set to 0");
                 }
@@ -561,7 +569,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                     else
                     {
                         // default
-                        font.AddValueToTopDict("FontMatrix", topDict.GetArray("FontMatrix", new List<float> { 0.001f, 0f, 0, 0.001f, 0f, 0f }));
+                        font.AddValueToTopDict("FontMatrix", topDict.GetArray("FontMatrix", DefaultMatrixArray));
                     }
                 }
                 else if (privMatrix != null)
@@ -612,7 +620,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         /**
          * Parse dictionaries specific to a CIDFont.
          */
-        private void ParseCIDFontDicts(CFFDataInput input, DictData topDict, CFFCIDFont font, int nrOfcharStrings)
+        private void ParseCIDFontDicts(IInputStream input, DictData topDict, CFFCIDFont font, int nrOfcharStrings)
         {
             // In a CIDKeyed Font, the Private dictionary isn't in the Top Dict but in the Font dict
             // which can be accessed by a lookup using FDArray and FDSelect
@@ -625,14 +633,18 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             // font dict index
             int fontDictOffset = (int)fdArrayEntry.GetNumber(0);
             input.Position = fontDictOffset;
-            byte[][] fdIndex = ReadIndexData(input);
+            var fdIndex = ReadIndexData(input);
+            if (fdIndex.Length == 0)
+            {
+                throw new IOException("Font dict index is missing for a CIDKeyed Font");
+            }
 
             List<Dictionary<string, object>> privateDictionaries = new List<Dictionary<string, object>>();
             List<Dictionary<string, object>> fontDictionaries = new List<Dictionary<string, object>>();
 
-            foreach (byte[] bytes in fdIndex)
+            foreach (var bytes in fdIndex)
             {
-                CFFDataInput fontDictInput = new CFFDataInput(bytes);
+                var fontDictInput = new ByteStream(bytes);
                 DictData fontDict = ReadDictData(fontDictInput);
 
                 // read private dict
@@ -652,20 +664,19 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 fontDictionaries.Add(fontDictMap);
 
                 int privateOffset = (int)privateEntry.GetNumber(1);
-                input.Position = privateOffset;
                 int privateSize = (int)privateEntry.GetNumber(0);
-                DictData privateDict = ReadDictData(input, privateSize);
+                DictData privateDict = ReadDictData(input, privateOffset, privateSize);
 
                 // populate private dict
                 Dictionary<string, object> privDict = ReadPrivateDict(privateDict);
                 privateDictionaries.Add(privDict);
 
                 // local subrs
-                int localSubrOffset = (int)privateDict.GetNumber("Subrs", 0);
+                int localSubrOffset = (int)privateDict.GetNumber(KeySubRS, 0);
                 if (localSubrOffset > 0)
                 {
                     input.Position = privateOffset + localSubrOffset;
-                    privDict["Subrs"] = ReadIndexData(input);
+                    privDict[KeySubRS] = ReadIndexData(input);
                 }
             }
 
@@ -673,7 +684,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             DictData.Entry fdSelectEntry = topDict.GetEntry("FDSelect");
             int fdSelectPos = (int)fdSelectEntry.GetNumber(0);
             input.Position = fdSelectPos;
-            FDSelect fdSelect = ReadFDSelect(input, nrOfcharStrings, font);
+            FDSelect fdSelect = ReadFDSelect(input, nrOfcharStrings);
 
             // TODO almost certainly erroneous - CIDFonts do not have a top-level private dict
             // font.addValueToPrivateDict("defaultWidthX", 1000);
@@ -710,12 +721,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         /**
          * Parse dictionaries specific to a Type 1-equivalent font.
          */
-        private void ParseType1Dicts(CFFDataInput input, DictData topDict, CFFType1Font font, CFFCharset charset)
+        private void ParseType1Dicts(IInputStream input, DictData topDict, CFFType1Font font, CFFCharset charset)
         {
             // encoding
             DictData.Entry encodingEntry = topDict.GetEntry("Encoding");
             CFFEncoding encoding;
-            int encodingId = encodingEntry != null ? (int)encodingEntry.GetNumber(0) : 0;
+            int encodingId = (int)(encodingEntry?.GetNumber(0) ?? 0);
             switch (encodingId)
             {
                 case 0:
@@ -738,30 +749,33 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 throw new IOException("Private dictionary entry missing for font " + font.Name);
             }
             int privateOffset = (int)privateEntry.GetNumber(1);
-            input.Position = privateOffset;
             int privateSize = (int)privateEntry.GetNumber(0);
-            DictData privateDict = ReadDictData(input, privateSize);
+            DictData privateDict = ReadDictData(input, privateOffset, privateSize);
 
             // populate private dict
             Dictionary<string, object> privDict = ReadPrivateDict(privateDict);
             foreach (var entry in privDict) font.AddToPrivateDict(entry.Key, entry.Value);
 
             // local subrs
-            int localSubrOffset = (int)privateDict.GetNumber("Subrs", 0);
+            int localSubrOffset = (int)privateDict.GetNumber(KeySubRS, 0);
             if (localSubrOffset > 0)
             {
                 input.Position = privateOffset + localSubrOffset;
-                font.AddToPrivateDict("Subrs", ReadIndexData(input));
+                font.AddToPrivateDict(KeySubRS, ReadIndexData(input));
             }
         }
 
         private string ReadString(int index)
         {
-            if (index >= 0 && index <= 390)
+            if (index < 0)
+            {
+                throw new IOException("Invalid negative index when reading a string");
+            }
+            if (index <= 390)
             {
                 return CFFStandardString.GetName(index);
             }
-            if (index - 391 < stringIndex.Length)
+            if (stringIndex != null && index - 391 < stringIndex.Length)
             {
                 return stringIndex[index - 391];
             }
@@ -778,9 +792,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return entry != null ? ReadString((int)entry.GetNumber(0)) : null;
         }
 
-        private CFFEncoding ReadEncoding(CFFDataInput dataInput, CFFCharset charset)
+        private CFFEncoding ReadEncoding(IInputStream dataInput, CFFCharset charset)
         {
-            int format = dataInput.ReadCard8();
+            int format = dataInput.ReadUByte();
             int baseFormat = format & 0x7f;
 
             switch (baseFormat)
@@ -790,20 +804,20 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 case 1:
                     return ReadFormat1Encoding(dataInput, charset, format);
                 default:
-                    throw new ArgumentException();
+                    throw new IOException($"Invalid encoding base format {baseFormat}");
             }
         }
 
-        private Format0Encoding ReadFormat0Encoding(CFFDataInput dataInput, CFFCharset charset,
-                                                    int format)
+        private Format0Encoding ReadFormat0Encoding(IInputStream dataInput, CFFCharset charset, int format)
         {
-            Format0Encoding encoding = new Format0Encoding();
-            encoding.format = format;
-            encoding.nCodes = dataInput.ReadCard8();
+            var encoding = new Format0Encoding
+            {
+                nCodes = dataInput.ReadUByte()
+            };
             encoding.Add(0, 0, ".notdef");
             for (int gid = 1; gid <= encoding.nCodes; gid++)
             {
-                int code = dataInput.ReadCard8();
+                int code = dataInput.ReadUByte();
                 int sid = charset.GetSIDForGID(gid);
                 encoding.Add(code, sid, ReadString(sid));
             }
@@ -814,22 +828,22 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return encoding;
         }
 
-        private Format1Encoding ReadFormat1Encoding(CFFDataInput dataInput, CFFCharset charset, int format)
+        private Format1Encoding ReadFormat1Encoding(IInputStream dataInput, CFFCharset charset, int format)
         {
-            Format1Encoding encoding = new Format1Encoding();
-            encoding.format = format;
-            encoding.nRanges = dataInput.ReadCard8();
+            var encoding = new Format1Encoding
+            {
+                nRanges = dataInput.ReadUByte()
+            };
             encoding.Add(0, 0, ".notdef");
             int gid = 1;
             for (int i = 0; i < encoding.nRanges; i++)
             {
-                int rangeFirst = dataInput.ReadCard8();
-                int rangeLeft = dataInput.ReadCard8();
-                for (int j = 0; j < 1 + rangeLeft; j++)
+                int rangeFirst = dataInput.ReadUByte();
+                int rangeLeft = dataInput.ReadUByte();
+                for (int j = 0; j <= rangeLeft; j++)
                 {
                     int sid = charset.GetSIDForGID(gid);
-                    int code = rangeFirst + j;
-                    encoding.Add(code, sid, ReadString(sid));
+                    encoding.Add(rangeFirst + j, sid, ReadString(sid));
                     gid++;
                 }
             }
@@ -840,18 +854,22 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return encoding;
         }
 
-        private void ReadSupplement(CFFDataInput dataInput, CFFBuiltInEncoding encoding)
+        private void ReadSupplement(IInputStream dataInput, CFFBuiltInEncoding encoding)
         {
-            encoding.nSups = dataInput.ReadCard8();
-            encoding.supplement = new CFFBuiltInEncoding.Supplement[encoding.nSups];
+            var nSups = dataInput.ReadUByte();
+            encoding.supplement = new CFFBuiltInEncoding.Supplement[nSups];
             for (int i = 0; i < encoding.supplement.Length; i++)
             {
-                CFFBuiltInEncoding.Supplement supplement = new CFFBuiltInEncoding.Supplement();
-                supplement.code = dataInput.ReadCard8();
-                supplement.sid = dataInput.ReadSID();
-                supplement.name = ReadString(supplement.sid);
+                var code = dataInput.ReadUByte();
+                var sid = dataInput.ReadUInt16();
+                var supplement = new CFFBuiltInEncoding.Supplement
+                {
+                    code = code,
+                    sid = sid,
+                    name = ReadString(sid)
+                };
                 encoding.supplement[i] = supplement;
-                encoding.Add(supplement.code, supplement.sid, ReadString(supplement.sid));
+                encoding.Add(supplement);
             }
         }
 
@@ -859,19 +877,18 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
          * Read the FDSelect Data according to the format.
          * //@param dataInput
          * //@param nGlyphs
-         * //@param ros
          * //@return the FDSelect data
          * //@throws IOException
          */
-        private static FDSelect ReadFDSelect(CFFDataInput dataInput, int nGlyphs, CFFCIDFont ros)
+        private static FDSelect ReadFDSelect(IInputStream dataInput, int nGlyphs)
         {
-            int format = dataInput.ReadCard8();
+            int format = dataInput.ReadUByte();
             switch (format)
             {
                 case 0:
-                    return ReadFormat0FDSelect(dataInput, format, nGlyphs, ros);
+                    return ReadFormat0FDSelect(dataInput, nGlyphs);
                 case 3:
-                    return ReadFormat3FDSelect(dataInput, format, nGlyphs, ros);
+                    return ReadFormat3FDSelect(dataInput);
                 default:
                     throw new ArgumentException();
             }
@@ -881,21 +898,21 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
          * Read the Format 0 of the FDSelect data structure.
          * //@param dataInput
          * //@param format
-         * //@param nGlyphs
          * //@param ros
          * //@return the Format 0 of the FDSelect data
          * //@throws IOException
          */
-        private static Format0FDSelect ReadFormat0FDSelect(CFFDataInput dataInput, int format, int nGlyphs, CFFCIDFont ros)
+        private static Format0FDSelect ReadFormat0FDSelect(IInputStream dataInput, int nGlyphs)
         {
-            Format0FDSelect fdselect = new Format0FDSelect(ros);
-            fdselect.format = format;
-            fdselect.fds = new int[nGlyphs];
-            for (int i = 0; i < fdselect.fds.Length; i++)
+            var fds = new int[nGlyphs];
+            for (int i = 0; i < fds.Length; i++)
             {
-                fdselect.fds[i] = dataInput.ReadCard8();
+                fds[i] = dataInput.ReadUByte();
             }
-            return fdselect;
+            return new Format0FDSelect
+            {
+                fds = fds
+            };
         }
 
         /**
@@ -908,24 +925,24 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
          * //@return the Format 3 of the FDSelect data
          * //@throws IOException
          */
-        private static Format3FDSelect ReadFormat3FDSelect(CFFDataInput dataInput, int format, int nGlyphs, CFFCIDFont ros)
+        private static Format3FDSelect ReadFormat3FDSelect(IInputStream dataInput)
         {
-            Format3FDSelect fdselect = new Format3FDSelect(ros);
-            fdselect.format = format;
-            fdselect.nbRanges = dataInput.ReadCard16();
-
-            fdselect.range3 = new Range3[fdselect.nbRanges];
-            for (int i = 0; i < fdselect.nbRanges; i++)
+            var nbRanges = dataInput.ReadUInt16();
+            var range3 = new Range3[nbRanges];
+            for (int i = 0; i < nbRanges; i++)
             {
-                Range3 r3 = new Range3();
-                r3.first = dataInput.ReadCard16();
-                r3.fd = dataInput.ReadCard8();
-                fdselect.range3[i] = r3;
-
+                range3[i] = new Range3
+                {
+                    first = dataInput.ReadUInt16(),
+                    fd = dataInput.ReadUByte()
+                };
             }
 
-            fdselect.sentinel = dataInput.ReadCard16();
-            return fdselect;
+            return new Format3FDSelect
+            {
+                range3 = range3,
+                sentinel = dataInput.ReadUInt16(),
+            };
         }
 
         /**
@@ -933,23 +950,16 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
          */
         internal sealed class Format3FDSelect : FDSelect
         {
-            internal int format;
-            internal int nbRanges;
             internal Range3[] range3;
             internal int sentinel;
 
-            public Format3FDSelect(CFFCIDFont owner)
-                : base(owner)
-            {
-            }
-
             public override int GetFDIndex(int gid)
             {
-                for (int i = 0; i < nbRanges; ++i)
+                for (int i = 0; i < range3.Length; ++i)
                 {
                     if (range3[i].first <= gid)
                     {
-                        if (i + 1 < nbRanges)
+                        if (i + 1 < range3.Length)
                         {
                             if (range3[i + 1].first > gid)
                             {
@@ -973,8 +983,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
             public override string ToString()
             {
-                return GetType().Name + "[format=" + format + " nbRanges=" + nbRanges + ", range3="
-                        + string.Join(", ", range3.Select(p => p.ToString())) + " sentinel=" + sentinel + "]";
+                return $"{GetType().Name}[nbRanges={range3.Length}, range3={string.Join(", ", range3.Select(p => p.ToString()))} sentinel={sentinel}]";
             }
         }
 
@@ -988,7 +997,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
             public override string ToString()
             {
-                return GetType().Name + "[first=" + first + ", fd=" + fd + "]";
+                return $"{GetType().Name}[first={first}, fd={fd}]";
             }
         }
 
@@ -998,13 +1007,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         internal class Format0FDSelect : FDSelect
         {
             //@SuppressWarnings("unused")
-            internal int format;
             internal int[] fds;
-
-            public Format0FDSelect(CFFCIDFont owner)
-                : base(owner)
-            {
-            }
 
             public override int GetFDIndex(int gid)
             {
@@ -1021,119 +1024,110 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        private CFFCharset readCharset(CFFDataInput dataInput, int nGlyphs, bool isCIDFont)
+        private CFFCharset ReadCharset(IInputStream dataInput, int nGlyphs, bool isCIDFont)
 
         {
-            int format = dataInput.ReadCard8();
+            int format = dataInput.ReadUByte();
             switch (format)
             {
                 case 0:
-                    return ReadFormat0Charset(dataInput, format, nGlyphs, isCIDFont);
+                    return ReadFormat0Charset(dataInput, nGlyphs, isCIDFont);
                 case 1:
-                    return ReadFormat1Charset(dataInput, format, nGlyphs, isCIDFont);
+                    return ReadFormat1Charset(dataInput, nGlyphs, isCIDFont);
                 case 2:
-                    return ReadFormat2Charset(dataInput, format, nGlyphs, isCIDFont);
+                    return ReadFormat2Charset(dataInput, nGlyphs, isCIDFont);
                 default:
                     throw new ArgumentException();
             }
         }
 
-        private Format0Charset ReadFormat0Charset(CFFDataInput dataInput, int format, int nGlyphs, bool isCIDFont)
+        private Format0Charset ReadFormat0Charset(IInputStream dataInput, int nGlyphs, bool isCIDFont)
         {
-            Format0Charset charset = new Format0Charset(isCIDFont);
-            charset.format = format;
+            var charset = new Format0Charset(isCIDFont);
             if (isCIDFont)
             {
                 charset.AddCID(0, 0);
+                for (int gid = 1; gid < nGlyphs; gid++)
+                {
+                    charset.AddCID(gid, dataInput.ReadUInt16());
+                }
             }
             else
             {
                 charset.AddSID(0, 0, ".notdef");
-            }
-
-            for (int gid = 1; gid < nGlyphs; gid++)
-            {
-                int sid = dataInput.ReadSID();
-                if (isCIDFont)
+                for (int gid = 1; gid < nGlyphs; gid++)
                 {
-                    charset.AddCID(gid, sid);
-                }
-                else
-                {
+                    int sid = dataInput.ReadUInt16();
                     charset.AddSID(gid, sid, ReadString(sid));
                 }
             }
             return charset;
         }
 
-        private Format1Charset ReadFormat1Charset(CFFDataInput dataInput, int format, int nGlyphs,
-                                                  bool isCIDFont)
+        private Format1Charset ReadFormat1Charset(IInputStream dataInput, int nGlyphs, bool isCIDFont)
         {
-            Format1Charset charset = new Format1Charset(isCIDFont);
-            charset.format = format;
+            var charset = new Format1Charset(isCIDFont);
             if (isCIDFont)
             {
                 charset.AddCID(0, 0);
-                charset.rangesCID2GID = new List<RangeMapping>();
+                int gid = 1;
+                while (gid < nGlyphs)
+                {
+                    int rangeFirst = dataInput.ReadUInt16();
+                    int rangeLeft = dataInput.ReadUByte();
+                    charset.AddRangeMapping(new RangeMapping(gid, rangeFirst, rangeLeft));
+                    gid += rangeLeft + 1;
+                }
             }
             else
             {
                 charset.AddSID(0, 0, ".notdef");
-            }
-
-            for (int gid = 1; gid < nGlyphs; gid++)
-            {
-                int rangeFirst = dataInput.ReadSID();
-                int rangeLeft = dataInput.ReadCard8();
-                if (!isCIDFont)
+                int gid = 1;
+                while (gid < nGlyphs)
                 {
-                    for (int j = 0; j < 1 + rangeLeft; j++)
+                    int rangeFirst = dataInput.ReadUInt16();
+                    int rangeLeft = dataInput.ReadUByte() + 1;
+                    for (int j = 0; j < rangeLeft; j++)
                     {
                         int sid = rangeFirst + j;
                         charset.AddSID(gid + j, sid, ReadString(sid));
                     }
+                    gid += rangeLeft;
                 }
-                else
-                {
-                    charset.rangesCID2GID.Add(new RangeMapping(gid, rangeFirst, rangeLeft));
-                }
-                gid += rangeLeft;
             }
             return charset;
         }
 
-        private Format2Charset ReadFormat2Charset(CFFDataInput dataInput, int format, int nGlyphs,
-                                                  bool isCIDFont)
+        private Format2Charset ReadFormat2Charset(IInputStream dataInput, int nGlyphs, bool isCIDFont)
         {
-            Format2Charset charset = new Format2Charset(isCIDFont);
-            charset.format = format;
+            var charset = new Format2Charset(isCIDFont);
             if (isCIDFont)
             {
                 charset.AddCID(0, 0);
-                charset.rangesCID2GID = new List<RangeMapping>();
+                int gid = 1;
+                while (gid < nGlyphs)
+                {
+                    int first = dataInput.ReadUInt16();
+                    int nLeft = dataInput.ReadUInt16();
+                    charset.AddRangeMapping(new RangeMapping(gid, first, nLeft));
+                    gid += nLeft + 1;
+                }
             }
             else
             {
                 charset.AddSID(0, 0, ".notdef");
-            }
-
-            for (int gid = 1; gid < nGlyphs; gid++)
-            {
-                int first = dataInput.ReadSID();
-                int nLeft = dataInput.ReadCard16();
-                if (!isCIDFont)
+                int gid = 1;
+                while (gid < nGlyphs)
                 {
-                    for (int j = 0; j < 1 + nLeft; j++)
+                    int first = dataInput.ReadUInt16();
+                    int nLeft = dataInput.ReadUInt16() + 1;
+                    for (int j = 0; j < nLeft; j++)
                     {
                         int sid = first + j;
                         charset.AddSID(gid + j, sid, ReadString(sid));
                     }
+                    gid += nLeft;
                 }
-                else
-                {
-                    charset.rangesCID2GID.Add(new RangeMapping(gid, first, nLeft));
-                }
-                gid += nLeft;
             }
             return charset;
         }
@@ -1150,8 +1144,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
             public override string ToString()
             {
-                return GetType().Name + "[major=" + major + ", minor=" + minor + ", hdrSize=" + hdrSize
-                        + ", offSize=" + offSize + "]";
+                return $"{GetType().Name}[major={major}, minor={minor}, hdrSize={hdrSize}, offSize={offSize}]";
             }
         }
 
@@ -1164,9 +1157,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
             public void Add(Entry entry)
             {
-                if (entry.CFFOperator != null)
+                if (entry.operatorName != null)
                 {
-                    entries[entry.CFFOperator.Name] = entry;
+                    entries[entry.operatorName] = entry;
                 }
             }
 
@@ -1178,25 +1171,25 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             public bool GetBoolean(string name, bool defaultValue)
             {
                 Entry entry = GetEntry(name);
-                return entry != null && entry.Operands.Count > 0 ? entry.GetBool(0) : defaultValue;
+                return entry != null && entry.HasOperands ? entry.GetBool(0, defaultValue) : defaultValue;
             }
 
             public List<float> GetArray(string name, List<float> defaultValue)
             {
                 Entry entry = GetEntry(name);
-                return entry != null && entry.Operands.Count > 0 ? entry.Operands : defaultValue;
+                return entry != null && entry.HasOperands ? entry.Operands : defaultValue;
             }
 
             public float? GetNumber(string name, float? defaultValue)
             {
                 Entry entry = GetEntry(name);
-                return entry != null && entry.Operands.Count > 0 ? entry.GetNumber(0) : defaultValue;
+                return entry != null && entry.HasOperands ? entry.GetNumber(0) : defaultValue;
             }
 
             public List<float> GetDelta(string name, List<float> defaultValue)
             {
                 Entry entry = GetEntry(name);
-                return entry != null && entry.Operands.Count > 0 ? entry.GetDelta() : defaultValue;
+                return entry != null && entry.HasOperands ? entry.GetDelta() : defaultValue;
             }
 
             /**
@@ -1212,17 +1205,27 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
              */
             internal class Entry
             {
-                internal List<float> Operands = new List<float>();
-                internal CFFOperator CFFOperator = null;
+                internal List<float> operands = new List<float>();
+                internal string operatorName = null;
+
+                public List<float> Operands
+                {
+                    get => operands;
+                }
+
+                public bool HasOperands
+                {
+                    get => operands.Count > 0;
+                }
 
                 public float GetNumber(int index)
                 {
-                    return Operands[index];
+                    return operands[index];
                 }
 
-                public bool GetBool(int index)
+                public bool GetBool(int index, bool defaultValue)
                 {
-                    float operand = Operands[index];
+                    float operand = operands[index];
                     switch (operand)
                     {
                         case 0F:
@@ -1230,14 +1233,20 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                         case 1F:
                             return true;
                         default:
-                            break;
+                            Debug.WriteLine($"warn: Expected boolean, got {operand}, returning default {defaultValue}");
+                            return defaultValue;
                     }
                     throw new ArgumentException();
                 }
 
+                public void AddOperand(float operand)
+                {
+                    operands.Add(operand);
+                }
+
                 public List<float> GetDelta()
                 {
-                    List<float> result = new List<float>(Operands);
+                    var result = new List<float>(operands);
                     for (int i = 1; i < result.Count; i++)
                     {
                         float previous = result[i - 1];
@@ -1250,7 +1259,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
                 public override string ToString()
                 {
-                    return GetType().Name + "[operands=" + Operands + ", operator=" + CFFOperator + "]";
+                    return $"{GetType().Name}[operands={Operands}, operator={operatorName}]";
                 }
             }
         }
@@ -1260,7 +1269,6 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
          */
         internal abstract class CFFBuiltInEncoding : CFFEncoding
         {
-            internal int nSups;
             internal Supplement[] supplement;
 
             /**
@@ -1289,8 +1297,13 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
                 public override string ToString()
                 {
-                    return GetType().Name + "[code=" + code + ", sid=" + sid + "]";
+                    return $"{GetType().Name}[code={code}, sid={sid}]";
                 }
+            }
+
+            public void Add(Supplement supplement)
+            {
+                Add(supplement.code, supplement.sid, supplement.name);
             }
         }
 
@@ -1299,13 +1312,11 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
          */
         internal class Format0Encoding : CFFBuiltInEncoding
         {
-            internal int format;
             internal int nCodes;
 
             public override string ToString()
             {
-                return GetType().Name + "[format=" + format + ", nCodes=" + nCodes
-                        + ", supplement=" + string.Join(", ", base.supplement.Select(p => p.ToString())) + "]";
+                return $"{GetType().Name}[nCodes={nCodes}, supplement={string.Join(", ", base.supplement.Select(p => p.ToString()))}]";
             }
         }
 
@@ -1314,34 +1325,20 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
          */
         internal class Format1Encoding : CFFBuiltInEncoding
         {
-            internal int format;
             internal int nRanges;
 
             public override string ToString()
             {
-                return GetType().Name + "[format=" + format + ", nRanges=" + nRanges
-                        + ", supplement=" + string.Join(", ", base.supplement.Select(p => p.ToString())) + "]";
+                return $"{GetType().Name}[nRanges={nRanges}, supplement={string.Join(", ", base.supplement.Select(p => p.ToString()))}]";
             }
         }
 
         /**
-         * Inner class representing an embedded CFF charset.
-         */
-        internal abstract class EmbeddedCharset : CFFCharset
+        * An empty charset in a malformed CID font.
+        */
+        private class EmptyCharsetCID : CFFCharsetCID
         {
-            protected EmbeddedCharset(bool isCIDFont)
-                : base(isCIDFont)
-            {
-            }
-        }
-
-        /**
-         * An empty charset in a malformed CID font.
-         */
-        internal class EmptyCharset : EmbeddedCharset
-        {
-            internal EmptyCharset(int numCharStrings)
-                : base(true)
+            public EmptyCharsetCID(int numCharStrings)
             {
                 AddCID(0, 0); // .notdef
 
@@ -1350,6 +1347,22 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 {
                     AddCID(i, i);
                 }
+            }
+
+            public override String ToString()
+            {
+                return GetType().Name;
+            }
+        }
+
+        /**
+        * An empty charset in a malformed Type1 font.
+        */
+        private class EmptyCharsetType1 : CFFCharsetType1
+        {
+            public EmptyCharsetType1()
+            {
+                AddSID(0, 0, ".notdef");
             }
 
             public override string ToString()
@@ -1363,16 +1376,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
          */
         internal class Format0Charset : EmbeddedCharset
         {
-            internal int format;
-
             internal Format0Charset(bool isCIDFont)
                 : base(isCIDFont)
             {
-            }
-
-            public override string ToString()
-            {
-                return GetType().Name + "[format=" + format + "]";
             }
         }
 
@@ -1382,12 +1388,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         internal class Format1Charset : EmbeddedCharset
         {
 
-            internal int format;
-            internal List<RangeMapping> rangesCID2GID;
+            private List<RangeMapping> rangesCID2GID;
 
             public Format1Charset(bool isCIDFont)
                 : base(isCIDFont)
             {
+                rangesCID2GID = new List<RangeMapping>();
             }
 
             public override int GetCIDForGID(int gid)
@@ -1420,9 +1426,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 return base.GetGIDForCID(cid);
             }
 
-            public override string ToString()
+            public void AddRangeMapping(RangeMapping rangeMapping)
             {
-                return GetType().Name + "[format=" + format + "]";
+                rangesCID2GID.Add(rangeMapping);
             }
         }
 
@@ -1431,12 +1437,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
          */
         internal class Format2Charset : EmbeddedCharset
         {
-            internal int format;
-            internal List<RangeMapping> rangesCID2GID;
+            private List<RangeMapping> rangesCID2GID;
 
             internal Format2Charset(bool isCIDFont)
                 : base(isCIDFont)
             {
+                rangesCID2GID = new List<RangeMapping>();
             }
 
             public override int GetCIDForGID(int gid)
@@ -1463,11 +1469,10 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 return base.GetGIDForCID(cid);
             }
 
-            public override string ToString()
+            public void AddRangeMapping(RangeMapping rangeMapping)
             {
-                return GetType().Name + "[format=" + format + "]";
+                rangesCID2GID.Add(rangeMapping);
             }
-
         }
 
         /**
@@ -1500,26 +1505,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
             public int MapValue(int value)
             {
-                if (IsInRange(value))
-                {
-                    return startMappedValue + (value - startValue);
-                }
-                else
-                {
-                    return 0;
-                }
+                return IsInRange(value) ? startMappedValue + (value - startValue) : 0;
             }
 
             public int MapReverseValue(int value)
             {
-                if (IsInReverseRange(value))
-                {
-                    return startValue + (value - startMappedValue);
-                }
-                else
-                {
-                    return 0;
-                }
+                return IsInReverseRange(value) ? startValue + (value - startMappedValue) : 0;
             }
 
             public override string ToString()

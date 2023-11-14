@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Bytes;
-using colorSpaces = PdfClown.Documents.Contents.ColorSpaces;
+using Shadings = PdfClown.Documents.Contents.Patterns.Shadings;
 using PdfClown.Objects;
 
 using System.Collections.Generic;
@@ -36,37 +36,31 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Paint the shape and color shading' operation [PDF:1.6:4.6.3].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class PaintShading : Operation, IResourceReference<colorSpaces::Shading>
+    public sealed class PaintShading : Operation, IResourceReference<Shadings::Shading>
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "sh";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public PaintShading(PdfName name) : base(OperatorKeyword, name)
         { }
 
         public PaintShading(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the <see cref="colorSpaces::Shading">shading</see> resource to be painted.
           </summary>
           <param name="context">Content context.</param>
         */
-        public colorSpaces::Shading GetShading(IContentContext context)
-        { return GetResource(context); }
+        public Shadings::Shading GetShading(ContentScanner scanner) => GetResource(scanner);
 
-        #region IResourceReference
-        public colorSpaces::Shading GetResource(IContentContext context)
+        public Shadings::Shading GetResource(ContentScanner scanner)
         {
-            return context.Resources.Shadings[Name];
+            var pscanner = scanner;
+            Shadings::Shading shading;
+            while ((shading = pscanner.ContentContext.Resources.Shadings[Name]) == null
+                && (pscanner = pscanner.ParentLevel) != null)
+            { }
+            return shading;
         }
 
         public PdfName Name
@@ -81,15 +75,11 @@ namespace PdfClown.Documents.Contents.Objects
 
             if (scanner.RenderContext != null)
             {
-                var shading = GetShading(scanner.ContentContext);
+                var shading = GetShading(scanner);
                 var paint = state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha);
-                paint.Shader = shading?.GetShader(SKMatrix.Identity);
+                paint.Shader = shading?.GetShader(SKMatrix.Identity, state);
                 scanner.RenderContext.DrawPaint(paint);
             }
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

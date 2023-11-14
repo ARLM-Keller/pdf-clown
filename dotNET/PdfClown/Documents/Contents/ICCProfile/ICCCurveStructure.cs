@@ -32,15 +32,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public ICCXYZNumber[] Measurments;
         public ICCResponse16Number[] Responces;
 
-        public void Load(Bytes.Buffer buffer, ushort numberOfChannels)
+        public void Load(Bytes.ByteStream buffer, ushort numberOfChannels)
         {
-            MesurementUnit = (ICCCurveMeasurementEncodings)buffer.ReadUnsignedInt();
+            MesurementUnit = (ICCCurveMeasurementEncodings)buffer.ReadUInt32();
             Counts = new uint[numberOfChannels];
             Measurments = new ICCXYZNumber[numberOfChannels];
             Responces = new ICCResponse16Number[numberOfChannels];
             for (int i = 0; i < numberOfChannels; i++)
             {
-                Counts[i] = buffer.ReadUnsignedInt();
+                Counts[i] = buffer.ReadUInt32();
             }
             for (int i = 0; i < numberOfChannels; i++)
             {

@@ -39,18 +39,13 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class Form : PdfObjectWrapper<PdfDictionary>
     {
-        #region dynamic
-        #region constructors
         public Form(Document context)
-            : base(context, new PdfDictionary(new PdfName[] { PdfName.Fields }, new PdfDirectObject[] { new PdfArray() }))
+            : base(context, new PdfDictionary() { { PdfName.Fields, new PdfArray() } })
         { }
 
         public Form(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the fields collection.</summary>
         */
@@ -71,10 +66,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public void RefreshCache()
         {
-            
+
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

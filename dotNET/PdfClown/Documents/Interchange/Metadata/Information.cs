@@ -39,80 +39,71 @@ namespace PdfClown.Documents.Interchange.Metadata
     [PDF(VersionEnum.PDF10)]
     public sealed class Information : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, object>
     {
-        #region dynamic
-        #region constructors
         public Information(Document context) : base(context, new PdfDictionary())
         { }
 
         public Information(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public string Author
         {
-            get => (string)this[PdfName.Author];
-            set => this[PdfName.Author] = value;
+            get => BaseDataObject.GetString(PdfName.Author);
+            set => BaseDataObject.SetText(PdfName.Author, value);
         }
 
         public DateTime? CreationDate
         {
-            get => (DateTime?)this[PdfName.CreationDate];
-            set => this[PdfName.CreationDate] = value;
+            get => BaseDataObject.GetDate(PdfName.CreationDate);
+            set => BaseDataObject.SetDate(PdfName.CreationDate, value);
         }
 
         public string Creator
         {
-            get => (string)this[PdfName.Creator];
-            set => this[PdfName.Creator] = value;
+            get => BaseDataObject.GetString(PdfName.Creator);
+            set => BaseDataObject.SetText(PdfName.Creator, value);
         }
 
         [PDF(VersionEnum.PDF11)]
         public string Keywords
         {
-            get => (string)this[PdfName.Keywords];
-            set => this[PdfName.Keywords] = value;
+            get => BaseDataObject.GetString(PdfName.Keywords);
+            set => BaseDataObject.SetText(PdfName.Keywords, value);
         }
 
         [PDF(VersionEnum.PDF11)]
         public DateTime? ModificationDate
         {
-            get => (DateTime?)this[PdfName.ModDate];
-            set => this[PdfName.ModDate] = value;
+            get => BaseDataObject.GetDate(PdfName.ModDate);
+            set => BaseDataObject.SetDate(PdfName.ModDate, value);
         }
 
         public string Producer
         {
-            get => (string)this[PdfName.Producer];
-            set => this[PdfName.Producer] = value;
+            get => BaseDataObject.GetString(PdfName.Producer);
+            set => BaseDataObject.SetText(PdfName.Producer, value);
         }
 
         [PDF(VersionEnum.PDF11)]
         public string Subject
         {
-            get => (string)this[PdfName.Subject];
-            set => this[PdfName.Subject] = value;
+            get => BaseDataObject.GetString(PdfName.Subject);
+            set => BaseDataObject.SetText(PdfName.Subject, value);
         }
 
         [PDF(VersionEnum.PDF11)]
         public string Title
         {
-            get => (string)this[PdfName.Title];
-            set => this[PdfName.Title] = value;
+            get => BaseDataObject.GetString(PdfName.Title);
+            set => BaseDataObject.SetText(PdfName.Title, value);
         }
 
-        #region IDictionary
-        public void Add(PdfName key, object value)
-        { BaseDataObject.Add(key, PdfSimpleObject<object>.Get(value)); }
+        public void Add(PdfName key, object value) => BaseDataObject.Add(key, PdfSimpleObject<object>.Get(value));
 
-        public bool ContainsKey(PdfName key)
-        { return BaseDataObject.ContainsKey(key); }
+        public bool ContainsKey(PdfName key) => BaseDataObject.ContainsKey(key);
 
         public ICollection<PdfName> Keys => BaseDataObject.Keys;
 
-        public bool Remove(PdfName key)
-        { return BaseDataObject.Remove(key); }
+        public bool Remove(PdfName key) => BaseDataObject.Remove(key);
 
         public object this[PdfName key]
         {
@@ -144,27 +135,20 @@ namespace PdfClown.Documents.Interchange.Metadata
             }
         }
 
-        #region ICollection
-        void ICollection<KeyValuePair<PdfName, object>>.Add(KeyValuePair<PdfName, object> entry)
-        { Add(entry.Key, entry.Value); }
+        void ICollection<KeyValuePair<PdfName, object>>.Add(KeyValuePair<PdfName, object> entry) => Add(entry.Key, entry.Value);
 
-        public void Clear()
-        { BaseDataObject.Clear(); }
+        public void Clear() => BaseDataObject.Clear();
 
-        bool ICollection<KeyValuePair<PdfName, object>>.Contains(KeyValuePair<PdfName, object> entry)
-        { return entry.Value.Equals(this[entry.Key]); }
+        bool ICollection<KeyValuePair<PdfName, object>>.Contains(KeyValuePair<PdfName, object> entry) => entry.Value.Equals(this[entry.Key]);
 
-        public void CopyTo(KeyValuePair<PdfName, object>[] entries, int index)
-        { throw new NotImplementedException(); }
+        public void CopyTo(KeyValuePair<PdfName, object>[] entries, int index) => throw new NotImplementedException();
 
         public int Count => BaseDataObject.Count;
 
         public bool IsReadOnly => false;
 
-        public bool Remove(KeyValuePair<PdfName, object> entry)
-        { throw new NotImplementedException(); }
+        public bool Remove(KeyValuePair<PdfName, object> entry) => throw new NotImplementedException();
 
-        #region IEnumerable<KeyValuePair<PdfName,object>>
         IEnumerator<KeyValuePair<PdfName, object>> IEnumerable<KeyValuePair<PdfName, object>>.GetEnumerator()
         {
             foreach (KeyValuePair<PdfName, PdfDirectObject> entry in BaseDataObject)
@@ -176,15 +160,6 @@ namespace PdfClown.Documents.Interchange.Metadata
             }
         }
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<KeyValuePair<PdfName, object>>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<PdfName, object>>)this).GetEnumerator();
     }
 }

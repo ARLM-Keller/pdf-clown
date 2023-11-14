@@ -44,14 +44,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return $"{Year}.{Month}.{Day} {Hours}:{Minutes}:{Seconds}";
         }
 
-        public void Load(Bytes.Buffer buffer)
+        public void Load(Bytes.ByteStream buffer)
         {
-            Year = buffer.ReadUnsignedShort();
-            Month = buffer.ReadUnsignedShort();
-            Day = buffer.ReadUnsignedShort();
-            Hours = buffer.ReadUnsignedShort();
-            Minutes = buffer.ReadUnsignedShort();
-            Seconds = buffer.ReadUnsignedShort();
+            Year = buffer.ReadUInt16();
+            Month = buffer.ReadUInt16();
+            Day = buffer.ReadUInt16();
+            Hours = buffer.ReadUInt16();
+            Minutes = buffer.ReadUInt16();
+            Seconds = buffer.ReadUInt16();
         }
     }
 

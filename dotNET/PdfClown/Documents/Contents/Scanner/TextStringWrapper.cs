@@ -60,7 +60,7 @@ namespace PdfClown.Documents.Contents.Scanner
         internal TextStringWrapper(ContentScanner scanner, bool scan = true) : base((ShowText)scanner.Current)
         {
             Context = scanner.ContentContext;
-            Context.Strings.Add(this);
+            Context.Strings?.Add(this);
 
             textChars = new List<TextChar>();
             {
@@ -74,21 +74,17 @@ namespace PdfClown.Documents.Contents.Scanner
                   state.FillColor,
                   state.FillColorSpace,
                   state.Scale * state.TextState.Tm.ScaleX,
-                  state.TextState.Tm.ScaleY
-                  );
+                  state.TextState.Tm.ScaleY);
                 if (scan)
                 {
-                    BaseDataObject.Scan(
-                      state,
-                      new ShowTextScanner(this)
-                      );
+                    BaseDataObject.Scan(state, new ShowTextScanner(this));
                 }
             }
         }
 
-        public override SKRect? Box => Quad?.GetBounds();
+        public override SKRect? Box => Quad.GetBounds();
 
-        public Quad? Quad
+        public Quad Quad
         {
             get
             {
@@ -102,7 +98,7 @@ namespace PdfClown.Documents.Contents.Scanner
                         { quad = Util.Math.Geom.Quad.Union(quad.Value, textChar.Quad); }
                     }
                 }
-                return quad;
+                return quad.Value;
             }
         }
 
@@ -117,9 +113,9 @@ namespace PdfClown.Documents.Contents.Scanner
             {
                 if (text == null)
                 {
-                    StringBuilder textBuilder = new StringBuilder();
+                    var textBuilder = new StringBuilder();
                     foreach (TextChar textChar in textChars)
-                    { textBuilder.Append(textChar); }
+                    { textBuilder.Append(textChar.Value); }
                     text = textBuilder.ToString();
                 }
                 return text;
@@ -130,7 +126,6 @@ namespace PdfClown.Documents.Contents.Scanner
 
         public IContentContext Context { get; }
 
-        public override string ToString()
-        { return Text; }
+        public override string ToString() => Text;
     }
 }

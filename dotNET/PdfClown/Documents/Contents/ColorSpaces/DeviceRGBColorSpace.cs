@@ -38,27 +38,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceRGBColorSpace : DeviceColorSpace
     {
-        #region static
-        #region fields
         /*
           NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
           of the contextual resource dictionary) [PDF:1.6:4.5.7].
         */
         public static readonly DeviceRGBColorSpace Default = new DeviceRGBColorSpace(PdfName.DeviceRGB);
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public DeviceRGBColorSpace(Document context) : base(context, PdfName.DeviceRGB)
         { }
 
         internal DeviceRGBColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
@@ -86,7 +77,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return skColor;
         }
 
-        public override SKColor GetSKColor(float[] components, float? alpha = null)
+        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
         {
             var skColor = new SKColor(
                  (byte)Math.Round(components[0] * 255),
@@ -98,9 +89,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
             return skColor;
         }
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -31,6 +31,7 @@ using PdfClown.Objects;
 
 using system = System;
 using SkiaSharp;
+using PdfClown.Documents.Contents.ColorSpaces;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -42,17 +43,12 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF10)]
     public sealed class Link : Annotation, ILink
     {
-        #region dynamic
-        #region constructors
         public Link(Page page, SKRect box, string text, PdfObjectWrapper target) : base(page, PdfName.Link, box, text)
         { Target = target; }
 
         public Link(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override Action Action
         {
             get => base.Action;
@@ -69,7 +65,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        #region ILink
         public PdfObjectWrapper Target
         {
             get
@@ -91,10 +86,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     throw new system::ArgumentException("It MUST be either a Destination or an Action.");
             }
         }
-        #endregion
-        #endregion
 
-        #region private
         private Destination Destination
         {
             get
@@ -120,8 +112,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
         }
-        #endregion
-        #endregion
-        #endregion
+
+        public override void DrawSpecial(SKCanvas canvas)
+        {
+            var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
+            using (var paint = new SKPaint { Color = color })
+            {
+                Border?.Apply(paint, null);
+            }
+        }
     }
 }

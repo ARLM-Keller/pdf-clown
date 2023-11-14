@@ -29,9 +29,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public const string TAG = "DSIG";
 
-        public DigitalSignatureTable(TrueTypeFont font)
-            : base(font)
-        {
-        }
+        public DigitalSignatureTable()
+        { }
     }
 }

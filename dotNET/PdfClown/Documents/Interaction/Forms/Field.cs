@@ -41,14 +41,12 @@ namespace PdfClown.Documents.Interaction.Forms
       <summary>Interactive form field [PDF:1.6:8.6.2].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public abstract class Field
-      : PdfObjectWrapper<PdfDictionary>
+    public abstract class Field : PdfObjectWrapper<PdfDictionary>
     {
         /*
           NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
           of the explicit representation of a field -- they are retrieved everytime clients call.
         */
-        #region types
         /**
           <summary>Field flags [PDF:1.6:8.6.2].</summary>
         */
@@ -141,11 +139,7 @@ namespace PdfClown.Documents.Interaction.Forms
             */
             CommitOnSelChange = 0x4000000
         };
-        #endregion
 
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Wraps a field reference into a field object.</summary>
           <param name="reference">Reference to a field object.</param>
@@ -165,7 +159,7 @@ namespace PdfClown.Documents.Interaction.Forms
             PdfDictionary dataObject = (PdfDictionary)reference.DataObject;
             PdfName fieldType = (PdfName)GetInheritableAttribute(dataObject, PdfName.FT);
             PdfInteger fieldFlags = (PdfInteger)GetInheritableAttribute(dataObject, PdfName.Ff);
-            FlagsEnum fieldFlagsValue = (FlagsEnum)(fieldFlags == null ? 0 : fieldFlags.IntValue);
+            FlagsEnum fieldFlagsValue = (FlagsEnum)(fieldFlags?.IntValue ?? 0);
             if (fieldType.Equals(PdfName.Btn)) // Button.
             {
                 if ((fieldFlagsValue & FlagsEnum.Pushbutton) == FlagsEnum.Pushbutton) // Pushbutton.
@@ -190,9 +184,6 @@ namespace PdfClown.Documents.Interaction.Forms
                 throw new NotSupportedException("Unknown field type: " + fieldType);
         }
 
-        #endregion
-
-        #region private
         private static PdfDirectObject GetInheritableAttribute(PdfDictionary dictionary, PdfName key)
         {
             /*
@@ -212,12 +203,7 @@ namespace PdfClown.Documents.Interaction.Forms
             else
                 return null;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new field within the given document context.</summary>
         */
@@ -231,10 +217,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public Field(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the field's behavior in response to trigger events.</summary>
         */
@@ -307,9 +290,9 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                StringBuilder buffer = new StringBuilder();
+                var buffer = new StringBuilder();
                 {
-                    Stack<string> partialNameStack = new Stack<string>();
+                    var partialNameStack = new Stack<string>();
                     {
                         PdfDictionary parent = BaseDataObject;
                         while (parent != null)
@@ -385,19 +368,12 @@ namespace PdfClown.Documents.Interaction.Forms
                   widgetsObject != null
                     ? widgetsObject // Annotation array.
                     : BaseObject, // Merged annotation.
-                  this
-                  );
+                  this);
             }
         }
-        #endregion
 
-        #region protected
         protected PdfString DefaultAppearanceState => (PdfString)GetInheritableAttribute(PdfName.DA);
 
-        protected PdfDirectObject GetInheritableAttribute(PdfName key)
-        { return GetInheritableAttribute(BaseDataObject, key); }
-        #endregion
-        #endregion
-        #endregion
+        protected PdfDirectObject GetInheritableAttribute(PdfName key) => GetInheritableAttribute(BaseDataObject, key);
     }
 }

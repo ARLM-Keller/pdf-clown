@@ -25,9 +25,10 @@
 
 using PdfClown.Bytes;
 using PdfClown.Files;
-
+using PdfClown.Tokens;
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace PdfClown.Objects
 {
@@ -36,22 +37,15 @@ namespace PdfClown.Objects
     */
     public sealed class PdfReal : PdfSimpleObject<double>, IPdfNumber
     {
-        #region static
-        #region fields
         private static readonly NumberFormatInfo formatInfo;
-        #endregion
 
-        #region constructors
         static PdfReal()
         {
             formatInfo = new NumberFormatInfo();
             formatInfo.NumberDecimalSeparator = ".";
             formatInfo.NegativeSign = "-";
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the object equivalent to the given value.</summary>
         */
@@ -66,59 +60,52 @@ namespace PdfClown.Objects
 
             return new PdfReal(doubleValue);
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public PdfReal(double value)
         {
             RawValue = value;
         }
-        #endregion
 
-        #region interface
-        #region public
-        public override PdfObject Accept(IVisitor visitor, object data)
-        {
-            return visitor.Visit(this, data);
-        }
+        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 
-        public override int CompareTo(PdfDirectObject obj)
-        {
-            return PdfNumber.Compare(this, obj);
-        }
+        public override int CompareTo(PdfDirectObject obj) => PdfNumber.Compare(this, obj);
 
-        public int CompareTo(object obj)
-        {
-            return PdfNumber.Compare(this, obj);
-        }
+        public int CompareTo(object obj) => PdfNumber.Compare(this, obj);
 
-        public override bool Equals(object obj)
-        {
-            return PdfNumber.Equal(this, obj);
-        }
+        public override bool Equals(object obj) => PdfNumber.Equal(this, obj);
 
-        public override int GetHashCode()
-        {
-            return PdfNumber.GetHashCode(this);
-        }
+        public override int GetHashCode() => PdfNumber.GetHashCode(this);
 
-        public override void WriteTo(IOutputStream stream, File context)
-        {
-            stream.Write(RawValue.ToString(context.Configuration.RealFormat, formatInfo));
-        }
+        public override void WriteTo(IOutputStream stream, File context) => stream.WriteAsString(RawValue, context.Configuration.RealFormat, formatInfo);
 
-        #region IPdfNumber
         public double DoubleValue => RawValue;
 
         public float FloatValue => (float)RawValue;
 
         public int IntValue => (int)Math.Round(RawValue);
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+
+        public long LongValue => (long)Math.Round(RawValue);
+
+        public T GetValue<T>() where T : struct
+        {
+            if (typeof(T) == typeof(double))
+                return Unsafe.As<double, T>(ref value);
+            else if (typeof(T) == typeof(float))
+            {
+                var value = FloatValue;
+                return Unsafe.As<float, T>(ref value);
+            }
+            else if (typeof(T) == typeof(double))
+            {
+                var value = IntValue;
+                return Unsafe.As<int, T>(ref value);
+            }
+            else if (typeof(T) == typeof(long))
+            {
+                var value = LongValue;
+                return Unsafe.As<long, T>(ref value);
+            }
+            throw new Exception($"TODO support {typeof(T)}");
+        }
     }
 }

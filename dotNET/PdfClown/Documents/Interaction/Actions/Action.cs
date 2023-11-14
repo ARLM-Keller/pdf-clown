@@ -38,9 +38,6 @@ namespace PdfClown.Documents.Interaction.Actions
     [PDF(VersionEnum.PDF11)]
     public class Action : PdfObjectWrapper<PdfDictionary>
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Wraps an action base object into an action object.</summary>
           <param name="baseObject">Action base object.</param>
@@ -116,30 +113,22 @@ namespace PdfClown.Documents.Interaction.Actions
             else // Custom action.
                 return new Action(baseObject);
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
         protected Action(Document context, PdfName actionType) : base(
             context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type, PdfName.S },
-              new PdfDirectObject[] { PdfName.Action, actionType }
-              )
-            )
+            new PdfDictionary(2)
+            {
+                { PdfName.Type, PdfName.Action },
+                { PdfName.S, actionType }
+            })
         { }
 
         public Action(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the actions to be performed after the current one.</summary>
         */
@@ -153,8 +142,5 @@ namespace PdfClown.Documents.Interaction.Actions
             }
             set => BaseDataObject[PdfName.Next] = value.BaseObject;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

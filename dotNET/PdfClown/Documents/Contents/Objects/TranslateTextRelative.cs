@@ -38,8 +38,6 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class TranslateTextRelative : Operation
     {
-        #region static
-        #region fields
         /**
           <summary>No side effect.</summary>
         */
@@ -48,11 +46,7 @@ namespace PdfClown.Documents.Contents.Objects
           <summary>Lead parameter setting.</summary>
         */
         public static readonly string LeadOperatorKeyword = "TD";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public TranslateTextRelative(double offsetX, double offsetY)
             : this(offsetX, offsetY, false)
         { }
@@ -64,10 +58,7 @@ namespace PdfClown.Documents.Contents.Objects
         public TranslateTextRelative(string @operator, IList<PdfDirectObject> operands)
             : base(@operator, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets whether this operation, as a side effect, sets the leading parameter in the text state.</summary>
         */
@@ -98,8 +89,5 @@ namespace PdfClown.Documents.Contents.Objects
             if (LeadSet)
             { state.Lead = -OffsetY; }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

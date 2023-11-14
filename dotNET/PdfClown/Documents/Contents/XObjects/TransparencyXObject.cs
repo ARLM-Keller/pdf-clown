@@ -47,14 +47,14 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public bool Isolated
         {
-            get => ((PdfBoolean)BaseDataObject[PdfName.I])?.RawValue ?? false;
-            set => BaseDataObject[PdfName.I] = PdfBoolean.Get(value);
+            get => BaseDataObject.GetBool(PdfName.I);
+            set => BaseDataObject.SetBool(PdfName.I, value);
         }
 
         public bool Knockout
         {
-            get => ((PdfBoolean)BaseDataObject[PdfName.K])?.RawValue ?? false;
-            set => BaseDataObject[PdfName.K] = PdfBoolean.Get(value);
+            get => BaseDataObject.GetBool(PdfName.K);
+            set => BaseDataObject.SetBool(PdfName.K, value);
         }
     }
 }

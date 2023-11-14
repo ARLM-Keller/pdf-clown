@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using PdfClown.Bytes;
 using System;
 using System.IO;
 
@@ -60,9 +61,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private short indexToLocFormat;
         private short glyphDataFormat;
 
-        public HeaderTable(TrueTypeFont font) : base(font)
-        {
-        }
+        public HeaderTable()
+        { }
 
         /**
          * This will read the required data from the stream.
@@ -71,25 +71,25 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             version = data.Read32Fixed();
             fontRevision = data.Read32Fixed();
-            checkSumAdjustment = data.ReadUnsignedInt();
-            magicNumber = data.ReadUnsignedInt();
-            flags = data.ReadUnsignedShort();
-            unitsPerEm = data.ReadUnsignedShort();
+            checkSumAdjustment = data.ReadUInt32();
+            magicNumber = data.ReadUInt32();
+            flags = data.ReadUInt16();
+            unitsPerEm = data.ReadUInt16();
             created = data.ReadInternationalDate();
             modified = data.ReadInternationalDate();
-            xMin = data.ReadSignedShort();
-            yMin = data.ReadSignedShort();
-            xMax = data.ReadSignedShort();
-            yMax = data.ReadSignedShort();
-            macStyle = data.ReadUnsignedShort();
-            lowestRecPPEM = data.ReadUnsignedShort();
-            fontDirectionHint = data.ReadSignedShort();
-            indexToLocFormat = data.ReadSignedShort();
-            glyphDataFormat = data.ReadSignedShort();
+            xMin = data.ReadInt16();
+            yMin = data.ReadInt16();
+            xMax = data.ReadInt16();
+            yMax = data.ReadInt16();
+            macStyle = data.ReadUInt16();
+            lowestRecPPEM = data.ReadUInt16();
+            fontDirectionHint = data.ReadInt16();
+            indexToLocFormat = data.ReadInt16();
+            glyphDataFormat = data.ReadInt16();
             initialized = true;
         }
 

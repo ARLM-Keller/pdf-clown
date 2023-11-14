@@ -35,12 +35,8 @@ namespace PdfClown.Documents.Contents.Composition
     */
     public sealed class TextFitter
     {
-        #region static
         private static readonly Regex FitPattern = new Regex(@"(\s*)(\S*)", RegexOptions.Compiled);
-        #endregion
 
-        #region dynamic
-        #region fields
         private readonly Font font;
         private readonly double fontSize;
         private readonly bool hyphenation;
@@ -52,9 +48,7 @@ namespace PdfClown.Documents.Contents.Composition
         private int endIndex = -1;
         private string fittedText;
         private double fittedWidth;
-        #endregion
 
-        #region constructors
         internal TextFitter(string text, double width, Font font, double fontSize, bool hyphenation, char hyphenationCharacter)
         {
             this.text = text;
@@ -64,10 +58,7 @@ namespace PdfClown.Documents.Contents.Composition
             this.hyphenation = hyphenation;
             this.hyphenationCharacter = hyphenationCharacter;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Fits the text inside the specified width.</summary>
           <param name="unspacedFitting">Whether fitting of unspaced text is allowed.</param>
@@ -207,9 +198,7 @@ namespace PdfClown.Documents.Contents.Composition
           <summary>Gets the available width.</summary>
         */
         public double Width => width;
-        #endregion
 
-        #region private
         private void Hyphenate(bool hyphenation, ref int index, ref int wordEndIndex, double wordWidth, out string hyphen)
         {
             /*
@@ -268,8 +257,5 @@ namespace PdfClown.Documents.Contents.Composition
                 }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

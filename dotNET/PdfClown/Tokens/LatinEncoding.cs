@@ -31,28 +31,16 @@ namespace PdfClown.Tokens
     /**
       <summary>Adobe standard Latin character set [PDF:1.7:D].</summary>
     */
-    public class LatinEncoding
-      : Encoding
+    public class LatinEncoding : Encoding
     {
-        #region dynamic
-        #region fields
         /**
           <summary>Code-to-Unicode map.</summary>
         */
         protected BiDictionary<int, char> chars;
-        #endregion
 
-        #region interface
-        public override string Decode(
-          byte[] value
-          )
-        { return Decode(value, 0, value.Length); }
+        public override string Decode(byte[] value) => Decode(value, 0, value.Length);
 
-        public override string Decode(
-          byte[] value,
-          int index,
-          int length
-          )
+        public override string Decode(byte[] value, int index, int length)
         {
             char[] stringChars = new char[length];
             for (int decodeIndex = index, decodeLength = length + index; decodeIndex < decodeLength; decodeIndex++)
@@ -60,15 +48,21 @@ namespace PdfClown.Tokens
             return new String(stringChars);
         }
 
-        public override byte[] Encode(
-          string value
-          )
+        public override string Decode(ReadOnlySpan<byte> value)
         {
-            char[] stringChars = value.ToCharArray();
-            byte[] stringBytes = new byte[stringChars.Length];
-            for (int index = 0, length = stringChars.Length; index < length; index++)
+            var index = 0;
+            char[] stringChars = new char[value.Length];
+            for (int decodeIndex = index, decodeLength = value.Length + index; decodeIndex < decodeLength; decodeIndex++)
+            { stringChars[decodeIndex - index] = chars[value[decodeIndex] & 0xff]; }
+            return new String(stringChars);
+        }
+
+        public override byte[] Encode(string value)
+        {
+            byte[] stringBytes = new byte[value.Length];
+            for (int index = 0, length = value.Length; index < length; index++)
             {
-                int code = chars.GetKey(stringChars[index]);
+                int code = chars.GetKey(value[index]);
                 if (code == 0) //TODO: verify whether 0 collides with valid code values.
                     return null;
 
@@ -76,7 +70,17 @@ namespace PdfClown.Tokens
             }
             return stringBytes;
         }
-        #endregion
-        #endregion
+
+        public override void Encode(ReadOnlySpan<char> value, Span<byte> stringBytes)
+        {
+            for (int index = 0, length = value.Length; index < length; index++)
+            {
+                int code = chars.GetKey(value[index]);
+                if (code == 0) //TODO: verify whether 0 collides with valid code values.
+                    throw new Exception();
+
+                stringBytes[index] = (byte)code;
+            }
+        }
     }
 }

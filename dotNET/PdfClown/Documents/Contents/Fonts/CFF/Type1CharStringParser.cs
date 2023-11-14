@@ -19,7 +19,11 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 using System.Diagnostics;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Bytes;
+using PdfClown.Util;
+using Org.BouncyCastle.Utilities;
+using PdfClown.Documents.Contents.Fonts.Type1;
+using PdfClown.Util.Collections;
 
 namespace PdfClown.Documents.Contents.Fonts.Type1
 {
@@ -32,127 +36,67 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
      * @author Villu Ruusmann
      * @author John Hewson
      */
-    public static class Type1CharStringParser
+    public class Type1CharStringParser
     {
 
         // 1-byte commands
-        static readonly byte RETURN = 11;
-        static readonly byte CALLSUBR = 10;
+        private static readonly byte CALLSUBR = 10;
 
         // 2-byte commands
-        static readonly byte TWO_BYTE = 12;
-        static readonly byte CALLOTHERSUBR = 16;
-        static readonly byte POP = 17;
+        private static readonly byte TWO_BYTE = 12;
+        private static readonly byte CALLOTHERSUBR = 16;
+        private static readonly byte POP = 17;
+
+        private readonly string fontName;
+        private string currentGlyph;
 
         /**
-		 * The given byte array will be parsed and converted to a Type1 sequence.
-		 *
-		 * @param bytes the given mapping as byte array
-		 * @param subrs list of local subroutines
-		 * @return the Type1 sequence
-		 * @throws IOException if an error occurs during reading
-		 */
-        public static List<object> Parse(string fontName, string glyphName, byte[] bytes, List<byte[]> subrs)
+         * Constructs a new Type1CharStringParser object.
+         *
+         * @param fontName font name
+         */
+        public Type1CharStringParser(string fontName)
         {
-            return Parse(fontName, glyphName, bytes, subrs, new List<object>());
+            this.fontName = fontName;
         }
 
-        private static List<object> Parse(string fontName, string glyphName, byte[] bytes, List<byte[]> subrs, List<object> sequence)
+        /**
+         * The given byte array will be parsed and converted to a Type1 sequence.
+         *
+         * @param bytes the given mapping as byte array
+         * @param subrs list of local subroutines
+         * @param glyphName name of the current glyph
+         * @return the Type1 sequence
+         * @throws IOException if an error occurs during reading
+         */
+        public List<Object> Parse(Memory<byte> bytes, List<Memory<byte>> subrs, string glyphName)
         {
-            DataInput input = new DataInput(bytes);
+            currentGlyph = glyphName;
+            return Parse(bytes, subrs, new List<object>());
+        }
+
+        private List<Object> Parse(Memory<byte> bytes, List<Memory<byte>> subrs, List<Object> sequence)
+
+        {
+            var input = new ByteStream(bytes);
             while (input.HasRemaining())
             {
-                int b0 = input.ReadUnsignedByte();
+                var b0 = input.ReadUByte();
                 if (b0 == CALLSUBR)
                 {
-                    // callsubr command
-                    object obj = sequence.RemoveAtValue(sequence.Count - 1);
-                    if (!(obj is int))
-                    {
-                        Debug.WriteLine($"warn: Parameter {obj} for CALLSUBR is ignored, integer expected in glyph '{glyphName}' of font {fontName}");
-                        continue;
-                    }
-                    int operand = (int)obj;
-
-                    if (operand >= 0 && operand < subrs.Count)
-                    {
-                        byte[] subrBytes = subrs[operand];
-                        Parse(fontName, glyphName, subrBytes, subrs, sequence);
-                        object lastItem = sequence[sequence.Count - 1];
-                        if (lastItem is CharStringCommand charStringCommand &&
-                              charStringCommand.Key.Data[0] == RETURN)
-                        {
-                            sequence.RemoveAt(sequence.Count - 1); // remove "return" command
-                        }
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"warn: CALLSUBR is ignored, operand: {operand}, subrs.Count: {subrs.Count} in glyph '{glyphName}' of font {fontName}");
-                        // remove all parameters (there can be more than one)
-                        while (sequence[sequence.Count - 1] is int intValue)
-                        {
-                            sequence.RemoveAt(sequence.Count - 1);
-                        }
-                    }
+                    ProcessCallSubr(subrs, sequence);
                 }
-                else if (b0 == TWO_BYTE && input.PeekUnsignedByte(0) == CALLOTHERSUBR)
+                else if (b0 == TWO_BYTE && input.PeekUByte(0) == CALLOTHERSUBR)
                 {
-                    // callothersubr command (needed in order to expand Subrs)
-                    input.ReadUnsignedByte();
-
-                    int othersubrNum = (int)sequence.RemoveAtValue(sequence.Count - 1);
-                    int numArgs = (int)sequence.RemoveAtValue(sequence.Count - 1);
-
-                    // othersubrs 0-3 have their own semantics
-                    Stack<int> results = new Stack<int>();
-                    switch (othersubrNum)
-                    {
-                        case 0:
-                            results.Push(RemoveInteger(sequence));
-                            results.Push(RemoveInteger(sequence));
-                            sequence.RemoveAt(sequence.Count - 1);
-                            // end flex
-                            sequence.Add(0);
-                            sequence.Add(new CharStringCommand(TWO_BYTE, CALLOTHERSUBR));
-                            break;
-                        case 1:
-                            // begin flex
-                            sequence.Add(1);
-                            sequence.Add(new CharStringCommand(TWO_BYTE, CALLOTHERSUBR));
-                            break;
-                        case 3:
-                            // allows hint replacement
-                            results.Push(RemoveInteger(sequence));
-                            break;
-                        default:
-                            // all remaining othersubrs use this fallback mechanism
-                            for (int i = 0; i < numArgs; i++)
-                            {
-                                results.Push(RemoveInteger(sequence));
-                            }
-                            break;
-                    }
-
-                    // pop must follow immediately
-                    while (input.PeekUnsignedByte(0) == TWO_BYTE && input.PeekUnsignedByte(1) == POP)
-                    {
-                        input.ReadUnsignedByte(); // B0_POP
-                        input.ReadUnsignedByte(); // B1_POP
-                        sequence.Add(results.Pop());
-                    }
-
-                    if (results.Count > 0)
-                    {
-                        Debug.WriteLine("warn: Value left on the PostScript stack in glyph " + glyphName + " of font " + fontName);
-                    }
+                    ProcessCallOtherSubr(input, sequence);
                 }
                 else if (b0 >= 0 && b0 <= 31)
                 {
-                    sequence.Add(ReadCommand(input, (byte)b0));
+                    sequence.Add(ReadCommand(input, b0));
                 }
                 else if (b0 >= 32 && b0 <= 255)
                 {
-                    sequence.Add(ReadNumber(input, (byte)b0));
+                    sequence.Add(ReadNumber(input, b0));
                 }
                 else
                 {
@@ -162,39 +106,124 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return sequence;
         }
 
+        private void ProcessCallSubr(List<Memory<byte>> subrs, List<Object> sequence)
+        {
+            // callsubr command
+            Object obj = sequence.RemoveAtValue(sequence.Count - 1);
+            if (!(obj is int))
+            {
+                Debug.WriteLine("warn: Parameter {} for CALLSUBR is ignored, integer expected in glyph '{}' of font {}",
+                        obj, currentGlyph, fontName);
+                return;
+            }
+            int operand = (int)obj;
+
+            if (operand >= 0 && operand < subrs.Count)
+            {
+                var subrBytes = subrs[operand];
+                Parse(subrBytes, subrs, sequence);
+                Object lastItem = sequence[sequence.Count - 1];
+                if (lastItem is CharStringCommand lastCommand
+                    && Type1KeyWord.RET == lastCommand.Type1KeyWord)
+                {
+                    sequence.RemoveAtValue(sequence.Count - 1); // RemoveAtValue "return" command
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"warn: CALLSUBR is ignored, operand: {operand}, subrs.Count: {subrs.Count} in glyph '{currentGlyph}' of font {fontName}");
+                // RemoveAtValue all parameters (there can be more than one)
+                while (sequence[sequence.Count - 1] is int)
+                {
+                    sequence.RemoveAtValue(sequence.Count - 1);
+                }
+            }
+        }
+
+        private void ProcessCallOtherSubr(IInputStream input, List<Object> sequence)
+        {
+            // callothersubr command (needed in order to expand Subrs)
+            input.ReadByte();
+
+            int othersubrNum = (int)sequence.RemoveAtValue(sequence.Count - 1);
+            int numArgs = (int)sequence.RemoveAtValue(sequence.Count - 1);
+
+            // othersubrs 0-3 have their own semantics
+            var results = new Stack<int>();
+            switch (othersubrNum)
+            {
+                case 0:
+                    results.Push(RemoveInteger(sequence));
+                    results.Push(RemoveInteger(sequence));
+                    sequence.RemoveAtValue(sequence.Count - 1);
+                    // end flex
+                    sequence.Add(0);
+                    sequence.Add(CharStringCommand.COMMAND_CALLOTHERSUBR);
+                    break;
+                case 1:
+                    // begin flex
+                    sequence.Add(1);
+                    sequence.Add(CharStringCommand.COMMAND_CALLOTHERSUBR);
+                    break;
+                case 3:
+                    // allows hint replacement
+                    results.Push(RemoveInteger(sequence));
+                    break;
+                default:
+                    // all remaining othersubrs use this fallback mechanism
+                    for (int i = 0; i < numArgs; i++)
+                    {
+                        results.Push(RemoveInteger(sequence));
+                    }
+                    break;
+            }
+
+            // pop must follow immediately
+            while (input.PeekUByte(0) == TWO_BYTE && input.PeekUByte(1) == POP)
+            {
+                input.ReadByte(); // B0_POP
+                input.ReadByte(); // B1_POP
+                sequence.Add(results.Pop());
+            }
+
+            if (results.Count > 0)
+            {
+                Debug.WriteLine("warn: Value left on the PostScript stack in glyph {currentGlyph} of font {fontName}");
+            }
+        }
+
         // this method is a workaround for the fact that Type1CharStringParser assumes that subrs and
         // othersubrs can be unrolled without executing the 'div' operator, which isn't true
-        private static int RemoveInteger(List<object> sequence)
+        private static int RemoveInteger(List<Object> sequence)
         {
-            object item = sequence.RemoveAtValue(sequence.Count - 1);
-            if (item is int intValue)
+            var item = sequence.RemoveAtValue(sequence.Count - 1);
+            if (item is int)
             {
-                return intValue;
+                return (int)item;
             }
-            CharStringCommand command = (CharStringCommand)item;
+            var command = (CharStringCommand)item;
 
             // div
-            if (command.Key.Data[0] == 12 && command.Key.Data[1] == 12)
+            if (Type1KeyWord.DIV == command.Type1KeyWord)
             {
                 int a = (int)sequence.RemoveAtValue(sequence.Count - 1);
                 int b = (int)sequence.RemoveAtValue(sequence.Count - 1);
                 return b / a;
             }
-            throw new IOException("Unexpected char string command: " + command.Key);
+            throw new IOException("Unexpected char string command: " + command.Type1KeyWord);
         }
 
-        private static CharStringCommand ReadCommand(DataInput input, byte b0)
+        private CharStringCommand ReadCommand(IInputStream input, byte b0)
         {
             if (b0 == 12)
-
             {
-                var b1 = input.ReadUnsignedByte();
-                return new CharStringCommand(b0, b1);
+                var b1 = input.ReadUByte();
+                return CharStringCommand.GetInstance(b0, b1);
             }
-            return new CharStringCommand(b0);
+            return CharStringCommand.GetInstance(b0);
         }
 
-        private static int ReadNumber(DataInput input, byte b0)
+        private int ReadNumber(IInputStream input, int b0)
         {
             if (b0 >= 32 && b0 <= 246)
             {
@@ -202,18 +231,17 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
             else if (b0 >= 247 && b0 <= 250)
             {
-                var b1 = input.ReadUnsignedByte();
+                int b1 = input.ReadUByte();
                 return (b0 - 247) * 256 + b1 + 108;
             }
             else if (b0 >= 251 && b0 <= 254)
             {
-                var b1 = input.ReadUnsignedByte();
+                int b1 = input.ReadUByte();
                 return -(b0 - 251) * 256 - b1 - 108;
             }
             else if (b0 == 255)
-
             {
-                return input.ReadInt();
+                return input.ReadInt32();
             }
             else
             {

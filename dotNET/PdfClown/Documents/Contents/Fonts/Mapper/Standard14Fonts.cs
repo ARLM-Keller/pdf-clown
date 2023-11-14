@@ -15,144 +15,313 @@
  * limitations under the License.
  */
 
-using System;
-using System.IO;
-using System.Collections.Generic;
 using PdfClown.Documents.Contents.Fonts.AFM;
+using System.Collections.Generic;
+using System.IO;
+using System;
+using System.Linq.Expressions;
+using PdfClown.Bytes;
+using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-
     /**
-	 * The "Standard 14" PDF fonts, also known as the "base 14" fonts.
-	 * There are 14 font files, but Acrobat uses additional names for compatibility, e.g. Arial.
-	 *
-	 * @author John Hewson
-	 */
+     * The "Standard 14" PDF fonts, also known as the "base 14" fonts.
+     * There are 14 font files, but Acrobat uses additional names for compatibility, e.g. Arial.
+     *
+     * @author John Hewson
+     */
     public sealed class Standard14Fonts
     {
-        private static readonly Dictionary<string, string> StandardMapping = new Dictionary<string, string>(34, StringComparer.Ordinal);
-        private static readonly Dictionary<string, FontMetrics> StandardAFMMapping = new Dictionary<string, FontMetrics>(34, StringComparer.Ordinal);
+        public static readonly Dictionary<FontName, string> FontNames = new()
+        {
+            { FontName.TimesRoman, "Times-Roman" },
+            { FontName.TimesBold, "Times-Bold"},
+            { FontName.TimesItalic, "Times-Italic"},
+            { FontName.TimesBoldItalic,"Times-BoldItalic"},
+            { FontName.Helvetica,"Helvetica"},
+            { FontName.HelveticaBold,"Helvetica-Bold"},
+            { FontName.HelveticaOblique,"Helvetica-Oblique"},
+            { FontName.HelveticaBoldOblique,"Helvetica-BoldOblique"},
+            { FontName.Courier,"Courier"},
+            { FontName.CourierBold,"Courier-Bold"},
+            { FontName.CourierOblique,"Courier-Oblique"},
+            { FontName.CourierBoldOblique,"Courier-BoldOblique"},
+            { FontName.Symbol, "Symbol"},
+            { FontName.ZapfDingbats,"ZapfDingbats" }
+        };
+        /**
+         * Contains all base names and alias names for the known fonts.
+         * For base fonts both the key and the value will be the base name.
+         * For aliases, the key is an alias, and the value is a FontName.
+         * We want a single lookup in the map to find the font both by a base name or an alias.
+         */
+        private static readonly Dictionary<string, FontName> ALIASES = new(38);
+
+        /**
+         * Contains the font metrics for the standard 14 fonts. 
+         * The key is the font name, value is a FontMetrics instance.
+         * Metrics are loaded into this map on demand, only if needed.
+         * 
+         * @see #getAFM
+         */
+        private static readonly Dictionary<FontName, FontMetrics> FONTS = new();
+
+        /**
+         * Contains the mapped fonts for the standard 14 fonts. 
+         * The key is the font name, value is a FontBoxFont instance.
+         * FontBoxFont are loaded into this map on demand, only if needed.
+         */
+        private static readonly Dictionary<FontName, BaseFont> GENERIC_FONTS = new();
+
         static Standard14Fonts()
         {
-            try
+            // the 14 standard fonts
+            foreach (var entry in FontNames)
             {
-                AddAFM("Courier-Bold");
-                AddAFM("Courier-BoldOblique");
-                AddAFM("Courier");
-                AddAFM("Courier-Oblique");
-                AddAFM("Helvetica");
-                AddAFM("Helvetica-Bold");
-                AddAFM("Helvetica-BoldOblique");
-                AddAFM("Helvetica-Oblique");
-                AddAFM("Symbol");
-                AddAFM("Times-Bold");
-                AddAFM("Times-BoldItalic");
-                AddAFM("Times-Italic");
-                AddAFM("Times-Roman");
-                AddAFM("ZapfDingbats");
-
-                // alternative names from Adobe Supplement to the ISO 32000
-                AddAFM("CourierCourierNew", "Courier");
-                AddAFM("CourierNew", "Courier");
-                AddAFM("CourierNew,Italic", "Courier-Oblique");
-                AddAFM("CourierNew,Bold", "Courier-Bold");
-                AddAFM("CourierNew,BoldItalic", "Courier-BoldOblique");
-                AddAFM("Arial", "Helvetica");
-                AddAFM("Arial,Italic", "Helvetica-Oblique");
-                AddAFM("Arial,Bold", "Helvetica-Bold");
-                AddAFM("Arial,BoldItalic", "Helvetica-BoldOblique");
-                AddAFM("TimesNewRoman", "Times-Roman");
-                AddAFM("TimesNewRoman,Italic", "Times-Italic");
-                AddAFM("TimesNewRoman,Bold", "Times-Bold");
-                AddAFM("TimesNewRoman,BoldItalic", "Times-BoldItalic");
-
-                // Acrobat treats these fonts as "standard 14" too (at least Acrobat preflight says so)
-                AddAFM("Symbol,Italic", "Symbol");
-                AddAFM("Symbol,Bold", "Symbol");
-                AddAFM("Symbol,BoldItalic", "Symbol");
-                AddAFM("Times", "Times-Roman");
-                AddAFM("Times,Italic", "Times-Italic");
-                AddAFM("Times,Bold", "Times-Bold");
-                AddAFM("Times,BoldItalic", "Times-BoldItalic");
-
-                // PDFBOX-3457: PDF.js file bug864847.pdf
-                AddAFM("ArialMT", "Helvetica");
-                AddAFM("Arial-ItalicMT", "Helvetica-Oblique");
-                AddAFM("Arial-BoldMT", "Helvetica-Bold");
-                AddAFM("Arial-BoldItalicMT", "Helvetica-BoldOblique");
+                MapName(entry.Value, entry.Key);
             }
-            catch (IOException e)
-            {
-                throw new Exception("Bla bla", e);
-            }
+
+
+            // alternative names from Adobe Supplement to the ISO 32000
+            MapName("CourierCourierNew", FontName.Courier);
+            MapName("CourierNew", FontName.Courier);
+            MapName("CourierNew,Italic", FontName.CourierOblique);
+            MapName("CourierNew,Bold", FontName.CourierBold);
+            MapName("CourierNew,BoldItalic", FontName.CourierBoldOblique);
+            MapName("Arial", FontName.Helvetica);
+            MapName("Arial,Italic", FontName.HelveticaOblique);
+            MapName("Arial,Bold", FontName.HelveticaBold);
+            MapName("Arial,BoldItalic", FontName.HelveticaBoldOblique);
+            MapName("TimesNewRoman", FontName.TimesRoman);
+            MapName("TimesNewRoman,Italic", FontName.TimesItalic);
+            MapName("TimesNewRoman,Bold", FontName.TimesBold);
+            MapName("TimesNewRoman,BoldItalic", FontName.TimesBoldItalic);
+
+            // Acrobat treats these fonts as "standard 14" too (at least Acrobat preflight says so)
+            MapName("Symbol,Italic", FontName.Symbol);
+            MapName("Symbol,Bold", FontName.Symbol);
+            MapName("Symbol,BoldItalic", FontName.Symbol);
+            MapName("Times", FontName.TimesRoman);
+            MapName("Times,Italic", FontName.TimesItalic);
+            MapName("Times,Bold", FontName.TimesBold);
+            MapName("Times,BoldItalic", FontName.TimesBoldItalic);
+
+            // PDFBOX-3457: PDF.js file bug864847.pdf
+            MapName("ArialMT", FontName.Helvetica);
+            MapName("Arial-ItalicMT", FontName.HelveticaOblique);
+            MapName("Arial-BoldMT", FontName.HelveticaBold);
+            MapName("Arial-BoldItalicMT", FontName.HelveticaBoldOblique);
         }
 
         private Standard14Fonts()
         {
         }
 
-        private static void AddAFM(string fontName)
+        /**
+         * Loads the metrics for the base font specified by name. Metric file must exist in the pdfbox jar under
+         * /org/apache/pdfbox/resources/afm/
+         *
+         * @param fontName one of the standard 14 font names for which to load the metrics.
+         * @throws IOException if no metrics exist for that font.
+         */
+        private static FontMetrics LoadMetrics(FontName fontName)
         {
-            AddAFM(fontName, fontName);
-        }
+            string resourceName = $"fonts.afm.{FontNames[fontName]}";
+            using var resourceAsStream = typeof(Standard14Fonts).Assembly.GetManifestResourceStream(resourceName);
+            if (resourceAsStream == null)
+            {
+                throw new IOException($"resource '{resourceName}' not found");
+            }
 
-        private static void AddAFM(string fontName, string afmName)
-        {
-            StandardMapping[fontName] = afmName;
+            using var afmStream = new StreamContainer(resourceAsStream);
+            var parser = new AFMParser(afmStream);
+            return FONTS[fontName] = parser.Parse(true);
         }
 
         /**
-		 * Returns the AFM for the given font.
-		 * @param baseName base name of font
-		 */
+         * Adds an alias name for a standard font to the map of known aliases to the map of aliases (alias as key, standard
+         * name as value). We want a single lookup in tbaseNamehe map to find the font both by a base name or an alias.
+         *
+         * @param alias an alias for the font
+         * @param baseName  the font name of the Standard 14 font
+         */
+        private static void MapName(string alias, FontName baseName)
+        {
+            ALIASES[alias] = baseName;
+        }
+
+        /**
+         * Returns the metrics for font specified by fontName. Loads the font metrics if not already
+         * loaded.
+         *
+         * @param fontName name of font; either a base name or alias
+         * @return the font metrics or null if the name is not one of the known names
+         * @throws IllegalArgumentException if no metrics exist for that font.
+         */
         public static FontMetrics GetAFM(string fontName)
         {
             if (fontName == null)
-                fontName = "Arial";
-            if (!StandardMapping.TryGetValue(fontName, out var baseName))
                 return null;
-
-            if (!StandardAFMMapping.TryGetValue(baseName, out var metric))
+            if (!ALIASES.TryGetValue(fontName, out FontName baseName))
             {
-                using (var afmStream = typeof(Standard14Fonts).Assembly.GetManifestResourceStream("fonts.afm." + baseName))
+                return null;
+            }
+
+            if (!FONTS.TryGetValue(baseName, out var metrix))
+            {
+                lock (FONTS)
                 {
-                    if (afmStream == null)
+                    if (!FONTS.TryGetValue(baseName, out metrix))
                     {
-                        throw new IOException(baseName + " not found");
+                        try
+                        {
+                            FONTS[baseName] = metrix = LoadMetrics(baseName);
+                        }
+                        catch (IOException e)
+                        {
+                            throw new ArgumentException(fontName, e);
+                        }
                     }
-                    AFMParser parser = new AFMParser(afmStream);
-                    StandardAFMMapping[baseName] = metric = parser.Parse(true);
                 }
             }
 
-            return metric;
+            return metrix;
         }
 
         /**
-		 * Returns true if the given font name a Standard 14 font.
-		 * @param baseName base name of font
-		 */
-        public static bool ContainsName(string baseName)
+         * Returns true if the given font name is one of the known names, including alias.
+         *
+         * @param fontName the name of font, either a base name or alias
+         * @return true if the name is one of the known names
+         */
+        public static bool ContainsName(string fontName)
         {
-            return StandardMapping.ContainsKey(baseName);
+            return ALIASES.ContainsKey(fontName);
         }
 
         /**
-		 * Returns the set of Standard 14 font names, including additional names.
-		 */
-        public static ICollection<string> Names
+         * Returns the set of known font names, including aliases.
+         * 
+         * @return the set of known font names
+         */
+        public static IReadOnlyCollection<string> GetNames()
         {
-            get => StandardMapping.Keys;
+            return ALIASES.Keys;
         }
 
         /**
-		 * Returns the name of the actual font which the given font name maps to.
-		 * @param baseName base name of font
-		 */
-        public static string GetMappedFontName(string fontName)
+         * Returns the base name of the font which the given font name maps to.
+         *
+         * @param fontName name of font, either a base name or an alias
+         * @return the base name or null if this is not one of the known names
+         */
+        public static FontName GetMappedFontName(string fontName)
         {
-            return StandardMapping.TryGetValue(fontName, out var name) ? name : null;
+            return ALIASES.TryGetValue(fontName, out var font) ? font : (FontName)(-1);
         }
+
+        public static string GetMappedFontString(string fontName)
+        {
+            return ALIASES.TryGetValue(fontName, out var font) ? FontNames[font] : null;
+        }
+
+        /**
+         * Returns the mapped font for the specified Standard 14 font. The mapped font is cached.
+         *
+         * @param baseName name of the standard 14 font
+         * @return the mapped font
+         */
+        private static BaseFont GetMappedFont(FontName baseName)
+        {
+            if (!GENERIC_FONTS.TryGetValue(baseName, out var box))
+            {
+                lock (GENERIC_FONTS)
+                {
+                    if (!GENERIC_FONTS.TryGetValue(baseName, out box))
+                    {
+                        var type1Font = new FontType1(null, baseName);
+                        GENERIC_FONTS[baseName] = box = type1Font.Font;
+                    }
+                }
+            }
+            return box;
+        }
+
+        /**
+         * Returns the path for the character with the given name for the specified Standard 14 font. The mapped font is
+         * cached. The path may differ in different environments as it depends on the mapped font.
+         *
+         * @param baseName name of the standard 14 font
+         * @param glyphName name of glyph
+         * @return the mapped font
+         * 
+         * @throws IOException if the data could not be read
+         */
+        public static SKPath GetGlyphPath(FontName baseName, string glyphName)
+        {
+            // copied and adapted from PDType1Font.getNameInFont(string)
+            if (!string.Equals(glyphName, ".notdef", StringComparison.Ordinal))
+            {
+                var mappedFont = GetMappedFont(baseName);
+                if (mappedFont != null)
+                {
+                    if (mappedFont.HasGlyph(glyphName))
+                    {
+                        return mappedFont.GetPath(glyphName);
+                    }
+                    var fonName = FontNames[baseName];
+                    var unicodes = getGlyphList(fonName).ToUnicode(glyphName);
+                    if (unicodes != null && unicodes > 255)
+                    {
+                        string uniName = unicodes.Value.GetUniNameOfCodePoint();
+                        if (mappedFont.HasGlyph(uniName))
+                        {
+                            return mappedFont.GetPath(uniName);
+                        }
+                    }
+                    if (string.Equals("SymbolMT", mappedFont.Name))
+                    {
+                        if (SymbolEncoding.Instance.NameToCodeMap.TryGetValue(glyphName, out var code))
+                        {
+                            string uniName = code.GetUniNameOfCodePoint();//code + 0xF000
+                            if (mappedFont.HasGlyph(uniName))
+                            {
+                                return mappedFont.GetPath(uniName);
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        private static GlyphMapping getGlyphList(string baseName)
+        {
+            return FontNames[FontName.ZapfDingbats] == baseName
+                ? GlyphMapping.ZapfDingbats
+                : GlyphMapping.Default;
+        }
+    }
+    /**
+     * Enum for the names of the 14 standard fonts.
+     */
+    public enum FontName
+    {
+        TimesRoman,
+        TimesBold,
+        TimesItalic,
+        TimesBoldItalic,
+        Helvetica,
+        HelveticaBold,
+        HelveticaOblique,
+        HelveticaBoldOblique,
+        Courier,
+        CourierBold,
+        CourierOblique,
+        CourierBoldOblique,
+        Symbol,
+        ZapfDingbats
+
     }
 }

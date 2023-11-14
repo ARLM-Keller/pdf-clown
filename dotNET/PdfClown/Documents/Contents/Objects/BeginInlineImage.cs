@@ -33,19 +33,11 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class BeginInlineImage : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "BI";
 
         public static readonly BeginInlineImage Value = new BeginInlineImage();
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         private BeginInlineImage() : base(OperatorKeyword)
         { }
-        #endregion
-        #endregion
     }
 }

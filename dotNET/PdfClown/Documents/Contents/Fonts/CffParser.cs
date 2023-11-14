@@ -69,8 +69,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
             }
 
-            public static Dict Parse(byte[] data)
-            { return Parse(new Bytes.Buffer(data)); }
+            public static Dict Parse(byte[] data) => Parse(new ByteStream(data));
 
             public static Dict Parse(IInputStream stream)
             {
@@ -106,7 +105,7 @@ namespace PdfClown.Documents.Contents.Fonts
                         { operands.Add(stream.ReadByte() << 24 + stream.ReadByte() << 16 + stream.ReadByte() << 8 + stream.ReadByte()); }
                         else if (b0 == 30) // Variable-length real.
                         {
-                            StringBuilder operandBuilder = new StringBuilder();
+                            var operandBuilder = new StringStream();
                             bool ended = false;
                             do
                             {
@@ -126,21 +125,21 @@ namespace PdfClown.Documents.Contents.Fonts
                                         case 0x7:
                                         case 0x8:
                                         case 0x9:
-                                            operandBuilder.Append(nibble);
+                                            operandBuilder.AppendNumber(nibble);
                                             break;
                                         case 0xa: // Decimal point.
-                                            operandBuilder.Append(".");
+                                            operandBuilder.Append('.');
                                             break;
                                         case 0xb: // Positive exponent.
-                                            operandBuilder.Append("E");
+                                            operandBuilder.Append('E');
                                             break;
                                         case 0xc: // Negative exponent.
-                                            operandBuilder.Append("E-");
+                                            operandBuilder.Append('E').Append('-');
                                             break;
                                         case 0xd: // Reserved.
                                             break;
                                         case 0xe: // Minus.
-                                            operandBuilder.Append("-");
+                                            operandBuilder.Append('-');
                                             break;
                                         case 0xf: // End of number.
                                             ended = true;
@@ -148,7 +147,7 @@ namespace PdfClown.Documents.Contents.Fonts
                                     }
                                 }
                             } while (!ended);
-                            operands.Add(ConvertUtils.ParseDoubleInvariant(operandBuilder.ToString()));
+                            operands.Add(ConvertUtils.ParseDoubleInvariant(operandBuilder.AsSpan()));
                         }
                         else if (b0 >= 32 && b0 <= 246) // 1-byte integer.
                         { operands.Add(b0 - 139); }
@@ -230,11 +229,11 @@ namespace PdfClown.Documents.Contents.Fonts
         private sealed class Index : IList<byte[]>
         {
             public static Index Parse(byte[] data)
-            { return Parse(new Bytes.Buffer(data)); }
+            { return Parse(new Bytes.ByteStream(data)); }
 
             public static Index Parse(IInputStream stream)
             {
-                byte[][] data = new byte[stream.ReadUnsignedShort()][];
+                byte[][] data = new byte[stream.ReadUInt16()][];
                 {
                     int[] offsets = new int[data.Length + 1];
                     int offSize = stream.ReadByte();
@@ -437,13 +436,13 @@ namespace PdfClown.Documents.Contents.Fonts
                         switch (charsetFormat)
                         {
                             case 0:
-                                glyphIndexes[index++] = ToUnicode(fontData.ReadUnsignedShort());
+                                glyphIndexes[index++] = ToUnicode(fontData.ReadUInt16());
                                 break;
                             case 1:
                             case 2:
                                 {
-                                    int first = fontData.ReadUnsignedShort();
-                                    int nLeft = (charsetFormat == 1 ? fontData.ReadByte() : fontData.ReadUnsignedShort());
+                                    int first = fontData.ReadUInt16();
+                                    int nLeft = (charsetFormat == 1 ? fontData.ReadByte() : fontData.ReadUInt16());
                                     for (int rangeItemIndex = first, rangeItemEndIndex = first + nLeft; rangeItemIndex <= rangeItemEndIndex; rangeItemIndex++)
                                     { glyphIndexes[index++] = ToUnicode(rangeItemIndex); }
                                 }

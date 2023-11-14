@@ -38,9 +38,6 @@ namespace PdfClown.Documents.Files
     [PDF(VersionEnum.PDF13)]
     public sealed class EmbeddedFile : PdfObjectWrapper<PdfStream>
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Creates a new embedded file inside the document.</summary>
           <param name="context">Document context.</param>
@@ -50,7 +47,7 @@ namespace PdfClown.Documents.Files
         {
             using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
-                return new EmbeddedFile(context, new Bytes.Stream(fileStream));
+                return new EmbeddedFile(context, new Bytes.StreamContainer(fileStream));
             }
         }
 
@@ -64,43 +61,30 @@ namespace PdfClown.Documents.Files
             return new EmbeddedFile(context, stream);
         }
 
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         private EmbeddedFile(Document context, bytes::IInputStream stream) : base(
             context,
             new PdfStream(
-              new PdfDictionary(
-                new PdfName[] { PdfName.Type },
-                new PdfDirectObject[] { PdfName.EmbeddedFile }
-                ),
-              new bytes::Buffer(stream.ToByteArray())
-              )
-            )
+              new PdfDictionary(1) { { PdfName.Type, PdfName.EmbeddedFile } },
+              new bytes::ByteStream(stream)))
         { }
 
         public EmbeddedFile(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the creation date of this file.</summary>
         */
         public DateTime? CreationDate
         {
-            get => Params.GetDate(PdfName.CreationDate);
+            get => Params.GetNDate(PdfName.CreationDate);
             set => Params.SetDate(PdfName.CreationDate, value);
         }
 
         /**
           <summary>Gets the data contained within this file.</summary>
         */
-        public bytes::IBuffer Data => BaseDataObject.Body;
+        public bytes::IByteStream Data => BaseDataObject.Body;
 
         /**
           <summary>Gets/Sets the MIME media type name of this file [RFC 2046].</summary>
@@ -116,7 +100,7 @@ namespace PdfClown.Documents.Files
         */
         public DateTime? ModificationDate
         {
-            get => Params.GetDate(PdfName.ModDate);
+            get => Params.GetNDate(PdfName.ModDate);
             set => Params.SetDate(PdfName.ModDate, value);
         }
 
@@ -128,17 +112,12 @@ namespace PdfClown.Documents.Files
             get => Params.GetInt(PdfName.Size);
             set => Params.SetInt(PdfName.Size, value);
         }
-        #endregion
 
-        #region private
         /**
           <summary>Gets the file parameters.</summary>
         */
         private PdfDictionary Params => Header.Resolve<PdfDictionary>(PdfName.Params);
 
         private PdfDictionary Header => BaseDataObject.Header;
-        #endregion
-        #endregion
-        #endregion
     }
 }

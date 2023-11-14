@@ -32,7 +32,7 @@ namespace PdfClown.Bytes.Filters
      */
     public class CCITTFaxFilter : Filter
     {
-        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             // get decode parameters
             PdfDictionary decodeParms = parameters as PdfDictionary;
@@ -46,17 +46,17 @@ namespace PdfClown.Bytes.Filters
                 blackIs1: decodeParms.GetBool(PdfName.BlackIs1)
                 );
             var decoder = new CCITTFaxDecoder(data, ccittFaxParams);
-            using (var output = new Bytes.Buffer())
+            using (var output = new ByteStream())
             {
                 var currentByte = 0;
                 while ((currentByte = decoder.ReadNextChar()) > -1)
                 {
-                    output.Append(FiltersExtension.ToByte(currentByte));
+                    output.WriteByte(FiltersExtension.ToByte(currentByte));
                 }
-                return output.GetBuffer();
+                return output.AsMemory();
             }
         }
-        public override byte[] Encode(Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             throw new NotImplementedException();
         }

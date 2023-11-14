@@ -52,8 +52,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private double YB;
         private double ZB;
         private double G;
-        #region dynamic
-        #region constructors
+        private float[] gamma;
+
         // TODO:IMPL new element constructor!
 
         internal CalGrayColorSpace(PdfDirectObject baseObject) : base(baseObject)
@@ -73,10 +73,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
             this.G = gamma;
         }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
@@ -84,17 +81,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color DefaultColor => CalGrayColor.Default;
 
-        public override float[] Gamma
-        {
-            get
-            {
-                IPdfNumber gammaObject = (IPdfNumber)Dictionary[PdfName.Gamma];
-                return (gammaObject == null
-                  ? new float[] { 1 }
-                  : new float[] { gammaObject.FloatValue }
-                  );
-            }
-        }
+        public override float[] Gamma => gamma ??= new float[] { Dictionary.GetFloat(PdfName.Gamma, 1) };
 
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         { return new CalGrayColor(components); }
@@ -108,7 +95,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return Calculate(grayColor.G, alpha);
         }
 
-        public override SKColor GetSKColor(float[] components, float? alpha = null)
+        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
         {
             return Calculate(components[0], alpha);
         }
@@ -132,11 +119,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
             return skColor;
         }
-
-
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

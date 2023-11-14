@@ -36,10 +36,8 @@ namespace PdfClown.Documents.Contents.Layers
       [PDF:1.7:4.10.1].</summary>
     */
     [@PDF(VersionEnum.PDF16)]
-    public class VisibilityExpression
-      : PdfObjectWrapper<PdfArray>
+    public class VisibilityExpression : PdfObjectWrapper<PdfArray>
     {
-        #region types
         public enum OperatorEnum
         {
             And,
@@ -104,12 +102,9 @@ namespace PdfClown.Documents.Contents.Layers
                     throw new ArgumentException("Operand MUST be either VisibilityExpression or Layer");
             }
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         public VisibilityExpression(Document context, OperatorEnum @operator, params IPdfObjectWrapper[] operands)
-            : base(context, new PdfArray((PdfDirectObject)null))
+            : base(context, new PdfArray(operands?.Length ?? 1) { (PdfDirectObject)null })
         {
             Operator = @operator;
             var operands_ = Operands;
@@ -119,45 +114,37 @@ namespace PdfClown.Documents.Contents.Layers
 
         public VisibilityExpression(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public Array<IPdfObjectWrapper> Operands => new OperandsImpl(BaseObject);
+        public Array<IPdfObjectWrapper> Operands => Wrap<OperandsImpl>(BaseObject);
 
         public OperatorEnum Operator
         {
-            get => OperatorEnumExtension.Get((PdfName)BaseDataObject[0]);
+            get => OperatorEnumExtension.Get(BaseDataObject.GetString(0));
             set
             {
                 if (value == OperatorEnum.Not && BaseDataObject.Count > 2)
                     throw new ArgumentException("'Not' operator requires only one operand.");
 
-                BaseDataObject[0] = value.GetName();
+                BaseDataObject.SetName(0, value.GetName());
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     internal static class OperatorEnumExtension
     {
-        private static readonly BiDictionary<VisibilityExpression.OperatorEnum, PdfName> codes;
+        private static readonly BiDictionary<VisibilityExpression.OperatorEnum, string> codes;
 
         static OperatorEnumExtension()
         {
-            codes = new BiDictionary<VisibilityExpression.OperatorEnum, PdfName>
+            codes = new BiDictionary<VisibilityExpression.OperatorEnum, string>
             {
-                [VisibilityExpression.OperatorEnum.And] = PdfName.And,
-                [VisibilityExpression.OperatorEnum.Not] = PdfName.Not,
-                [VisibilityExpression.OperatorEnum.Or] = PdfName.Or
+                [VisibilityExpression.OperatorEnum.And] = PdfName.And.StringValue,
+                [VisibilityExpression.OperatorEnum.Not] = PdfName.Not.StringValue,
+                [VisibilityExpression.OperatorEnum.Or] = PdfName.Or.StringValue
             };
         }
 
-        public static VisibilityExpression.OperatorEnum Get(
-          PdfName name
-          )
+        public static VisibilityExpression.OperatorEnum Get(string name)
         {
             if (name == null)
                 throw new ArgumentNullException();
@@ -169,10 +156,7 @@ namespace PdfClown.Documents.Contents.Layers
             return @operator.Value;
         }
 
-        public static PdfName GetName(
-          this VisibilityExpression.OperatorEnum @operator
-          )
-        { return codes[@operator]; }
+        public static string GetName(this VisibilityExpression.OperatorEnum @operator) => codes[@operator];
     }
 }
 

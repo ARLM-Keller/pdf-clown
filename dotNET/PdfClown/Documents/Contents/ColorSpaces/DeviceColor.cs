@@ -33,9 +33,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     */
     public abstract class DeviceColor : LeveledColor
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Gets the color corresponding to the specified components.</summary>
           <param name="components">Color components to convert.</param>
@@ -59,18 +56,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     return null;
             }
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         protected DeviceColor(DeviceColorSpace colorSpace, PdfDirectObject baseObject)
             : base(colorSpace, baseObject)
         { }
-        #endregion
 
         public abstract bool IsZero { get; }
-        #endregion
     }
 }

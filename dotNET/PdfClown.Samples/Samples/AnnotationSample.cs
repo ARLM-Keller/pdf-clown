@@ -42,7 +42,7 @@ namespace PdfClown.Samples.CLI
             document.Pages.Add(page);
 
             PrimitiveComposer composer = new PrimitiveComposer(page);
-            fonts::PdfType1Font font = fonts::PdfType1Font.Load(document, fonts::PdfType1Font.FamilyEnum.Courier, true, false);
+            fonts::FontType1 font = fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false);
             composer.SetFont(font, 12);
 
             // Sticky note.
@@ -220,7 +220,7 @@ namespace PdfClown.Samples.CLI
             // Rubber stamp.
             composer.ShowText("Rubber stamp annotations:", new SKPoint(35, 505));
             {
-                fonts::Font stampFont = fonts::PdfType0Font.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
+                fonts::Font stampFont = fonts::FontType0.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
                 new Stamp(
                   page,
                   new SKPoint(75, 570),
@@ -247,7 +247,7 @@ namespace PdfClown.Samples.CLI
                     Subject = "Custom stamp"
                 };
 
-                fonts::Font stampFont2 = fonts::PdfType0Font.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "MgOpenCanonicaRegular.ttf"));
+                fonts::Font stampFont2 = fonts::FontType0.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "MgOpenCanonicaRegular.ttf"));
                 new Stamp(
                   page,
                   new SKPoint(350, 570),

@@ -40,8 +40,6 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF15)]
     public sealed class Polygon : VertexShape
     {
-        #region dynamic
-        #region constructors
         public Polygon(Page page, SKRect box, string text)
             : base(page, box, text, PdfName.Polygon)
         { }
@@ -49,10 +47,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Polygon(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #endregion
-        #endregion
     }
 }

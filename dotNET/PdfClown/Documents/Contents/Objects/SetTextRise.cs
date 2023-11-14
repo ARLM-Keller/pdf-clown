@@ -34,17 +34,10 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Set the text rise' operation [PDF:1.6:5.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetTextRise
-      : Operation
+    public sealed class SetTextRise : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "Ts";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetTextRise(double value)
             : base(OperatorKeyword, PdfReal.Get(value))
         { }
@@ -52,10 +45,7 @@ namespace PdfClown.Documents.Contents.Objects
         public SetTextRise(IList<PdfDirectObject> operands)
             : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         { state.Rise = Value; }
 
@@ -68,8 +58,5 @@ namespace PdfClown.Documents.Contents.Objects
             get => ((IPdfNumber)operands[0]).FloatValue;
             set => operands[0] = PdfReal.Get(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

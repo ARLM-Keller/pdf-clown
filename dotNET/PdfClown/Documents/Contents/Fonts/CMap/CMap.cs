@@ -50,6 +50,10 @@ using System.Reflection;
 using PdfClown.Bytes;
 using System.Diagnostics;
 using PdfClown.Util.IO;
+using System.Collections;
+using System.Collections.ObjectModel;
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
@@ -58,14 +62,13 @@ namespace PdfClown.Documents.Contents.Fonts
     */
     public sealed class CMap
     {
-        #region static
         private static readonly int SPACE = ' ';
-        #region interface
+        private static readonly ConcurrentDictionary<string, CMap> cMapCache = new();
         /**
           <summary>Gets the character map extracted from the given data.</summary>
           <param name="stream">Character map data.</param>
         */
-        public static CMap Get(bytes::IInputStream stream)
+        public static CMap Get(IInputStream stream)
         {
             CMapParser parser = new CMapParser(stream);
             return parser.Parse();
@@ -92,58 +95,69 @@ namespace PdfClown.Documents.Contents.Fonts
           <summary>Gets the character map extracted from the given data.</summary>
           <param name="stream">Character map data.</param>
         */
-        public static CMap Get(PdfStream stream)
-        { return Get(stream.Body); }
+        public static CMap Get(PdfStream stream) => Get(stream.Body);
 
         /**
           <summary>Gets the character map corresponding to the given name.</summary>
           <param name="name">Predefined character map name.</param>
           <returns>null, in case no name matching occurs.</returns>
         */
-        public static CMap Get(PdfName name)
-        { return Get(name.ToString()); }
+        public static CMap Get(PdfName name) => Get(name.ToString());
 
         /**
           <summary>Gets the character map corresponding to the given name.</summary>
           <param name="name">Predefined character map name.</param>
           <returns>null, in case no name matching occurs.</returns>
         */
-        public static CMap Get(string name)
+        public static CMap Get(string name) => cMapCache.GetOrAdd(name, Load);
+
+        private static CMap Load(string name)
         {
             using (var cmapResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("fonts.cmap." + name))
             {
                 if (cmapResourceStream == null)
                     return null;
 
-                return Get(new bytes::Buffer(cmapResourceStream));
+                return Get(new ByteStream(cmapResourceStream));
             }
         }
-        #endregion
-        #endregion
+
         private int minCodeLength = 4;
         private int maxCodeLength;
         private string cmapName;
-        private int cMapType;
+        //private string cmapVersion;
+        private int cMapType = -1;
         private string registry;
         private string ordering;
+        //private int supplement;
         private int wMode;
         private int spaceMapping;
+        private int minCidLength = 4;
+        private int maxCidLength = 0;
 
         // code lengths
         private readonly List<CodespaceRange> codespaceRanges = new List<CodespaceRange>();
         // Unicode mappings
         private readonly Dictionary<int, int> charToUnicode = new Dictionary<int, int>();
-        private readonly Dictionary<int, byte[]> unicodeToChar = new Dictionary<int, byte[]>();
+        private readonly Dictionary<int, byte[]> unicodeToByteCodes = new Dictionary<int, byte[]>();
         // CID mappings
-        private readonly Dictionary<int, int> codeToCid = new Dictionary<int, int>();
-        private readonly List<CIDRange> codeToCidRanges = new List<CIDRange>();
+        private readonly Dictionary<int, Dictionary<int, int>> codeToCid = new();
+        private readonly List<CIDRange> codeToCidRanges = new();
 
-        #region constructors
         public CMap()
         { }
 
-        public int MinCodeLength { get => minCodeLength; set => minCodeLength = value; }
-        public int MaxCodeLength { get => maxCodeLength; set => maxCodeLength = value; }
+        public int MinCodeLength
+        {
+            get => minCodeLength;
+            set => minCodeLength = value;
+        }
+
+        public int MaxCodeLength
+        {
+            get => maxCodeLength;
+            set => maxCodeLength = value;
+        }
 
         public string CMapName
         {
@@ -206,14 +220,35 @@ namespace PdfClown.Documents.Contents.Fonts
          * @param code character code
          * @return Unicode characters (may be more than one, e.g "fi" ligature)
          */
-        public int ToUnicode(int code)
+        public int? ToUnicode(int code)
         {
-            return charToUnicode.TryGetValue(code, out var unicode) ? unicode : -1;
+            return charToUnicode.TryGetValue(code, out var unicode) ? unicode : null;
         }
 
         public byte[] ToCode(int unicode)
         {
-            return unicodeToChar.TryGetValue(unicode, out var codes) ? codes : null;
+            return unicodeToByteCodes.TryGetValue(unicode, out var codes) ? codes : null;
+        }
+
+        /**
+       * Returns the CID for the given character code.
+     *
+     * @param code character code as byte array
+     * @return CID
+     */
+        public int? ToCID(ReadOnlySpan<byte> code)
+        {
+            if (!HasCIDMappings || code.Length < minCidLength || code.Length > maxCidLength)
+            {
+                return 0;
+            }
+            int? cid = null;
+            if (codeToCid.TryGetValue(code.Length, out var subSid)
+                && subSid.TryGetValue(code.ReadIntOffset(), out var exist))
+            {
+                cid = exist;
+            }
+            return cid ?? ToCIDFromRanges(code);
         }
 
         /**
@@ -222,15 +257,55 @@ namespace PdfClown.Documents.Contents.Fonts
          * @param code character code
          * @return CID
          */
-        public int ToCID(int code)
+        public int? ToCID(int code)
         {
-            if (codeToCid.TryGetValue(code, out var cid))
+            if (!HasCIDMappings)
             {
-                return cid;
+                return 0;
             }
+            int? cid = null;
+            int length = minCidLength;
+            while ((cid ?? 0) == 0 && (length <= maxCidLength))
+            {
+                cid = ToCID(code, length++);
+            }
+            return cid;
+        }
+
+        /**
+     * Returns the CID for the given character code.
+     *
+     * @param code   character code
+     * @param length the origin byte length of the code
+     * @return CID
+     */
+        public int? ToCID(int code, int length)
+        {
+            if (!HasCIDMappings || length < minCidLength || length > maxCidLength)
+            {
+                return 0;
+            }
+            int? cid = null;
+            if (codeToCid.TryGetValue(length, out var subCid))
+            {
+                if (subCid.TryGetValue(code, out var exist))
+                    cid = exist;
+            }
+            return cid ?? ToCIDFromRanges(code, length);
+        }
+
+        /**
+     * Returns the CID for the given character code.
+     *
+     * @param code character code
+     * @return CID
+     */
+
+        private int ToCIDFromRanges(int code, int length)
+        {
             foreach (CIDRange range in codeToCidRanges)
             {
-                int ch = range.Map((char)code);
+                int ch = range.Map(code, length);
                 if (ch != -1)
                 {
                     return ch;
@@ -240,6 +315,58 @@ namespace PdfClown.Documents.Contents.Fonts
         }
 
         /**
+     * Returns the CID for the given character code.
+     *
+     * @param code character code
+     * @return CID
+     */
+        private int ToCIDFromRanges(ReadOnlySpan<byte> code)
+        {
+            foreach (CIDRange range in codeToCidRanges)
+            {
+                int ch = range.Map(code);
+                if (ch != -1)
+                {
+                    return ch;
+                }
+            }
+            return 0;
+        }
+
+        /**
+     * Convert the given part of a byte array to an integer.
+     * 
+     * @param data   the byte array
+     * @param offset The offset into the byte array.
+     * @param length The length of the data we are getting.
+     * @return the resulting integer
+     */
+        private int GetCodeFromArray(ReadOnlySpan<byte> data)
+        {
+            int code = 0;
+            for (int i = 0; i < data.Length; i++)
+            {
+                code <<= 8;
+                code |= (data[i] + 256) % 256;
+            }
+            return code;
+        }
+
+
+        //private int? ToCIDFromRanges(int code)
+        //{
+        //    foreach (CIDRange range in codeToCidRanges)
+        //    {
+        //        int ch = range.Map((char)code);
+        //        if (ch != -1)
+        //        {
+        //            return ch;
+        //        }
+        //    }
+        //    return null;
+        //}
+
+        /**
          * Reads a character code from a string in the content stream.
          * <p>See "CMap Mapping" and "Handling Undefined Characters" in PDF32000 for more details.
          *
@@ -247,42 +374,47 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return character code
          * @throws IOException if there was an error reading the stream or CMap
          */
-        public int ReadCode(Bytes.IInputStream input, out byte[] bytes)
+        public int ReadCode(IInputStream input, out ReadOnlySpan<byte> bytes)
         {
-            bytes = new byte[maxCodeLength];
-            var temp = input.Position + minCodeLength;
-            input.Read(bytes, 0, minCodeLength);
+            var temp = input.Position;
+            bytes = input.ReadSpan(maxCodeLength);
+            var code = ReadCode(bytes, out var byteCount);
+            if ((temp + byteCount) < input.Position)
+            {
+                input.Skip((temp + byteCount) - input.Position);
+            }
+            return code;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int ReadCode(ReadOnlySpan<byte> bytes, out int byteCount)
+        {
+            byteCount = 0;
             for (int i = minCodeLength - 1; i < maxCodeLength; i++)
             {
-                int byteCount = i + 1;
+                byteCount = i + 1;
                 foreach (CodespaceRange range in codespaceRanges)
                 {
                     if (range.IsFullMatch(bytes, byteCount))
                     {
-                        return ConvertUtils.ByteArrayToNumber(bytes, 0, byteCount, ByteOrderEnum.BigEndian);
+                        return bytes.Slice(0, byteCount).ReadIntOffset();
                     }
                 }
-                if (byteCount < maxCodeLength)
-                {
-                    bytes[byteCount] = (byte)input.ReadByte();
-                }
             }
-            if (temp < input.Position)
-            {
-                input.Skip(temp - input.Position);
-            }
+#if DEBUG
             MissCode(bytes);
-            return ConvertUtils.ByteArrayToNumber(bytes, 0, minCodeLength, ByteOrderEnum.BigEndian);
+#endif
+            return bytes.Slice(0, byteCount).ReadIntOffset();
         }
 
-        private void MissCode(byte[] bytes)
+        private void MissCode(ReadOnlySpan<byte> bytes)
         {
             string seq = "";
             for (int i = 0; i < maxCodeLength; ++i)
             {
-                seq += $"{bytes[i]} ({bytes[i]}) ";
+                seq += $"{bytes[i]} ({bytes[i]:x2}) ";
             }
-            Debug.WriteLine("warn: Invalid character code sequence " + seq + "in CMap " + cmapName);
+            Debug.WriteLine($"warn: Invalid character code sequence {seq}in CMap {cmapName}");
         }
 
         public int ReadCode(byte[] code)
@@ -298,7 +430,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     if (range.IsFullMatch(bytes, byteCount))
                     {
-                        return ConvertUtils.ByteArrayToNumber(bytes, 0, byteCount, ByteOrderEnum.BigEndian);
+                        return ConvertUtils.ReadIntOffset(bytes, 0, byteCount, ByteOrderEnum.BigEndian);
                     }
                 }
                 if (byteCount < maxCodeLength)
@@ -327,10 +459,22 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             foreach (var codeCid in cmap.codeToCid)
             {
-                codeToCid[codeCid.Key] = codeCid.Value;
+                if (!codeToCid.TryGetValue(codeCid.Key, out var existingMapping))
+                    codeToCid[codeCid.Key] = existingMapping = new Dictionary<int, int>();
+                foreach (var sub in codeCid.Value)
+                {
+                    existingMapping[sub.Key] = sub.Value;
+                }
             }
-
+            foreach (var unicideBytes in cmap.unicodeToByteCodes)
+            {
+                unicodeToByteCodes[unicideBytes.Key] = unicideBytes.Value;
+            }
             codeToCidRanges.AddRange(cmap.codeToCidRanges);
+            maxCodeLength = Math.Max(maxCodeLength, cmap.maxCodeLength);
+            minCodeLength = Math.Min(minCodeLength, cmap.minCodeLength);
+            maxCidLength = Math.Max(maxCidLength, cmap.maxCidLength);
+            minCidLength = Math.Min(minCidLength, cmap.minCidLength);
         }
 
         /**
@@ -338,13 +482,11 @@ namespace PdfClown.Documents.Contents.Fonts
          * @param codes The character codes to map from.
          * @param unicode The Unicode characters to map to.
           */
-        internal void AddCharMapping(byte[] codes, int unicode)
+        internal void AddCharMapping(ReadOnlySpan<byte> codes, int unicode)
         {
-            int code = ConvertUtils.ByteArrayToInt(codes);
+            unicodeToByteCodes[unicode] = codes.ToArray();
+            int code = codes.ReadIntOffset();
             charToUnicode[code] = unicode;
-            var copy = new byte[codes.Length];
-            Array.Copy(codes, copy, codes.Length);
-            unicodeToChar[unicode] = copy;
 
             // fixme: ugly little hack
             if (SPACE.Equals(unicode))
@@ -359,29 +501,43 @@ namespace PdfClown.Documents.Contents.Fonts
          * @param code character code
          * @param cid CID
          */
-        internal void AddCIDMapping(int code, int cid)
+        internal void AddCIDMapping(ReadOnlySpan<byte> code, int cid)
         {
-            codeToCid[cid] = code;
+            if (!codeToCid.TryGetValue(code.Length, out var codeToCidMap))
+            {
+                codeToCidMap = new();
+                codeToCid[code.Length] = codeToCidMap;
+                minCidLength = Math.Min(minCidLength, code.Length);
+                maxCidLength = Math.Max(maxCidLength, code.Length);
+            }
+            codeToCidMap[code.ReadIntOffset()] = cid;
         }
 
         /**
-         * This will add a CID Range.
-         *
-         * @param from starting character of the CID range.
-         * @param to ending character of the CID range.
-         * @param cid the cid to be started with.
-         *
-         */
-        internal void AddCIDRange(char from, char to, int cid)
+     * This will add a CID Range.
+     *
+     * @param from starting character of the CID range.
+     * @param to ending character of the CID range.
+     * @param cid the cid to be started with.
+     *
+     */
+        public void AddCIDRange(ReadOnlySpan<byte> from, ReadOnlySpan<byte> to, int cid)
+        {
+            AddCIDRange(codeToCidRanges, from.ReadIntOffset(), to.ReadIntOffset(), cid, from.Length);
+        }
+
+        private void AddCIDRange(List<CIDRange> cidRanges, int from, int to, int cid, int length)
         {
             CIDRange lastRange = null;
-            if (codeToCidRanges.Count > 0)
+            if (cidRanges.Count > 0)
             {
-                lastRange = codeToCidRanges[codeToCidRanges.Count - 1];
+                lastRange = cidRanges[cidRanges.Count - 1];
             }
-            if (lastRange == null || !lastRange.Extend(from, to, cid))
+            if (lastRange == null || !lastRange.Extend(from, to, cid, length))
             {
-                codeToCidRanges.Add(new CIDRange(from, to, cid));
+                cidRanges.Add(new CIDRange(from, to, cid, length));
+                minCidLength = Math.Min(minCidLength, length);
+                maxCidLength = Math.Max(maxCidLength, length);
             }
         }
 
@@ -393,11 +549,8 @@ namespace PdfClown.Documents.Contents.Fonts
         internal void AddCodespaceRange(CodespaceRange range)
         {
             codespaceRanges.Add(range);
-            maxCodeLength = Math.Max(maxCodeLength, range.GetCodeLength());
-            minCodeLength = Math.Min(minCodeLength, range.GetCodeLength());
+            maxCodeLength = Math.Max(maxCodeLength, range.CodeLength);
+            minCodeLength = Math.Min(minCodeLength, range.CodeLength);
         }
-
-
-        #endregion
     }
 }

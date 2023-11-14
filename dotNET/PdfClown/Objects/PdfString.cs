@@ -32,6 +32,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 
 namespace PdfClown.Objects
 {
@@ -46,13 +47,12 @@ namespace PdfClown.Objects
         </list>
       </remarks>
     */
-    public class PdfString : PdfSimpleObject<byte[]>, IDataWrapper, IPdfString
+    public class PdfString : PdfSimpleObject<Memory<byte>>, IDataWrapper, IPdfString
     {
         /*
           NOTE: String objects are internally represented as unescaped sequences of bytes.
           Escaping is applied on serialization only.
         */
-        #region types
         /**
           <summary>String serialization mode.</summary>
         */
@@ -67,15 +67,12 @@ namespace PdfClown.Objects
             */
             Hex
         };
-        #endregion
 
-        #region static
         public static PdfString Get(string value)
         {
             return value != null ? new PdfString(value) : null;
         }
 
-        #region fields
         public static readonly PdfString Default = new PdfString("");
 
         private const byte BackspaceCode = 8;
@@ -89,32 +86,17 @@ namespace PdfClown.Objects
         private const byte LiteralEscapeCode = 92;
         private const byte LiteralLeftDelimiterCode = 40;
         private const byte LiteralRightDelimiterCode = 41;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private SerializationModeEnum serializationMode = SerializationModeEnum.Literal;
-        #endregion
+        protected string stringValue;
 
-        #region constructors
-        public PdfString(byte[] rawValue)
-        {
-            RawValue = rawValue;
-        }
-
-        public PdfString(string value)
-        {
-            Value = value;
-        }
-
-        public PdfString(byte[] rawValue, SerializationModeEnum serializationMode)
+        public PdfString(Memory<byte> rawValue, SerializationModeEnum serializationMode = SerializationModeEnum.Literal)
         {
             SerializationMode = serializationMode;
             RawValue = rawValue;
         }
 
-        public PdfString(string value, SerializationModeEnum serializationMode)
+        public PdfString(string value, SerializationModeEnum serializationMode = SerializationModeEnum.Literal)
         {
             SerializationMode = serializationMode;
             Value = value;
@@ -122,34 +104,25 @@ namespace PdfClown.Objects
 
         protected PdfString()
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override PdfObject Accept(IVisitor visitor, object data)
-        {
-            return visitor.Visit(this, data);
-        }
+        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 
         public override int CompareTo(PdfDirectObject obj)
         {
             if (!(obj is PdfString objString))
                 throw new ArgumentException("Object MUST be a PdfString");
 
-            return string.Compare(StringValue, ((PdfString)obj).StringValue, StringComparison.Ordinal);
+            return string.CompareOrdinal(StringValue, objString.StringValue);
         }
 
         public override bool Equals(object @object)
         {
             if (@object is PdfString objString)
-                return string.Equals(StringValue, objString.StringValue, StringComparison.Ordinal);
+                return RawValue.Span.SequenceEqual(objString.RawValue.Span);
             return base.Equals(@object);
         }
 
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+        public override int GetHashCode() => RawValue.GetHashCode();
 
         /**
           <summary>Gets/Sets the serialization mode.</summary>
@@ -162,19 +135,27 @@ namespace PdfClown.Objects
 
         public string StringValue => (string)Value;
 
-        public byte[] ToByteArray()
-        {
-            return (byte[])RawValue.Clone();
-        }
+        public byte[] ToArray() => RawValue.ToArray();
 
-        public byte[] GetBuffer()
+        public Memory<byte> AsMemory() => RawValue;
+
+        public Span<byte> AsSpan() => RawValue.Span;
+
+        public byte[] GetArrayBuffer()
         {
-            return RawValue;
+            return Unsafe.As<Memory<byte>, ArraySegment<byte>>(ref value).Array;
         }
 
         public void SetBuffer(byte[] data)
         {
             RawValue = data;
+            stringValue = null;
+        }
+
+        public void SetBuffer(Memory<byte> data)
+        {
+            RawValue = data;
+            stringValue = null;
         }
 
         public override string ToString()
@@ -194,24 +175,29 @@ namespace PdfClown.Objects
         {
             get
             {
+                if (stringValue != null)
+                    return stringValue;
                 switch (SerializationMode)
                 {
                     case SerializationModeEnum.Literal:
-                        return tokens::Encoding.Pdf.Decode(RawValue);
+                        return stringValue = tokens::Encoding.Pdf.Decode(RawValue.Span);
                     case SerializationModeEnum.Hex:
-                        return ConvertUtils.ByteArrayToHex(RawValue);
+                        return stringValue = tokens::Encoding.Pdf.Decode(RawValue.Span);
                     default:
                         throw new NotImplementedException(SerializationMode + " serialization mode is not implemented.");
                 }
             }
             protected set
             {
+
                 switch (SerializationMode)
                 {
                     case SerializationModeEnum.Literal:
-                        RawValue = tokens::Encoding.Pdf.Encode((string)value);
+                        stringValue = (string)value;
+                        RawValue = tokens::Encoding.Pdf.Encode(stringValue);
                         break;
                     case SerializationModeEnum.Hex:
+                        stringValue = null;
                         RawValue = ConvertUtils.HexStringToByteArray((string)value);
                         break;
                     default:
@@ -222,9 +208,9 @@ namespace PdfClown.Objects
 
         public override void WriteTo(IOutputStream stream, Files.File context)
         {
-            MemoryStream buffer = new MemoryStream();
+            var buffer = stream;
             {
-                byte[] rawValue = RawValue;
+                var rawValue = RawValue.Span;
                 switch (SerializationMode)
                 {
                     case SerializationModeEnum.Literal:
@@ -267,18 +253,13 @@ namespace PdfClown.Objects
                         break;
                     case SerializationModeEnum.Hex:
                         buffer.WriteByte(HexLeftDelimiterCode);
-                        byte[] value = tokens::Encoding.Pdf.Encode(ConvertUtils.ByteArrayToHex(rawValue));
-                        buffer.Write(value, 0, value.Length);
+                        buffer.Write(ConvertUtils.ByteArrayToHex(rawValue));
                         buffer.WriteByte(HexRightDelimiterCode);
                         break;
                     default:
                         throw new NotImplementedException();
                 }
             }
-            stream.Write(buffer.ToArray());
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -15,8 +15,7 @@ namespace PdfClown.Tools
     //https://github.com/mono/SkiaSharp.Extended/blob/master/SkiaSharp.Extended.Svg/source/SkiaSharp.Extended.Svg.Shared/SKSvg.cs
     public class SvgImage
     {
-        public static readonly Dictionary<string, SvgImage> SvgCache
-            = new Dictionary<string, SvgImage>(StringComparer.Ordinal);
+        public static readonly Dictionary<string, SvgImage> SvgCache = new Dictionary<string, SvgImage>(StringComparer.Ordinal);
         private static readonly char[] WS = new char[] { ' ', '\t', '\n', '\r' };
         private static readonly Regex unitRe = new Regex("px|pt|em|ex|pc|cm|mm|in");
         private static readonly Regex percRe = new Regex("%");

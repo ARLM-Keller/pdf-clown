@@ -40,7 +40,6 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public abstract class MediaOffset : PdfObjectWrapper<PdfDictionary>
     {
-        #region types
         /**
           <summary>Media offset frame [PDF:1.7:9.1.5].</summary>
         */
@@ -57,14 +56,14 @@ namespace PdfClown.Documents.Multimedia
             */
             public override object Value
             {
-                get => ((PdfInteger)BaseDataObject[PdfName.F]).IntValue;
+                get => BaseDataObject.GetInt(PdfName.F);
                 set
                 {
                     int intValue = (int)value;
                     if (intValue < 0)
                         throw new ArgumentException("MUST be non-negative.");
 
-                    BaseDataObject[PdfName.F] = PdfInteger.Get(intValue);
+                    BaseDataObject.SetInt(PdfName.F, intValue);
                 }
             }
         }
@@ -87,8 +86,8 @@ namespace PdfClown.Documents.Multimedia
             */
             public override object Value
             {
-                get => ((PdfTextString)BaseDataObject[PdfName.M]).StringValue;
-                set => BaseDataObject[PdfName.M] = PdfTextString.Get(value);
+                get => BaseDataObject.GetString(PdfName.M);
+                set => BaseDataObject.SetText(PdfName.M, (string)value);
             }
         }
 
@@ -114,11 +113,7 @@ namespace PdfClown.Documents.Multimedia
 
             private Timespan Timespan => new Timespan(BaseDataObject[PdfName.T]);
         }
-        #endregion
 
-        #region static
-        #region interface
-        #region public
         public static MediaOffset Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
@@ -147,28 +142,18 @@ namespace PdfClown.Documents.Multimedia
             else
                 throw new NotSupportedException();
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         protected MediaOffset(Document context, PdfName subtype)
-            : base(
-            context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type, PdfName.S },
-              new PdfDirectObject[] { PdfName.MediaOffset, subtype }
-              )
-            )
+            : base(context, new PdfDictionary(2)
+            {
+                { PdfName.Type,PdfName.MediaOffset },
+                { PdfName.S, subtype },
+              })
         { }
 
         public MediaOffset(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the offset value.</summary>
         */
@@ -177,8 +162,5 @@ namespace PdfClown.Documents.Multimedia
             get;
             set;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

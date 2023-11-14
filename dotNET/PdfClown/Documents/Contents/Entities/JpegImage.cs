@@ -41,38 +41,27 @@ namespace PdfClown.Documents.Contents.Entities
     /**
       <summary>JPEG image object [ISO 10918-1;JFIF:1.02].</summary>
     */
-    public sealed class JpegImage
-      : Image
+    public sealed class JpegImage : Image
     {
-        #region dynamic
-        #region constructors
-        public JpegImage(System.IO.Stream stream) : base(stream)
+        public JpegImage(Stream stream) : base(stream)
         { Load(); }
-        #endregion
 
-        #region interface
-        #region public
         public override ContentObject ToInlineObject(PrimitiveComposer composer)
         {
             return composer.Add(
               new InlineImage(
                 new InlineImageHeader(
-                  new List<PdfDirectObject>(
-                    new PdfDirectObject[]
+                  new List<PdfDirectObject>
                     {
                 PdfName.W, PdfInteger.Get(Width),
                 PdfName.H, PdfInteger.Get(Height),
                 PdfName.CS, PdfName.RGB,
                 PdfName.BPC, PdfInteger.Get(BitsPerComponent),
                 PdfName.F, PdfName.DCT
-                    }
-                    )
-                  ),
+                    }),
                 new InlineImageBody(
-                  new bytes::Buffer(Stream)
-                  )
-                )
-              );
+                  new bytes::ByteStream(Stream)
+                  )));
         }
 
         public override xObjects::XObject ToXObject(Document context)
@@ -80,31 +69,17 @@ namespace PdfClown.Documents.Contents.Entities
             return new xObjects::ImageXObject(
               context,
               new PdfStream(
-                new PdfDictionary(
-                  new PdfName[]
-                  {
-              PdfName.Width,
-              PdfName.Height,
-              PdfName.BitsPerComponent,
-              PdfName.ColorSpace,
-              PdfName.Filter
-                  },
-                  new PdfDirectObject[]
-                  {
-              PdfInteger.Get(Width),
-              PdfInteger.Get(Height),
-              PdfInteger.Get(BitsPerComponent),
-              PdfName.DeviceRGB,
-              PdfName.DCTDecode
-                  }
-                  ),
-                new bytes::Buffer(Stream)
-                )
-              );
+                new PdfDictionary(5)
+                {
+                  { PdfName.Width, PdfInteger.Get(Width) },
+                  { PdfName.Height, PdfInteger.Get(Height) },
+                  { PdfName.BitsPerComponent, PdfInteger.Get(BitsPerComponent) },
+                  { PdfName.ColorSpace, PdfName.DeviceRGB },
+                  { PdfName.Filter, PdfName.DCTDecode }
+               },
+                new bytes::ByteStream(Stream)));
         }
-        #endregion
 
-        #region private
         private void Load()
         {
             /*
@@ -139,8 +114,5 @@ namespace PdfClown.Documents.Contents.Entities
                 }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

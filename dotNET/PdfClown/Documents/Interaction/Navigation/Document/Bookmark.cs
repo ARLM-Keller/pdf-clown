@@ -40,7 +40,6 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF10)]
     public sealed class Bookmark : PdfObjectWrapper<PdfDictionary>, ILink
     {
-        #region types
         /**
           <summary>Bookmark flags [PDF:1.6:8.2.2].</summary>
         */
@@ -57,10 +56,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             */
             Bold = 0x2
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         public Bookmark(Document context, string title) : base(context, new PdfDictionary())
         { Title = title; }
 
@@ -72,10 +68,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         public Bookmark(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the child bookmarks.</summary>
         */
@@ -105,23 +98,16 @@ namespace PdfClown.Documents.Interaction.Navigation
         */
         public bool Expanded
         {
-            get
-            {
-                PdfInteger countObject = (PdfInteger)BaseDataObject[PdfName.Count];
-
-                return (countObject == null
-                  || countObject.RawValue >= 0);
-            }
+            get => BaseDataObject.GetInt(PdfName.Count) >= 0;
             set
             {
-                PdfInteger countObject = (PdfInteger)BaseDataObject[PdfName.Count];
-                if (countObject == null)
+                if (Expanded == value)
                     return;
 
                 /*
                   NOTE: Positive Count entry means open, negative Count entry means closed [PDF:1.6:8.2.2].
                 */
-                BaseDataObject[PdfName.Count] = PdfInteger.Get((value ? 1 : -1) * Math.Abs(countObject.IntValue));
+                BaseDataObject[PdfName.Count] = PdfInteger.Get((value ? 1 : -1) * Math.Abs(BaseDataObject.GetInt(PdfName.Count)));
             }
         }
 
@@ -131,17 +117,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         [PDF(VersionEnum.PDF14)]
         public FlagsEnum Flags
         {
-            get
-            {
-                PdfInteger flagsObject = (PdfInteger)BaseDataObject[PdfName.F];
-                if (flagsObject == null)
-                    return 0;
-
-                return (FlagsEnum)Enum.ToObject(
-                  typeof(FlagsEnum),
-                  flagsObject.RawValue
-                  );
-            }
+            get => (FlagsEnum)BaseDataObject.GetInt(PdfName.F);
             set
             {
                 if (value == 0)
@@ -183,7 +159,6 @@ namespace PdfClown.Documents.Interaction.Navigation
             set => BaseDataObject[PdfName.Title] = new PdfTextString(value);
         }
 
-        #region ILink
         public PdfObjectWrapper Target
         {
             get
@@ -205,10 +180,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                     throw new ArgumentException("It MUST be either a Destination or an Action.");
             }
         }
-        #endregion
-        #endregion
 
-        #region private
         private actions::Action Action
         {
             get => Actions.Action.Wrap(BaseDataObject[PdfName.A]);
@@ -254,8 +226,5 @@ namespace PdfClown.Documents.Interaction.Navigation
                 }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
@@ -41,10 +42,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private short[] additionalTopSideBearing;
         private int numVMetrics;
 
-        public VerticalMetricsTable(TrueTypeFont font)
-                : base(font)
-        {
-        }
+        public VerticalMetricsTable()
+        { }
 
         /**
          * This will read the required data from the stream.
@@ -53,7 +52,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             VerticalHeaderTable vHeader = ttf.VerticalHeader;
             if (vHeader == null)
@@ -68,8 +67,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             topSideBearing = new short[numVMetrics];
             for (int i = 0; i < numVMetrics; i++)
             {
-                advanceHeight[i] = data.ReadUnsignedShort();
-                topSideBearing[i] = data.ReadSignedShort();
+                advanceHeight[i] = data.ReadUInt16();
+                topSideBearing[i] = data.ReadInt16();
                 bytesRead += 4;
             }
 
@@ -88,7 +87,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 {
                     if (bytesRead < Length)
                     {
-                        additionalTopSideBearing[i] = data.ReadSignedShort();
+                        additionalTopSideBearing[i] = data.ReadInt16();
                         bytesRead += 2;
                     }
                 }

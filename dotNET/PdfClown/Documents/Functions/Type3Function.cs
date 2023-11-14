@@ -38,17 +38,12 @@ namespace PdfClown.Documents.Functions
     [PDF(VersionEnum.PDF13)]
     public sealed class Type3Function : Function
     {
-        #region dynamic
-        #region constructors
         //TODO:implement function creation!
 
         internal Type3Function(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override float[] Calculate(float[] inputs)
+        public override float[] Calculate(Span<float> inputs)
         {
             // FIXME: Auto-generated method stub
 
@@ -84,8 +79,5 @@ namespace PdfClown.Documents.Functions
           <remarks>The output dimensionality of all functions must be the same.</remarks>
         */
         public Functions Functions => Functions.Wrap(Dictionary[PdfName.Functions], this);
-        #endregion
-        #endregion
-        #endregion
     }
 }

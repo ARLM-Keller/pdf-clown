@@ -49,9 +49,6 @@ namespace PdfClown.Documents.Interchange.Access
     [PDF(VersionEnum.PDF14)]
     public sealed class LanguageIdentifier : PdfObjectWrapper<PdfTextString>
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Wraps a language identifier base object into a language identifier object.</summary>
         */
@@ -71,26 +68,13 @@ namespace PdfClown.Documents.Interchange.Access
             else
                 throw new ArgumentException("It doesn't represent a valid language identifier object.", "baseObject");
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public LanguageIdentifier(string code) : base(new PdfTextString(code))
         { }
 
         public LanguageIdentifier(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override string ToString(
-          )
-        { return BaseDataObject.StringValue; }
-        #endregion
-        #endregion
-        #endregion
+        public override string ToString() => BaseDataObject.StringValue;
     }
 }

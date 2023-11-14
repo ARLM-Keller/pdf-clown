@@ -23,20 +23,18 @@
   this list of conditions.
 */
 
-using bytes = PdfClown.Bytes;
-using PdfClown.Documents.Contents.Objects;
+using PdfClown.Bytes;
 using PdfClown.Objects;
 using PdfClown.Tokens;
 using PdfClown.Util;
 using PdfClown.Util.Math;
 using PdfClown.Util.Parsers;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using io = System.IO;
-using System.Text;
+using System.IO;
+using System.Linq;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
@@ -45,8 +43,6 @@ namespace PdfClown.Documents.Contents.Fonts
     */
     internal sealed class CMapParser : PostScriptParser
     {
-        #region static
-        #region fields
         private static readonly string BeginCodeSpaceRangeOperator = "begincodespacerange";
         private static readonly string BeginBaseFontCharOperator = "beginbfchar";
         private static readonly string BeginBaseFontRangeOperator = "beginbfrange";
@@ -61,20 +57,13 @@ namespace PdfClown.Documents.Contents.Fonts
         private static readonly string Ordering = PdfName.Ordering.StringValue;
         private static readonly string WMode = PdfName.WMode.StringValue;
 
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
-        public CMapParser(io::Stream stream) : this(new bytes::Buffer(stream))
+        public CMapParser(Stream stream) : this((IInputStream)new StreamContainer(stream))
         { }
 
-        public CMapParser(bytes::IInputStream stream) : base(stream)
+        public CMapParser(IInputStream stream) : base(stream)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Parses the character-code-to-unicode mapping [PDF:1.6:5.9.1].</summary>
         */
@@ -91,31 +80,34 @@ namespace PdfClown.Documents.Contents.Fonts
                     {
                         case TokenTypeEnum.Keyword:
                             {
-                                string @operator = (string)Token;
-                                if (@operator.Equals(BeginCodeSpaceRangeOperator, StringComparison.Ordinal))
-                                {
-                                    ParseCodeSpaceRange(codes, operands);
-                                }
-                                else if (@operator.Equals(BeginBaseFontCharOperator, StringComparison.Ordinal))
-                                {
-                                    ParseBFChar(codes, operands);
-                                }
-                                else if (@operator.Equals(BeginCIDCharOperator, StringComparison.Ordinal))
-                                {
-                                    ParseCIDChar(codes, operands);
-                                }
-                                else if (@operator.Equals(BeginBaseFontRangeOperator, StringComparison.Ordinal))
-                                {
-                                    ParseBFRange(codes, operands);
-                                }
-                                else if (@operator.Equals(BeginCIDRangeOperator, StringComparison.Ordinal))
-                                {
-                                    ParseCIDRange(codes, operands);
-                                }
-                                else if (@operator.Equals(UseCMapOperator, StringComparison.Ordinal))
+                                var @operator = CharsToken;
+                                if (@operator.Equals(UseCMapOperator, StringComparison.Ordinal))
                                 {
                                     var useCMap = CMap.Get((string)operands[0]);
                                     codes.UseCmap(useCMap);
+                                }
+                                else if (operands.FirstOrDefault() is int)
+                                {
+                                    if (@operator.Equals(BeginCodeSpaceRangeOperator, StringComparison.Ordinal))
+                                    {
+                                        ParseCodeSpaceRange(codes, operands);
+                                    }
+                                    else if (@operator.Equals(BeginBaseFontCharOperator, StringComparison.Ordinal))
+                                    {
+                                        ParseBFChar(codes, operands);
+                                    }
+                                    else if (@operator.Equals(BeginCIDCharOperator, StringComparison.Ordinal))
+                                    {
+                                        ParseCIDChar(codes, operands);
+                                    }
+                                    else if (@operator.Equals(BeginBaseFontRangeOperator, StringComparison.Ordinal))
+                                    {
+                                        ParseBFRange(codes, operands);
+                                    }
+                                    else if (@operator.Equals(BeginCIDRangeOperator, StringComparison.Ordinal))
+                                    {
+                                        ParseCIDRange(codes, operands);
+                                    }
                                 }
                                 else if (@operator.Equals(DefOperator, StringComparison.Ordinal) && operands.Count != 0)
                                 {
@@ -144,23 +136,39 @@ namespace PdfClown.Documents.Contents.Fonts
                                 break;
                             }
                         case TokenTypeEnum.ArrayBegin:
-                        case TokenTypeEnum.DictionaryBegin:
+                            // Skip.
+                            while (MoveNext())
                             {
-                                // Skip.
-                                while (MoveNext())
-                                {
-                                    if (TokenType == TokenTypeEnum.ArrayEnd
-                                      || TokenType == TokenTypeEnum.DictionaryEnd)
-                                        break;
-                                }
-                                break;
+                                if (TokenType == TokenTypeEnum.ArrayEnd)
+                                    break;
                             }
+                            break;
+                        case TokenTypeEnum.DictionaryBegin:
+                            // Skip.
+                            while (MoveNext())
+                            {
+                                if (TokenType == TokenTypeEnum.DictionaryEnd)
+                                    break;
+                            }
+                            break;
                         case TokenTypeEnum.Comment:
                             // Skip.
                             break;
+                        case TokenTypeEnum.Literal:
+                            operands.Add(Token is MemoryStream literalStream
+                                    ? Charset.ISO88591.GetString(literalStream.AsSpan())
+                                    : string.Empty);
+                            break;
+                        case TokenTypeEnum.Hex:
+                            operands.Add(Token is MemoryStream hexStream
+                                    ? ConvertUtils.ByteArrayToHex(hexStream.AsSpan())
+                                    : string.Empty);
+                            break;
                         default:
                             {
-                                operands.Add(Token);
+                                operands.Add(Token is StringStream stringStream
+                                    ? stringStream.ToString()
+                                    : Token);
                                 break;
                             }
                     }
@@ -175,37 +183,31 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 // 1. Beginning input code.
                 MoveNext();
-                byte[] beginInputCode = ParseInputCode();
-                int beginInput = ConvertUtils.ByteArrayToInt(beginInputCode);
+                var beginInputCode = ParseInputCode();
+                int beginInput = ConvertUtils.ReadIntOffset(beginInputCode);
                 // 2. Ending input code.
                 MoveNext();
-                byte[] endInputCode = ParseInputCode();
-                int entInput = ConvertUtils.ByteArrayToInt(endInputCode);
-                MoveNext();
-                int mappedCode = ParseUnicode();
+                var endInputCode = ParseInputCode();
+                //int entInput = ConvertUtils.ReadIntByLength(endInputCode);
                 // 3. Character codes.
-                if (beginInputCode.Length <= 2 && endInputCode.Length <= 2)
+                MoveNext();
+                var mappedCode = ParseUnicode();
+
+                if (beginInputCode.Length == endInputCode.Length)
                 {
                     // some CMaps are using CID ranges to map single values
-                    if (beginInput == entInput)
+                    if (beginInputCode.SequenceEqual(endInputCode))
                     {
-                        codes.AddCIDMapping(mappedCode, beginInput);
+                        codes.AddCIDMapping(beginInputCode, mappedCode);
                     }
                     else
                     {
-                        codes.AddCIDRange((char)beginInput, (char)entInput, mappedCode);
+                        codes.AddCIDRange(beginInputCode, endInputCode, mappedCode);
                     }
                 }
                 else
                 {
-                    // TODO Is this even possible?
-                    int endOfMappings = mappedCode + entInput - beginInput;
-                    while (mappedCode <= endOfMappings)
-                    {
-                        int mappedCID = ConvertUtils.ByteArrayToInt(beginInputCode);
-                        codes.AddCIDMapping(mappedCode++, mappedCID);
-                        OperationUtils.Increment(beginInputCode);
-                    }
+                    throw new IOException("Error : ~cidrange values must not have different byte lengths");
                 }
             }
         }
@@ -219,37 +221,37 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 // 1. Beginning input code.
                 MoveNext();
-                byte[] beginInputCode = ParseInputCode();
-                int beginInput = ConvertUtils.ByteArrayToInt(beginInputCode);
+                var beginInputCode = ParseInputCode();
+                int beginInput = ConvertUtils.ReadIntOffset(beginInputCode);
                 // 2. Ending input code.
                 MoveNext();
-                byte[] endInputCode = ParseInputCode();
-                int entInput = ConvertUtils.ByteArrayToInt(endInputCode);
-
+                var endInputCode = ParseInputCode();
+                int entInput = ConvertUtils.ReadIntOffset(endInputCode);
+                // end has to be bigger than start or equal
+                if (entInput < beginInput)
+                {
+                    // PDFBOX-4550: likely corrupt stream
+                    break;
+                }
 
                 MoveNext();
                 switch (TokenType)
                 {
                     case TokenTypeEnum.ArrayBegin:
                         {
-                            byte[] inputCode = beginInputCode;
+                            var inputCode = beginInputCode.ToArray();
                             while (MoveNext()
                               && TokenType != TokenTypeEnum.ArrayEnd)
                             {
-                                // FIXME: Unicode character sequences (such as ligatures) have not been supported yet [BUG:72].
-                                try
-                                {
-                                    codes.AddCharMapping(inputCode, ParseUnicode());
-                                }
-                                catch (OverflowException)
-                                { Debug.WriteLine($"WARN: Unable to process Unicode sequence from {codes.CMapName} CMap: {Token}"); }
+                                codes.AddCharMapping(inputCode, ParseUnicode());
                                 OperationUtils.Increment(inputCode);
                             }
                             break;
                         }
                     default:
                         {
-                            var tokenBytes = ParseInputCode();
+                            var tokenBytes = ParseInputCode().ToArray();
+                            var startCode = beginInputCode.ToArray();
                             if (tokenBytes.Length > 0)
                             {
                                 // some pdfs use the malformed bfrange <0000> <FFFF> <0000>. Add support by adding a identity
@@ -260,18 +262,16 @@ namespace PdfClown.Documents.Contents.Fonts
                                 {
                                     for (int i = 0; i < 256; i++)
                                     {
-                                        beginInputCode[1] = (byte)i;
-                                        tokenBytes[1] = (byte)i;
-                                        AddMappingFrombfrange(codes, beginInputCode, 0xff, tokenBytes);
-
+                                        startCode[0] = (byte)i;
+                                        startCode[1] = 0;
+                                        tokenBytes[0] = (byte)i;
+                                        tokenBytes[1] = 0;
+                                        AddMappingFrombfrange(codes, startCode, 0xff, tokenBytes);
                                     }
                                 }
                                 else
                                 {
-                                    // PDFBOX-4661: avoid overflow of the last byte, all following values are undefined
-                                    int values = Math.Min(entInput - beginInput,
-                                            255 - (tokenBytes[tokenBytes.Length - 1] & 0xFF)) + 1;
-                                    AddMappingFrombfrange(codes, beginInputCode, values, tokenBytes);
+                                    AddMappingFrombfrange(codes, startCode, entInput - beginInput + 1, tokenBytes);
                                 }
                             }
                             break;
@@ -285,9 +285,9 @@ namespace PdfClown.Documents.Contents.Fonts
             for (int itemIndex = 0, itemCount = (int)operands[0]; itemIndex < itemCount; itemIndex++)
             {
                 MoveNext();
-                byte[] startRange = ParseInputCode();
+                var startRange = ParseInputCode();
                 MoveNext();
-                byte[] endRange = ParseInputCode();
+                var endRange = ParseInputCode();
                 codes.AddCodespaceRange(new CodespaceRange(startRange, endRange));
             }
         }
@@ -298,11 +298,11 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 MoveNext();
                 var inputCode = ParseInputCode();
-                int mappedCID = ConvertUtils.ByteArrayToInt(inputCode);
+                //int mappedCID = ConvertUtils.ReadIntByLength(inputCode);
                 MoveNext();
                 var mappedCode = ParseUnicode();
 
-                codes.AddCIDMapping(mappedCode, mappedCID);
+                codes.AddCIDMapping(inputCode, mappedCode);
             }
         }
 
@@ -315,24 +315,26 @@ namespace PdfClown.Documents.Contents.Fonts
                 MoveNext();
                 var inputCode = ParseInputCode();
                 MoveNext();
-                // FIXME: Unicode character sequences (such as ligatures) have not been supported yet [BUG:72].
+                var unicode = ParseUnicode();
                 try
                 {
-                    codes.AddCharMapping(inputCode, ParseUnicode());
+                    codes.AddCharMapping(inputCode, unicode);
                 }
                 catch (OverflowException)
                 { Debug.WriteLine($"WARN: Unable to process Unicode sequence from {codes.CMapName} CMap: {Token}"); }
             }
         }
-        #endregion
 
-        #region private
         /**
           <summary>Converts the current token into its input code value.</summary>
         */
-        private byte[] ParseInputCode()
+        private ReadOnlySpan<byte> ParseInputCode()
         {
-            return ConvertUtils.HexStringToByteArray((string)Token);
+            if (Token is MemoryStream memoryStream)
+                return memoryStream.ToArray();
+            if (Token is StringStream stringStream)
+                ConvertUtils.HexToByteArray(stringStream.AsSpan()).AsSpan();
+            return ConvertUtils.HexToByteArray(Token.ToString()).AsSpan();
         }
 
         /**
@@ -342,48 +344,44 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             switch (TokenType)
             {
-                case TokenTypeEnum.Hex: // Character code in hexadecimal format.
-                    return int.TryParse((string)Token, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var result) ? result : -1;
                 case TokenTypeEnum.Integer: // Character code in plain format.
                     return (int)Token;
+                case TokenTypeEnum.Hex: // Character code in hexadecimal format.
+                case TokenTypeEnum.Literal:
+                    var hData = (MemoryStream)Token;
+                    return ConvertUtils.ReadIntOffset(hData.AsSpan());
                 case TokenTypeEnum.Name: // Character name.
-                    return GlyphMapping.Default.ToUnicode((string)Token).Value;
+                    return GlyphMapping.Default.ToUnicode(Token.ToString()).Value;
                 default:
                     throw new Exception("Hex string, integer or name expected instead of " + TokenType);
             }
         }
 
-        private void AddMappingFrombfrange(CMap cmap, byte[] startCode, int values, byte[] tokenBytes)
+        private void AddMappingFrombfrange(CMap cmap, Span<byte> startCode, List<byte[]> tokenBytesList)
+        {
+            foreach (byte[] tokenBytes in tokenBytesList)
+            {
+                var value = ConvertUtils.ReadIntOffset(tokenBytes);
+                cmap.AddCharMapping(startCode, value);
+                startCode.Increment();
+            }
+        }
+
+        private void AddMappingFrombfrange(CMap cmap, Span<byte> startCode, int values, Span<byte> tokenBytes)
         {
             for (int i = 0; i < values; i++)
             {
-                var value = ConvertUtils.ByteArrayToInt(tokenBytes);
+                var value = ConvertUtils.ReadIntOffset(tokenBytes);
                 cmap.AddCharMapping(startCode, value);
-                Increment(startCode);
-                Increment(tokenBytes);
+                if (!tokenBytes.Increment()
+                    || !startCode.Increment())
+                {
+                    // overflow detected -> stop adding further mappings
+                    break;
+                }
             }
         }
 
-        private void Increment(byte[] data)
-        {
-            Increment(data, data.Length - 1);
-        }
-
-        private void Increment(byte[] data, int position)
-        {
-            if (position > 0 && (data[position] & 0xFF) == 255)
-            {
-                data[position] = 0;
-                Increment(data, position - 1);
-            }
-            else
-            {
-                data[position] = (byte)(data[position] + 1);
-            }
-        }
-        #endregion
-        #endregion
-        #endregion
     }
 
 

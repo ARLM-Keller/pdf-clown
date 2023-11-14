@@ -17,6 +17,7 @@
 using System.IO;
 using System.Collections.Generic;
 using PdfClown.Tokens;
+using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
@@ -41,10 +42,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private string fontSubFamily = null;
         private string psName = null;
 
-        public NamingTable(TrueTypeFont font)
-            : base(font)
-        {
-        }
+        public NamingTable()
+        { }
 
         /**
          * This will read the required data from the stream.
@@ -53,11 +52,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
-            int formatSelector = data.ReadUnsignedShort();
-            int numberOfNameRecords = data.ReadUnsignedShort();
-            int offsetToStartOfStringStorage = data.ReadUnsignedShort();
+            int formatSelector = data.ReadUInt16();
+            int numberOfNameRecords = data.ReadUInt16();
+            int offsetToStartOfStringStorage = data.ReadUInt16();
             nameRecords = new List<NameRecord>(numberOfNameRecords);
             for (int i = 0; i < numberOfNameRecords; i++)
             {
@@ -75,7 +74,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     continue;
                 }
 
-                data.Seek(Offset + (2 * 3) + numberOfNameRecords * 2 * 6 + nr.StringOffset);
+                data.Seek(Offset + (2L * 3L) + numberOfNameRecords * 2L * 6L + nr.StringOffset);
                 int platform = nr.PlatformId;
                 int encoding = nr.PlatformEncodingId;
                 var charset = Charset.ISO88591;
@@ -154,7 +153,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 // encoding id
                 if (!encodingLookup.TryGetValue(nr.PlatformEncodingId, out var languageLookup))
                 {
-                    languageLookup = new Dictionary<int, string>();
+                    languageLookup = new Dictionary<int, string>(1);
                     encodingLookup[nr.PlatformEncodingId] = languageLookup;
                 }
                 // language id / string
@@ -175,7 +174,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 psName = GetName(NameRecord.NAME_POSTSCRIPT_NAME,
                                  NameRecord.PLATFORM_WINDOWS,
                                  NameRecord.ENCODING_WIN_UNICODE_BMP,
-                                 NameRecord.LANGUGAE_WIN_EN_US);
+                                 NameRecord.LANGUAGE_WIN_EN_US);
             }
             if (psName != null)
             {
@@ -197,22 +196,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                         GetName(nameId,
                                 NameRecord.PLATFORM_UNICODE,
                                 i,
-                                NameRecord.LANGUGAE_UNICODE);
+                                NameRecord.LANGUAGE_UNICODE);
                 if (nameUni != null)
                 {
                     return nameUni;
                 }
-            }
-
-            // Macintosh, Roman, English
-            string nameMac =
-                    GetName(nameId,
-                            NameRecord.PLATFORM_MACINTOSH,
-                            NameRecord.ENCODING_MAC_ROMAN,
-                            NameRecord.LANGUGAE_MAC_ENGLISH);
-            if (nameMac != null)
-            {
-                return nameMac;
             }
 
             // Windows, Unicode BMP, EN-US
@@ -220,13 +208,17 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     GetName(nameId,
                             NameRecord.PLATFORM_WINDOWS,
                             NameRecord.ENCODING_WIN_UNICODE_BMP,
-                            NameRecord.LANGUGAE_WIN_EN_US);
+                            NameRecord.LANGUAGE_WIN_EN_US);
             if (nameWin != null)
             {
                 return nameWin;
             }
 
-            return null;
+            // Macintosh, Roman, English
+            return GetName(nameId,
+                            NameRecord.PLATFORM_MACINTOSH,
+                            NameRecord.ENCODING_MAC_ROMAN,
+                            NameRecord.LANGUGAE_MAC_ENGLISH);
         }
 
         /**

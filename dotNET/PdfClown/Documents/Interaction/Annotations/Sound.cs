@@ -39,10 +39,8 @@ namespace PdfClown.Documents.Interaction.Annotations
       <remarks>When the annotation is activated, the sound is played.</remarks>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class Sound
-      : Markup
+    public sealed class Sound : Markup
     {
-        #region types
         /**
           <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
         */
@@ -57,26 +55,18 @@ namespace PdfClown.Documents.Interaction.Annotations
             */
             Microphone
         };
-        #endregion
 
-        #region static
-        #region fields
         private static readonly IconTypeEnum DefaultIconType = IconTypeEnum.Speaker;
 
         private static readonly Dictionary<IconTypeEnum, PdfName> IconTypeEnumCodes;
-        #endregion
 
-        #region constructors
         static Sound()
         {
             IconTypeEnumCodes = new Dictionary<IconTypeEnum, PdfName>();
             IconTypeEnumCodes[IconTypeEnum.Speaker] = PdfName.Speaker;
             IconTypeEnumCodes[IconTypeEnum.Microphone] = PdfName.Mic;
         }
-        #endregion
 
-        #region interface
-        #region private
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
@@ -97,12 +87,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             return DefaultIconType;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public Sound(Page page, SKRect box, string text, multimedia::Sound content)
             : base(page, PdfName.Sound, box, text)
         { Content = content; }
@@ -110,10 +95,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         internal Sound(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the sound to be played.</summary>
         */
@@ -145,8 +127,5 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             set => throw new NotSupportedException();
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

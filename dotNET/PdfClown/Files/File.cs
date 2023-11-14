@@ -44,23 +44,15 @@ namespace PdfClown.Files
     */
     public sealed class File : IDisposable
     {
-        #region types
         private sealed class ImplicitContainer : PdfIndirectObject
         {
             public ImplicitContainer(File file, PdfDataObject dataObject)
                 : base(file, dataObject, new XRefEntry(int.MinValue, int.MinValue))
             { }
         }
-        #endregion
 
-        #region static
-        #region fields
         private static Random hashCodeGenerator = new Random();
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private FileConfiguration configuration;
         private readonly Document document;
         private readonly int hashCode = hashCodeGenerator.Next();
@@ -69,11 +61,8 @@ namespace PdfClown.Files
         private Reader reader;
         private readonly PdfDictionary trailer;
         private readonly Version version;
-
         private Cloner cloner;
-        #endregion
 
-        #region constructors
         public File()
         {
             Initialize();
@@ -85,15 +74,15 @@ namespace PdfClown.Files
         }
 
         public File(string path)
-            : this(new Bytes.Stream(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            : this((IInputStream)new StreamContainer(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
         {
             this.path = path;
         }
 
-        public File(byte[] data) : this(new Bytes.Buffer(data))
+        public File(byte[] data) : this((IInputStream)new ByteStream(data))
         { }
 
-        public File(System.IO.Stream stream) : this(new Bytes.Stream(stream))
+        public File(Stream stream) : this((IInputStream)new StreamContainer(stream))
         { }
 
         public File(IInputStream stream)
@@ -142,10 +131,7 @@ namespace PdfClown.Files
         {
             Dispose(false);
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the file configuration.</summary>
         */
@@ -205,7 +191,7 @@ namespace PdfClown.Files
         /**
           <summary>Gets the file header version [PDF:1.6:3.4.1].</summary>
           <remarks>This property represents just the original file version; to get the actual version,
-          use the <see cref="PdfClown.Documents.Document.Version">Document.Version</see> method.
+          use the <see cref="Document.Version">Document.Version</see> method.
           </remarks>
         */
         public Version Version => version;
@@ -253,7 +239,7 @@ namespace PdfClown.Files
         {
             using (var outputStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
             {
-                Save(new Bytes.Stream(outputStream), mode);
+                Save((IOutputStream)new StreamContainer(outputStream), mode);
             }
             System.IO.File.SetLastWriteTimeUtc(path, DateTime.UtcNow);
         }
@@ -264,9 +250,9 @@ namespace PdfClown.Files
           <param name="stream">Target stream.</param>
           <param name="mode">Serialization mode.</param>
         */
-        public void Save(System.IO.Stream stream, SerializationModeEnum mode)
+        public void Save(Stream stream, SerializationModeEnum mode)
         {
-            Save(new Bytes.Stream(stream), mode);
+            Save((IOutputStream)new StreamContainer(stream), mode);
         }
 
         /**
@@ -326,16 +312,12 @@ namespace PdfClown.Files
             return hashCode;
         }
 
-        #region IDisposable
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
-        #endregion
 
-        #region private
         private void Dispose(bool disposing)
         {
             if (disposing)
@@ -370,8 +352,5 @@ namespace PdfClown.Files
 
         private string TempPath => (path == null ? null : path + ".tmp");
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

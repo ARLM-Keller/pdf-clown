@@ -25,10 +25,10 @@
 
 using PdfClown.Bytes;
 using PdfClown.Tokens;
-
+using PdfClown.Util.IO;
 using System;
 using System.Globalization;
-using System.Text;
+using System.IO;
 
 namespace PdfClown.Util.Parsers
 {
@@ -37,7 +37,6 @@ namespace PdfClown.Util.Parsers
     */
     public class PostScriptParser : IDisposable
     {
-        #region types
         public enum TokenTypeEnum // [PS:3.3].
         {
             Keyword,
@@ -56,11 +55,7 @@ namespace PdfClown.Util.Parsers
             Reference,
             InderectObject
         }
-        #endregion
 
-        #region static
-        #region interface
-        #region protected
         protected static int GetHex(int c)
         {
             if (c >= '0' && c <= '9')
@@ -99,41 +94,36 @@ namespace PdfClown.Util.Parsers
         */
         protected static bool IsWhitespace(int c)
         { return c == 32 || IsEOL(c) || c == 0 || c == 9 || c == 12; }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private IInputStream stream;
-
         private object token;
         private TokenTypeEnum tokenType;
-        #endregion
+        private StringStream sBuffer = new StringStream();
+        private MemoryStream mBuffer = new MemoryStream();
 
-        #region constructors
         public PostScriptParser(IInputStream stream)
-        { this.stream = stream; }
+        {
+            this.stream = stream;
+        }
 
-        public PostScriptParser(byte[] data)
-        { this.stream = new PdfClown.Bytes.Buffer(data); }
+        public PostScriptParser(Memory<byte> data) : this(new ByteStream(data))
+        { }
 
         ~PostScriptParser()
         { Dispose(false); }
-        #endregion
 
-        #region interface
-        #region public
-        public override int GetHashCode()
-        { return stream.GetHashCode(); }
+        public override int GetHashCode() => stream.GetHashCode();
 
         /**
           <summary>Gets a token after moving to the given offset.</summary>
           <param name="offset">Number of tokens to skip before reaching the intended one.</param>
           <seealso cref="Token"/>
         */
-        public object GetToken(int offset)
-        { MoveNext(offset); return Token; }
+        public object GetToken(int offset = 1)
+        {
+            MoveNext(offset);
+            return Token;
+        }
 
         public long Length => stream.Length;
 
@@ -160,17 +150,15 @@ namespace PdfClown.Util.Parsers
         */
         public virtual bool MoveNext()
         {
-            StringBuilder buffer = null;
-            token = null;
-            int c = 0;
+            mBuffer.Reset();
+            sBuffer.Reset();
 
+            token = null;
+            tokenType = (TokenTypeEnum)(-1);
             // Skip leading white-space characters.
-            do
-            {
-                c = stream.ReadByte();
-                if (c == -1)
-                    return false;
-            } while (IsWhitespace(c)); // Keep goin' till there's a white-space character...
+            int c = ReadIgnoreWhitespace();
+            if (c == -1)
+                return false;
 
             // Which character is it?
             switch (c)
@@ -184,7 +172,6 @@ namespace PdfClown.Util.Parsers
                           the bytes making up the name are never treated as text, so here they are just
                           passed through without unescaping.
                         */
-                        buffer = new StringBuilder();
                         while (true)
                         {
                             c = stream.ReadByte();
@@ -193,7 +180,7 @@ namespace PdfClown.Util.Parsers
                             if (IsDelimiter(c) || IsWhitespace(c))
                                 break;
 
-                            buffer.Append((char)c);
+                            sBuffer.Append((char)c);
                         }
                         if (c > -1)
                         { stream.Skip(-1); } // Restores the first byte after the current token.
@@ -218,11 +205,10 @@ namespace PdfClown.Util.Parsers
                         else // Digit or signum.
                         { tokenType = TokenTypeEnum.Integer; } // By default (it may be real).
 
-                        // Building the number...
-                        buffer = new StringBuilder();
+                        // Building the number...                        
                         while (true)
                         {
-                            buffer.Append((char)c);
+                            sBuffer.Append((char)c);
                             c = stream.ReadByte();
                             if (c == -1)
                                 break; // NOOP.
@@ -256,15 +242,20 @@ namespace PdfClown.Util.Parsers
                         // Hexadecimal string (single angle bracket).
                         tokenType = TokenTypeEnum.Hex;
 
-                        buffer = new StringBuilder();
-                        while (c != Symbol.CloseAngleBracket) // NOT string end.
+                        c = IsWhitespace(c) ? ReadIgnoreWhitespace() : c;
+                        while (c != Symbol.CloseAngleBracket)  // NOT string end.
                         {
-                            if (!IsWhitespace(c))
-                            { buffer.Append((char)c); }
-
-                            c = stream.ReadByte();
-                            if (c == -1)
+                            var c2 = ReadIgnoreWhitespace();
+                            if (c2 == Symbol.CloseAngleBracket)
+                            {
+                                mBuffer.WriteByte(ConvertUtils.ReadHexByte((char)c, '0'));
+                                break;
+                            }
+                            if (c == -1 || c2 == -1)
                                 throw new PostScriptParseException("Malformed hex string.");
+                            mBuffer.WriteByte(ConvertUtils.ReadHexByte((char)c, (char)c2));
+
+                            c = ReadIgnoreWhitespace();
                         }
                     }
                     break;
@@ -283,7 +274,6 @@ namespace PdfClown.Util.Parsers
                     {
                         tokenType = TokenTypeEnum.Literal;
 
-                        buffer = new StringBuilder();
                         int level = 0;
                         while (true)
                         {
@@ -366,7 +356,7 @@ namespace PdfClown.Util.Parsers
                             if (level == -1)
                                 break;
 
-                            buffer.Append((char)c);
+                            mBuffer.WriteByte((byte)c);
                         }
                         if (c == -1)
                             throw new PostScriptParseException("Malformed literal string.");
@@ -376,7 +366,6 @@ namespace PdfClown.Util.Parsers
                     {
                         tokenType = TokenTypeEnum.Comment;
 
-                        buffer = new StringBuilder();
                         while (true)
                         {
                             c = stream.ReadByte();
@@ -384,7 +373,7 @@ namespace PdfClown.Util.Parsers
                               || IsEOL(c))
                                 break;
 
-                            buffer.Append((char)c);
+                            sBuffer.Append((char)c);
                         }
                     }
                     break;
@@ -392,10 +381,9 @@ namespace PdfClown.Util.Parsers
                     {
                         tokenType = TokenTypeEnum.Keyword;
 
-                        buffer = new StringBuilder();
                         do
                         {
-                            buffer.Append((char)c);
+                            sBuffer.Append((char)c);
                             c = stream.ReadByte();
                             if (c == -1)
                                 break;
@@ -406,41 +394,51 @@ namespace PdfClown.Util.Parsers
                     break;
             }
 
-            if (buffer != null)
+            switch (tokenType)
             {
-                switch (tokenType)
-                {
-                    case TokenTypeEnum.Keyword:
-                        {
-                            token = buffer.ToString();
-                            switch ((string)token)
-                            {
-                                case Keyword.False:
-                                case Keyword.True: // Boolean.
-                                    tokenType = TokenTypeEnum.Boolean;
-                                    token = Boolean.Parse((string)token);
-                                    break;
-                                case Keyword.Null: // Null.
-                                    tokenType = TokenTypeEnum.Null;
-                                    token = null;
-                                    break;
-                            }
-                        }
-                        break;
-                    case TokenTypeEnum.Name:
-                    case TokenTypeEnum.Literal:
-                    case TokenTypeEnum.Hex:
-                    case TokenTypeEnum.Comment:
-                        token = buffer.ToString();
-                        break;
-                    case TokenTypeEnum.Integer:
-                        token = ConvertUtils.ParseIntInvariant(buffer.ToString());
-                        break;
-                    case TokenTypeEnum.Real:
-                        token = ConvertUtils.ParseDoubleInvariant(buffer.ToString());
-                        break;
-                }
+                case TokenTypeEnum.Keyword:
+                    var span = sBuffer.AsSpan();
+                    if (MemoryExtensions.Equals(span, Keyword.False, StringComparison.Ordinal))
+                    {
+                        tokenType = TokenTypeEnum.Boolean;
+                        token = false;
+                    }
+                    else if (MemoryExtensions.Equals(span, Keyword.True, StringComparison.Ordinal))
+                    {
+                        tokenType = TokenTypeEnum.Boolean;
+                        token = true;
+                    }
+                    else if (MemoryExtensions.Equals(span, Keyword.Null, StringComparison.Ordinal))
+                    {
+                        tokenType = TokenTypeEnum.Null;
+                        token = null;
+                    }
+                    else
+                    {
+                        token = sBuffer;
+                    }
+                    break;
+                case TokenTypeEnum.Literal:
+                case TokenTypeEnum.Hex:
+                    token = mBuffer;
+                    break;
+                case TokenTypeEnum.Name:
+                case TokenTypeEnum.Comment:
+                    token = sBuffer;
+                    break;
+                case TokenTypeEnum.Integer:
+                    if (long.TryParse(sBuffer.AsSpan().ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var lResult))
+                        token = unchecked((int)lResult);
+                    break;
+                case TokenTypeEnum.Real:
+                    if (double.TryParse(sBuffer.AsSpan().ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var dResult))
+                        token = dResult;
+                    break;
+                default:
+                    break;
             }
+            if ((int)tokenType == -1)
+            { }
             return true;
         }
 
@@ -449,14 +447,12 @@ namespace PdfClown.Util.Parsers
         /**
           <summary>Moves the pointer to the given absolute byte position.</summary>
         */
-        public void Seek(long offset)
-        { stream.Seek(offset); }
+        public void Seek(long offset) => stream.Seek(offset);
 
         /**
           <summary>Moves the pointer to the given relative byte position.</summary>
         */
-        public void Skip(long offset)
-        { stream.Skip(offset); }
+        public void Skip(long offset) => stream.Skip(offset);
 
         /**
           <summary>Moves the pointer after the next end-of-line character sequence (that is just before
@@ -473,7 +469,11 @@ namespace PdfClown.Util.Parsers
                 if (c == -1)
                     return false;
                 else if (IsEOL(c))
-                { found = true; }
+                {
+                    if (found && c == 10)
+                        return true;
+                    found = true;
+                }
                 else if (found) // After EOL.
                     break;
             }
@@ -511,6 +511,33 @@ namespace PdfClown.Util.Parsers
             return true;
         }
 
+        public bool SkipKeyRevers(string key, long limitPosition = 0)
+        {
+            int c;
+            int index = key.Length - 1;
+            while (true)
+            {
+                stream.Skip(-1);
+                c = stream.PeekByte();
+
+                if (c < char.MaxValue && (char)c == key[index])
+                {
+                    index--;
+                    if (index == 0)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    index = key.Length - 1;
+                }
+                if (stream.Position == limitPosition)
+                    return false;
+            }
+            return true;
+        }
+
         /**
           <summary>Moves the pointer after the current whitespace sequence (that is just before the
           non-whitespace character following the whitespace sequence).</summary>
@@ -529,6 +556,19 @@ namespace PdfClown.Util.Parsers
             return true;
         }
 
+        public int ReadIgnoreWhitespace()
+        {
+            int c;
+            do
+            {
+                c = stream.ReadByte();
+                if (c == -1)
+                    return -1;
+            }
+            while (IsWhitespace(c));// Keep goin' till there's a white-space character...
+            return c;
+        }
+
         public IInputStream Stream => stream;
 
         /**
@@ -540,6 +580,16 @@ namespace PdfClown.Util.Parsers
             protected set => token = value;
         }
 
+        public ReadOnlySpan<char> CharsToken
+        {
+            get => sBuffer.AsSpan();
+        }
+
+        public ReadOnlySpan<byte> BytesToken
+        {
+            get => mBuffer.AsSpan();
+        }
+
         /**
           <summary>Gets the currently-parsed token type.</summary>
         */
@@ -549,16 +599,12 @@ namespace PdfClown.Util.Parsers
             protected set => tokenType = value;
         }
 
-        #region IDisposable
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
-        #endregion
 
-        #region protected
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -570,8 +616,5 @@ namespace PdfClown.Util.Parsers
                 }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

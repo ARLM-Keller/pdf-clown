@@ -25,8 +25,13 @@ using PdfClown.Documents.Contents.Fonts.Type1;
 using System.Diagnostics;
 using System.Security;
 using PdfClown.Tokens;
-using PdfClown.Util.Collections.Generic;
 using System.Linq;
+using Org.BouncyCastle.Utilities;
+using Org.BouncyCastle.Security;
+using Org.BouncyCastle.Utilities.Encoders;
+using System.Security.Cryptography;
+using System.Buffers;
+using PdfClown.Util.Collections;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
@@ -54,11 +59,14 @@ namespace PdfClown.Documents.Contents.Fonts
             private readonly PanoseClassification panose;
             internal readonly FileInfo file;
             private readonly FileSystemFontProvider parent;
+            internal readonly string hash;
+            private readonly long lastModified;
 
             public FSFontInfo(FileInfo file, FontFormat format, string postScriptName,
                                CIDSystemInfo cidSystemInfo, int usWeightClass, int sFamilyClass,
                                int ulCodePageRange1, int ulCodePageRange2, int macStyle, byte[] panose,
-                               FileSystemFontProvider parent)
+                               FileSystemFontProvider parent,
+                               string hash, long lastModified)
             {
                 this.file = file;
                 this.format = format;
@@ -69,8 +77,12 @@ namespace PdfClown.Documents.Contents.Fonts
                 this.ulCodePageRange1 = ulCodePageRange1;
                 this.ulCodePageRange2 = ulCodePageRange2;
                 this.macStyle = macStyle;
-                this.panose = panose != null ? new PanoseClassification(panose) : null;
+                this.panose = panose != null && panose.Length >= PanoseClassification.PanoseLength
+                    ? new PanoseClassification(panose)
+                    : null;
                 this.parent = parent;
+                this.hash = hash;
+                this.lastModified = lastModified;
             }
 
             public override string PostScriptName
@@ -161,7 +173,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
             public override string ToString()
             {
-                return base.ToString() + " " + file;
+                return $"{base.ToString()} {file} {hash} {lastModified}";
             }
 
             private TrueTypeFont GetTrueTypeFont(string postScriptName, FileInfo file)
@@ -189,18 +201,25 @@ namespace PdfClown.Documents.Contents.Fonts
                     //@SuppressWarnings("squid:S2095")
                     // ttc not closed here because it is needed later when ttf is accessed,
                     // e.g. rendering PDF with non-embedded font which is in ttc file in our font directory
-                    TrueTypeCollection ttc = new TrueTypeCollection(file);
-                    TrueTypeFont ttf = ttc.GetFontByName(postScriptName);
-                    if (ttf == null)
+                    var ttc = new TrueTypeCollection(file);
+                    try
+                    {
+                        var ttf = ttc.GetFontByName(postScriptName);
+                        if (ttf == null)
+                        {
+                            throw new IOException("Font " + postScriptName + " not found in " + file);
+                        }
+                        return ttf;
+                    }
+                    catch (IOException)
                     {
                         ttc.Dispose();
-                        throw new IOException("Font " + postScriptName + " not found in " + file);
+                        throw;
                     }
-                    return ttf;
                 }
                 else
                 {
-                    TTFParser ttfParser = new TTFParser(false, true);
+                    TTFParser ttfParser = new TTFParser(false);
                     return ttfParser.Parse(file.FullName);
                 }
             }
@@ -211,20 +230,26 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     if (file.Name.EndsWith(".ttc", StringComparison.OrdinalIgnoreCase))
                     {
-                        //@SuppressWarnings("squid:S2095")
                         // ttc not closed here because it is needed later when ttf is accessed,
                         // e.g. rendering PDF with non-embedded font which is in ttc file in our font directory
-                        TrueTypeCollection ttc = new TrueTypeCollection(file);
-                        TrueTypeFont ttf = ttc.GetFontByName(postScriptName);
-                        if (ttf == null)
+                        var ttc = new TrueTypeCollection(file);
+                        try
+                        {
+                            var ttf = ttc.GetFontByName(postScriptName);
+                            if (ttf == null)
+                            {
+                                throw new IOException("Font " + postScriptName + " not found in " + file);
+                            }
+                            return (OpenTypeFont)ttf;
+                        }
+                        catch (IOException)
                         {
                             ttc.Dispose();
-                            throw new IOException("Font " + postScriptName + " not found in " + file);
+                            throw;
                         }
-                        return (OpenTypeFont)ttf;
                     }
 
-                    OTFParser parser = new OTFParser(false, true);
+                    OTFParser parser = new OTFParser(false);
                     using (var stream = file.OpenRead())
                     {
                         var otf = parser.Parse(stream);
@@ -247,7 +272,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     using (var input = file.OpenRead())
                     {
-                        Type1Font type1 = Type1Font.CreateWithPFB(new Bytes.Buffer(input));
+                        Type1Font type1 = Type1Font.CreateWithPFB(new Bytes.ByteStream(input));
 #if DEBUG
                         Debug.WriteLine($"debug: Loaded {postScriptName} from {file}");
 #endif
@@ -262,15 +287,18 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-		 * Represents ignored fonts (i.e. bitmap fonts).
-		 */
-        private class FSIgnored : FSFontInfo
+        private FSFontInfo CreateFSIgnored(FileInfo file, FontFormat format, String postScriptName)
         {
-            public FSIgnored(FileInfo file, FontFormat format, string postScriptName)
-                : base(file, format, postScriptName, null, 0, 0, 0, 0, 0, null, null)
+            String hash;
+            try
             {
+                hash = ComputeHash(file.FullName);
             }
+            catch (IOException)
+            {
+                hash = "";
+            }
+            return new FSFontInfo(file, format, postScriptName, null, 0, 0, 0, 0, 0, null, null, hash, file.LastWriteTimeUtc.ToBinary());
         }
 
         /**
@@ -291,19 +319,21 @@ namespace PdfClown.Documents.Contents.Fonts
 #if TRACE
                 Debug.WriteLine($"trace: Found {fonts.Count} fonts on the local system");
 #endif
-
-                // load cached FontInfo objects
-                List<FSFontInfo> cachedInfos = LoadDiskCache(fonts);
-                if (cachedInfos != null && cachedInfos.Count > 0)
+                if (fonts.Any())
                 {
-                    fontInfoList.AddAll(cachedInfos);
-                }
-                else
-                {
-                    Debug.WriteLine("warn: Building on-disk font cache, this may take a while");
-                    ScanFonts(fonts);
-                    SaveDiskCache();
-                    Debug.WriteLine($"warn: Finished building on-disk font cache, found {fontInfoList.Count} fonts");
+                    // load cached FontInfo objects
+                    List<FSFontInfo> cachedInfos = LoadDiskCache(fonts);
+                    if (cachedInfos != null && cachedInfos.Count > 0)
+                    {
+                        Extension.AddRange(fontInfoList, cachedInfos);
+                    }
+                    else
+                    {
+                        Debug.WriteLine("warn: Building on-disk font cache, this may take a while");
+                        ScanFonts(fonts);
+                        SaveDiskCache();
+                        Debug.WriteLine($"warn: Finished building on-disk font cache, found {fontInfoList.Count} fonts");
+                    }
                 }
             }
             catch (Exception e)
@@ -373,6 +403,7 @@ namespace PdfClown.Documents.Contents.Fonts
                         {
                             WriteFontInfo(writer, fontInfo);
                         }
+                        writer.Flush();
                     }
                 }
                 catch (IOException e)
@@ -410,7 +441,7 @@ namespace PdfClown.Documents.Contents.Fonts
             if (fontInfo.Panose != null)
             {
                 writer.Write((byte)10);
-                byte[] bytes = fontInfo.Panose.Bytes;
+                var bytes = fontInfo.Panose.Span;
                 writer.Write(bytes);
             }
             else
@@ -418,7 +449,10 @@ namespace PdfClown.Documents.Contents.Fonts
                 writer.Write((byte)0);
             }
             writer.Write(fontInfo.file.FullName);
+            writer.Write(fontInfo.hash);
+            writer.Write(fontInfo.file.LastWriteTimeUtc.ToBinary());
             writer.Write((byte)'\n');
+
         }
 
         /**
@@ -427,7 +461,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private List<FSFontInfo> LoadDiskCache(List<FileInfo> files)
         {
             ISet<string> pending = new HashSet<string>(files.Select(x => x.FullName), StringComparer.Ordinal);
-            List<FSFontInfo> results = new List<FSFontInfo>();
+            List<FSFontInfo> results = new List<FSFontInfo>(files.Count);
 
             // Get the disk cache
             FileInfo file = null;
@@ -476,16 +510,33 @@ namespace PdfClown.Documents.Contents.Fonts
                             }
 
                             var fullpath = reader.ReadString();
-                            reader.ReadByte();
+                            var hash = reader.ReadString();
+                            var lastModified = reader.ReadInt64();
+                            if (reader.ReadByte() != '\n')
+                                return null;
 
                             if (!string.IsNullOrEmpty(fullpath))
                             {
                                 FileInfo fontFile = new FileInfo(fullpath);
                                 if (fontFile.Exists)
                                 {
+                                    if (fontFile.LastWriteTimeUtc.ToBinary() != lastModified)
+                                    {
+                                        string newHash = ComputeHash(fontFile.FullName);
+                                        if (newHash.Equals(hash))
+                                        {
+                                            lastModified = fontFile.LastWriteTimeUtc.ToBinary();
+                                            hash = newHash;
+                                        }
+                                        else
+                                        {
+                                            Debug.WriteLine($"debug: Font file {fontFile.FullName} is different");
+                                            continue; // don't remove from "pending"
+                                        }
+                                    }
                                     FSFontInfo info = new FSFontInfo(fontFile, format, postScriptName,
                                             cidSystemInfo, usWeightClass, sFamilyClass, ulCodePageRange1,
-                                            ulCodePageRange2, macStyle, panose, this);
+                                            ulCodePageRange2, macStyle, panose, this, hash, lastModified);
                                     results.Add(info);
                                 }
                                 else
@@ -510,7 +561,7 @@ namespace PdfClown.Documents.Contents.Fonts
             if (pending.Count > 0)
             {
                 // re-build the entire cache if we encounter un-cached fonts (could be optimised)
-                Debug.WriteLine("warn: New fonts found, font cache will be re-built");
+                Debug.WriteLine("warn: New/Changed fonts found, font cache will be re-built");
                 return null;
             }
 
@@ -540,17 +591,20 @@ namespace PdfClown.Documents.Contents.Fonts
 		 */
         private void AddTrueTypeFont(FileInfo ttfFile)
         {
+            FontFormat fontFormat = (FontFormat)(-1);
             try
             {
                 if (ttfFile.Name.EndsWith(".otf", StringComparison.OrdinalIgnoreCase))
                 {
-                    OTFParser parser = new OTFParser(false, true);
+                    fontFormat = FontFormat.OTF;
+                    var parser = new OTFParser(false);
                     var otf = parser.Parse(ttfFile.FullName);
                     AddTrueTypeFontImpl(otf, ttfFile);
                 }
                 else
                 {
-                    TTFParser parser = new TTFParser(false, true);
+                    fontFormat = FontFormat.TTF;
+                    var parser = new TTFParser(false);
                     var ttf = parser.Parse(ttfFile.FullName);
                     AddTrueTypeFontImpl(ttf, ttfFile);
                 }
@@ -558,6 +612,7 @@ namespace PdfClown.Documents.Contents.Fonts
             catch (IOException e)
             {
                 Debug.WriteLine("eror: Could not load font file: " + ttfFile, e);
+                fontInfoList.Add(CreateFSIgnored(ttfFile, fontFormat, "*skipexception*"));
             }
         }
 
@@ -576,7 +631,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 // read PostScript name, if any
                 if (ttf.Name != null && ttf.Name.Contains("|"))
                 {
-                    fontInfoList.Add(new FSIgnored(file, FontFormat.TTF, "*skippipeinname*"));
+                    fontInfoList.Add(CreateFSIgnored(file, FontFormat.TTF, "*skippipeinname*"));
                     Debug.WriteLine($"warn: Skipping font with '|' in name {ttf.Name} in file {file}");
                 }
                 else if (ttf.Name != null)
@@ -584,7 +639,7 @@ namespace PdfClown.Documents.Contents.Fonts
                     // ignore bitmap fonts
                     if (ttf.Header == null)
                     {
-                        fontInfoList.Add(new FSIgnored(file, FontFormat.TTF, ttf.Name));
+                        fontInfoList.Add(CreateFSIgnored(file, FontFormat.TTF, ttf.Name));
                         return;
                     }
                     int macStyle = ttf.Header.MacStyle;
@@ -595,31 +650,35 @@ namespace PdfClown.Documents.Contents.Fonts
                     int ulCodePageRange2 = 0;
                     byte[] panose = null;
                     // Apple's AAT fonts don't have an OS/2 table
-                    if (ttf.OS2Windows != null)
+                    if (ttf.OS2Windows is OS2WindowsMetricsTable os2windowsMetricsTable)
                     {
-                        sFamilyClass = ttf.OS2Windows.FamilyClass;
-                        usWeightClass = ttf.OS2Windows.WeightClass;
-                        ulCodePageRange1 = (int)ttf.OS2Windows.CodePageRange1;
-                        ulCodePageRange2 = (int)ttf.OS2Windows.CodePageRange2;
-                        panose = ttf.OS2Windows.Panose;
+                        sFamilyClass = os2windowsMetricsTable.FamilyClass;
+                        usWeightClass = os2windowsMetricsTable.WeightClass;
+                        ulCodePageRange1 = (int)os2windowsMetricsTable.CodePageRange1;
+                        ulCodePageRange2 = (int)os2windowsMetricsTable.CodePageRange2;
+                        panose = os2windowsMetricsTable.Panose;
                     }
-
+                    string hash = ComputeHash(file.FullName);
                     string format;
                     if (ttf is OpenTypeFont openTypeFont && openTypeFont.IsPostScript)
                     {
                         format = "OTF";
-                        CFFFont cff = openTypeFont.CFF.Font;
                         CIDSystemInfo ros = null;
-                        if (cff is CFFCIDFont cidFont)
+                        if (openTypeFont.IsSupportedOTF && openTypeFont.CFF != null)
                         {
-                            string registry = cidFont.Registry;
-                            string ordering = cidFont.Ordering;
-                            int supplement = cidFont.Supplement;
-                            ros = new CIDSystemInfo(null, registry, ordering, supplement);
+                            CFFFont cff = openTypeFont.CFF.Font;
+
+                            if (cff is CFFCIDFont cidFont)
+                            {
+                                string registry = cidFont.Registry;
+                                string ordering = cidFont.Ordering;
+                                int supplement = cidFont.Supplement;
+                                ros = new CIDSystemInfo(null, registry, ordering, supplement);
+                            }
                         }
                         fontInfoList.Add(new FSFontInfo(file, FontFormat.OTF, ttf.Name, ros,
                                 usWeightClass, sFamilyClass, ulCodePageRange1, ulCodePageRange2,
-                                macStyle, panose, this));
+                                macStyle, panose, this, hash, file.LastWriteTimeUtc.ToBinary()));
                     }
                     else
                     {
@@ -627,19 +686,19 @@ namespace PdfClown.Documents.Contents.Fonts
                         if (ttf.TableMap.TryGetValue("gcid", out var gcid))
                         {
                             // Apple's AAT fonts have a "gcid" table with CID info
-                            byte[] bytes = ttf.GetTableBytes(gcid);
-                            string reg = Charset.ASCII.GetString(bytes, 10, 64);
+                            var bytes = ttf.GetTableBytes(gcid).Span;
+                            string reg = Charset.ASCII.GetString(bytes.Slice(10, 64));
                             string registryName = reg.Substring(0, reg.IndexOf('\0'));
-                            string ord = Charset.ASCII.GetString(bytes, 76, 64);
+                            string ord = Charset.ASCII.GetString(bytes.Slice(76, 64));
                             string orderName = ord.Substring(0, ord.IndexOf('\0'));
-                            int supplementVersion = bytes[140] << 8 & (bytes[141] & 0xFF);
+                            int supplementVersion = (bytes[140] & 0xff) << 8 & (bytes[141] & 0xff);
                             ros = new CIDSystemInfo(null, registryName, orderName, supplementVersion);
                         }
 
                         format = "TTF";
                         fontInfoList.Add(new FSFontInfo(file, FontFormat.TTF, ttf.Name, ros,
                                 usWeightClass, sFamilyClass, ulCodePageRange1, ulCodePageRange2,
-                                macStyle, panose, this));
+                                macStyle, panose, this, hash, file.LastWriteTimeUtc.ToBinary()));
                     }
 
 #if TRACE
@@ -652,13 +711,13 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
                 else
                 {
-                    fontInfoList.Add(new FSIgnored(file, FontFormat.TTF, "*skipnoname*"));
+                    fontInfoList.Add(CreateFSIgnored(file, FontFormat.TTF, "*skipnoname*"));
                     Debug.WriteLine($"warn: Missing 'name' entry for PostScript name in font {file}");
                 }
             }
             catch (IOException e)
             {
-                fontInfoList.Add(new FSIgnored(file, FontFormat.TTF, "*skipexception*"));
+                fontInfoList.Add(CreateFSIgnored(file, FontFormat.TTF, "*skipexception*"));
                 Debug.WriteLine($"eror: Could not load font file: {file} {e}");
             }
             finally
@@ -675,17 +734,24 @@ namespace PdfClown.Documents.Contents.Fonts
             try
             {
                 using (var fileStream = pfbFile.OpenRead())
-                using (var input = new Bytes.Buffer(fileStream))
+                using (var input = new Bytes.ByteStream(fileStream))
                 {
                     Type1Font type1 = Type1Font.CreateWithPFB(input);
-                    if (type1.Name != null && type1.Name.Contains("|"))
+                    if (type1.Name == null)
                     {
-                        fontInfoList.Add(new FSIgnored(pfbFile, FontFormat.PFB, "*skippipeinname*"));
+                        fontInfoList.Add(CreateFSIgnored(pfbFile, FontFormat.PFB, "*skipnoname*"));
+                        Debug.WriteLine("warn: Missing 'name' entry for PostScript name in font " + pfbFile);
+                        return;
+                    }
+                    if (type1.Name.Contains("|"))
+                    {
+                        fontInfoList.Add(CreateFSIgnored(pfbFile, FontFormat.PFB, "*skippipeinname*"));
                         Debug.WriteLine($"warn: Skipping font with '|' in name {type1.Name} in file {pfbFile}");
                         return;
                     }
+                    string hash = ComputeHash(pfbFile.FullName);
                     fontInfoList.Add(new FSFontInfo(pfbFile, FontFormat.PFB, type1.Name,
-                                                    null, -1, -1, 0, 0, -1, null, this));
+                                                    null, -1, -1, 0, 0, -1, null, this, hash, pfbFile.LastWriteTimeUtc.ToBinary()));
 
 #if TRACE
                     Debug.WriteLine($"trace: PFB: '{type1.Name}' / '{type1.FamilyName}' / '{type1.Weight}'");
@@ -718,6 +784,34 @@ namespace PdfClown.Documents.Contents.Fonts
         public override IEnumerable<FontInfo> FontInfo
         {
             get => fontInfoList;
+        }
+
+        private static string ComputeHash(string filePath)
+        {
+            var buffer = ArrayPool<byte>.Shared.Rent(4 * 1024);
+            try
+            {
+                using var md = IncrementalHash.CreateHash(HashAlgorithmName.SHA512);
+                using var file = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, buffer.Length);
+                var read = 0;
+                while ((read = file.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    md.AppendData(buffer.AsSpan(0, read));
+                }
+                var sha512 = md.GetHashAndReset();
+                return Hex.ToHexString(sha512);
+            }
+            catch (CryptographicException)
+            {
+                // never happens
+                return "";
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+
+
+            }
         }
     }
 }

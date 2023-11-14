@@ -39,87 +39,61 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class ShowAdjustedText : ShowText
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "TJ";
-        #endregion
-        #endregion
+        private ByteStream textStream;
 
-        #region dynamic
-        #region constructors
         /**
           <param name="value">Each element can be either a byte array (encoded text) or a number.
             If the element is a byte array (encoded text), this operator shows the text glyphs.
             If it is a number (glyph adjustment), the operator adjusts the next glyph position by that amount.</param>
         */
-        public ShowAdjustedText(IList<object> value)
+        public ShowAdjustedText(List<PdfDirectObject> value)
             : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
         { Value = value; }
 
         internal ShowAdjustedText(IList<PdfDirectObject> operands)
             : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override byte[] Text
+        public override Memory<byte> Text
         {
             get
             {
-                MemoryStream textStream = new MemoryStream();
+                if (textStream != null)
+                {
+                    return textStream.AsMemory();
+                }
+                textStream = new ByteStream();
                 foreach (PdfDirectObject element in ((PdfArray)operands[0]))
                 {
-                    if (element is PdfString)
+                    if (element is PdfString pdfString)
                     {
-                        byte[] elementValue = ((PdfString)element).RawValue;
-                        textStream.Write(elementValue, 0, elementValue.Length);
+                        textStream.Write(pdfString.RawValue.Span);
                     }
                 }
-                return textStream.ToArray();
+                return textStream.AsMemory();
             }
-            set => Value = new List<object>() { (object)value };
+            set => Value = new List<PdfDirectObject>() { new PdfByteString(value) };
         }
 
-        public override IEnumerable<object> Value
+        public override IEnumerable<PdfDirectObject> Value
         {
             get
             {
                 foreach (PdfDirectObject element in ((PdfArray)operands[0]))
                 {
-                    //TODO:horrible workaround to the lack of generic covariance...
-                    if (element is IPdfNumber pdfNumber)
-                    {
-                        yield return pdfNumber.RawValue;
-                    }
-                    else if (element is PdfString pdfString)
-                    {
-                        yield return pdfString.RawValue;
-                    }
-                    else
-                        throw new NotSupportedException("Element type " + element.GetType().Name + " not supported.");
+                    yield return element;
                 }
             }
             set
             {
                 PdfArray elements = (PdfArray)operands[0];
                 elements.Clear();
-                bool textItemExpected = true;
-                foreach (object valueItem in value)
+                foreach (PdfDirectObject valueItem in value)
                 {
-                    PdfDirectObject element;
-                    if (textItemExpected)
-                    { element = new PdfByteString((byte[])valueItem); }
-                    else
-                    { element = PdfInteger.Get(Convert.ToInt32(valueItem)); }
-                    elements.Add(element);
-
-                    textItemExpected = !textItemExpected;
+                    elements.Add(valueItem);
                 }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -36,22 +36,14 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF13)]
     public sealed class NamedPages : NameTree<Page>
     {
-        #region dynamic
-        #region constructors
         public NamedPages(Document context) : base(context)
         { }
 
         public NamedPages(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override Page WrapValue(PdfDirectObject baseObject)
         { return Wrap<Page>(baseObject); }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

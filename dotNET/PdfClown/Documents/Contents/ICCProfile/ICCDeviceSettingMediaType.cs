@@ -28,9 +28,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     public struct ICCDeviceSettingMediaType : ICCDeviceSettingValue
     {
         public ICCDeviceSettingMediaTypes Value;
-        public void Load(Bytes.Buffer buffer)
+        public void Load(Bytes.ByteStream buffer)
         {
-            Value = (ICCDeviceSettingMediaTypes)buffer.ReadUnsignedInt();
+            Value = (ICCDeviceSettingMediaTypes)buffer.ReadUInt32();
         }
     }
 }

@@ -29,6 +29,8 @@ using PdfClown.Util.Parsers;
 using System;
 using System.Globalization;
 using System.Text;
+using System.Xml.Schema;
+using PdfClown.Util;
 
 namespace PdfClown.Objects
 {
@@ -37,14 +39,9 @@ namespace PdfClown.Objects
     */
     public sealed class PdfDate : PdfString
     {
-        #region static
-        #region fields
         private const string FormatString = "yyyyMMddHHmmsszzz";
         private DateTime? date;
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the object equivalent to the given value.</summary>
         */
@@ -57,72 +54,63 @@ namespace PdfClown.Objects
           <summary>Converts a PDF date literal into its corresponding date.</summary>
           <exception cref="PdfClown.Util.Parsers.ParseException">Thrown when date literal parsing fails.</exception>
         */
-        public static DateTime? ToDate(string value)
+        public static DateTime? ToDate(ReadOnlySpan<char> value)
         {
-            if (string.IsNullOrEmpty(value))
+            if (value.IsEmpty)
                 return null;
             value = value.Trim();
-            if (string.Equals(value, "D:", StringComparison.Ordinal))
+            if (value.Equals("D:", StringComparison.Ordinal)
+                || value.Length < 6)
                 return null;
             // 1. Normalization.
-            StringBuilder dateBuilder = new StringBuilder();
+            var dateBuilder = new StringStream();
             try
             {
                 int length = value.Length;
                 // Year (YYYY). 
-                dateBuilder.Append(value.Substring(2, 4)); // NOTE: Skips the "D:" prefix; Year is mandatory.
+                dateBuilder.Append(value.Slice(2, 4)); // NOTE: Skips the "D:" prefix; Year is mandatory.
                 // Month (MM).
-                dateBuilder.Append(length < 8 ? "01" : value.Substring(6, 2));
+                dateBuilder.Append(length < 8 ? "01" : value.Slice(6, 2));
                 // Day (DD).
-                dateBuilder.Append(length < 10 ? "01" : value.Substring(8, 2));
+                dateBuilder.Append(length < 10 ? "01" : value.Slice(8, 2));
                 // Hour (HH).
-                dateBuilder.Append(length < 12 ? "00" : value.Substring(10, 2));
+                dateBuilder.Append(length < 12 ? "00" : value.Slice(10, 2));
                 // Minute (mm).
-                dateBuilder.Append(length < 14 ? "00" : value.Substring(12, 2));
+                dateBuilder.Append(length < 14 ? "00" : value.Slice(12, 2));
                 // Second (SS).
-                dateBuilder.Append(length < 16 ? "00" : value.Substring(14, 2));
+                dateBuilder.Append(length < 16 ? "00" : value.Slice(14, 2));
                 // Local time / Universal Time relationship (O).
-                dateBuilder.Append(length < 17 || value.Substring(16, 1).Equals("Z", StringComparison.Ordinal) ? "+" : value.Substring(16, 1));
+                dateBuilder.Append(length < 17 || value.Slice(16, 1).Equals("Z", StringComparison.Ordinal) ? "+" : value.Slice(16, 1));
                 // UT Hour offset (HH').
-                dateBuilder.Append(length < 19 ? "00" : value.Substring(17, 2));
+                dateBuilder.Append(length < 19 ? "00" : value.Slice(17, 2));
                 // UT Minute offset (mm').
-                dateBuilder.Append(":").Append(length < 22 ? "00" : value.Substring(20, 2));
+                dateBuilder.Append(':').Append(length < 22 ? "00" : value.Slice(20, 2));
             }
             catch (Exception exception)
             { throw new ParseException("Failed to normalize the date string.", exception); }
 
             // 2. Parsing.
             return DateTime.TryParseExact(
-                dateBuilder.ToString(),
+                dateBuilder.AsSpan(),
                 FormatString,
                 CultureInfo.InvariantCulture,//("en-US")
                 DateTimeStyles.None,
                 out var date) ? date : DateTime.MinValue;
             //{ throw new ParseException("Failed to parse the date string.", exception); }
         }
-        #endregion
 
-        #region private
         private static string Format(DateTime value)
         {
             if (value.Kind == DateTimeKind.Utc)
                 value = value.ToLocalTime();
             return ("D:" + value.ToString(FormatString).Replace(':', '\'') + "'");
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public PdfDate(DateTime value)
         {
             Value = value;
         }
-        #endregion
 
-        #region interface
-        #region public
         public override PdfObject Accept(IVisitor visitor, object data)
         {
             return visitor.Visit(this, data);
@@ -151,9 +139,7 @@ namespace PdfClown.Objects
         public DateTime? DateValue
         {
             get => date ??= ToDate((string)base.Value);
+            set => Value = value;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

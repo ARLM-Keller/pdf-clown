@@ -33,6 +33,7 @@ using SkiaSharp;
 using PdfClown.Tools;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Util;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -45,15 +46,10 @@ namespace PdfClown.Documents.Interaction.Annotations
     {
         public const int size = 32;
 
-        #region static
-        #region fields
         private static readonly ImageNameEnum DefaultIconType = ImageNameEnum.Note;
         private static readonly bool DefaultOpen = false;
-
         private static readonly Dictionary<ImageNameEnum, PdfName> IconTypeEnumCodes;
-        #endregion
 
-        #region constructors
         static StickyNote()
         {
             IconTypeEnumCodes = new Dictionary<ImageNameEnum, PdfName>
@@ -67,10 +63,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 [ImageNameEnum.Paragraph] = PdfName.Paragraph
             };
         }
-        #endregion
 
-        #region interface
-        #region private
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
@@ -93,22 +86,14 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             return DefaultIconType;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public StickyNote(Page page, SKPoint location, string text)
             : base(page, PdfName.Text, SKRect.Create(location.X, location.Y, 0, 0), text)
         { }
 
         public StickyNote(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
         */
@@ -174,7 +159,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override void DrawSpecial(SKCanvas canvas)
         {
-            var box = Box;
+            var box = PageBox;
             var bounds = SKRect.Create(box.Left, box.Top, size / canvas.TotalMatrix.ScaleX, size / canvas.TotalMatrix.ScaleY);
             var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
             using (var paint = new SKPaint { Color = color, Style = SKPaintStyle.Fill })
@@ -195,9 +180,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             yield break;
         }
         //TODO:State and StateModel!!!
-        #endregion
-        #endregion
-        #endregion
     }
 
     public enum MarkupState

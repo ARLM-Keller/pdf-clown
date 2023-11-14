@@ -45,14 +45,12 @@ namespace PdfClown.Documents.Contents.XObjects
     [PDF(VersionEnum.PDF10)]
     public sealed class ImageXObject : XObject, IImageObject
     {
-        #region dynamic
         private ColorSpace colorSpace;
         private int? bitsPerComponent;
         private ImageXObject smask;
         private SKSize? size;
         private float[] decode;
 
-        #region constructors
         public ImageXObject(Document context, PdfStream baseDataObject) : base(context, baseDataObject)
         {
             /*
@@ -67,21 +65,17 @@ namespace PdfClown.Documents.Contents.XObjects
         public ImageXObject(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        #endregion
-
-        #region interface
-        #region public
         /**
           <summary>Gets the number of bits per color component.</summary>
         */
-        public int BitsPerComponent => (bitsPerComponent ?? (bitsPerComponent = ((PdfInteger)BaseDataObject.Header[PdfName.BitsPerComponent])?.RawValue ?? 8)).Value;
+        public int BitsPerComponent => bitsPerComponent ??= BaseDataObject.Header.GetInt(PdfName.BitsPerComponent, 8);
 
         /**
           <summary>Gets the color space in which samples are specified.</summary>
         */
         public ColorSpace ColorSpace => colorSpace ?? (colorSpace = ColorSpace.Wrap(BaseDataObject.Header[PdfName.ColorSpace]));
 
-        public IBuffer Data => Stream.GetBody(false);
+        public IByteStream Data => Stream.GetBody(false);
 
         public PdfDirectObject Filter => Stream.Filter;
 
@@ -113,10 +107,9 @@ namespace PdfClown.Documents.Contents.XObjects
         */
         public override SKSize Size
         {
-            get => (size ?? (size = new SKSize(
-                  ((PdfInteger)BaseDataObject.Header[PdfName.Width]).RawValue,
-                  ((PdfInteger)BaseDataObject.Header[PdfName.Height]).RawValue
-                  ))).Value;
+            get => size ??= new SKSize(
+                  BaseDataObject.Header.GetInt(PdfName.Width),
+                  BaseDataObject.Header.GetInt(PdfName.Height));
             set => throw new NotSupportedException();
         }
 
@@ -148,14 +141,11 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public float[] Decode
         {
-            get => decode ?? (decode = ((PdfArray)BaseDataObject.Header[PdfName.Decode])?.Select(p => ((IPdfNumber)p).FloatValue).ToArray());
+            get => decode ??= ((PdfArray)BaseDataObject.Header[PdfName.Decode])?.Select(p => ((IPdfNumber)p).FloatValue).ToArray();
             set => BaseDataObject.Header[PdfName.Decode] = new PdfArray(value.Select(p => PdfInteger.Get((int)p)));
         }
 
-        public bool ImageMask => (BaseDataObject.Header.Resolve(PdfName.ImageMask) as PdfBoolean)?.BooleanValue ?? false;
+        public bool ImageMask => BaseDataObject.Header.GetBool(PdfName.ImageMask);
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

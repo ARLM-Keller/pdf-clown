@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
@@ -48,9 +49,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private short metricDataFormat;
         private int numberOfHMetrics;
 
-        public HorizontalHeaderTable(TrueTypeFont font) : base(font)
-        {
-        }
+        public HorizontalHeaderTable()
+        { }
 
         /**
          * This will read the required data from the stream.
@@ -59,25 +59,25 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             version = data.Read32Fixed();
-            ascender = data.ReadSignedShort();
-            descender = data.ReadSignedShort();
-            lineGap = data.ReadSignedShort();
-            advanceWidthMax = data.ReadUnsignedShort();
-            minLeftSideBearing = data.ReadSignedShort();
-            minRightSideBearing = data.ReadSignedShort();
-            xMaxExtent = data.ReadSignedShort();
-            caretSlopeRise = data.ReadSignedShort();
-            caretSlopeRun = data.ReadSignedShort();
-            reserved1 = data.ReadSignedShort();
-            reserved2 = data.ReadSignedShort();
-            reserved3 = data.ReadSignedShort();
-            reserved4 = data.ReadSignedShort();
-            reserved5 = data.ReadSignedShort();
-            metricDataFormat = data.ReadSignedShort();
-            numberOfHMetrics = data.ReadUnsignedShort();
+            ascender = data.ReadInt16();
+            descender = data.ReadInt16();
+            lineGap = data.ReadInt16();
+            advanceWidthMax = data.ReadUInt16();
+            minLeftSideBearing = data.ReadInt16();
+            minRightSideBearing = data.ReadInt16();
+            xMaxExtent = data.ReadInt16();
+            caretSlopeRise = data.ReadInt16();
+            caretSlopeRun = data.ReadInt16();
+            reserved1 = data.ReadInt16();
+            reserved2 = data.ReadInt16();
+            reserved3 = data.ReadInt16();
+            reserved4 = data.ReadInt16();
+            reserved5 = data.ReadInt16();
+            metricDataFormat = data.ReadInt16();
+            numberOfHMetrics = data.ReadUInt16();
             initialized = true;
         }
 

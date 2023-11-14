@@ -44,11 +44,7 @@ namespace PdfClown.Documents
         { return baseObject?.Wrapper as PageArticleElements ?? new PageArticleElements(baseObject, page); }
 
 
-        #region dynamic
-        #region constructors
         internal PageArticleElements(PdfDirectObject baseObject, Page page) : base(baseObject, page)
         { }
-        #endregion
-        #endregion
     }
 }

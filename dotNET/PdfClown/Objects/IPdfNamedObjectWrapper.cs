@@ -36,26 +36,19 @@ namespace PdfClown.Objects
         for references across diverse PDF documents.</para>
       </remarks>
     */
-    public interface IPdfNamedObjectWrapper
-      : IPdfObjectWrapper
+    public interface IPdfNamedObjectWrapper : IPdfObjectWrapper
     {
         /**
           <summary>Gets the object name.</summary>
           <remarks>As names are tipically loosely-coupled with their corresponding PDF objects, name
           retrieval implies a costly reverse lookup into the document's name tree.</remarks>
         */
-        PdfString Name
-        {
-            get;
-        }
+        PdfString Name { get; }
 
         /**
           <summary>Gets the object name, if available; otherwise, behaves like
           <see cref="IPdfObjectWrapper.BaseObject">BaseObject</see>.</summary>
         */
-        PdfDirectObject NamedBaseObject
-        {
-            get;
-        }
+        PdfDirectObject NamedBaseObject { get; }
     }
 }

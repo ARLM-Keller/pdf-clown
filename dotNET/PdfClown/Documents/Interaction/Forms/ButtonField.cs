@@ -38,8 +38,6 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public abstract class ButtonField : Field
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new button field within the given document context.</summary>
         */
@@ -49,13 +47,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         protected ButtonField(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override object Value => PdfSimpleObject<object>.GetValue(GetInheritableAttribute(PdfName.V));
-        #endregion
-        #endregion
-        #endregion
     }
 }

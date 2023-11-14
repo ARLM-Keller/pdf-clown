@@ -28,6 +28,7 @@ using PdfClown.Documents;
 using PdfClown.Objects;
 
 using System;
+using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
@@ -38,9 +39,6 @@ namespace PdfClown.Documents.Interaction.Actions
     [PDF(VersionEnum.PDF13)]
     public sealed class JavaScript : Action
     {
-        #region static
-        #region interface
-        #region internal
         /**
           <summary>Gets the Javascript script from the specified base data object.</summary>
         */
@@ -53,7 +51,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 return ((PdfTextString)scriptObject).StringValue;
             else
             {
-                bytes::IBuffer scriptBuffer = ((PdfStream)scriptObject).Body;
+                var scriptBuffer = ((PdfStream)scriptObject).Body;
                 return scriptBuffer.GetString(0, (int)scriptBuffer.Length);
             }
         }
@@ -69,33 +67,25 @@ namespace PdfClown.Documents.Interaction.Actions
             // Insert the script!
             if (scriptObject is PdfStream)
             {
-                bytes::IBuffer scriptBuffer = ((PdfStream)scriptObject).Body;
-                scriptBuffer.Clear();
-                scriptBuffer.Append(value);
+                var scriptBuffer = ((PdfStream)scriptObject).Body;
+                scriptBuffer.SetLength(0);
+                scriptBuffer.Write(value);
             }
             else
             { baseDataObject[key] = new PdfTextString(value); }
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public JavaScript(Document context, string script) 
+        public JavaScript(Document context, string script)
             : base(context, PdfName.JavaScript)
         { Script = script; }
 
-        internal JavaScript(PdfDirectObject baseObject) 
+        internal JavaScript(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the JavaScript script to be executed.</summary>
         */
@@ -105,13 +95,8 @@ namespace PdfClown.Documents.Interaction.Actions
             set => SetScript(BaseDataObject, PdfName.JS, value);
         }
 
-        #region IPdfNamedObjectWrapper
         public PdfString Name => RetrieveName();
 
         public PdfDirectObject NamedBaseObject => RetrieveNamedBaseObject();
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

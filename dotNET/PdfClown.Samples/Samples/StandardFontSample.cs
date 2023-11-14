@@ -52,11 +52,11 @@ namespace PdfClown.Samples.CLI
             PrimitiveComposer composer = new PrimitiveComposer(page);
 
             int x = Margin, y = Margin;
-            PdfType1Font titleFont = PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Times, true, true);
-            PdfType1Font font = null;
+            FontType1 titleFont = FontType1.Load(document, FontType1.FamilyEnum.Times, true, true);
+            FontType1 font = null;
             // Iterating through the standard Type 1 fonts...
-            foreach (PdfType1Font.FamilyEnum fontFamily
-              in (PdfType1Font.FamilyEnum[])Enum.GetValues(typeof(PdfType1Font.FamilyEnum)))
+            foreach (FontType1.FamilyEnum fontFamily
+              in (FontType1.FamilyEnum[])Enum.GetValues(typeof(FontType1.FamilyEnum)))
             {
                 // Iterating through the font styles...
                 for (int styleIndex = 0; styleIndex < 4; styleIndex++)
@@ -65,15 +65,15 @@ namespace PdfClown.Samples.CLI
                       NOTE: Symbol and Zapf Dingbats are available just as regular fonts (no italic or bold variant).
                     */
                     if (styleIndex > 0
-                      && (fontFamily == PdfType1Font.FamilyEnum.Symbol
-                        || fontFamily == PdfType1Font.FamilyEnum.ZapfDingbats))
+                      && (fontFamily == FontType1.FamilyEnum.Symbol
+                        || fontFamily == FontType1.FamilyEnum.ZapfDingbats))
                         break;
 
                     bool bold = (styleIndex & 1) > 0;
                     bool italic = (styleIndex & 2) > 0;
 
                     // Define the font used to show its character set!
-                    font = PdfType1Font.Load(document, fontFamily, bold, italic);
+                    font = FontType1.Load(document, fontFamily, bold, italic);
 
                     if (y > pageSize.Height - Margin)
                     {

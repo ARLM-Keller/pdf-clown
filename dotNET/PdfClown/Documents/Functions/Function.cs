@@ -25,6 +25,7 @@
 
 using PdfClown.Files;
 using PdfClown.Objects;
+using PdfClown.Util.Collections;
 using PdfClown.Util.Math;
 
 using System;
@@ -38,25 +39,17 @@ namespace PdfClown.Documents.Functions
     [PDF(VersionEnum.PDF12)]
     public abstract class Function : PdfObjectWrapper<PdfDataObject>
     {
-        #region types
         /**
           <summary>Default intervals callback.</summary>
         */
-        protected delegate IList<Interval<T>> DefaultIntervalsCallback<T>(IList<Interval<T>> intervals) where T : IComparable<T>;
-        #endregion
 
-        #region static
-        #region fields
         private const int FunctionType0 = 0;
         private const int FunctionType2 = 2;
         private const int FunctionType3 = 3;
         private const int FunctionType4 = 4;
         private IList<Interval<float>> domains;
         private IList<Interval<float>> ranges;
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Wraps a function base object into a function object.</summary>
           <param name="baseObject">Function base object.</param>
@@ -76,7 +69,7 @@ namespace PdfClown.Documents.Functions
 
             var dataObject = baseObject.Resolve();
             var dictionary = GetDictionary(dataObject);
-            int functionType = ((PdfInteger)dictionary[PdfName.FunctionType]).RawValue;
+            int functionType = dictionary.GetInt(PdfName.FunctionType);
             switch (functionType)
             {
                 case FunctionType0:
@@ -91,9 +84,7 @@ namespace PdfClown.Documents.Functions
                     throw new NotSupportedException("Function type " + functionType + " unknown.");
             }
         }
-        #endregion
 
-        #region private
         /**
           <summary>Gets a function's dictionary.</summary>
           <param name="functionDataObject">Function data object.</param>
@@ -105,12 +96,7 @@ namespace PdfClown.Documents.Functions
             else // MUST be PdfStream.
                 return ((PdfStream)functionDataObject).Header;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         protected Function(Document context, PdfDataObject baseDataObject)
             : base(context, baseDataObject)
         { }
@@ -118,16 +104,13 @@ namespace PdfClown.Documents.Functions
         protected Function(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the result of the calculation applied by this function
           to the specified input values.</summary>
           <param name="inputs">Input values.</param>
          */
-        public abstract float[] Calculate(float[] inputs);
+        public abstract float[] Calculate(Span<float> inputs);
 
         /**
           <summary>Gets the result of the calculation applied by this function
@@ -152,17 +135,17 @@ namespace PdfClown.Documents.Functions
           <summary>Gets the (inclusive) domains of the input values.</summary>
           <remarks>Input values outside the declared domains are clipped to the nearest boundary value.</remarks>
         */
-        public IList<Interval<float>> Domains => domains ?? (domains = GetIntervals<float>(PdfName.Domain, null));
+        public IList<Interval<float>> Domains => domains ??= GetIntervals<float>(PdfName.Domain, null);
 
         /**
           <summary>Gets the number of input values (parameters) of this function.</summary>
         */
-        public int InputCount => (Domains?.Count ?? 2) / 2;
+        public int InputCount => Domains?.Count ?? 1;
 
         /**
           <summary>Gets the number of output values (results) of this function.</summary>
         */
-        public int OutputCount => (Ranges?.Count ?? 2) / 2;
+        public int OutputCount => Ranges?.Count ?? 1;
 
         /**
           <summary>Gets the (inclusive) ranges of the output values.</summary>
@@ -171,9 +154,7 @@ namespace PdfClown.Documents.Functions
           <returns><code>null</code> in case of unbounded ranges.</returns>
         */
         public IList<Interval<float>> Ranges => ranges ?? (ranges = GetIntervals<float>(PdfName.Range, null));
-        #endregion
 
-        #region protected
         /**
           <summary>Gets this function's dictionary.</summary>
         */
@@ -181,32 +162,10 @@ namespace PdfClown.Documents.Functions
           <summary>Gets the intervals corresponding to the specified key.</summary>
         */
         protected IList<Interval<T>> GetIntervals<T>(PdfName key, DefaultIntervalsCallback<T> defaultIntervalsCallback)
-            where T : IComparable<T>
+            where T : struct, IComparable<T>
         {
-            IList<Interval<T>> intervals;
-            {
-                PdfArray intervalsObject = (PdfArray)Dictionary.Resolve(key);
-                if (intervalsObject == null)
-                {
-                    intervals = (defaultIntervalsCallback == null
-                      ? null
-                      : defaultIntervalsCallback(new List<Interval<T>>()));
-                }
-                else
-                {
-                    intervals = new List<Interval<T>>();
-                    for (int index = 0, length = intervalsObject.Count; index < length; index += 2)
-                    {
-                        intervals.Add(
-                          new Interval<T>(
-                            (T)Convert.ChangeType(((IPdfNumber)intervalsObject[index]).Value, typeof(T)),
-                            (T)Convert.ChangeType(((IPdfNumber)intervalsObject[index + 1]).Value, typeof(T))
-                            )
-                          );
-                    }
-                }
-            }
-            return intervals;
+            var intervalsObject = Dictionary.GetArray(key);
+            return intervalsObject.GetIntervals(defaultIntervalsCallback);
         }
 
         //https://stackoverflow.com/questions/12838007/c-sharp-linear-interpolation
@@ -228,8 +187,19 @@ namespace PdfClown.Documents.Functions
         {
             return c0 + inputN * (c1 - c0);
         }
-        #endregion
-        #endregion
-        #endregion
+
+        /**
+     * Clip the given input value to the given range.
+     * 
+     * @param x the input value
+     * @param rangeMin the min value of the range
+     * @param rangeMax the max value of the range
+
+     * @return the clipped value
+     */
+        protected float ClipToRange(float x, float rangeMin, float rangeMax)
+        {
+            return Math.Min(Math.Max(x, rangeMin), rangeMax);
+        }
     }
 }

@@ -31,6 +31,7 @@ using PdfClown.Objects;
 using System;
 using SkiaSharp;
 using System.Collections.Generic;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -43,12 +44,8 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class Popup : Annotation
     {
-        #region dynamic
-        #region fields
         private Markup parent;
-        #endregion
 
-        #region constructors
         public Popup(Page page, SKRect box, string text)
             : base(page, PdfName.Popup, box, text)
         { }
@@ -56,10 +53,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Popup(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
 
         public override Page Page
         {
@@ -160,8 +154,5 @@ namespace PdfClown.Documents.Interaction.Annotations
                 yield return cpBase;
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

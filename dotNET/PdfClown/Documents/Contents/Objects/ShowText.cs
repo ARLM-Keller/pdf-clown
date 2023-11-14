@@ -44,7 +44,6 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public abstract class ShowText : Operation
     {
-        #region types
         public interface IScanner
         {
             /**
@@ -55,10 +54,7 @@ namespace PdfClown.Documents.Contents.Objects
             void ScanChar(char textChar, Quad textCharBox);
         }
         public TextStringWrapper textString;
-        #endregion
 
-        #region dynamic
-        #region constructors
         protected ShowText(string @operator) : base(@operator)
         { }
 
@@ -66,17 +62,13 @@ namespace PdfClown.Documents.Contents.Objects
         { }
 
         protected ShowText(string @operator, IList<PdfDirectObject> operands) : base(@operator, operands) { }
-        #endregion
-
-        #region interface
-        #region public
 
         /**
          <summary>Gets/Sets the encoded text.</summary>
          <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
          to the decode method of the corresponding font.</remarks>
        */
-        public abstract byte[] Text
+        public abstract Memory<byte> Text
         {
             get;
             set;
@@ -94,10 +86,10 @@ namespace PdfClown.Documents.Contents.Objects
             </list>
           </returns>
         */
-        public virtual IEnumerable<object> Value
+        public abstract IEnumerable<PdfDirectObject> Value
         {
-            get => Enumerable.Repeat(Text, 1);
-            set => Text = (byte[])value.FirstOrDefault();
+            get;
+            set;
         }
 
         public override void Scan(GraphicsState state)
@@ -124,7 +116,7 @@ namespace PdfClown.Documents.Contents.Objects
             if (font == null)
                 return;
 
-            bool wordSpaceSupported = !(font is PdfType0Font);
+            bool wordSpaceSupported = !(font is FontType0);
             bool vertical = font.IsVertical;
 
             var fontSize = state.FontSize;
@@ -179,17 +171,17 @@ namespace PdfClown.Documents.Contents.Objects
             else
             { tm = state.TextState.Tm; }
 
-            foreach (object textElement in Value)
+            foreach (var textElement in Value)
             {
-                if (textElement is byte[] byteElement) // Text string.
+                if (textElement is PdfString pdfString) // Text string.
                 {
-                    using (var buffer = new Bytes.Buffer(byteElement))
+                    using (var buffer = new ByteStream(pdfString.RawValue))
                     {
                         while (buffer.Position < buffer.Length)
                         {
                             var code = font.ReadCode(buffer, out var codeBytes);
                             var textCode = font.ToUnicode(code);
-                            if (textCode < 0)
+                            if (textCode == null)
                             {
                                 // Missing character.
                                 textCode = '?';// font.MissingCharacter(byteElement, code);
@@ -264,10 +256,10 @@ namespace PdfClown.Documents.Contents.Objects
                         }
                     }
                 }
-                else // Text position adjustment.
+                else if (textElement is IPdfNumber pdfNumber)
                 {
                     // calculate the combined displacements
-                    var tj = -Convert.ToSingle(textElement);
+                    var tj = -pdfNumber.DoubleValue;
                     float tx;
                     float ty;
                     if (vertical)
@@ -299,10 +291,5 @@ namespace PdfClown.Documents.Contents.Objects
                 context.ClipPath(clip, SKClipOperation.Intersect, true);
             }
         }
-
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -39,6 +39,7 @@ using PdfClown.Util;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
@@ -48,8 +49,6 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class TextField : Field
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new text field within the given document context.</summary>
         */
@@ -59,10 +58,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         internal TextField(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets whether the field can contain multiple lines of text.</summary>
         */
@@ -114,7 +110,7 @@ namespace PdfClown.Documents.Interaction.Forms
         }
 
         /**
-          <returns>Either a string or an <see cref="IBuffer"/>.</returns>
+          <returns>Either a string or an <see cref="IByteStream"/>.</returns>
         */
         public override object Value
         {
@@ -132,31 +128,31 @@ namespace PdfClown.Documents.Interaction.Forms
             {
                 if (!(value == null
                     || value is string
-                    || value is bytes::IBuffer))
+                    || value is IByteStream))
                     throw new ArgumentException("Value MUST be either a String or an IBuffer");
 
                 if (value != null)
                 {
                     PdfDataObject oldValueObject = BaseDataObject.Resolve(PdfName.V);
-                    bytes::IBuffer valueObjectBuffer = null;
-                    if (oldValueObject is PdfStream)
+                    IByteStream valueObjectBuffer = null;
+                    if (oldValueObject is PdfStream stream)
                     {
-                        valueObjectBuffer = ((PdfStream)oldValueObject).Body;
+                        valueObjectBuffer = stream.Body;
                         valueObjectBuffer.SetLength(0);
                     }
-                    if (value is string)
+                    if (value is string stringValue)
                     {
                         if (valueObjectBuffer != null)
-                        { valueObjectBuffer.Append((string)value); }
+                        { valueObjectBuffer.Write(stringValue); }
                         else
-                        { BaseDataObject[PdfName.V] = new PdfTextString((string)value); }
+                        { BaseDataObject[PdfName.V] = new PdfTextString(stringValue); }
                     }
-                    else // IBuffer.
+                    else if (value is IByteStream inputStream) // IBuffer.
                     {
                         if (valueObjectBuffer != null)
-                        { valueObjectBuffer.Append((bytes::IBuffer)value); }
+                        { valueObjectBuffer.Write(inputStream); }
                         else
-                        { BaseDataObject[PdfName.V] = File.Register(new PdfStream((bytes::IBuffer)value)); }
+                        { BaseDataObject[PdfName.V] = File.Register(new PdfStream(inputStream)); }
                     }
                 }
                 else
@@ -165,9 +161,7 @@ namespace PdfClown.Documents.Interaction.Forms
                 RefreshAppearance();
             }
         }
-        #endregion
 
-        #region private
         private void RefreshAppearance()
         {
             Widget widget = Widgets[0];
@@ -176,7 +170,7 @@ namespace PdfClown.Documents.Interaction.Forms
                 AppearanceStates normalAppearances = widget.Appearance.Normal;
                 normalAppearance = normalAppearances[null];
                 if (normalAppearance == null)
-                { normalAppearances[null] = normalAppearance = new FormXObject(Document, widget.Box.Size); }
+                { normalAppearances[null] = normalAppearance = new FormXObject(Document, widget.PageBox.Size); }
             }
             PdfName fontName = null;
             double fontSize = 0;
@@ -215,18 +209,18 @@ namespace PdfClown.Documents.Interaction.Forms
                             if (defaultFontName == null)
                             {
                                 //TODO:manage name collision!
-                                formFonts[defaultFontName = new PdfName("default")] = defaultFont = fonts::PdfType1Font.Load(Document, fonts::PdfType1Font.FamilyEnum.Helvetica, false, false);
+                                formFonts[defaultFontName = new PdfName("default")] = defaultFont = fonts::FontType1.Load(Document, fonts::FontType1.FamilyEnum.Helvetica, false, false);
                             }
                             normalAppearanceFonts[defaultFontName] = defaultFont;
                         }
                     }
-                    bytes::Buffer buffer = new bytes::Buffer();
+                    var buffer = new ByteStream();
                     new SetFont(defaultFontName, IsMultiline ? 10 : 0).WriteTo(buffer, Document);
-                    widget.BaseDataObject[PdfName.DA] = defaultAppearanceState = new PdfString(buffer.ToByteArray());
+                    widget.BaseDataObject[PdfName.DA] = defaultAppearanceState = new PdfString(buffer.AsMemory());
                 }
 
                 // Retrieving the font to use...
-                ContentParser parser = new ContentParser(defaultAppearanceState.ToByteArray());
+                ContentParser parser = new ContentParser(defaultAppearanceState.RawValue);
                 foreach (ContentObject content in parser.ParseContentObjects())
                 {
                     if (content is SetFont)
@@ -340,8 +334,5 @@ namespace PdfClown.Documents.Interaction.Forms
             composer.ShowText(text);
             composer.End();
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

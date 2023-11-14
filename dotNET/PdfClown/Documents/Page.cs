@@ -52,7 +52,6 @@ namespace PdfClown.Documents
           of the explicit representation of a page. They are retrieved every time
           clients call.
         */
-        #region types
         /**
           <summary>Annotations tab order [PDF:1.6:3.6.2].</summary>
         */
@@ -72,20 +71,15 @@ namespace PdfClown.Documents
             */
             Structure
         };
-        #endregion
 
-        #region static
-        #region fields
         public static readonly ISet<PdfName> InheritableAttributeKeys;
 
         private static readonly Dictionary<TabOrderEnum, PdfName> TabOrderEnumCodes;
         private SKMatrix? rotateMatrix;
-        private SKMatrix? inRotateMatrix;
+        private SKMatrix? invertRotateMatrix;
         private SKRect? box;
         internal int? index;
-        #endregion
 
-        #region constructors
         static Page()
         {
             InheritableAttributeKeys = new HashSet<PdfName>
@@ -103,10 +97,7 @@ namespace PdfClown.Documents
                 [TabOrderEnum.Structure] = PdfName.S
             };
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the attribute value corresponding to the specified key, possibly recurring to
           its ancestor nodes in the page tree.</summary>
@@ -138,9 +129,6 @@ namespace PdfClown.Documents
             }
         }
 
-        #endregion
-
-        #region private
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
@@ -163,12 +151,7 @@ namespace PdfClown.Documents
             }
             return TabOrderEnum.Row;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new page within the specified document context, using the default size.
           </summary>
@@ -182,13 +165,12 @@ namespace PdfClown.Documents
           <param name="context">Document where to place this page.</param>
           <param name="size">Page size. In case of <code>null</code>, uses the default SKSize.</param>
         */
-        public Page(Document context, SKSize? size) : base(
-            context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type, PdfName.Contents },
-              new PdfDirectObject[] { PdfName.Page, context.File.Register(new PdfStream()) }
-              )
-            )
+        public Page(Document context, SKSize? size)
+            : base(context, new PdfDictionary
+            {
+                { PdfName.Type,PdfName.Page },
+                { PdfName.Contents,context.File.Register(new PdfStream()) }
+            })
         {
             if (size.HasValue)
             { Size = size.Value; }
@@ -196,10 +178,7 @@ namespace PdfClown.Documents
 
         public Page(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the page's behavior in response to trigger events.</summary>
         */
@@ -304,18 +283,14 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF11)]
         public double Duration
         {
-            get
-            {
-                IPdfNumber durationObject = (IPdfNumber)BaseDataObject[PdfName.Dur];
-                return durationObject == null ? 0 : durationObject.RawValue;
-            }
-            set => BaseDataObject[PdfName.Dur] = (value > 0 ? PdfReal.Get(value) : null);
+            get => BaseDataObject.GetDouble(PdfName.Dur);
+            set => BaseDataObject.SetDouble(PdfName.Dur, value > 0 ? value : null);
         }
 
         /**
           <summary>Gets the index of this page.</summary>
         */
-        public int Index => index ?? (index = CalcIndex()).Value;
+        public int Index => index ??= CalcIndex();
 
         private int CalcIndex()
         {
@@ -324,10 +299,11 @@ namespace PdfClown.Documents
               collecting page counts. At each level we'll scan the kids array from the
               lower-indexed item to the ancestor of this page object at that level.
             */
-            PdfReference ancestorKidReference = (PdfReference)BaseObject;
-            PdfReference parentReference = (PdfReference)BaseDataObject[PdfName.Parent];
-            PdfDictionary parent = (PdfDictionary)parentReference.DataObject;
-            PdfArray kids = (PdfArray)parent.Resolve(PdfName.Kids);
+            var ancestorKidReference = (PdfReference)BaseObject;
+            var parent = BaseDataObject.GetDictionary(PdfName.Parent);
+            var kids = parent.GetArray(PdfName.Kids);
+            if (kids == null)
+                return 0;
             int index = 0;
             for (int i = 0; true; i++)
             {
@@ -343,17 +319,16 @@ namespace PdfClown.Documents
                         return index;
                     }
                     // Set the ancestor at the next level!
-                    ancestorKidReference = parentReference;
+                    ancestorKidReference = parent.Reference;
                     // Move up one level!
-                    parentReference = (PdfReference)parent[PdfName.Parent];
-                    parent = (PdfDictionary)parentReference.DataObject;
-                    kids = (PdfArray)parent.Resolve(PdfName.Kids);
+                    parent = parent.GetDictionary(PdfName.Parent);
+                    kids = parent.GetArray(PdfName.Kids);
                     i = -1;
                 }
                 else // Intermediate node.
                 {
                     PdfDictionary kid = (PdfDictionary)kidReference.DataObject;
-                    if (kid[PdfName.Type].Equals(PdfName.Page))
+                    if (PdfName.Page.Equals(kid.GetName(PdfName.Type)))
                         index++;
                     else
                         index += kid.GetInt(PdfName.Count);
@@ -430,7 +405,6 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.TrimBox] = value?.BaseDataObject;
         }
 
-        #region IContentContext
         public Rectangle MediaBox
         {
             get => Wrap<Rectangle>(GetInheritableAttribute(PdfName.MediaBox));
@@ -440,7 +414,7 @@ namespace PdfClown.Documents
 
         public SKRect Box
         {
-            get => box ?? (box = MediaBox.ToRect()).Value;
+            get => box ??= MediaBox.ToRect();
             /* NOTE: Mandatory. */
             set => MediaBox = new Rectangle(value);
         }
@@ -494,31 +468,30 @@ namespace PdfClown.Documents
             {
                 if (rotateMatrix == null)
                 {
-                    rotateMatrix = GraphicsState.GetRotationMatrix(Box, Rotate);
+                    rotateMatrix = GraphicsState.GetRotationLeftBottomMatrix(Box, Rotate);
                 }
                 return rotateMatrix.Value;
             }
             set
             {
                 rotateMatrix = value;
-                inRotateMatrix = null;
+                invertRotateMatrix = null;
             }
         }
 
-        public SKMatrix InRotateMatrix
+        public SKMatrix InvertRotateMatrix
         {
             get
             {
-                if (inRotateMatrix == null)
+                if (invertRotateMatrix == null)
                 {
                     RotateMatrix.TryInvert(out var invert);
-                    inRotateMatrix = invert;
+                    invertRotateMatrix = invert;
                 }
-                return inRotateMatrix.Value;
+                return invertRotateMatrix.Value;
             }
         }
 
-        #region IAppDataHolder
         public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PieceInfo), this);
 
         public DateTime? ModificationDate => (DateTime)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.LastModified]);
@@ -540,17 +513,15 @@ namespace PdfClown.Documents
             GetAppData(appName).ModificationDate = modificationDate;
             BaseDataObject[PdfName.LastModified] = new PdfDate(modificationDate);
         }
-        #endregion
 
-        #region IContentEntity
         public ContentObject ToInlineObject(PrimitiveComposer composer)
         { throw new NotImplementedException(); }
 
         public xObjects::XObject ToXObject(Document context)
         {
-            xObjects::FormXObject form;
+            FormXObject form;
             {
-                form = new xObjects::FormXObject(context, Box);
+                form = new FormXObject(context, Box);
                 form.Resources = (Resources)(
                   context == Document  // [FIX:53] Ambiguous context identity.
                     ? Resources // Same document: reuses the existing resources.
@@ -559,31 +530,24 @@ namespace PdfClown.Documents
 
                 // Body (contents).
                 {
-                    IBuffer formBody = form.BaseDataObject.Body;
+                    IByteStream formBody = form.BaseDataObject.Body;
                     PdfDataObject contentsDataObject = BaseDataObject.Resolve(PdfName.Contents);
                     if (contentsDataObject is PdfStream stream)
-                    { formBody.Append(stream.Body); }
+                    { formBody.Write(stream.Body); }
                     else if (contentsDataObject is PdfArray array)
                     {
                         foreach (PdfDirectObject contentStreamObject in array)
-                        { formBody.Append(((PdfStream)contentStreamObject.Resolve()).Body); }
+                        { formBody.Write(((PdfStream)contentStreamObject.Resolve()).Body); }
                     }
                 }
             }
             return form;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region private
         private PdfDirectObject GetInheritableAttribute(PdfName key)
         {
             return GetInheritableAttribute(BaseDataObject, key);
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

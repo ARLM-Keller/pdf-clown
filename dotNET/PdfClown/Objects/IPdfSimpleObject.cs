@@ -27,10 +27,6 @@ using System;
 
 namespace PdfClown.Objects
 {
-    public interface IPdfValued
-    {
-        object Value { get; }
-    }
 
     public interface IPdfSimpleObject : IPdfValued, IComparable<PdfDirectObject>
     {

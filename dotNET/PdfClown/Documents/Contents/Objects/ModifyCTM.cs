@@ -38,13 +38,8 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class ModifyCTM : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "cm";
-        #endregion
 
-        #region interface
-        #region public
         public static ModifyCTM GetResetCTM(GraphicsState state)
         {
             state.Ctm.TryInvert(out var inverseCtm);
@@ -56,12 +51,7 @@ namespace PdfClown.Documents.Contents.Objects
               //          ).toTransform()
               );
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public ModifyCTM(SKMatrix value) : this(
             value.ScaleX,
             value.SkewY,
@@ -74,8 +64,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public ModifyCTM(double a, double b, double c, double d, double e, double f)
             : base(OperatorKeyword,
-            new List<PdfDirectObject>(
-              new PdfDirectObject[]
+            new List<PdfDirectObject>(6)
               {
             PdfReal.Get(a),
             PdfReal.Get(b),
@@ -83,17 +72,12 @@ namespace PdfClown.Documents.Contents.Objects
             PdfReal.Get(d),
             PdfReal.Get(e),
             PdfReal.Get(f)
-              }
-              )
-            )
+              })
         { }
 
         public ModifyCTM(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         {
             var ctm = state.Ctm;
@@ -119,8 +103,5 @@ namespace PdfClown.Documents.Contents.Objects
             TransY = ((IPdfNumber)operands[5]).FloatValue, // f.
             Persp2 = 1
         };
-        #endregion
-        #endregion
-        #endregion
     }
 }

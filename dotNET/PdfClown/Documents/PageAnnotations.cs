@@ -26,7 +26,6 @@
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Files;
 using PdfClown.Objects;
-using PdfClown.Util.Collections.Generic;
 
 using System;
 using System.Collections;
@@ -65,11 +64,9 @@ namespace PdfClown.Documents
             return baseObject?.Wrapper as PageAnnotations ?? new PageAnnotations(baseObject, page);
         }
 
-        #region dynamic
 
         private readonly Dictionary<string, Annotation> nameIndex = new Dictionary<string, Annotation>(StringComparer.Ordinal);
 
-        #region constructors
         internal PageAnnotations(PdfDirectObject baseObject, Page page)
             : base(new AnnotationWrapper(page), baseObject, page)
         { }
@@ -147,7 +144,5 @@ namespace PdfClown.Documents
             nameIndex.Remove(item.Name);
             base.RemoveAt(index);
         }
-        #endregion
-        #endregion
     }
 }

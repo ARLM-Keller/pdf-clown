@@ -337,7 +337,7 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
          */
         private FontMetrics ParseFontMetric(bool reducedDataset)
         {
-            FontMetrics fontMetrics = new FontMetrics();
+            var fontMetrics = new FontMetrics();
             string startFontMetrics = ReadString();
             if (!START_FONT_METRICS.Equals(startFontMetrics, StringComparison.Ordinal))
             {
@@ -365,9 +365,9 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
                     case FONT_BBOX:
                         var bBox = new SKRect();
                         bBox.Left = Readfloat();
-                        bBox.Bottom = Readfloat();
-                        bBox.Right = Readfloat();
                         bBox.Top = Readfloat();
+                        bBox.Right = Readfloat();
+                        bBox.Bottom = Readfloat();
                         fontMetrics.FontBBox = bBox;
                         break;
                     case VERSION:
@@ -710,7 +710,7 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
          */
         private CharMetric ParseCharMetric()
         {
-            CharMetric charMetric = new CharMetric();
+            var charMetric = new CharMetric();
             string metrics = ReadLine();
             var metricsTokenizer = metrics.Split(new char[] { ' ' });
             for (int i = 0; i < metricsTokenizer.Length;)

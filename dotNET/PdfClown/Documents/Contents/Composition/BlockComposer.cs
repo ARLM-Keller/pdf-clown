@@ -288,8 +288,7 @@ namespace PdfClown.Documents.Contents.Composition
         /**
           <summary>Ends current paragraph.</summary>
         */
-        public bool ShowBreak()
-        { return ShowBreak(null, null); }
+        public bool ShowBreak() => ShowBreak(null, null);
 
         /**
           <summary>Ends current paragraph, specifying the offset of the next one.</summary>
@@ -297,16 +296,14 @@ namespace PdfClown.Documents.Contents.Composition
           and margin.</remarks>
           <param name="offset">Relative location of the next paragraph.</param>
         */
-        public bool ShowBreak(SKSize offset)
-        { return ShowBreak(offset, null); }
+        public bool ShowBreak(SKSize offset) => ShowBreak(offset, null);
 
         /**
           <summary>Ends current paragraph, specifying the alignment of the next one.</summary>
           <remarks>This functionality allows higher-level features such as paragraph indentation and margin.</remarks>
           <param name="xAlignment">Horizontal alignment.</param>
         */
-        public bool ShowBreak(XAlignmentEnum xAlignment)
-        { return ShowBreak(null, xAlignment); }
+        public bool ShowBreak(XAlignmentEnum xAlignment) => ShowBreak(null, xAlignment);
 
         /**
           <summary>Ends current paragraph, specifying the offset and alignment of the next one.</summary>
@@ -339,10 +336,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="text">Text to show.</param>
           <returns>Last shown character index.</returns>
         */
-        public int ShowText(string text)
-        {
-            return ShowText(text, lineAlignment);
-        }
+        public int ShowText(string text) => ShowText(text, lineAlignment);
 
         /**
           <summary>Shows text.</summary>
@@ -730,7 +724,7 @@ namespace PdfClown.Documents.Contents.Composition
                       will be declared as styles and their composition will occur as a single pass without such
                       ugly tweakings.
                     */
-                    ShowText showTextOperation = (ShowText)((Text)((LocalGraphicsState)containedGraphics[1]).Objects[1]).Objects[1];
+                    var showTextOperation = (ShowText)((Text)((LocalGraphicsState)containedGraphics[1]).Objects[1]).Objects[1];
                     if (showTextOperation is ShowAdjustedText)
                     {
                         PdfInteger wordSpaceObject = PdfInteger.Get((int)Math.Round(-wordSpace * 1000 * obj.Scale / obj.FontSize));

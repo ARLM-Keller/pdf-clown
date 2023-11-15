@@ -25,7 +25,7 @@ namespace PdfClown.Samples.CLI
                 Document document = file.Document;
 
                 // 2. Text extraction from the document pages.
-                TextExtractor extractor = new TextExtractor();
+                var extractor = new TextExtractor();
                 foreach (Page page in document.Pages)
                 {
                     if (!PromptNextPage(page, false))

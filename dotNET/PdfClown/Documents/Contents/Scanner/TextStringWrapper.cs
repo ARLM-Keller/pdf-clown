@@ -43,12 +43,13 @@ namespace PdfClown.Documents.Contents.Scanner
             TextStringWrapper wrapper;
 
             internal ShowTextScanner(TextStringWrapper wrapper)
-            { this.wrapper = wrapper; }
+            {
+                this.wrapper = wrapper;
+            }
 
             public void ScanChar(char textChar, Quad textCharQuad)
             {
-                wrapper.textChars.Add(
-                  new TextChar(textChar, textCharQuad, wrapper, false));
+                wrapper.textChars.Add(new TextChar(textChar, textCharQuad, wrapper, false));
             }
         }
 

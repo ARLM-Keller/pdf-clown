@@ -49,7 +49,7 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Instantiate the stamper!
             /* NOTE: The PageStamper is optimized for dealing with pages. */
-            PageStamper stamper = new PageStamper();
+            var stamper = new PageStamper();
 
             // 2. Inserting the watermark into each page of the document...
             foreach (Page page in watermark.Document.Pages)
@@ -73,11 +73,11 @@ namespace PdfClown.Samples.CLI
             SKSize size = document.GetSize();
 
             // 1. Create an external form object to represent the watermark!
-            FormXObject watermark = new FormXObject(document, size);
+            var watermark = new FormXObject(document, size);
 
             // 2. Inserting the contents of the watermark...
             // 2.1. Create a content composer!
-            PrimitiveComposer composer = new PrimitiveComposer(watermark);
+            var composer = new PrimitiveComposer(watermark);
             // 2.2. Inserting the contents...
             // Set the font to use!
             composer.SetFont(fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Times, true, false), 120);
@@ -85,7 +85,7 @@ namespace PdfClown.Samples.CLI
             composer.SetFillColor(new DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
             // Apply transparency!
             {
-                ExtGState state = new ExtGState(document);
+                var state = new ExtGState(document);
                 state.FillAlpha = .3F;
                 composer.ApplyState(state);
             }

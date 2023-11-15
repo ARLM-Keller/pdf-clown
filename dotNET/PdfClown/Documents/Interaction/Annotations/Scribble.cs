@@ -191,6 +191,8 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         private void ClearPath(IList<SKPath> paths)
         {
+            if (paths == null)
+                return;
             var temp = paths.ToList();
             paths.Clear();
             foreach (var path in temp)

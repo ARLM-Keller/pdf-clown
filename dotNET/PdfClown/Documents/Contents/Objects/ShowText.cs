@@ -53,7 +53,7 @@ namespace PdfClown.Documents.Contents.Objects
             */
             void ScanChar(char textChar, Quad textCharBox);
         }
-        public TextStringWrapper textString;
+        private TextStringWrapper textString;
 
         protected ShowText(string @operator) : base(@operator)
         { }
@@ -90,6 +90,12 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get;
             set;
+        }
+
+        public TextStringWrapper TextString
+        {
+            get => textString;
+            set => textString = value;
         }
 
         public override void Scan(GraphicsState state)

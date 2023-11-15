@@ -68,10 +68,7 @@ namespace PdfClown.Samples.CLI
             composer.Flush();
         }
 
-        private string GetStepNote(
-          PrimitiveComposer composer,
-          string comment
-          )
+        private string GetStepNote(PrimitiveComposer composer, string comment)
         {
             // Get the CTM!
             var ctm = composer.Scanner.State.Ctm;
@@ -83,7 +80,7 @@ namespace PdfClown.Samples.CLI
         {
             float maxCtmInversionApproximation;
             {
-                float[] ctmInversionApproximations = new float[9];
+                var ctmInversionApproximations = new float[9];
                 {
                     float[] initialCtmValues, finalCtmValues;
                     {
@@ -91,12 +88,7 @@ namespace PdfClown.Samples.CLI
                         initialCtmValues = state.GetInitialCtm().Values;
                         finalCtmValues = state.Ctm.Values;
                     }
-                    for (
-                      int index = 0,
-                        length = finalCtmValues.Length;
-                      index < length;
-                      index++
-                      )
+                    for (int index = 0, length = finalCtmValues.Length; index < length; index++)
                     { ctmInversionApproximations[index] = Math.Abs(finalCtmValues[index]) - initialCtmValues[index]; }
                 }
                 maxCtmInversionApproximation = Max(ctmInversionApproximations);
@@ -106,15 +98,12 @@ namespace PdfClown.Samples.CLI
             blockComposer.LineSpace = new Length(.25, Length.UnitModeEnum.Relative);
 
             composer.BeginLocalState();
-            composer.SetFillColor(
-              new colorSpaces::DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d)
-              );
+            composer.SetFillColor(new colorSpaces::DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
             SKRect frame = SKRect.Create(
               18,
               18,
               pageSize.Width * .5f,
-              pageSize.Height * .5f
-              );
+              pageSize.Height * .5f);
             blockComposer.Begin(frame, XAlignmentEnum.Left, YAlignmentEnum.Top);
             composer.SetFont(ResourceName_DefaultFont, 24);
             blockComposer.ShowText("Page coordinates sample");
@@ -124,13 +113,11 @@ namespace PdfClown.Samples.CLI
             blockComposer.ShowText(
               "This sample shows the effects of the manipulation of the CTM (Current Transformation Matrix), "
                 + "that is the mathematical device which affects the page coordinate system used to place "
-                + "graphic contents onto the canvas."
-              );
+                + "graphic contents onto the canvas.");
             blockComposer.ShowBreak(breakSize);
             blockComposer.ShowText(
               "The following steps represent the operations applied to this page's CTM in order to alter it. "
-                + "Each step writes the word \"Step\" at the lower-left corner of the current page frame:"
-              );
+                + "Each step writes the word \"Step\" at the lower-left corner of the current page frame:");
             blockComposer.ShowBreak(breakSize);
             for (int i = 0; i < steps.Length; i++)
             {
@@ -147,20 +134,10 @@ namespace PdfClown.Samples.CLI
             composer.End();
         }
 
-        private void BuildSteps(
-          PrimitiveComposer composer,
-          string[] steps,
-          colorSpaces::Color[] colors,
-          SKSize pageSize
-          )
+        private void BuildSteps(PrimitiveComposer composer, string[] steps, colorSpaces::Color[] colors, SKSize pageSize)
         {
             composer.SetFont(ResourceName_DefaultFont, 32);
-            SKRect frame = SKRect.Create(
-              0,
-              0,
-              pageSize.Width,
-              pageSize.Height
-              );
+            var frame = SKRect.Create(0, 0, pageSize.Width, pageSize.Height);
 
             // Step 0.
             {
@@ -178,8 +155,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(0, pageSize.Height),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Bottom,
-                  0
-                  );
+                  0);
 
                 steps[0] = GetStepNote(composer, "default");
             }
@@ -203,8 +179,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(0, pageSize.Height),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Bottom,
-                  0
-                  );
+                  0);
 
                 steps[1] = GetStepNote(composer, "after translate(72,72)");
             }
@@ -231,8 +206,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(0, pageSize.Height),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Bottom,
-                  0
-                  );
+                  0);
 
                 steps[2] = GetStepNote(composer, "after rotate(20)");
             }
@@ -257,8 +231,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(0, pageSize.Height),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Bottom,
-                  0
-                  );
+                  0);
 
                 steps[3] = GetStepNote(composer, "after translate(0,72) and scale(.5,.5)");
             }
@@ -270,11 +243,7 @@ namespace PdfClown.Samples.CLI
                 composer.SetStrokeColor(colors[4]);
 
                 // Transform the coordinate space, restoring its initial CTM!
-                composer.Add(
-                  ModifyCTM.GetResetCTM(
-                    composer.Scanner.State
-                    )
-                  );
+                composer.Add(ModifyCTM.GetResetCTM(composer.Scanner.State));
 
                 // Draw the page frame!
                 composer.DrawRectangle(frame);
@@ -286,8 +255,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(0, pageSize.Height),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Bottom,
-                  0
-                  );
+                  0);
 
                 steps[4] = GetStepNote(composer, "after resetting CTM");
             }

@@ -24,25 +24,20 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Layers;
-using colors = PdfClown.Documents.Contents.ColorSpaces;
-using fonts = PdfClown.Documents.Contents.Fonts;
-using objects = PdfClown.Documents.Contents.Objects;
+using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
-using actions = PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util.Math;
 using PdfClown.Util.Math.Geom;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using SkiaSharp;
-using PdfClown.Documents.Contents.Scanner;
+using System;
+using System.Collections.Generic;
+using actions = PdfClown.Documents.Interaction.Actions;
+using colors = PdfClown.Documents.Contents.ColorSpaces;
+using objects = PdfClown.Documents.Contents.Objects;
 
 namespace PdfClown.Documents.Contents.Composition
 {
@@ -72,11 +67,10 @@ namespace PdfClown.Documents.Contents.Composition
           <summary>Adds a content object.</summary>
           <returns>The added content object.</returns>
         */
-        public T Add<T>(T obj) where T : objects::ContentObject
+        public T Add<T>(T obj) where T : ContentObject
         {
             Scanner.Insert(obj);
             Scanner.MoveNext();
-
             return obj;
         }
 
@@ -93,15 +87,9 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="f">Item 2,1 of the matrix.</param>
           <seealso cref="SetMatrix(double,double,double,double,double,double)"/>
         */
-        public void ApplyMatrix(double a, double b, double c, double d, double e, double f)
-        {
-            Add(new objects::ModifyCTM(a, b, c, d, e, f));
-        }
+        public void ApplyMatrix(double a, double b, double c, double d, double e, double f) => Add(new ModifyCTM(a, b, c, d, e, f));
 
-        public void ApplyMatrix(SKMatrix matrix)
-        {
-            Add(new objects::ModifyCTM(matrix));
-        }
+        public void ApplyMatrix(SKMatrix matrix) => Add(new ModifyCTM(matrix));
 
         /**
           <summary>Applies the specified state parameters [PDF:1.6:4.3.4].</summary>
@@ -123,17 +111,14 @@ namespace PdfClown.Documents.Contents.Composition
           <see cref="ApplyState(PdfName)"/>.</remarks>
           <param name="state">State parameters object.</param>
         */
-        public void ApplyState(ExtGState state)
-        {
-            ApplyState_(GetResourceName(state));
-        }
+        public void ApplyState(ExtGState state) => ApplyState_(GetResourceName(state));
 
         /**
           <summary>Adds a composite object beginning it.</summary>
           <returns>Added composite object.</returns>
           <seealso cref="End()"/>
         */
-        public objects.CompositeObject Begin(objects.CompositeObject obj)
+        public CompositeObject Begin(CompositeObject obj)
         {
             // Insert the new object at the current level!
             Scanner.Insert(obj);
@@ -149,10 +134,7 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Added layered-content sequence.</returns>
           <seealso cref="End()"/>
         */
-        public objects::MarkedContent BeginLayer(LayerEntity layer)
-        {
-            return BeginLayer(GetResourceName(layer.Membership));
-        }
+        public MarkedContent BeginLayer(LayerEntity layer) => BeginLayer(GetResourceName(layer.Membership));
 
         /**
           <summary>Begins a new layered-content sequence [PDF:1.6:4.10.2].</summary>
@@ -161,20 +143,14 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Added layered-content sequence.</returns>
           <seealso cref="End()"/>
         */
-        public objects::MarkedContent BeginLayer(PdfName layerName)
-        {
-            return BeginMarkedContent(PdfName.OC, layerName);
-        }
+        public MarkedContent BeginLayer(PdfName layerName) => BeginMarkedContent(PdfName.OC, layerName);
 
         /**
           <summary>Begins a new nested graphics state context [PDF:1.6:4.3.1].</summary>
           <returns>Added local graphics state object.</returns>
           <seealso cref="End()"/>
         */
-        public objects::LocalGraphicsState BeginLocalState()
-        {
-            return (objects::LocalGraphicsState)Begin(new objects::LocalGraphicsState());
-        }
+        public LocalGraphicsState BeginLocalState() => (LocalGraphicsState)Begin(new LocalGraphicsState());
 
         /**
           <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
@@ -182,10 +158,7 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Added marked-content sequence.</returns>
           <seealso cref="End()"/>
         */
-        public objects::MarkedContent BeginMarkedContent(PdfName tag)
-        {
-            return BeginMarkedContent(tag, (PdfName)null);
-        }
+        public MarkedContent BeginMarkedContent(PdfName tag) => BeginMarkedContent(tag, (PdfName)null);
 
         /**
           <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
@@ -194,10 +167,7 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Added marked-content sequence.</returns>
           <seealso cref="End()"/>
         */
-        public objects::MarkedContent BeginMarkedContent(PdfName tag, PropertyList propertyList)
-        {
-            return BeginMarkedContent_(tag, GetResourceName(propertyList));
-        }
+        public MarkedContent BeginMarkedContent(PdfName tag, PropertyList propertyList) => BeginMarkedContent_(tag, GetResourceName(propertyList));
 
         /**
           <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
@@ -207,7 +177,7 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Added marked-content sequence.</returns>
           <seealso cref="End()"/>
         */
-        public objects::MarkedContent BeginMarkedContent(PdfName tag, PdfName propertyListName)
+        public MarkedContent BeginMarkedContent(PdfName tag, PdfName propertyListName)
         {
             // Doesn't the property list exist in the context resources?
             if (propertyListName != null && !Scanner.ContentContext.Resources.PropertyLists.ContainsKey(propertyListName))
@@ -223,18 +193,15 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void Clip()
         {
-            Add(objects::ModifyClipPath.NonZero);
-            Add(objects::PaintPath.EndPathNoOp);
+            Add(ModifyClipPath.NonZero);
+            Add(PaintPath.EndPathNoOp);
         }
 
         /**
           <summary>Closes the current subpath by appending a straight line segment from the current point
           to the starting point of the subpath [PDF:1.6:4.4.1].</summary>
         */
-        public void ClosePath()
-        {
-            Add(objects::CloseSubpath.Value);
-        }
+        public void ClosePath() => Add(CloseSubpath.Value);
 
         /**
           <summary>Draws a circular arc.</summary>
@@ -243,10 +210,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="endAngle">Ending angle.</param>
           <seealso cref="Stroke()"/>
         */
-        public void DrawArc(SKRect location, double startAngle, double endAngle)
-        {
-            DrawArc(location, startAngle, endAngle, 0, 1);
-        }
+        public void DrawArc(SKRect location, double startAngle, double endAngle) => DrawArc(location, startAngle, endAngle, 0, 1);
 
         /**
           <summary>Draws an arc.</summary>
@@ -260,9 +224,7 @@ namespace PdfClown.Documents.Contents.Composition
           <seealso cref="Stroke()"/>
         */
         public void DrawArc(SKRect location, double startAngle, double endAngle, double branchWidth, double branchRatio)
-        {
-            DrawArc(location, startAngle, endAngle, branchWidth, branchRatio, true);
-        }
+            => DrawArc(location, startAngle, endAngle, branchWidth, branchRatio, true);
 
         /**
           <summary>Draws a cubic Bezier curve from the current point [PDF:1.6:4.4.1].</summary>
@@ -274,7 +236,7 @@ namespace PdfClown.Documents.Contents.Composition
         public void DrawCurve(SKPoint endPoint, SKPoint startControl, SKPoint endControl)
         {
             double contextHeight = Scanner.ContextSize.Height;
-            Add(new objects::DrawCurve(endPoint.X, contextHeight - endPoint.Y,
+            Add(new DrawCurve(endPoint.X, contextHeight - endPoint.Y,
                 startControl.X, contextHeight - startControl.Y,
                 endControl.X, contextHeight - endControl.Y));
         }
@@ -300,20 +262,14 @@ namespace PdfClown.Documents.Contents.Composition
           <seealso cref="FillStroke()"/>
           <seealso cref="Stroke()"/>
         */
-        public void DrawEllipse(SKRect location)
-        {
-            DrawArc(location, 0, 360);
-        }
+        public void DrawEllipse(SKRect location) => DrawArc(location, 0, 360);
 
         /**
           <summary>Draws a line from the current point [PDF:1.6:4.4.1].</summary>
           <param name="endPoint">Ending point.</param>
           <seealso cref="Stroke()"/>
         */
-        public void DrawLine(SKPoint endPoint)
-        {
-            Add(new objects::DrawLine(endPoint.X, Scanner.ContextSize.Height - endPoint.Y));
-        }
+        public void DrawLine(SKPoint endPoint) => Add(new DrawLine(endPoint.X, Scanner.ContextSize.Height - endPoint.Y));
 
         /**
           <summary>Draws a line [PDF:1.6:4.4.1].</summary>
@@ -362,10 +318,7 @@ namespace PdfClown.Documents.Contents.Composition
           <seealso cref="FillStroke()"/>
           <seealso cref="Stroke()"/>
         */
-        public void DrawRectangle(SKRect location)
-        {
-            DrawRectangle(location, 0);
-        }
+        public void DrawRectangle(SKRect location) => DrawRectangle(location, 0);
 
         /**
           <summary>Draws a rounded rectangle.</summary>
@@ -379,7 +332,7 @@ namespace PdfClown.Documents.Contents.Composition
         {
             if (radius == 0)
             {
-                Add(new objects::DrawRectangle(location.Left, Scanner.ContextSize.Height - location.Top - location.Height, location.Width, location.Height));
+                Add(new DrawRectangle(location.Left, Scanner.ContextSize.Height - location.Top - location.Height, location.Width, location.Height));
             }
             else
             {
@@ -457,15 +410,7 @@ namespace PdfClown.Documents.Contents.Composition
           <seealso cref="Stroke()"/>
         */
         public void DrawSpiral(SKPoint center, double startAngle, double endAngle, double branchWidth, double branchRatio)
-        {
-            DrawArc(
-              SKRect.Create(center.X, center.Y, 0.0001f, 0.0001f),
-              startAngle,
-              endAngle,
-              branchWidth,
-              branchRatio
-              );
-        }
+            => DrawArc(SKRect.Create(center.X, center.Y, 0.0001f, 0.0001f), startAngle, endAngle, branchWidth, branchRatio);
 
         /**
           <summary>Ends the current (innermostly-nested) composite object.</summary>
@@ -481,28 +426,19 @@ namespace PdfClown.Documents.Contents.Composition
           <summary>Fills the path using the current color [PDF:1.6:4.4.2].</summary>
           <seealso cref="SetFillColor(Color)"/>
         */
-        public void Fill()
-        {
-            Add(objects::PaintPath.Fill);
-        }
+        public void Fill() => Add(PaintPath.Fill);
 
         /**
           <summary>Fills and then strokes the path using the current colors [PDF:1.6:4.4.2].</summary>
           <seealso cref="SetFillColor(Color)"/>
           <seealso cref="SetStrokeColor(Color)"/>
         */
-        public void FillStroke()
-        {
-            Add(objects::PaintPath.FillStroke);
-        }
+        public void FillStroke() => Add(PaintPath.FillStroke);
 
         /**
           <summary>Serializes the contents into the content stream.</summary>
         */
-        public void Flush()
-        {
-            Scanner.Contents.Flush();
-        }
+        public void Flush() => Scanner.Contents.Flush();
 
         /**
           <summary>Gets/Sets the content stream scanner.</summary>
@@ -556,18 +492,12 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="ratioY">Vertical scaling ratio.</param>
           <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         */
-        public void Scale(double ratioX, double ratioY)
-        {
-            ApplyMatrix(ratioX, 0, 0, ratioY, 0, 0);
-        }
+        public void Scale(double ratioX, double ratioY) => ApplyMatrix(ratioX, 0, 0, ratioY, 0, 0);
 
         /**
           <summary>Sets the character spacing parameter [PDF:1.6:5.2.1].</summary>
         */
-        public void SetCharSpace(double value)
-        {
-            Add(new objects::SetCharSpace(value));
-        }
+        public void SetCharSpace(double value) => Add(new SetCharSpace(value));
 
         /**
           <summary>Sets the nonstroking color value [PDF:1.6:4.5.7].</summary>
@@ -578,10 +508,10 @@ namespace PdfClown.Documents.Contents.Composition
             if (!State.FillColorSpace.IsSpaceColor(value))
             {
                 // Set filling color space!
-                Add(new objects::SetFillColorSpace(GetResourceName(value.ColorSpace)));
+                Add(new SetFillColorSpace(GetResourceName(value.ColorSpace)));
             }
 
-            Add(new objects::SetFillColor(value));
+            Add(new SetFillColor(value));
         }
 
         /**
@@ -606,42 +536,27 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="value">Font.</param>
           <param name="size">Scaling factor (points).</param>
         */
-        public void SetFont(fonts::Font value, double size)
-        {
-            SetFont_(GetResourceName(value), size);
-        }
+        public void SetFont(Font value, double size) => SetFont_(GetResourceName(value), size);
 
         /**
           <summary>Sets the line cap style [PDF:1.6:4.3.2].</summary>
         */
-        public void SetLineCap(LineCapEnum value)
-        {
-            Add(new objects::SetLineCap(value));
-        }
+        public void SetLineCap(LineCapEnum value) => Add(new SetLineCap(value));
 
         /**
           <summary>Sets the line dash pattern [PDF:1.6:4.3.2].</summary>
         */
-        public void SetLineDash(LineDash value)
-        {
-            Add(new objects::SetLineDash(value));
-        }
+        public void SetLineDash(LineDash value) => Add(new SetLineDash(value));
 
         /**
           <summary>Sets the line join style [PDF:1.6:4.3.2].</summary>
         */
-        public void SetLineJoin(LineJoinEnum value)
-        {
-            Add(new objects::SetLineJoin(value));
-        }
+        public void SetLineJoin(LineJoinEnum value) => Add(new SetLineJoin(value));
 
         /**
           <summary>Sets the line width [PDF:1.6:4.3.2].</summary>
         */
-        public void SetLineWidth(double value)
-        {
-            Add(new objects::SetLineWidth(value));
-        }
+        public void SetLineWidth(double value) => Add(new SetLineWidth(value));
 
         /**
           <summary>Sets the transformation of the coordinate system from user space to device space
@@ -657,26 +572,23 @@ namespace PdfClown.Documents.Contents.Composition
         public void SetMatrix(double a, double b, double c, double d, double e, double f)
         {
             // Reset the CTM!
-            Add(objects::ModifyCTM.GetResetCTM(State));
+            Add(ModifyCTM.GetResetCTM(State));
             // Apply the transformation!
-            Add(new objects::ModifyCTM(a, b, c, d, e, f));
+            Add(new ModifyCTM(a, b, c, d, e, f));
         }
 
         public void SetMatrix(SKMatrix matrix)
         {
             // Reset the CTM!
-            Add(objects::ModifyCTM.GetResetCTM(State));
+            Add(ModifyCTM.GetResetCTM(State));
             // Apply the transformation!
-            Add(new objects::ModifyCTM(matrix));
+            Add(new ModifyCTM(matrix));
         }
 
         /**
           <summary>Sets the miter limit [PDF:1.6:4.3.2].</summary>
         */
-        public void SetMiterLimit(double value)
-        {
-            Add(new objects::SetMiterLimit(value));
-        }
+        public void SetMiterLimit(double value) => Add(new SetMiterLimit(value));
 
         /**
           <summary>Sets the stroking color value [PDF:1.6:4.5.7].</summary>
@@ -687,52 +599,37 @@ namespace PdfClown.Documents.Contents.Composition
             if (!State.StrokeColorSpace.IsSpaceColor(value))
             {
                 // Set stroking color space!
-                Add(new objects::SetStrokeColorSpace(GetResourceName(value.ColorSpace)));
+                Add(new SetStrokeColorSpace(GetResourceName(value.ColorSpace)));
             }
 
-            Add(new objects::SetStrokeColor(value));
+            Add(new SetStrokeColor(value));
         }
 
         /**
           <summary>Sets the text leading [PDF:1.6:5.2.4], relative to the current text line height.
           </summary>
         */
-        public void SetTextLead(double value)
-        {
-            Add(new objects::SetTextLead(value * State.Font.GetLineHeight(State.FontSize)));
-        }
+        public void SetTextLead(double value) => Add(new SetTextLead(value * State.Font.GetLineHeight(State.FontSize)));
 
         /**
           <summary>Sets the text rendering mode [PDF:1.6:5.2.5].</summary>
         */
-        public void SetTextRenderMode(TextRenderModeEnum value)
-        {
-            Add(new objects::SetTextRenderMode(value));
-        }
+        public void SetTextRenderMode(TextRenderModeEnum value) => Add(new SetTextRenderMode(value));
 
         /**
           <summary>Sets the text rise [PDF:1.6:5.2.6].</summary>
         */
-        public void SetTextRise(double value)
-        {
-            Add(new objects::SetTextRise(value));
-        }
+        public void SetTextRise(double value) => Add(new SetTextRise(value));
 
         /**
           <summary>Sets the text horizontal scaling [PDF:1.6:5.2.3], normalized to 1.</summary>
         */
-        public void SetTextScale(double value)
-        {
-            Add(new objects::SetTextScale(value * 100));
-        }
+        public void SetTextScale(double value) => Add(new SetTextScale(value * 100));
 
         /**
           <summary>Sets the word spacing [PDF:1.6:5.2.2].</summary>
         */
-        public void SetWordSpace(double value)
-        {
-            Add(new objects::SetWordSpace(value));
-        }
+        public void SetWordSpace(double value) => Add(new SetWordSpace(value));
 
         /**
           <summary>Shows the specified text on the page at the current location [PDF:1.6:5.3.2].</summary>
@@ -740,10 +637,7 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Bounding box vertices in default user space units.</returns>
           <exception cref="EncodeException"/>
         */
-        public Quad ShowText(string value)
-        {
-            return ShowText(value, new SKPoint(0, 0));
-        }
+        public Quad ShowText(string value) => ShowText(value, new SKPoint(0, 0));
 
         /**
           <summary>Shows the link associated to the specified text on the page at the current location.
@@ -753,10 +647,7 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Link.</returns>
           <exception cref="EncodeException"/>
         */
-        public Link ShowText(string value, actions::Action action)
-        {
-            return ShowText(value, new SKPoint(0, 0), action);
-        }
+        public Link ShowText(string value, actions::Action action) => ShowText(value, new SKPoint(0, 0), action);
 
         /**
           <summary>Shows the specified text on the page at the specified location [PDF:1.6:5.3.2].
@@ -766,10 +657,7 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Bounding box vertices in default user space units.</returns>
           <exception cref="EncodeException"/>
         */
-        public Quad ShowText(string value, SKPoint location)
-        {
-            return ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0);
-        }
+        public Quad ShowText(string value, SKPoint location) => ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0);
 
         /**
           <summary>Shows the link associated to the specified text on the page at the specified location.
@@ -780,10 +668,7 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Link.</returns>
           <exception cref="EncodeException"/>
         */
-        public Link ShowText(string value, SKPoint location, actions::Action action)
-        {
-            return ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0, action);
-        }
+        public Link ShowText(string value, SKPoint location, actions::Action action) => ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0, action);
 
         /**
           <summary>Shows the specified text on the page at the specified location [PDF:1.6:5.3.2].
@@ -798,7 +683,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public Quad ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
         {
-            Quad frame;
+            Quad frame = Quad.Empty;
 
             BeginLocalState();
             try
@@ -826,7 +711,7 @@ namespace PdfClown.Documents.Contents.Composition
                   composite fonts are always treated as multi-byte encodings which require explicit word
                   spacing adjustment.
                 */
-                double wordSpaceAdjust = font is fonts::FontType0 ? -state.WordSpace * 1000 * state.Scale / fontSize : 0;
+                double wordSpaceAdjust = font is FontType0 ? -state.WordSpace * 1000 * state.Scale / fontSize : 0;
 
                 // Vertical alignment.
                 double y;
@@ -846,8 +731,6 @@ namespace PdfClown.Documents.Contents.Composition
                 }
 
                 // Text placement.
-                double maxLineWidth = 0;
-                double minX = 0;
                 BeginText();
                 try
                 {
@@ -855,8 +738,6 @@ namespace PdfClown.Documents.Contents.Composition
                     {
                         string textLine = textLines[index];
                         double width = font.GetWidth(textLine, fontSize) * state.Scale; //GetKernedWidth
-                        if (width > maxLineWidth)
-                        { maxLineWidth = width; }
 
                         // Horizontal alignment.
                         double x;
@@ -875,14 +756,13 @@ namespace PdfClown.Documents.Contents.Composition
                             default:
                                 throw new NotImplementedException();
                         }
-                        if (x < minX)
-                        { minX = x; }
                         TranslateText(x, y - lineHeight * index);
 
+                        var showText = (ShowText)null;
                         if (textLine.Length > 0)
                         {
                             if (wordSpaceAdjust == 0 || textLine.IndexOf(' ') == -1) // Simple text.
-                            { Add(new objects::ShowSimpleText(font.Encode(textLine))); }
+                            { showText = Add(new ShowSimpleText(font.Encode(textLine))); }
                             else // Adjusted text.
                             {
                                 var textParams = new List<PdfDirectObject>();
@@ -896,22 +776,14 @@ namespace PdfClown.Documents.Contents.Composition
                                     var l = (spaceIndex > -1 ? spaceIndex + 1 : textLine.Length) - (lastSpaceIndex + 1);
                                     textParams.Add(new PdfByteString(font.Encode(textLine.AsSpan(lastSpaceIndex + 1, l))));
                                 }
-                                Add(new objects::ShowAdjustedText(textParams));
+                                showText = Add(new ShowAdjustedText(textParams));
                             }
+                            frame = frame.Equals(Quad.Empty) ? showText.TextString.Quad : Quad.Union(frame, showText.TextString.Quad);
                         }
                     }
                 }
                 finally
-                { End(); } // Ends the text object.
-
-                SKMatrix textToDeviceMatrix = state.GetTextToDeviceMatrix(true);
-                frame = new Quad(
-                  new SKPoint((float)minX, (float)(y + ascent)),
-                  new SKPoint((float)(minX + maxLineWidth), (float)(y + ascent)),
-                  new SKPoint((float)(minX + maxLineWidth), (float)(y + ascent - textHeight)),
-                  new SKPoint((float)minX, (float)(y + ascent - textHeight))
-                  );
-                frame.Transform(ref textToDeviceMatrix);
+                { End(); } // Ends the text object.                
             }
             finally
             { End(); } // Ends the local state.
@@ -948,10 +820,7 @@ namespace PdfClown.Documents.Contents.Composition
           <summary>Shows the specified external object [PDF:1.6:4.7].</summary>
           <param name="name">Resource identifier of the external object.</param>
         */
-        public void ShowXObject(PdfName name)
-        {
-            Add(new objects::PaintXObject(name));
-        }
+        public void ShowXObject(PdfName name) => Add(new PaintXObject(name));
 
         /**
           <summary>Shows the specified external object [PDF:1.6:4.7].</summary>
@@ -960,20 +829,14 @@ namespace PdfClown.Documents.Contents.Composition
           behavior, use <see cref="ShowXObject(PdfName)"/>.</remarks>
           <param name="value">External object.</param>
         */
-        public void ShowXObject(XObject value)
-        {
-            ShowXObject(GetResourceName(value));
-        }
+        public void ShowXObject(XObjects.XObject value) => ShowXObject(GetResourceName(value));
 
         /**
           <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
           <param name="name">Resource identifier of the external object.</param>
           <param name="location">Position at which showing the external object.</param>
         */
-        public void ShowXObject(PdfName name, SKPoint location)
-        {
-            ShowXObject(name, location, null);
-        }
+        public void ShowXObject(PdfName name, SKPoint location) => ShowXObject(name, location, null);
 
         /**
           <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
@@ -983,10 +846,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="value">External object.</param>
           <param name="location">Position at which showing the external object.</param>
         */
-        public void ShowXObject(XObject value, SKPoint location)
-        {
-            ShowXObject(GetResourceName(value), location);
-        }
+        public void ShowXObject(XObjects.XObject value, SKPoint location) => ShowXObject(GetResourceName(value), location);
 
         /**
           <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
@@ -994,10 +854,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="location">Position at which showing the external object.</param>
           <param name="size">Size of the external object.</param>
         */
-        public void ShowXObject(PdfName name, SKPoint location, SKSize? size)
-        {
-            ShowXObject(name, location, size, XAlignmentEnum.Left, YAlignmentEnum.Top, 0);
-        }
+        public void ShowXObject(PdfName name, SKPoint location, SKSize? size) => ShowXObject(name, location, size, XAlignmentEnum.Left, YAlignmentEnum.Top, 0);
 
         /**
           <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
@@ -1008,10 +865,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="location">Position at which showing the external object.</param>
           <param name="size">Size of the external object.</param>
         */
-        public void ShowXObject(XObject value, SKPoint location, SKSize? size)
-        {
-            ShowXObject(GetResourceName(value), location, size);
-        }
+        public void ShowXObject(XObjects.XObject value, SKPoint location, SKSize? size) => ShowXObject(GetResourceName(value), location, size);
 
         /**
           <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
@@ -1024,14 +878,14 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void ShowXObject(PdfName name, SKPoint location, SKSize? size, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
         {
-            XObject xObject = Scanner.ContentContext.Resources.XObjects[name];
-            SKSize xObjectSize = xObject.Size;
+            var xObject = Scanner.ContentContext.Resources.XObjects[name];
+            var xObjectSize = xObject.Size;
 
             if (!size.HasValue)
             { size = xObjectSize; }
 
             // Scaling.
-            SKMatrix matrix = xObject.Matrix;// SKMatrix.MakeScale(1f / xObjectSize.Width, 1f / xObjectSize.Height);
+            var matrix = xObject.Matrix;// SKMatrix.MakeScale(1f / xObjectSize.Width, 1f / xObjectSize.Height);
             double scaleX, scaleY;
             scaleX = size.Value.Width / (xObjectSize.Width * matrix.ScaleX);
             scaleY = size.Value.Height / (xObjectSize.Height * matrix.ScaleY);
@@ -1097,30 +951,20 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="yAlignment">Vertical alignment.</param>
           <param name="rotation">Rotational counterclockwise angle.</param>
         */
-        public void ShowXObject(XObject value, SKPoint location, SKSize? size,
-            XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
-        {
-            ShowXObject(GetResourceName(value), location, size,
-              xAlignment, yAlignment, rotation);
-        }
+        public void ShowXObject(XObjects.XObject value, SKPoint location, SKSize? size, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
+            => ShowXObject(GetResourceName(value), location, size, xAlignment, yAlignment, rotation);
 
         /**
           <summary>Begins a subpath [PDF:1.6:4.4.1].</summary>
           <param name="startPoint">Starting point.</param>
         */
-        public void StartPath(SKPoint startPoint)
-        {
-            Add(new objects::BeginSubpath(startPoint.X, Scanner.ContextSize.Height - startPoint.Y));
-        }
+        public void StartPath(SKPoint startPoint) => Add(new BeginSubpath(startPoint.X, Scanner.ContextSize.Height - startPoint.Y));
 
         /**
           <summary>Strokes the path using the current color [PDF:1.6:4.4.2].</summary>
           <seealso cref="SetStrokeColor(Color)"/>
         */
-        public void Stroke()
-        {
-            Add(objects::PaintPath.Stroke);
-        }
+        public void Stroke() => Add(PaintPath.Stroke);
 
         /**
           <summary>Applies a translation to the coordinate system from user space to device space
@@ -1129,29 +973,18 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="distanceY">Vertical distance.</param>
           <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         */
-        public void Translate(double distanceX, double distanceY)
-        {
-            ApplyMatrix(1, 0, 0, 1, distanceX, distanceY);
-        }
+        public void Translate(double distanceX, double distanceY) => ApplyMatrix(1, 0, 0, 1, distanceX, distanceY);
 
-        private void ApplyState_(PdfName name)
-        {
-            Add(new objects::ApplyExtGState(name));
-        }
+        private void ApplyState_(PdfName name) => Add(new ApplyExtGState(name));
 
-        private objects::MarkedContent BeginMarkedContent_(PdfName tag, PdfName propertyListName)
-        {
-            return (objects::MarkedContent)Begin(new objects::MarkedContent(new objects::BeginMarkedContent(tag, propertyListName)));
-        }
+        private MarkedContent BeginMarkedContent_(PdfName tag, PdfName propertyListName)
+            => (MarkedContent)Begin(new MarkedContent(new BeginMarkedContent(tag, propertyListName)));
 
         /**
           <summary>Begins a text object [PDF:1.6:5.3].</summary>
           <seealso cref="End()"/>
         */
-        private objects::Text BeginText()
-        {
-            return (objects::Text)Begin(new objects::Text());
-        }
+        private Text BeginText() => (Text)Begin(new Text());
 
         //TODO: drawArc MUST seamlessly manage already-begun paths.
         private void DrawArc(SKRect location, double startAngle, double endAngle, double branchWidth, double branchRatio, bool beginPath)
@@ -1173,10 +1006,10 @@ namespace PdfClown.Documents.Contents.Composition
             double radiusX = location.Width / 2;
             double radiusY = location.Height / 2;
 
-            SKPoint center = new SKPoint((float)(location.Left + radiusX), (float)(location.Top + radiusY));
+            var center = new SKPoint((float)(location.Left + radiusX), (float)(location.Top + radiusY));
 
-            double radians1 = MathUtils.ToRadians(startAngle);
-            SKPoint point1 = new SKPoint((float)(center.X + Math.Cos(radians1) * radiusX), (float)(center.Y - Math.Sin(radians1) * radiusY));
+            var radians1 = MathUtils.ToRadians(startAngle);
+            var point1 = new SKPoint((float)(center.X + Math.Cos(radians1) * radiusX), (float)(center.Y - Math.Sin(radians1) * radiusY));
 
             if (beginPath)
             { StartPath(point1); }
@@ -1191,7 +1024,7 @@ namespace PdfClown.Documents.Contents.Composition
                 double segmentY = radiusY * kappa;
 
                 // Endpoint 2.
-                SKPoint point2 = new SKPoint((float)(center.X + Math.Cos(radians2) * radiusX), (float)(center.Y - Math.Sin(radians2) * radiusY));
+                var point2 = new SKPoint((float)(center.X + Math.Cos(radians2) * radiusX), (float)(center.Y - Math.Sin(radians2) * radiusY));
 
                 // Control point 1.
                 double tangentialRadians1 = Math.Atan(-(Math.Pow(radiusY, 2) * (point1.X - center.X)) / (Math.Pow(radiusX, 2) * (point1.Y - center.Y)));
@@ -1199,10 +1032,9 @@ namespace PdfClown.Documents.Contents.Composition
                   segmentY * (1 - Math.Abs(Math.Sin(radians1)))
                     + segmentX * (1 - Math.Abs(Math.Cos(radians1)))
                   ) * (radians2 - radians1) / quadrantRadians; // TODO: control segment calculation is still not so accurate as it should -- verify how to improve it!!!
-                SKPoint control1 = new SKPoint(
+                var control1 = new SKPoint(
                   (float)(point1.X + Math.Abs(Math.Cos(tangentialRadians1) * segment1) * Math.Sign(-Math.Sin(radians1))),
-                  (float)(point1.Y + Math.Abs(Math.Sin(tangentialRadians1) * segment1) * Math.Sign(-Math.Cos(radians1)))
-                  );
+                  (float)(point1.Y + Math.Abs(Math.Sin(tangentialRadians1) * segment1) * Math.Sign(-Math.Cos(radians1))));
 
                 // Control point 2.
                 double tangentialRadians2 = Math.Atan(-(Math.Pow(radiusY, 2) * (point2.X - center.X)) / (Math.Pow(radiusX, 2) * (point2.Y - center.Y)));
@@ -1210,10 +1042,9 @@ namespace PdfClown.Documents.Contents.Composition
                   segmentY * (1 - Math.Abs(Math.Sin(radians2)))
                     + segmentX * (1 - Math.Abs(Math.Cos(radians2)))
                   ) * (radians2 - radians1) / quadrantRadians; // TODO: control segment calculation is still not so accurate as it should -- verify how to improve it!!!
-                SKPoint control2 = new SKPoint(
+                var control2 = new SKPoint(
                   (float)(point2.X + Math.Abs(Math.Cos(tangentialRadians2) * segment2) * Math.Sign(Math.Sin(radians2))),
-                  (float)(point2.Y + Math.Abs(Math.Sin(tangentialRadians2) * segment2) * Math.Sign(Math.Cos(radians2)))
-                  );
+                  (float)(point2.Y + Math.Abs(Math.Sin(tangentialRadians2) * segment2) * Math.Sign(Math.Cos(radians2))));
 
                 // Draw the current quadrant curve!
                 DrawCurve(point2, control1, control2);
@@ -1243,9 +1074,9 @@ namespace PdfClown.Documents.Contents.Composition
             var parentLevel = Scanner.ParentLevel;
             while (parentLevel != null)
             {
-                if (parentLevel.Current is objects::MarkedContent markedContent)
+                if (parentLevel.Current is MarkedContent markedContent)
                 {
-                    var marker = (objects::ContentMarker)markedContent.Header;
+                    var marker = (ContentMarker)markedContent.Header;
                     if (PdfName.OC.Equals(marker.Tag))
                         return (LayerEntity)marker.GetProperties(Scanner);
                 }
@@ -1302,15 +1133,9 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="ratioX">Horizontal scaling ratio.</param>
           <param name="ratioY">Vertical scaling ratio.</param>
         */
-        private void ScaleText(double ratioX, double ratioY)
-        {
-            SetTextMatrix(ratioX, 0, 0, ratioY, 0, 0);
-        }
+        private void ScaleText(double ratioX, double ratioY) => SetTextMatrix(ratioX, 0, 0, ratioY, 0, 0);
 
-        private void SetFont_(PdfName name, double size)
-        {
-            Add(new objects::SetFont(name, size));
-        }
+        private void SetFont_(PdfName name, double size) => Add(new SetFont(name, size));
 
         /**
           <summary>Sets the transformation of the coordinate system from text space to user space
@@ -1323,10 +1148,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="e">Item 2,0 of the matrix.</param>
           <param name="f">Item 2,1 of the matrix.</param>
         */
-        private void SetTextMatrix(double a, double b, double c, double d, double e, double f)
-        {
-            Add(new objects::SetTextMatrix(a, b, c, d, e, f));
-        }
+        private void SetTextMatrix(double a, double b, double c, double d, double e, double f) => Add(new SetTextMatrix(a, b, c, d, e, f));
 
         /**
           <summary>Applies a translation to the coordinate system from text space to user space
@@ -1334,10 +1156,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="distanceX">Horizontal distance.</param>
           <param name="distanceY">Vertical distance.</param>
         */
-        private void TranslateText(double distanceX, double distanceY)
-        {
-            SetTextMatrix(1, 0, 0, 1, distanceX, distanceY);
-        }
+        private void TranslateText(double distanceX, double distanceY) => SetTextMatrix(1, 0, 0, 1, distanceX, distanceY);
 
         /**
           <summary>Applies a translation to the coordinate system from text space to user space,
@@ -1345,18 +1164,12 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="offsetX">Horizontal offset.</param>
           <param name="offsetY">Vertical offset.</param>
         */
-        private void TranslateTextRelative(double offsetX, double offsetY)
-        {
-            Add(new objects::TranslateTextRelative(offsetX, -offsetY));
-        }
+        private void TranslateTextRelative(double offsetX, double offsetY) => Add(new TranslateTextRelative(offsetX, -offsetY));
 
         /**
           <summary>Applies a translation to the coordinate system from text space to user space,
           moving to the start of the next line [PDF:1.6:5.3.1].</summary>
         */
-        private void TranslateTextToNextLine()
-        {
-            Add(objects::TranslateTextToNextLine.Value);
-        }
+        private void TranslateTextToNextLine() => Add(objects::TranslateTextToNextLine.Value);
     }
 }

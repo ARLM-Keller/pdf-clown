@@ -52,46 +52,33 @@ namespace PdfClown.Documents.Contents.Objects
               );
         }
 
-        public ModifyCTM(SKMatrix value) : this(
+        public ModifyCTM(SKMatrix value) :
+            this(
             value.ScaleX,
             value.SkewY,
             value.SkewX,
             value.ScaleY,
             value.TransX,
-            value.TransY
-            )
+            value.TransY)
         { }
 
         public ModifyCTM(double a, double b, double c, double d, double e, double f)
             : base(OperatorKeyword,
             new List<PdfDirectObject>(6)
               {
-            PdfReal.Get(a),
-            PdfReal.Get(b),
-            PdfReal.Get(c),
-            PdfReal.Get(d),
-            PdfReal.Get(e),
-            PdfReal.Get(f)
+                PdfReal.Get(a),
+                PdfReal.Get(b),
+                PdfReal.Get(c),
+                PdfReal.Get(d),
+                PdfReal.Get(e),
+                PdfReal.Get(f)
               })
         { }
 
         public ModifyCTM(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state)
-        {
-            var ctm = state.Ctm;
-            ctm = ctm.PreConcat(Value);
-            state.Ctm = ctm;
-
-            var context = state.Scanner.RenderContext;
-            if (context != null)
-            {
-                //var matrix = context.TotalMatrix;
-                //SKMatrix.PreConcat(ref matrix, ctm);
-                context.SetMatrix(state.Ctm);
-            }
-        }
+        public override void Scan(GraphicsState state) => state.Ctm = state.Ctm.PreConcat(Value);
 
         public SKMatrix Value => new SKMatrix
         {

@@ -44,9 +44,6 @@ namespace PdfClown.Documents.Contents.Objects
         private RestoreGraphicsState() : base(OperatorKeyword)
         { }
 
-        public override void Scan(GraphicsState state)
-        {
-            state?.Scanner?.RenderContext?.Restore();
-        }
+        public override void Scan(GraphicsState state) => state.Restore();
     }
 }

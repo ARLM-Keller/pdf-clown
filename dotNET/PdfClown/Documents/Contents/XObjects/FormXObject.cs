@@ -75,6 +75,7 @@ namespace PdfClown.Documents.Contents.XObjects
 
         private SKPicture picture;
         private SKMatrix? matrix;
+        private Stack<GraphicsState> states;
 
         /**
          <summary>Creates a new form within the specified document context.</summary>
@@ -239,6 +240,8 @@ namespace PdfClown.Documents.Contents.XObjects
         }
 
         public DateTime? ModificationDate => BaseDataObject.Header.GetNDate(PdfName.LastModified);
+
+        public Stack<GraphicsState> GetGraphicsStateContext() => states ??= new Stack<GraphicsState>();
 
         public AppData GetAppData(PdfName appName) => AppData.Ensure(appName);
 

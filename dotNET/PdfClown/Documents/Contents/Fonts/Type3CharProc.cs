@@ -55,6 +55,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         private readonly FontType3 font;
         private SKPicture picture;
+        private Stack<GraphicsState> states;
 
         public Type3CharProc(FontType3 font, PdfDirectObject charStream)
             : base(charStream)
@@ -139,6 +140,8 @@ namespace PdfClown.Documents.Contents.Fonts
         public AppDataCollection AppData => null;
 
         public DateTime? ModificationDate => null;
+
+        public Stack<GraphicsState> GetGraphicsStateContext() => states ??= new Stack<GraphicsState>();
 
         public void Render(SKCanvas context, SKSize size, bool clearContext = true)
         {

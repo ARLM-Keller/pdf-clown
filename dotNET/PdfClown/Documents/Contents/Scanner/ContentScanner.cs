@@ -277,8 +277,7 @@ namespace PdfClown.Documents.Contents
         /**
           <summary>Gets whether this level is the root of the hierarchy.</summary>
         */
-        public bool IsRootLevel()
-        { return parentLevel == null; }
+        public bool IsRootLevel() => parentLevel == null;
 
         /**
           <summary>Moves to the object at the given position.</summary>
@@ -300,14 +299,20 @@ namespace PdfClown.Documents.Contents
           <summary>Moves after the last object.</summary>
         */
         public void MoveEnd()
-        { MoveLast(); MoveNext(); }
+        {
+            MoveLast();
+            MoveNext();
+        }
 
         /**
           <summary>Moves to the first object.</summary>
           <returns>Whether the first object was successfully reached.</returns>
         */
         public bool MoveFirst()
-        { MoveStart(); return MoveNext(); }
+        {
+            MoveStart();
+            return MoveNext();
+        }
 
         /**
           <summary>Moves to the last object.</summary>

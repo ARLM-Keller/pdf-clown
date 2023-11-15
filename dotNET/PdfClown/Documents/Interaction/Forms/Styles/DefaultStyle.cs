@@ -303,8 +303,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                   new SKPoint(0, size.Height / 2),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Middle,
-                  0
-                  );
+                  0);
                 composer.End();
 
                 composer.Flush();
@@ -346,8 +345,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                   new SKPoint(0, size.Height / 2),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Middle,
-                  0
-                  );
+                  0);
                 composer.End();
 
                 composer.Flush();
@@ -389,8 +387,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                   new SKPoint(0, size.Height / 2),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Middle,
-                  0
-                  );
+                  0);
                 composer.End();
 
                 composer.Flush();

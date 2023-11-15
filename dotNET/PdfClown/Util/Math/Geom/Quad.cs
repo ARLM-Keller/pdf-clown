@@ -32,7 +32,7 @@ namespace PdfClown.Util.Math.Geom
     /**
       <summary>Quadrilateral shape.</summary>
     */
-    public struct Quad
+    public struct Quad : IEquatable<Quad>
     {
         public static readonly Quad Empty = new Quad(SKRect.Empty);
         public static Quad Union(Quad value, Quad value2)
@@ -315,5 +315,17 @@ namespace PdfClown.Util.Math.Geom
             //}
         }
 
+        public bool Equals(Quad other)
+        {
+            return this.pointTopLeft == other.pointTopLeft
+                && this.pointTopRight == other.pointTopRight
+                && this.pointBottomRight == other.pointBottomRight
+                && this.pointBottomLeft == other.pointBottomLeft;
+        }
+
+        public override string ToString()
+        {
+            return GetBounds().ToString();
+        }
     }
 }

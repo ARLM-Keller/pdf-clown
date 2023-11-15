@@ -609,7 +609,9 @@ namespace PdfClown.Viewer
                         var pageMatrix = pageView.Matrix;
                         state.Canvas.Concat(ref pageMatrix);
                         var pageRect = SKRect.Create(pageView.Size);
+#if RELEASE
                         state.Canvas.ClipRect(pageRect);
+#endif
                         state.Canvas.DrawRect(pageRect, paintPageBackground);
 
                         var picture = pageView.GetPicture(this);

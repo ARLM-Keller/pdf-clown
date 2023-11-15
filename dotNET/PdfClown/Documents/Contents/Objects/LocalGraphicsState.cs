@@ -52,21 +52,9 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override void Scan(GraphicsState state)
         {
-            var context = state.Scanner.RenderContext;
-            if (context != null)
-            {
-                /*
-                  NOTE: Local graphics state is purposely isolated from surrounding graphics state,
-                  so no inner operation can alter its subsequent scanning.
-                */
-                // Save outer graphics state!
-                context.Save();
-
-                Render(state);
-
-                // Restore outer graphics state!
-                context.Restore();
-            }
+            state.Save();
+            Render(state);
+            state.Restore();
         }
 
         public override void WriteTo(IOutputStream stream, Document context)

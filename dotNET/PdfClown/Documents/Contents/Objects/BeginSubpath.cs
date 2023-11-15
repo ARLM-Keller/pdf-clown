@@ -75,13 +75,6 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        public override void Scan(GraphicsState state)
-        {
-            var pathObject = state.Scanner.RenderObject;
-            if (pathObject != null)
-            {
-                pathObject.MoveTo(Point);
-            }
-        }
+        public override void Scan(GraphicsState state) => state.Scanner.RenderObject?.MoveTo(Point);
     }
 }

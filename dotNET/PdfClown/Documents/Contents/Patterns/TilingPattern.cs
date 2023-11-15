@@ -45,9 +45,11 @@ namespace PdfClown.Documents.Contents.Patterns
     public class TilingPattern : Pattern, IContentContext
     {
         private SKPicture picture;
+        private Stack<GraphicsState> states;
+
         /**
-          <summary>Uncolored tiling pattern ("stencil") associated to a color.</summary>
-        */
+<summary>Uncolored tiling pattern ("stencil") associated to a color.</summary>
+*/
         public sealed class Colorized : TilingPattern
         {
             private Color color;
@@ -234,5 +236,7 @@ namespace PdfClown.Documents.Contents.Patterns
         public List<ITextString> Strings { get; } = new List<ITextString>();
 
         public TransparencyXObject Group => throw new NotImplementedException();
+
+        public Stack<GraphicsState> GetGraphicsStateContext() => states ??= new Stack<GraphicsState>();
     }
 }

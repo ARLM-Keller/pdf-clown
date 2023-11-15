@@ -258,13 +258,13 @@ namespace PdfClown.Samples.CLI
         private void BuildMiscellaneousPage(Document document)
         {
             // 1. Add the page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new Page(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
 
             // 2. Create a content composer for the page!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
             composer.SetFont(fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false), 32);
@@ -287,8 +287,7 @@ namespace PdfClown.Samples.CLI
           new SKPoint(150,150),
           new SKPoint(200,150),
           new SKPoint(250,200)
-              }
-              );
+              });
 
             // 3.2. Polyline.
             composer.DrawPolyline(
@@ -298,8 +297,7 @@ namespace PdfClown.Samples.CLI
           new SKPoint(350,150),
           new SKPoint(400,150),
           new SKPoint(450,200)
-              }
-              );
+              });
 
             composer.Stroke();
 
@@ -326,29 +324,23 @@ namespace PdfClown.Samples.CLI
             composer.End(); // End local state.
 
             composer.BeginLocalState();
-            composer.SetFont(
-              composer.State.Font,
-              12
-              );
+            composer.SetFont(composer.State.Font, 12);
 
             // 3.4. Line cap parameter.
             int y = 400;
-            foreach (LineCapEnum lineCap
-              in (LineCapEnum[])Enum.GetValues(typeof(LineCapEnum)))
+            foreach (LineCapEnum lineCap in Enum.GetValues<LineCapEnum>())
             {
                 composer.ShowText(
                   lineCap + ":",
                   new SKPoint(50, y),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Middle,
-                  0
-                  );
+                  0);
                 composer.SetLineWidth(12);
                 composer.SetLineCap(lineCap);
                 composer.DrawLine(
                   new SKPoint(120, y),
-                  new SKPoint(220, y)
-                  );
+                  new SKPoint(220, y));
                 composer.Stroke();
 
                 composer.BeginLocalState();
@@ -357,8 +349,7 @@ namespace PdfClown.Samples.CLI
                 composer.SetLineCap(LineCapEnum.Butt);
                 composer.DrawLine(
                   new SKPoint(120, y),
-                  new SKPoint(220, y)
-                  );
+                  new SKPoint(220, y));
                 composer.Stroke();
                 composer.End(); // End local state.
 
@@ -367,16 +358,14 @@ namespace PdfClown.Samples.CLI
 
             // 3.5. Line join parameter.
             y += 50;
-            foreach (LineJoinEnum lineJoin
-              in (LineJoinEnum[])Enum.GetValues(typeof(LineJoinEnum)))
+            foreach (LineJoinEnum lineJoin in Enum.GetValues<LineJoinEnum>())
             {
                 composer.ShowText(
                   lineJoin + ":",
                   new SKPoint(50, y),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Middle,
-                  0
-                  );
+                  0);
                 composer.SetLineWidth(12);
                 composer.SetLineJoin(lineJoin);
                 SKPoint[] points = new SKPoint[]
@@ -423,8 +412,7 @@ namespace PdfClown.Samples.CLI
           new SKPoint(275,570),
           new SKPoint(170,500),
           new SKPoint(275,510)
-              }
-              );
+              });
             composer.Clip();
             // Showing a clown image...
             // Instantiate a jpeg image object!
@@ -434,8 +422,7 @@ namespace PdfClown.Samples.CLI
             composer.ShowXObject(
               imageXObject,
               new SKPoint(170, 320),
-              GeomUtils.Scale(imageXObject.Size, new SKSize(450, 0))
-              );
+              GeomUtils.Scale(imageXObject.Size, new SKSize(450, 0)));
             composer.End(); // End local state.
 
             // 4. Flush the contents into the page!
@@ -445,23 +432,23 @@ namespace PdfClown.Samples.CLI
         private void BuildSimpleTextPage(Document document)
         {
             // 1. Add the page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new Page(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
 
             // 2. Create a content composer for the page!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
             // 3. Inserting contents...
             // Set the font to use!
             composer.SetFont(fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false), 32);
 
-            XAlignmentEnum[] xAlignments = (XAlignmentEnum[])Enum.GetValues(typeof(XAlignmentEnum));
-            YAlignmentEnum[] yAlignments = (YAlignmentEnum[])Enum.GetValues(typeof(YAlignmentEnum));
+            var xAlignments = Enum.GetValues<XAlignmentEnum>();
+            var yAlignments = Enum.GetValues<YAlignmentEnum>();
             int step = (int)(pageSize.Height) / ((xAlignments.Length - 1) * yAlignments.Length + 1);
 
-            BlockComposer blockComposer = new BlockComposer(composer);
-            SKRect frame = SKRect.Create(30, 0, pageSize.Width - 60, step / 2);
+            var blockComposer = new BlockComposer(composer);
+            var frame = SKRect.Create(30, 0, pageSize.Width - 60, step / 2);
             blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
             blockComposer.ShowText("Simple alignment");
             blockComposer.End();
@@ -479,7 +466,7 @@ namespace PdfClown.Samples.CLI
             int x = 30;
             int y = step;
             int alignmentIndex = 0;
-            foreach (XAlignmentEnum xAlignment in (XAlignmentEnum[])Enum.GetValues(typeof(XAlignmentEnum)))
+            foreach (XAlignmentEnum xAlignment in Enum.GetValues<XAlignmentEnum>())
             {
                 /*
                   NOTE: As text shown through PrimitiveComposer has no bounding box constraining its extension,
@@ -489,7 +476,7 @@ namespace PdfClown.Samples.CLI
                 if (xAlignment.Equals(XAlignmentEnum.Justify))
                     continue;
 
-                foreach (YAlignmentEnum yAlignment in (YAlignmentEnum[])Enum.GetValues(typeof(YAlignmentEnum)))
+                foreach (YAlignmentEnum yAlignment in Enum.GetValues<YAlignmentEnum>())
                 {
                     if (alignmentIndex % 2 == 0)
                     {
@@ -532,7 +519,7 @@ namespace PdfClown.Samples.CLI
                 }
                 y = step;
                 rotation = 0;
-                foreach (XAlignmentEnum xAlignment in (XAlignmentEnum[])Enum.GetValues(typeof(XAlignmentEnum)))
+                foreach (XAlignmentEnum xAlignment in Enum.GetValues<XAlignmentEnum>())
                 {
                     /*
                       NOTE: As text shown through PrimitiveComposer has no bounding box constraining its extension,
@@ -542,7 +529,7 @@ namespace PdfClown.Samples.CLI
                     if (xAlignment.Equals(XAlignmentEnum.Justify))
                         continue;
 
-                    foreach (YAlignmentEnum yAlignment in (YAlignmentEnum[])Enum.GetValues(typeof(YAlignmentEnum)))
+                    foreach (YAlignmentEnum yAlignment in Enum.GetValues<YAlignmentEnum>())
                     {
                         float startArcAngle = 0;
                         switch (xAlignment)
@@ -588,8 +575,8 @@ namespace PdfClown.Samples.CLI
             fonts::Font mainFont = fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false);
             int step;
             {
-                XAlignmentEnum[] xAlignments = (XAlignmentEnum[])Enum.GetValues(typeof(XAlignmentEnum));
-                YAlignmentEnum[] yAlignments = (YAlignmentEnum[])Enum.GetValues(typeof(YAlignmentEnum));
+                XAlignmentEnum[] xAlignments = Enum.GetValues<XAlignmentEnum>();
+                YAlignmentEnum[] yAlignments = Enum.GetValues<YAlignmentEnum>();
                 step = (int)(pageSize.Height) / (xAlignments.Length * yAlignments.Length + 1);
             }
             BlockComposer blockComposer = new BlockComposer(composer);
@@ -613,9 +600,9 @@ namespace PdfClown.Samples.CLI
             fonts::Font sampleFont = fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Times, false, false);
             int x = 30;
             int y = (int)(step * 1.2);
-            foreach (XAlignmentEnum xAlignment in (XAlignmentEnum[])Enum.GetValues(typeof(XAlignmentEnum)))
+            foreach (XAlignmentEnum xAlignment in Enum.GetValues<XAlignmentEnum>())
             {
-                foreach (YAlignmentEnum yAlignment in (YAlignmentEnum[])Enum.GetValues(typeof(YAlignmentEnum)))
+                foreach (YAlignmentEnum yAlignment in Enum.GetValues<YAlignmentEnum>())
                 {
                     composer.SetFont(mainFont, 12);
                     composer.ShowText(
@@ -623,8 +610,7 @@ namespace PdfClown.Samples.CLI
                       new SKPoint(x, y),
                       XAlignmentEnum.Left,
                       YAlignmentEnum.Middle,
-                      0
-                      );
+                      0);
 
                     composer.SetFont(sampleFont, 12);
                     for (int index = 0; index < 2; index++)

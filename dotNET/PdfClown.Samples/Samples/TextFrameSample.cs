@@ -12,11 +12,9 @@ namespace PdfClown.Samples.CLI
     /**
       <summary>This sample demonstrates how to obtain the actual area occupied by text shown in a PDF page.</summary>
     */
-    public class TextFrameSample
-      : Sample
+    public class TextFrameSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Instantiate a new PDF file!
             File file = new File();
@@ -35,18 +33,18 @@ namespace PdfClown.Samples.CLI
         private void Populate(Document document)
         {
             // 1. Add the page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new Page(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             // 2. Create a content composer for the page!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
             colors::Color textColor = new colors::DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d);
             composer.SetFillColor(textColor);
             composer.SetLineDash(new LineDash(new float[] { 10 }));
             composer.SetLineWidth(.25);
 
-            BlockComposer blockComposer = new BlockComposer(composer);
+            var blockComposer = new BlockComposer(composer);
             blockComposer.Begin(SKRect.Create(300, 400, 200, 100), XAlignmentEnum.Left, YAlignmentEnum.Middle);
             composer.SetFont(fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Times, false, true), 12);
             blockComposer.ShowText("PrimitiveComposer.ShowText(...) methods return the actual bounding box of the text shown, allowing to precisely determine its location on the page.");
@@ -62,8 +60,7 @@ namespace PdfClown.Samples.CLI
                 XAlignmentEnum.Left,
                 YAlignmentEnum.Middle,
                 45
-                ).GetPoints()
-              );
+                ).GetPoints());
             composer.Stroke();
 
             composer.SetFont(fonts::FontType0.Load(document, GetResourcePath("fonts" + System.IO.Path.DirectorySeparatorChar + "Ruritania-Outline.ttf")), 102);
@@ -74,8 +71,7 @@ namespace PdfClown.Samples.CLI
                 XAlignmentEnum.Center,
                 YAlignmentEnum.Middle,
                 -25
-                ).GetPoints()
-              );
+                ).GetPoints());
             composer.Stroke();
 
             // 4. Flush the contents into the page!

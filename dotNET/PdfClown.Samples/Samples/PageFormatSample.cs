@@ -12,14 +12,12 @@ namespace PdfClown.Samples.CLI
       <summary>This sample generates a series of PDF pages from the default page formats available,
       varying both in size and orientation.</summary>
     */
-    public class PageFormatSample
-      : Sample
+    public class PageFormatSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. PDF file instantiation.
-            File file = new File();
+            var file = new File();
             Document document = file.Document;
 
             // 2. Populate the document!
@@ -31,23 +29,23 @@ namespace PdfClown.Samples.CLI
 
         private void Populate(Document document)
         {
-            FontType1 bodyFont = FontType1.Load(document, FontType1.FamilyEnum.Courier, true, false);
+            var bodyFont = FontType1.Load(document, FontType1.FamilyEnum.Courier, true, false);
 
             Pages pages = document.Pages;
-            PageFormat.SizeEnum[] pageFormats = (PageFormat.SizeEnum[])Enum.GetValues(typeof(PageFormat.SizeEnum));
-            PageFormat.OrientationEnum[] pageOrientations = (PageFormat.OrientationEnum[])Enum.GetValues(typeof(PageFormat.OrientationEnum));
-            foreach (PageFormat.SizeEnum pageFormat in pageFormats)
+            var pageFormats = Enum.GetValues<PageFormat.SizeEnum>();
+            var pageOrientations = Enum.GetValues<PageFormat.OrientationEnum>();
+            foreach (var pageFormat in pageFormats)
             {
-                foreach (PageFormat.OrientationEnum pageOrientation in pageOrientations)
+                foreach (var pageOrientation in pageOrientations)
                 {
                     // Add a page to the document!
-                    Page page = new Page(document, PageFormat.GetSize(pageFormat, pageOrientation));
+                    var page = new Page(document, PageFormat.GetSize(pageFormat, pageOrientation));
                     // Instantiates the page inside the document context.
                     pages.Add(page); // Puts the page in the pages collection.
 
                     // Drawing the text label on the page...
                     SKSize pageSize = page.Size;
-                    PrimitiveComposer composer = new PrimitiveComposer(page);
+                    var composer = new PrimitiveComposer(page);
                     composer.SetFont(bodyFont, 32);
                     composer.ShowText(
                       pageFormat + " (" + pageOrientation + ")", // Text.

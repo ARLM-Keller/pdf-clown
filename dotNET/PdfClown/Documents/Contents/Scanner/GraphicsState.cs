@@ -69,7 +69,6 @@ namespace PdfClown.Documents.Contents
 
         private TextGraphicsState textState;
         private ContentScanner scanner;
-        private static Stack<GraphicsState> stack;
 
         private GraphicsState()
         { }
@@ -191,7 +190,11 @@ namespace PdfClown.Documents.Contents
         public SKMatrix Ctm
         {
             get => ctm;
-            set => ctm = value;
+            set
+            {
+                ctm = value;
+                Scanner?.RenderContext?.SetMatrix(ctm);
+            }
         }
 
         /**
@@ -488,15 +491,14 @@ namespace PdfClown.Documents.Contents
           <param name="topDown">Whether the y-axis orientation has to be adjusted to common top-down
           orientation rather than standard PDF coordinate system (bottom-up).</param>
         */
-        public SKMatrix GetTextToDeviceMatrix(bool topDown)
+        public SKMatrix GetTextToDeviceMatrix(IContentContext context)
         {
             /*
               NOTE: The text rendering matrix (trm) is obtained from the concatenation of the current
               transformation matrix (ctm) and the text matrix (tm).
             */
-            SKMatrix matrix = GetUserToDeviceMatrix(topDown);
-            matrix = matrix.PreConcat(textState.Tm);
-            return matrix;
+            var matrix = GetUserToDeviceMatrix(context);
+            return matrix.PostConcat(textState.Tm);
         }
 
         /**
@@ -504,34 +506,26 @@ namespace PdfClown.Documents.Contents
           <param name="topDown">Whether the y-axis orientation has to be adjusted to common top-down
           orientation rather than standard PDF coordinate system (bottom-up).</param>
         */
-        public SKMatrix GetUserToDeviceMatrix(bool topDown)
+        public SKMatrix GetUserToDeviceMatrix(IContentContext context)
         {
-            if (topDown)
-            {
-                SKMatrix matrix = new SKMatrix { Values = new float[] { 1, 0, 0, 0, -1, scanner.CanvasSize.Height, 0, 0, 1 } };
-                matrix = matrix.PreConcat(ctm);
-                return matrix;
-            }
-            else
-            {
-                return ctm;
-            }
+            var matrix = context.RotateMatrix;
+            return matrix.PreConcat(ctm);
         }
 
 
         public void Save()
         {
-            if (stack == null)
-            {
-                stack = new Stack<GraphicsState>();
-            }
+            Scanner?.RenderContext?.Save();
+            var stack = Scanner.ContentContext.GetGraphicsStateContext();
             var cloned = (GraphicsState)Clone();
             stack.Push(cloned);
         }
 
         public void Restore()
         {
-            if (stack != null && stack.Count > 0)
+            Scanner?.RenderContext?.Restore();
+            var stack = Scanner.ContentContext.GetGraphicsStateContext();
+            if (stack.Count > 0)
             {
                 var poped = stack.Pop();
                 poped.CopyTo(this);
@@ -571,8 +565,6 @@ namespace PdfClown.Documents.Contents
             SMask = null;
             StrokeAlpha = null;
             FillAlpha = null;
-            // Rendering context initialization.
-            Scanner.RenderContext?.SetMatrix(ctm);
         }
 
         /**
@@ -593,12 +585,12 @@ namespace PdfClown.Documents.Contents
                 wordSpace = wordSpace,
                 lead = lead,
                 //Paint
-                blendMode = blendMode,
+                blendMode = new List<BlendModeEnum>(blendMode),
                 ctm = ctm,
                 fillColor = fillColor,
                 fillColorSpace = fillColorSpace,
-                strokeColor = colors::DeviceGrayColor.Default,
-                strokeColorSpace = colors::DeviceGrayColorSpace.Default,
+                strokeColor = strokeColor,
+                strokeColorSpace = strokeColorSpace,
                 lineCap = lineCap,
                 lineDash = lineDash,// != null ? new LineDash(lineDash.DashArray, lineDash.DashPhase),
                 lineJoin = lineJoin,
@@ -623,7 +615,7 @@ namespace PdfClown.Documents.Contents
         */
         public void CopyTo(GraphicsState state)
         {
-            state.Ctm = ctm;
+            state.ctm = ctm;
             //Text
             state.font = font;
             state.fontSize = fontSize;

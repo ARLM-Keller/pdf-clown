@@ -18,11 +18,9 @@ namespace PdfClown.Samples.CLI
       <remarks>In this case, on document-opening a go-to-page-2 action is triggered;
       then on page-2-opening a go-to-URI action is triggered.</remarks>
     */
-    public class ActionSample
-      : Sample
+    public class ActionSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");

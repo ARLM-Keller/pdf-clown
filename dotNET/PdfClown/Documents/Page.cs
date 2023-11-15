@@ -79,6 +79,7 @@ namespace PdfClown.Documents
         private SKMatrix? invertRotateMatrix;
         private SKRect? box;
         internal int? index;
+        private Stack<GraphicsState> states;
 
         static Page()
         {
@@ -121,8 +122,8 @@ namespace PdfClown.Documents
                 {
                     // Isn't the page attached to the page tree?
                     /* NOTE: This condition is illegal. */
-                    if (pageObject[PdfName.Parent] == null)
-                        throw new Exception("Inheritable attributes unreachable: Page objects MUST be inserted into their document's Pages collection before being used.");
+                    //if (pageObject[PdfName.Parent] == null)
+                    //    throw new Exception("Inheritable attributes unreachable: Page objects MUST be inserted into their document's Pages collection before being used.");
 
                     return null;
                 }
@@ -414,7 +415,7 @@ namespace PdfClown.Documents
 
         public SKRect Box
         {
-            get => box ??= MediaBox.ToRect();
+            get => box ??= MediaBox?.ToRect() ?? SKRect.Empty;
             /* NOTE: Mandatory. */
             set => MediaBox = new Rectangle(value);
         }
@@ -497,6 +498,8 @@ namespace PdfClown.Documents
         public DateTime? ModificationDate => (DateTime)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.LastModified]);
 
         public List<ITextString> Strings { get; } = new List<ITextString>();
+
+        public Stack<GraphicsState> GetGraphicsStateContext() => states ??= new Stack<GraphicsState>();
 
         public AppData GetAppData(PdfName appName)
         {

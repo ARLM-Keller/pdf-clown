@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright 2012 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
@@ -23,38 +23,24 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Selector rendition [PDF:1.7:9.1.2].</summary>
-    */
-    [PDF(VersionEnum.PDF15)]
-    public sealed class SelectorRendition : Rendition
+    public class Renditions : Array<Rendition>
     {
-
-        public SelectorRendition(Document context) : base(context, PdfName.SR)
-        { }
-
-        internal SelectorRendition(PdfDirectObject baseObject) : base(baseObject)
-        { }
-
-        /**
-          <summary>Gets/Sets an ordered collection of renditions. The first viable media rendition found
-          in the array, or nested within a selector rendition in the array, should be used.</summary>
-        */
-        public Renditions Renditions
+        private class ArrayWrapperObject : IWrapper<Rendition>
         {
-            get => Wrap<Renditions>(BaseDataObject.Get<PdfArray>(PdfName.R));
-            set => BaseDataObject[PdfName.R] = value.BaseObject;
+            public Rendition Wrap(PdfDirectObject baseObject)
+            { return Rendition.Wrap(baseObject); }
         }
+
+        private static readonly IWrapper<Rendition> ArrayWrapper = new ArrayWrapperObject();
+        
+        public Renditions(Document context) : base(context, ArrayWrapper)
+        { }
+
+        public Renditions(PdfDirectObject baseObject) : base(ArrayWrapper, baseObject)
+        { }
     }
 }

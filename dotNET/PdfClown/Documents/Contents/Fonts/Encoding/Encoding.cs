@@ -130,14 +130,10 @@ namespace PdfClown.Documents.Contents.Fonts
          * 
          * @param name PostScript glyph name
          */
-        public bool Contains(string name)
-        {
-            return nameToCode.ContainsKey(name);
-        }
+        public bool Contains(string name) => nameToCode.ContainsKey(name);
 
-        public virtual PdfDirectObject GetPdfObject()
-        {
-            return null;
-        }
+        public virtual PdfDirectObject GetPdfObject() => null;
+
+        public virtual string EncodingName => null;
     }
 }

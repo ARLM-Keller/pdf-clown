@@ -52,7 +52,7 @@ namespace PdfClown.Documents.Contents.Fonts
     */
     [PDF(VersionEnum.PDF10)]
     public class FontType1 : FontSimple
-    {       
+    {
         public enum FamilyEnum
         {
             Courier,
@@ -94,9 +94,9 @@ namespace PdfClown.Documents.Contents.Fonts
                     break;
             }
 
-
             return new FontType1(context, Standard14Fonts.GetMappedFontName(fontName));
-        }
+        }        
+
         // alternative names for glyphs which are commonly encountered
         private static readonly Dictionary<string, string> ALT_NAMES = new Dictionary<string, string>(StringComparer.Ordinal);
         private static readonly int PFB_START_MARKER = 0x80;
@@ -209,12 +209,12 @@ namespace PdfClown.Documents.Contents.Fonts
             ReadEncoding();
             fontMatrixTransform = FontMatrix;
             fontMatrixTransform = fontMatrixTransform.PreConcat(SKMatrix.CreateScale(1000, 1000));
-        }        
+        }
 
         public FontType1(Document context, FontName baseFont) : base(context, baseFont)
         {
             Dictionary[PdfName.Subtype] = PdfName.Type1;
-            Dictionary[PdfName.BaseFont] = PdfName.Get(baseFont);
+            Dictionary[PdfName.BaseFont] = PdfName.Get(Standard14Fonts.FontNames[baseFont]);
             switch (baseFont)
             {
                 case FontName.ZapfDingbats:
@@ -383,30 +383,25 @@ namespace PdfClown.Documents.Contents.Fonts
                 // this is important on systems with no installed fonts
                 if (!encoding.Contains(name))
                 {
-                    throw new ArgumentException(
-                            $"U+{unicode:x4} ('{name}') is not available in this font {Name} encoding: {encoding.GetPdfObject()}");
+                    Debug.WriteLine($"U+{unicode:x4} ('{name}') is not available in this font {Name} encoding: {encoding.GetPdfObject()}");
                 }
                 if (".notdef".Equals(name, StringComparison.Ordinal))
                 {
-                    throw new ArgumentException(
-                            $"No glyph for U+{unicode:x4} in font {Name}");
+                    Debug.WriteLine($"No glyph for U+{unicode:x4} in font {Name}");
                 }
             }
             else
             {
                 if (!encoding.Contains(name))
                 {
-                    throw new ArgumentException(
-                            string.Format("U+%04X ('%s') is not available in this font %s (generic: %s) encoding: %s",
-                                    unicode, name, Name, genericFont.Name, encoding.GetPdfObject()));
+                    Debug.WriteLine($"U+{unicode:x4} ({name}) is not available in this font {Name} (generic: {genericFont.Name}) encoding: {encoding.GetPdfObject()}");
                 }
 
                 string nameInFont = GetNameInFont(name);
 
                 if (".notdef".Equals(nameInFont, StringComparison.Ordinal) || !genericFont.HasGlyph(nameInFont))
                 {
-                    throw new ArgumentException(
-                            $"No glyph for U+{unicode:x4} in font {Name} (generic: {genericFont.Name})");
+                    Debug.WriteLine($"No glyph for U+{unicode:x4} in font {Name} (generic: {genericFont.Name})");
                 }
             }
 

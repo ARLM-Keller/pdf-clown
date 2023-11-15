@@ -486,9 +486,7 @@ namespace PdfClown.Tools
                               0,
                               previousTextChar.Quad.Height)),
                             textString,
-                            true
-                            )
-                          );
+                            true));
                         textString = null;
                         dehyphenating = false;
                     }
@@ -526,13 +524,16 @@ namespace PdfClown.Tools
                                       textChar.Quad.Height
                                       )),
                                     textString,
-                                    true)
-                                  );
+                                    true));
                             }
                         }
                         else if (dehyphenating && previousTextChar.Contains(' '))
                         {
-                            textStrings.Add(textString = new TextString { Context = rawTextString.Context, Style = rawTextString.Style });
+                            textStrings.Add(textString = new TextString
+                            {
+                                Context = rawTextString.Context,
+                                Style = rawTextString.Style
+                            });
                             dehyphenating = false;
                         }
                     }

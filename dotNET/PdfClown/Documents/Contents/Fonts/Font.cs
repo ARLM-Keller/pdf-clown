@@ -204,8 +204,8 @@ namespace PdfClown.Documents.Contents.Fonts
           <summary>Creates a new font structure within the given document context.</summary>
         */
         protected Font(Document context)
-            : this(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Font } })
-        { Initialize(); }
+            : this(context, new PdfDictionary(6) { { PdfName.Type, PdfName.Font } })
+        { }
 
         protected Font(Document context, PdfDictionary dictionary)
             : base(context, dictionary)

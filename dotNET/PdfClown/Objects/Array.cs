@@ -102,7 +102,7 @@ namespace PdfClown.Objects
           <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
           everytime available.</param>
         */
-        protected Array(PdfDirectObject baseObject)
+        public Array(PdfDirectObject baseObject)
             : this(new DefaultWrapper<TItem>(), baseObject)
         { }
 
@@ -112,7 +112,7 @@ namespace PdfClown.Objects
           <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
           everytime available.</param>
         */
-        protected Array(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject) : base(baseObject)
+        public Array(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject) : base(baseObject)
         {
             this.itemWrapper = itemWrapper;
         }

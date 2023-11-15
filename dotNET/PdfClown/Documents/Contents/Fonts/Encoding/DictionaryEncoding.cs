@@ -127,8 +127,8 @@ namespace PdfClown.Documents.Contents.Fonts
         private void ApplyDifferences()
         {
             // now replace with the differences
-            var diff = encoding.Resolve(PdfName.Differences);
-            if (!(diff is PdfArray diffArray))
+            var diffArray = encoding.GetArray(PdfName.Differences);
+            if (diffArray == null)
             {
                 return;
             }
@@ -168,6 +168,19 @@ namespace PdfClown.Documents.Contents.Fonts
         public override PdfDirectObject GetPdfObject()
         {
             return encoding;
+        }
+
+        public override string EncodingName
+        {
+            get
+            {
+                if (baseEncoding == null)
+                {
+                    // In type 3 the /Differences array shall specify the complete character encoding
+                    return "differences";
+                }
+                return baseEncoding.EncodingName + " with differences";
+            }
         }
 
     }

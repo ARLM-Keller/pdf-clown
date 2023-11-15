@@ -122,7 +122,7 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             bool isSymbolic = metrics.EncodingScheme.Equals("FontSpecific", StringComparison.Ordinal);
 
-            FontDescriptor fd = new FontDescriptor
+            var fd = new FontDescriptor
             {
                 FontName = metrics.FontName,
                 FontFamily = metrics.FamilyName,

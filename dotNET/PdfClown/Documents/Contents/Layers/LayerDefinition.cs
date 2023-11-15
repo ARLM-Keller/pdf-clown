@@ -36,17 +36,12 @@ namespace PdfClown.Documents.Contents.Layers
     [PDF(VersionEnum.PDF15)]
     public sealed class LayerDefinition : PdfObjectWrapper<PdfDictionary>, ILayerConfiguration
     {
-        #region dynamic
-        #region constructors
         public LayerDefinition(Document context) : base(context, new PdfDictionary())
         { }
 
         public LayerDefinition(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the layer configurations used under particular circumstances.</summary>
         */
@@ -71,7 +66,6 @@ namespace PdfClown.Documents.Contents.Layers
         */
         public Layers Layers => Wrap<Layers>(BaseDataObject.Get<PdfArray>(PdfName.OCGs));
 
-        #region ILayerConfiguration
         public string Creator
         {
             get => DefaultConfiguration.Creator;
@@ -105,10 +99,6 @@ namespace PdfClown.Documents.Contents.Layers
             get => DefaultConfiguration.Visible;
             set => DefaultConfiguration.Visible = value;
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }
 

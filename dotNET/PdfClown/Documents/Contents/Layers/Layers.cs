@@ -35,7 +35,7 @@ namespace PdfClown.Documents.Contents.Layers
     [PDF(VersionEnum.PDF15)]
     public sealed class Layers : Array<Layer>
     {
-        internal Layers(PdfDirectObject baseObject)
+        public Layers(PdfDirectObject baseObject)
             : base(baseObject)
         { }
 

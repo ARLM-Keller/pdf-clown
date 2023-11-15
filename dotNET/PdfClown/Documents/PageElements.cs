@@ -41,13 +41,13 @@ namespace PdfClown.Documents
     {
         private Page page;
 
-        internal PageElements(PdfDirectObject baseObject, Page page)
+        public PageElements(PdfDirectObject baseObject, Page page)
             : base(baseObject)
         {
             this.page = page;
         }
 
-        internal PageElements(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject, Page page)
+        public PageElements(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject, Page page)
             : base(itemWrapper, baseObject)
         {
             this.page = page;

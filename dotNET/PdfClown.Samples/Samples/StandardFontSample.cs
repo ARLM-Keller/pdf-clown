@@ -22,11 +22,10 @@ namespace PdfClown.Samples.CLI
         private static readonly int FontBaseSize = 20;
         private static readonly int Margin = 50;
 
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. PDF file instantiation.
-            File file = new File();
+            var file = new File();
             Document document = file.Document;
 
             // 2. Content creation.
@@ -38,7 +37,7 @@ namespace PdfClown.Samples.CLI
 
         private void Populate(Document document)
         {
-            Page page = new Page(document);
+            var page = new Page(document);
             document.Pages.Add(page);
             SKSize pageSize = page.Size;
 
@@ -49,14 +48,13 @@ namespace PdfClown.Samples.CLI
             */
             document.Configuration.EncodingFallback = EncodingFallbackEnum.Exception;
 
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
             int x = Margin, y = Margin;
-            FontType1 titleFont = FontType1.Load(document, FontType1.FamilyEnum.Times, true, true);
+            var titleFont = FontType1.Load(document, FontType1.FamilyEnum.Times, true, true);
             FontType1 font = null;
             // Iterating through the standard Type 1 fonts...
-            foreach (FontType1.FamilyEnum fontFamily
-              in (FontType1.FamilyEnum[])Enum.GetValues(typeof(FontType1.FamilyEnum)))
+            foreach (FontType1.FamilyEnum fontFamily in Enum.GetValues<FontType1.FamilyEnum>())
             {
                 // Iterating through the font styles...
                 for (int styleIndex = 0; styleIndex < 4; styleIndex++)
@@ -89,22 +87,13 @@ namespace PdfClown.Samples.CLI
 
                     if (styleIndex == 0)
                     {
-                        composer.DrawLine(
-                          new SKPoint(x, y),
-                          new SKPoint(pageSize.Width - Margin, y)
-                          );
+                        composer.DrawLine(new SKPoint(x, y), new SKPoint(pageSize.Width - Margin, y));
                         composer.Stroke();
                         y += 5;
                     }
 
-                    composer.SetFont(
-                      titleFont,
-                      FontBaseSize * (styleIndex == 0 ? 1.5f : 1)
-                      );
-                    composer.ShowText(
-                      fontFamily.ToString() + (bold ? " bold" : "") + (italic ? " italic" : ""),
-                      new SKPoint(x, y)
-                      );
+                    composer.SetFont(titleFont, FontBaseSize * (styleIndex == 0 ? 1.5f : 1));
+                    composer.ShowText(fontFamily.ToString() + (bold ? " bold" : "") + (italic ? " italic" : ""), new SKPoint(x, y));
 
                     y += 40;
                     // Set the font used to show its character set!
@@ -129,8 +118,7 @@ namespace PdfClown.Samples.CLI
                               new SKPoint(pageSize.Width - Margin, y),
                               XAlignmentEnum.Right,
                               YAlignmentEnum.Top,
-                              0
-                              );
+                              0);
                             composer.SetFont(font, FontBaseSize);
                             y += FontBaseSize * 2;
                         }
@@ -141,13 +129,12 @@ namespace PdfClown.Samples.CLI
                             // Show the character!
                             composer.ShowText(
                               new String((char)uniCode, 1),
-                              new SKPoint(x, y)
-                              );
+                              new SKPoint(x, y));
                             x += FontBaseSize;
                             if (x > pageSize.Width - Margin)
                             { x = Margin; y += 30; }
                         }
-                        catch (EncodeException)
+                        catch (Exception)
                         {
                             /*
                               NOOP -- NOTE: document.Configuration.EncodingFallback allows to customize the

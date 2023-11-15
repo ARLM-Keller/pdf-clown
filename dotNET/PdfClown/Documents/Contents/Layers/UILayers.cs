@@ -60,7 +60,7 @@ namespace PdfClown.Documents.Contents.Layers
 
         public UILayers(Document context) : base(context, Wrapper) { }
 
-        internal UILayers(PdfDirectObject baseObject) : base(Wrapper, baseObject)
+        public UILayers(PdfDirectObject baseObject) : base(Wrapper, baseObject)
         { }
 
         public override int Count => Evaluate(delegate (int currentNodeIndex, int currentBaseIndex)

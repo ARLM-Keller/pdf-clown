@@ -138,7 +138,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
             }
 
-            var cMapStream = new Bytes.ByteStream { };
+            var cMapStream = new ByteStream { };
             toUniWriter.WriteTo(cMapStream);
 
             var header = new PdfDictionary() { { PdfName.Length, PdfInteger.Get(cMapStream.Length) } };

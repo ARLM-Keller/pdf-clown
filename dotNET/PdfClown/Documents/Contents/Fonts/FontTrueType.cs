@@ -332,14 +332,15 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public override void Encode(Span<byte> bytes, int unicode)
         {
+            string name = GlyphList.UnicodeToName(unicode);
+
             if (encoding != null)
             {
-                if (!encoding.Contains(GlyphList.UnicodeToName(unicode)))
+                if (!encoding.Contains(name))
                 {
                     throw new ArgumentException($"U+{unicode:x4} is not available in this font's encoding: {encoding.GetPdfObject()}");
                 }
 
-                string name = GlyphList.UnicodeToName(unicode);
                 var inverted = encoding.NameToCodeMap;
 
                 if (!ttf.HasGlyph(name))
@@ -358,8 +359,6 @@ namespace PdfClown.Documents.Contents.Fonts
             else
             {
                 // use TTF font's built-in encoding
-                string name = GlyphList.UnicodeToName(unicode);
-
                 if (!ttf.HasGlyph(name))
                 {
                     throw new ArgumentException($"No glyph for U+{unicode:x4} in font {Name}");

@@ -44,6 +44,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private volatile Dictionary<string, int> postScriptNames;
         private List<float> fontMatrix;
         private SKRect? fonBBox;
+        private CmapTableLookup cmapTableLookup;
         private readonly object lockReadtable = new object();
         private readonly object lockPSNames = new object();
         private readonly List<string> enabledGsubFeatures = new List<string>();
@@ -490,6 +491,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return cmap;
         }
 
+        private ICmapLookup GetCmapTableLookup()
+        {
+            return cmapTableLookup ??= new CmapTableLookup(Cmap, Gsub, enabledGsubFeatures);
+        }
+
         private CmapSubtable GetUnicodeCmapImpl(bool isStrict)
         {
             CmapTable cmapTable = Cmap;
@@ -571,7 +577,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             int uni = ParseUniName(name);
             if (uni > -1)
             {
-                ICmapLookup cmap = GetUnicodeCmapLookup(false);
+                ICmapLookup cmap = GetCmapTableLookup();
                 return cmap.GetGlyphId(uni);
             }
 

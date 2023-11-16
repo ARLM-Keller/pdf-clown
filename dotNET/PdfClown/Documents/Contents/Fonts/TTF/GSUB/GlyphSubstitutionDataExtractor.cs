@@ -168,7 +168,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
                 else
                 {
                     // usually null, due to being skipped in GlyphSubstitutionTable.readLookupTable()
-                    Debug.WriteLine($"debug: The type {lookupSubTable} is not yet supported, will be ignored");
+                    //Debug.WriteLine($"debug: The type {lookupSubTable} is not yet supported, will be ignored");
                 }
             }
 

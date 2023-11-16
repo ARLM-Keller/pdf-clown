@@ -543,7 +543,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
             // try unicode name
             var unicodes = GlyphList.ToUnicode(name);
-            if (unicodes != null && unicodes.Value <= byte.MaxValue)
+            if (unicodes != null && unicodes.Value <= ushort.MaxValue)
             {
                 string uniName = UniUtil.GetUniNameOfCodePoint((int)unicodes);
                 if (genericFont.HasGlyph(uniName))

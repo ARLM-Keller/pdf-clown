@@ -576,11 +576,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
 
             // PDFBOX-5604: assume gnnnnn is a gid
-            if (name.Length > 1
-                && int.TryParse(name.AsSpan().Slice(1), out var intValue))
-            {
-                return intValue;
-            }
+            //if (name.Length > 1
+            //    && int.TryParse(name.AsSpan().Slice(1), out var intValue))
+            //{
+            //    return intValue;
+            //}
 
 
             return 0;

@@ -43,6 +43,8 @@ using io = System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using PdfClown.Documents.Contents.Fonts.TTF;
+using PdfClown.Documents.Contents.Fonts;
+using System.Collections.Concurrent;
 
 namespace PdfClown.Documents
 {
@@ -60,7 +62,8 @@ namespace PdfClown.Documents
                 throw new NotSupportedException("Type '" + typeof(T).Name + "' wrapping is not supported.");
         }
 
-        internal Dictionary<PdfDirectObject, object> Cache = new Dictionary<PdfDirectObject, object>();
+        internal Dictionary<PdfDirectObject, object> Cache = new();
+        internal ConcurrentDictionary<FontName, FontType1> Type1FontCache = new();
 
         private DocumentConfiguration configuration;
 

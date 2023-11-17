@@ -51,10 +51,9 @@ namespace PdfClown.Documents.Contents.Fonts
             AssignGlyphList(baseFont);
         }
 
-        protected FontSimple(PdfDirectObject baseObject) : base(baseObject)
-        {
-
-        }
+        protected FontSimple(PdfDirectObject baseObject)
+            : base(baseObject)
+        { }
 
         /**
         * Returns the Encoding vector.

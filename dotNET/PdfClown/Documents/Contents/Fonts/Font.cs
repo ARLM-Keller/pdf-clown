@@ -1080,7 +1080,9 @@ namespace PdfClown.Documents.Contents.Fonts
               So, it's convenient to put them into a common cache for later reuse.
             */
             if (Document != null)
+            {
                 Document.Cache[BaseObject] = this;
+            }
         }
     }
 }

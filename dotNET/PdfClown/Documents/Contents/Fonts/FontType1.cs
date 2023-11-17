@@ -93,9 +93,10 @@ namespace PdfClown.Documents.Contents.Fonts
                     { fontName += "-Oblique"; }
                     break;
             }
+            var name = Standard14Fonts.GetMappedFontName(fontName);
 
-            return new FontType1(context, Standard14Fonts.GetMappedFontName(fontName));
-        }        
+            return context.Type1FontCache.GetOrAdd(name, (n) => new FontType1(context, n));
+        }
 
         // alternative names for glyphs which are commonly encountered
         private static readonly Dictionary<string, string> ALT_NAMES = new Dictionary<string, string>(StringComparer.Ordinal);

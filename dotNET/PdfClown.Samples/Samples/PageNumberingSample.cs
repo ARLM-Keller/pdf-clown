@@ -42,8 +42,8 @@ namespace PdfClown.Samples.CLI
             var stamper = new PageStamper();
 
             // 2. Numbering each page...
-            var font = FontType1.Load(document, FontType1.FamilyEnum.Courier, true, false);
-            DeviceRGBColor redColor = DeviceRGBColor.Get(SKColors.Red);
+            var font = FontType1.Load(document, FontName.CourierBold);
+            var redColor = DeviceRGBColor.Get(SKColors.Red);
             int margin = 32;
             foreach (Page page in document.Pages)
             {
@@ -63,11 +63,8 @@ namespace PdfClown.Samples.CLI
                     foreground.ShowText(
                       pageNumber.ToString(),
                       new SKPoint(
-                        (pageIsEven
-                          ? margin
-                          : pageSize.Width - margin),
-                        pageSize.Height - margin
-                        ),
+                        (pageIsEven ? margin : pageSize.Width - margin),
+                        pageSize.Height - margin),
                       (pageIsEven
                         ? XAlignmentEnum.Left
                         : XAlignmentEnum.Right),

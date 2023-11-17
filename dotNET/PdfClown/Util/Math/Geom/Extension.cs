@@ -25,6 +25,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+using PdfClown.Documents.Contents.Composition;
 using SkiaSharp;
 
 namespace PdfClown.Util.Math.Geom
@@ -34,6 +36,31 @@ namespace PdfClown.Util.Math.Geom
         public static float Cross(this SKPoint u, SKPoint v)
         {
             return u.X * v.Y - u.Y * v.X;
+        }
+
+        public static SKPoint Invert(this SKPoint p)
+        {
+            return new SKPoint(p.X * -1, p.Y * -1);
+        }
+
+        public static SKPoint Multiply(this SKPoint p, float v)
+        {
+            return new SKPoint(p.X * v, p.Y * v);
+        }
+
+        public static SKPoint Multiply(this SKPoint p, SKPoint v)
+        {
+            return new SKPoint(p.X * v.X, p.Y * v.Y);
+        }
+
+        public static SKPoint PerpendicularClockwise(this SKPoint vector2)
+        {
+            return new SKPoint(vector2.Y, -vector2.X);
+        }
+
+        public static SKPoint PerpendicularCounterClockwise(this SKPoint vector2)
+        {
+            return new SKPoint(-vector2.Y, vector2.X);
         }
 
         public static SKPoint GetPerp(this SKPoint a, float v, bool xbasis = true)
@@ -57,6 +84,18 @@ namespace PdfClown.Util.Math.Geom
             path.LineTo(point + new SKPoint(rotated2.X * 8, rotated2.Y * 8));
         }
 
+        public static void AddOpenArrow(this PrimitiveComposer path, SKPoint point, SKPoint normal)
+        {
+            var matrix1 = SKMatrix.CreateRotationDegrees(35);
+            var rotated1 = matrix1.MapVector(normal.X, normal.Y);
+            var matrix2 = SKMatrix.CreateRotationDegrees(-35);
+            var rotated2 = matrix2.MapVector(normal.X, normal.Y);
+
+            path.StartPath(point + new SKPoint(rotated1.X * 8, rotated1.Y * 8));
+            path.DrawLine(point);
+            path.DrawLine(point + new SKPoint(rotated2.X * 8, rotated2.Y * 8));
+        }
+
         public static void AddCloseArrow(this SKPath path, SKPoint point, SKPoint normal)
         {
             var matrix1 = SKMatrix.CreateRotationDegrees(35);
@@ -68,6 +107,19 @@ namespace PdfClown.Util.Math.Geom
             path.LineTo(point);
             path.LineTo(point + new SKPoint(rotated2.X * 8, rotated2.Y * 8));
             path.Close();
+        }
+
+        public static void AddClosedArrow(this PrimitiveComposer path, SKPoint point, SKPoint normal)
+        {
+            var matrix1 = SKMatrix.CreateRotationDegrees(35);
+            var rotated1 = matrix1.MapVector(normal.X, normal.Y);
+            var matrix2 = SKMatrix.CreateRotationDegrees(-35);
+            var rotated2 = matrix2.MapVector(normal.X, normal.Y);
+
+            path.StartPath(point + new SKPoint(rotated1.X * 8, rotated1.Y * 8));
+            path.DrawLine(point);
+            path.DrawLine(point + new SKPoint(rotated2.X * 8, rotated2.Y * 8));
+            path.ClosePath();
         }
 
         public static void Add(this ref SKRect rectangle, IEnumerable<SKPoint> points)

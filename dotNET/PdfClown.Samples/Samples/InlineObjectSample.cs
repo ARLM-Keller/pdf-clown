@@ -39,29 +39,25 @@ namespace PdfClown.Samples.CLI
             Serialize(file, "Inline image", "embedding an image within a content stream", "inline image");
         }
 
-        private void Populate(
-          Document document
-          )
+        private void Populate(Document document)
         {
             Page page = new Page(document);
             document.Pages.Add(page);
             SKSize pageSize = page.Size;
 
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
             {
-                BlockComposer blockComposer = new BlockComposer(composer);
+                var blockComposer = new BlockComposer(composer);
                 blockComposer.Hyphenation = true;
                 blockComposer.Begin(
                   SKRect.Create(
                     Margin,
                     Margin,
                     (float)pageSize.Width - Margin * 2,
-                    (float)pageSize.Height - Margin * 2
-                    ),
+                    (float)pageSize.Height - Margin * 2),
                   XAlignmentEnum.Justify,
-                  YAlignmentEnum.Top
-                  );
-                FontType1 bodyFont = FontType1.Load(document, FontType1.FamilyEnum.Courier, true, false);
+                  YAlignmentEnum.Top);
+                var bodyFont = FontType1.Load(document, FontName.CourierBold);
                 composer.SetFont(bodyFont, 32);
                 blockComposer.ShowText("Inline image sample"); blockComposer.ShowBreak();
                 composer.SetFont(bodyFont, 16);
@@ -71,7 +67,7 @@ namespace PdfClown.Samples.CLI
             // Showing the 'GNU' image...
             {
                 // Instantiate a jpeg image object!
-                entities::Image image = entities::Image.Get(GetResourcePath("images" + Path.DirectorySeparatorChar + "gnu.jpg")); // Abstract image (entity).
+                var image = entities::Image.Get(GetResourcePath("images" + Path.DirectorySeparatorChar + "gnu.jpg")); // Abstract image (entity).
                                                                                                                                   // Set the position of the image in the page!
                 composer.ApplyMatrix(200, 0, 0, 200, (pageSize.Width - 200) / 2, (pageSize.Height - 200) / 2);
                 // Show the image!

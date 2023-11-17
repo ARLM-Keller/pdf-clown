@@ -95,10 +95,7 @@ namespace PdfClown.Tokens
             : base(header, body)
         { }
 
-        public override PdfObject Accept(IVisitor visitor, object data)
-        {
-            return visitor.Visit(this, data);
-        }
+        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 
         /**
           <summary>Gets/Sets the object stream extended by this one.</summary>
@@ -119,30 +116,17 @@ namespace PdfClown.Tokens
             base.WriteTo(stream, context);
         }
 
-        public void Add(int key, PdfDataObject value)
-        {
-            Entries.Add(key, new ObjectEntry(value, parser));
-        }
+        public void Add(int key, PdfDataObject value) => Entries.Add(key, new ObjectEntry(value, parser));
 
-        public bool ContainsKey(int key)
-        {
-            return Entries.ContainsKey(key);
-        }
+        public bool ContainsKey(int key) => Entries.ContainsKey(key);
 
         public ICollection<int> Keys => Entries.Keys;
 
-        public bool Remove(int key)
-        {
-            return Entries.Remove(key);
-        }
+        public bool Remove(int key) => Entries.Remove(key);
 
         public PdfDataObject this[int key]
         {
-            get
-            {
-                ObjectEntry entry = Entries[key];
-                return (entry != null ? entry.DataObject : null);
-            }
+            get => Entries[key]?.DataObject;
             set => Entries[key] = new ObjectEntry(value, parser);
         }
 
@@ -244,8 +228,8 @@ namespace PdfClown.Tokens
             int dataByteOffset;
             {
                 // Serializing the entries into the stream buffer...
-                IByteStream indexBuffer = new Bytes.ByteStream();
-                IByteStream dataBuffer = new Bytes.ByteStream();
+                IByteStream indexBuffer = new ByteStream();
+                IByteStream dataBuffer = new ByteStream();
                 IndirectObjects indirectObjects = File.IndirectObjects;
                 int objectIndex = -1;
                 File context = File;

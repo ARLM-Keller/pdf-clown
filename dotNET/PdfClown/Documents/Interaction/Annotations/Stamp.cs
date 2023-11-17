@@ -153,7 +153,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                           NOTE: Custom appearances are responsible of their proper rotation.
                           NOTE: Rotation must preserve the original scale factor.
                         */
-                        SKRect oldBox = PageBox;
+                        SKRect oldBox = Box;
                         SKRect unscaledOldBox = appearance.Matrix.MapRect(appearance.Box);
                         SKSize scale = new SKSize(oldBox.Width / unscaledOldBox.Width, oldBox.Height / unscaledOldBox.Height);
 
@@ -162,7 +162,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
                         SKRect appearanceBox = appearance.Box;
                         appearanceBox = SKRect.Create(0, 0, appearanceBox.Width * scale.Width, appearanceBox.Height * scale.Height);
-                        PageBox = GeomUtils.Align(appearance.Matrix.MapRect(appearanceBox), oldBox.Center(), new SKPoint(0, 0));
+                        Box = GeomUtils.Align(appearance.Matrix.MapRect(appearanceBox), oldBox.Center(), new SKPoint(0, 0));
                     }
                 }
             }

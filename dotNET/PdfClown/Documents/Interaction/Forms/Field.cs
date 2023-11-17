@@ -25,6 +25,8 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents;
+using PdfClown.Documents.Contents.Objects;
+using PdfClown.Documents.Contents.Tokens;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Files;
 using PdfClown.Objects;
@@ -43,10 +45,12 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public abstract class Field : PdfObjectWrapper<PdfDictionary>
     {
+        private SetFont setFontOperation;
+
         /*
-          NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
-          of the explicit representation of a field -- they are retrieved everytime clients call.
-        */
+NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
+of the explicit representation of a field -- they are retrieved everytime clients call.
+*/
         /**
           <summary>Field flags [PDF:1.6:8.6.2].</summary>
         */
@@ -246,8 +250,7 @@ namespace PdfClown.Documents.Interaction.Forms
                     BindingFlags.GetProperty,
                     null,
                     defaultValueObject,
-                    null
-                    )
+                    null)
                   : null;
             }
         }
@@ -372,7 +375,41 @@ namespace PdfClown.Documents.Interaction.Forms
             }
         }
 
-        protected PdfString DefaultAppearanceState => (PdfString)GetInheritableAttribute(PdfName.DA);
+        protected PdfString DAString
+        {
+            get => (PdfString)GetInheritableAttribute(PdfName.DA);
+            set => BaseDataObject[PdfName.DA] = value;
+        }
+
+        protected SetFont DAOperation
+        {
+            get
+            {
+                if (setFontOperation != null)
+                    return setFontOperation;
+                if (DAString == null)
+                    return null;
+                var parser = new ContentParser(DAString.RawValue);
+                foreach (ContentObject content in parser.ParseContentObjects())
+                {
+                    if (content is SetFont setFont)
+                    {
+                        return setFontOperation = setFont;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                setFontOperation = value;
+                if (setFontOperation != null)
+                {
+                    var buffer = new ByteStream(64);
+                    value.WriteTo(buffer, Document);
+                    DAString = new PdfString(buffer.AsMemory());
+                }
+            }
+        }
 
         protected PdfDirectObject GetInheritableAttribute(PdfName key) => GetInheritableAttribute(BaseDataObject, key);
     }

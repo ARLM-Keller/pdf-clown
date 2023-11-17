@@ -73,16 +73,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override void PageMoveTo(SKRect newBox)
+        public override void MoveTo(SKRect newBox)
         {
-            var oldBox = PageBox;
+            var oldBox = Box;
             if (oldBox.Width != newBox.Width
                 || oldBox.Height != newBox.Height)
             {
                 Appearance.Normal[null] = null;
             }
 
-            base.PageMoveTo(newBox);
+            base.MoveTo(newBox);
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()

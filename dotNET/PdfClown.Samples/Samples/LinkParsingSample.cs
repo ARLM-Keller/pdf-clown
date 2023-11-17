@@ -63,15 +63,14 @@ namespace PdfClown.Samples.CLI
                     // Iterating through the page annotations looking for links...
                     foreach (Annotation annotation in annotations)
                     {
-                        if (annotation is Link)
+                        if (annotation is Link link)
                         {
                             linkFound = true;
 
                             if (textStrings == null)
                             { textStrings = extractor.Extract(page); }
 
-                            Link link = (Link)annotation;
-                            SKRect linkBox = link.Box;
+                            SKRect linkBox = link.GetBounds();
 
                             // Text.
                             /*
@@ -79,7 +78,7 @@ namespace PdfClown.Samples.CLI
                               NOTE: As links have no strong relation to page text but a weak location correspondence,
                               we have to filter extracted text by link area.
                             */
-                            StringBuilder linkTextBuilder = new StringBuilder();
+                            var linkTextBuilder = new StringBuilder();
                             foreach (ITextString linkTextString in extractor.Filter(textStrings, linkBox))
                             { linkTextBuilder.Append(linkTextString.Text); }
                             Console.WriteLine("Link '" + linkTextBuilder + "' ");

@@ -43,11 +43,11 @@ namespace PdfClown.Samples.CLI
             SKSize pageSize = page.Size;
 
             // 2. Create a content composer for the page!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
             // 3. Inserting contents...
             // Set the font to use!
-            composer.SetFont(FontType1.Load(document, FontType1.FamilyEnum.Courier, true, false), 30);
+            composer.SetFont(FontType1.Load(document, FontName.CourierBold), 30);
             // Show the text onto the page (along with its box)!
             /*
               NOTE: PrimitiveComposer's ShowText() method is the most basic way to add text to a page

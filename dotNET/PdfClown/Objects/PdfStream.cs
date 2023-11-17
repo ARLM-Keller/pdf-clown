@@ -78,19 +78,13 @@ namespace PdfClown.Objects
             { Update(); };
         }
 
-        public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
+        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 
-        /**
-          <summary>Gets the decoded stream body.</summary>
-        */
-        public IByteStream Body =>
-                /*
-NOTE: Encoding filters are removed by default because they belong to a lower layer (token
-layer), so that it's appropriate and consistent to transparently keep the object layer
-unaware of such a facility.
-*/
-                GetBody(true);
+        ///<summary>Gets the decoded stream body.</summary>
+        ///<remarks>NOTE: Encoding filters are removed by default because they belong to a lower layer (token
+        ///layer), so that it's appropriate and consistent to transparently keep the object layer
+        ///unaware of such a facility.</remarks>
+        public IByteStream Body => GetBody(true);
 
         public PdfDirectObject Filter
         {

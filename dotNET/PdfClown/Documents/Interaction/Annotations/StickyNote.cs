@@ -159,7 +159,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override void DrawSpecial(SKCanvas canvas)
         {
-            var box = PageBox;
+            var box = Box;
             var bounds = SKRect.Create(box.Left, box.Top, size / canvas.TotalMatrix.ScaleX, size / canvas.TotalMatrix.ScaleY);
             var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
             using (var paint = new SKPaint { Color = color, Style = SKPaintStyle.Fill })

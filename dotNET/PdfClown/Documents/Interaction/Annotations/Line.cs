@@ -36,6 +36,9 @@ using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Util;
 using System.Net;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Documents.Contents.Composition;
+using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Util.Math;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -47,16 +50,15 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class Line : Markup
     {
+        private const int DefaultFontSize = 9;
         private static readonly double DefaultLeaderLineExtension = 0;
         private static readonly double DefaultLeaderLineLength = 0;
         private static readonly double DefaultLeaderLineOffset = 0;
         private static readonly LineEndStyleEnum DefaultLineEndStyle = LineEndStyleEnum.None;
 
+        private SKPoint? captionOffset;
         private SKPoint? startPoint;
         private SKPoint? endPoint;
-        private SKPoint? captionOffset;
-        private SKPoint? pageStartPoint;
-        private SKPoint? pageEndPoint;
 
         private LineStartControlPoint cpStart;
         private LineEndControlPoint cpEnd;
@@ -65,8 +67,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, PdfName.Line, SKRect.Create(startPoint.X, startPoint.Y, endPoint.X - startPoint.X, endPoint.Y - startPoint.Y), text)
         {
             BaseDataObject[PdfName.L] = new PdfArray(4) { PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0) };
-            StartPoint = startPoint;
-            EndPoint = endPoint;
+            StartPoint = page.InvertRotateMatrix.MapPoint(startPoint);
+            EndPoint = page.InvertRotateMatrix.MapPoint(endPoint);
             Color = color;
         }
 
@@ -107,14 +109,14 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         [PDF(VersionEnum.PDF17)]
-        public SKPoint? PageCaptionOffset
+        public SKPoint? CaptionOffset
         {
             get => captionOffset ??= BaseDataObject[PdfName.CO] is PdfArray offset
                     ? new SKPoint(offset.GetFloat(0), offset.GetFloat(1))
                     : new SKPoint(0F, 0F);
             set
             {
-                var oldValue = PageCaptionOffset;
+                var oldValue = CaptionOffset;
                 if (oldValue != value)
                 {
                     BaseDataObject[PdfName.CO] = value == null
@@ -122,15 +124,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                         new PdfArray(2) { PdfReal.Get(value.Value.X), PdfReal.Get((float)value.Value.Y) };
                     OnPropertyChanged(oldValue, value);
                 }
-            }
-        }
-
-        public SKPoint? CaptionOffset
-        {
-            get => PageCaptionOffset is SKPoint point ? PageMatrix.MapPoint(point) : null;
-            set
-            {
-                PageCaptionOffset = value is SKPoint point ? InvertPageMatrix.MapPoint(point) : null;
             }
         }
 
@@ -266,86 +259,54 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public SKPoint PageStartPoint
+        /**
+          <summary>Gets/Sets the starting coordinates.</summary>
+        */
+        public SKPoint StartPoint
         {
-            get => pageStartPoint ??= new SKPoint(LineData.GetFloat(0), LineData.GetFloat(1));
+            get => startPoint ??= new SKPoint(LineData.GetFloat(0), LineData.GetFloat(1));
             set
             {
-                var oldValue = PageStartPoint;
+                var oldValue = StartPoint;
                 if (oldValue != value)
                 {
-                    pageStartPoint = value;
+                    startPoint = value;
                     var coordinatesObject = LineData;
                     coordinatesObject.SetFloat(0, value.X);
                     coordinatesObject.SetFloat(1, value.Y);
-                    startPoint = null;
                     OnPropertyChanged(coordinatesObject, coordinatesObject, nameof(LineData));
                     RefreshBox();
                 }
             }
         }
 
-        /**
-          <summary>Gets/Sets the starting coordinates.</summary>
-        */
-        public SKPoint StartPoint
-        {
-            get => startPoint ??= PageMatrix.MapPoint(PageStartPoint);
-            set
-            {
-                var oldValue = StartPoint;
-                if (oldValue != value)
-                {
-                    PageStartPoint = InvertPageMatrix.MapPoint(value);
-                    startPoint = value;
-                }
-            }
-        }
-
-        /**
-          <summary>Gets/Sets the ending coordinates.</summary>
-        */
-        public SKPoint PageEndPoint
-        {
-            get => pageEndPoint ??= new SKPoint(LineData.GetFloat(2), LineData.GetFloat(3));
-            set
-            {
-                var oldValue = PageEndPoint;
-                if (oldValue != value)
-                {
-                    pageEndPoint = value;
-                    var coordinatesObject = LineData;
-                    coordinatesObject.SetFloat(2, value.X);
-                    coordinatesObject.SetFloat(3, value.Y);
-                    endPoint = null;
-                    RefreshBox();
-                    OnPropertyChanged(LineData, LineData, nameof(LineData));
-                }
-            }
-        }
 
         /**
           <summary>Gets/Sets the ending coordinates.</summary>
         */
         public SKPoint EndPoint
         {
-            get => endPoint ??= PageMatrix.MapPoint(PageEndPoint);
+            get => endPoint ??= new SKPoint(LineData.GetFloat(2), LineData.GetFloat(3));
             set
             {
                 var oldValue = EndPoint;
                 if (oldValue != value)
                 {
-                    PageEndPoint = InvertPageMatrix.MapPoint(value);
                     endPoint = value;
+                    var coordinatesObject = LineData;
+                    coordinatesObject.SetFloat(2, value.X);
+                    coordinatesObject.SetFloat(3, value.Y);
+                    RefreshBox();
+                    OnPropertyChanged(LineData, LineData, nameof(LineData));
                 }
             }
         }
 
         public override bool ShowToolTip => !CaptionVisible;
 
-        public override void PageMoveTo(SKRect newBox)
+        public override void MoveTo(SKRect newBox)
         {
-            var oldBox = PageBox;
+            var oldBox = Box;
             if (oldBox.Width != newBox.Width
                || oldBox.Height != newBox.Height)
             {
@@ -356,9 +317,9 @@ namespace PdfClown.Documents.Interaction.Annotations
                 .PreConcat(SKMatrix.CreateScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height))
                 .PreConcat(SKMatrix.CreateTranslation(-oldBox.MidX, -oldBox.MidY));
 
-            PageStartPoint = dif.MapPoint(PageStartPoint);
-            PageEndPoint = dif.MapPoint(PageEndPoint);
-            base.PageMoveTo(newBox);
+            StartPoint = dif.MapPoint(StartPoint);
+            EndPoint = dif.MapPoint(EndPoint);
+            base.MoveTo(newBox);
         }
 
         private PdfArray EnsureLineEndStylesObject()
@@ -375,76 +336,114 @@ namespace PdfClown.Documents.Interaction.Annotations
             return endStylesObject;
         }
 
+        protected override void RefreshAppearance()
+        {
+            var appearence = ResetAppearance(out var matrix);
+            var composer = new PrimitiveComposer(appearence);
+            composer.SetStrokeColor(Color ?? DeviceRGBColor.Default);
+            composer.SetFillColor(Color ?? DeviceRGBColor.Default);
+
+
+            var startPoint = matrix.MapPoint(StartPoint);
+            var endPoint = matrix.MapPoint(EndPoint);
+            var lineLength = SKPoint.Distance(startPoint, endPoint);
+            var normal = SKPoint.Normalize(endPoint - startPoint);
+            var invertNormal = new SKPoint(normal.X * -1, normal.Y * -1);
+            if (CaptionVisible && !string.IsNullOrEmpty(Contents))
+            {
+                var fontName = appearence.GetDefaultFont(out var font);
+                var textLength = (float)font.GetWidth(Contents, DefaultFontSize);
+
+                var offset = (lineLength - textLength) / 2;
+
+                var textLocation = startPoint + new SKPoint(normal.X * offset, normal.Y * offset);
+                if (CaptionPosition == LineCaptionPosition.Inline)
+                {
+                    composer.StartPath(startPoint);
+                    composer.DrawLine(startPoint + new SKPoint(normal.X * offset, normal.Y * offset));
+
+                    composer.StartPath(endPoint);
+                    composer.DrawLine(endPoint + new SKPoint(normal.X * -offset, normal.Y * -offset));
+                }
+                else
+                {
+                    composer.StartPath(startPoint);
+                    composer.DrawLine(endPoint);
+                }
+                composer.Stroke();
+
+                var horizontal = new SKPoint(1, 0);
+                var theta = Math.Atan2(normal.X, normal.Y) - Math.Atan2(horizontal.X, horizontal.Y);
+
+                while (theta <= -Math.PI)
+                    theta += 2 * Math.PI;
+
+                while (theta > Math.PI)
+                    theta -= 2 * Math.PI;
+
+                composer.BeginLocalState();
+                composer.SetFont(fontName, DefaultFontSize);
+                composer.ShowText(Contents, textLocation, XAlignmentEnum.Left,
+                    CaptionPosition == LineCaptionPosition.Inline ? YAlignmentEnum.Middle : YAlignmentEnum.Top,
+                    MathUtils.ToDegrees(theta));
+                composer.End();
+            }
+            else
+            {
+                composer.StartPath(startPoint);
+                composer.DrawLine(endPoint);
+                composer.Stroke();
+            }
+            if (StartStyle == LineEndStyleEnum.OpenArrow)
+            {
+                composer.AddOpenArrow(startPoint, normal);
+                composer.Stroke();
+            }
+            else if (StartStyle == LineEndStyleEnum.ClosedArrow)
+            {
+                composer.AddClosedArrow(startPoint, normal);
+                composer.FillStroke();
+            }
+            else if (StartStyle == LineEndStyleEnum.Circle)
+            {
+                composer.DrawCircle(startPoint, 4);
+                composer.FillStroke();
+            }
+
+            if (EndStyle == LineEndStyleEnum.OpenArrow)
+            {
+                composer.AddOpenArrow(endPoint, invertNormal);
+                composer.Stroke();
+            }
+            else if (EndStyle == LineEndStyleEnum.ClosedArrow)
+            {
+                composer.AddClosedArrow(endPoint, invertNormal);
+                composer.FillStroke();
+            }
+            else if (EndStyle == LineEndStyleEnum.Circle)
+            {
+                composer.DrawCircle(endPoint, 4);
+                composer.FillStroke();
+            }
+
+
+            composer.Flush();
+
+        }
+
         public override void DrawSpecial(SKCanvas canvas)
         {
-            var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
-            using (var paint = new SKPaint { Color = color })
-            using (var path = new SKPath())
-            {
-                var lineLength = SKPoint.Distance(PageStartPoint, PageEndPoint);
-                var normal = SKPoint.Normalize(PageEndPoint - PageStartPoint);
-                var invertNormal = new SKPoint(normal.X * -1, normal.Y * -1);
-
-                Border?.Apply(paint, null);
-                path.MoveTo(PageStartPoint);
-                path.LineTo(PageEndPoint);
-
-                if (CaptionVisible && !string.IsNullOrEmpty(Contents))
-                {
-
-                    using (var textPaint = new SKPaint { Color = color, TextSize = 9, IsAntialias = true })
-                    {
-                        var textLength = textPaint.MeasureText(Contents);
-                        var offset = (lineLength - textLength) / 2;
-
-                        canvas.DrawTextOnPath(Contents, path, new SKPoint(offset, 2), textPaint);
-                        path.Rewind();
-                        path.MoveTo(PageStartPoint);
-                        path.LineTo(PageStartPoint + new SKPoint(normal.X * offset, normal.Y * offset));
-
-                        path.MoveTo(PageEndPoint);
-                        path.LineTo(PageEndPoint + new SKPoint(normal.X * -offset, normal.Y * -offset));
-                    }
-                }
-                if (StartStyle == LineEndStyleEnum.OpenArrow)
-                {
-                    path.AddOpenArrow(PageStartPoint, normal);
-                }
-                else if (StartStyle == LineEndStyleEnum.ClosedArrow)
-                {
-                    path.AddCloseArrow(PageStartPoint, normal);
-                }
-                else if (StartStyle == LineEndStyleEnum.Circle)
-                {
-                    path.AddCircle(PageStartPoint.X, PageStartPoint.Y, 4);
-                }
-
-                if (EndStyle == LineEndStyleEnum.OpenArrow)
-                {
-                    path.AddOpenArrow(PageEndPoint, invertNormal);
-                }
-                else if (EndStyle == LineEndStyleEnum.ClosedArrow)
-                {
-                    path.AddCloseArrow(PageEndPoint, invertNormal);
-                }
-                else if (EndStyle == LineEndStyleEnum.Circle)
-                {
-                    path.AddCircle(PageEndPoint.X, PageEndPoint.Y, 4);
-                }
-
-
-                canvas.DrawPath(path, paint);
-
-            }
+            RefreshAppearance();
+            DrawAppearance(canvas, Appearance.Normal[null]);
         }
 
         public override void RefreshBox()
         {
             Appearance.Normal[null] = null;
-            var box = SKRect.Create(PageStartPoint, SKSize.Empty);
-            box.Add(PageEndPoint);
+            var box = SKRect.Create(StartPoint, SKSize.Empty);
+            box.Add(EndPoint);
             box.Inflate(box.Width < 5 ? 5 : 0, box.Height < 5 ? 5 : 0);
-            PageBox = box;
+            Box = box;
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()

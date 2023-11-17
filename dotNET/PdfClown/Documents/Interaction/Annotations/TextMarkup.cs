@@ -203,7 +203,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 */
                 float markupBoxMargin = GetMarkupBoxMargin(box.Height);
                 box.Inflate(markupBoxMargin, 0);
-                PageBox = box;
+                Box = box;
                 QuadPoints = quadPoints;
                 pageMarkupBoxes = value;
                 markupBoxes = null;
@@ -263,15 +263,13 @@ namespace PdfClown.Documents.Interaction.Annotations
                 PageMarkupBoxes = PageMarkupBoxes;
                 return;
             }
-            SKRect box = PageBox;
-            var normalAppearance = ResetAppearance(box);
-            normalAppearance.Matrix = SKMatrix.CreateTranslation(box.Left, box.Top);
+            SKRect box = Box;
+            var normalAppearance = ResetAppearance(box, out var matrix);
             var composer = new PrimitiveComposer(normalAppearance);
             {
                 var first = PageMarkupBoxes.FirstOrDefault();
-                var matrix = SKMatrix.CreateTranslation(-box.Left, -box.Top);
 
-                TextMarkupType markupType = MarkupType;
+                var markupType = MarkupType;
                 switch (markupType)
                 {
                     case TextMarkupType.Highlight:
@@ -299,7 +297,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                                     var markupBox = Quad.Transform(markup, ref matrix);
 
                                     var sign = Math.Sign((markupBox.TopLeft - markupBox.BottomLeft).Y);
-                                    sign = sign == 0 ? 1 : sign;
+                                    sign = -(sign == 0 ? 1 : sign);
 
                                     float markupBoxHeight = markupBox.Height;
                                     float markupBoxMargin = GetMarkupBoxMargin(markupBoxHeight) * sign;
@@ -338,7 +336,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                                     float length = (float)Math.Sqrt(Math.Pow(step, 2) * 2);
                                     var bottomUp = SKPoint.Normalize(markupBox.BottomLeft - markupBox.TopLeft);
                                     bottomUp = new SKPoint(bottomUp.X * lineWidth, bottomUp.Y * lineWidth);
-                                    var startPoint = markupBox.TopLeft + (new SKPoint(bottomUp.X * 2, bottomUp.Y * 2));
+                                    var startPoint = markupBox.BottomLeft + (new SKPoint(bottomUp.X * 2, bottomUp.Y * 2));
                                     var leftRight = SKPoint.Normalize(markupBox.BottomRight - markupBox.BottomLeft);
                                     leftRight = new SKPoint(leftRight.X * step, leftRight.Y * step);
                                     var leftRightPerp = leftRight.GetPerp(step * sign);
@@ -370,10 +368,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                                 switch (markupType)
                                 {
                                     case TextMarkupType.StrikeOut:
-                                        lineYRatio = .5f;
+                                        lineYRatio = -.5f;
                                         break;
                                     case TextMarkupType.Underline:
-                                        lineYRatio = .9f;
+                                        lineYRatio = .1f;
                                         break;
                                     default:
                                         throw new NotImplementedException();
@@ -383,7 +381,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                                     var markupBox = Quad.Transform(markup, ref matrix);
                                     float markupBoxHeight = markupBox.Height;
                                     float boxYOffset = markupBoxHeight * lineYRatio;
-                                    var normal = SKPoint.Normalize(markupBox.TopLeft - markupBox.BottomLeft);
+                                    var normal = SKPoint.Normalize(markupBox.BottomLeft - markupBox.TopLeft);
                                     normal = new SKPoint(normal.X * boxYOffset, normal.Y * boxYOffset);
                                     composer.SetLineWidth(markupBoxHeight * .065);
                                     composer.DrawLine(markupBox.BottomLeft + normal, markupBox.BottomRight + normal);

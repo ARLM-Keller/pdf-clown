@@ -95,6 +95,11 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             var name = Standard14Fonts.GetMappedFontName(fontName);
 
+            return Load(context, name);
+        }
+
+        public static FontType1 Load(Document context, FontName name)
+        {
             return context.Type1FontCache.GetOrAdd(name, (n) => new FontType1(context, n));
         }
 

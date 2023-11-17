@@ -125,7 +125,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             var appearance = new Appearance(page.Document);
             Appearance = appearance;
             AppearanceStates normalAppearance = appearance.Normal;
-            normalAppearance[new PdfName(name)] = new FormXObject(page.Document, PageBox.Size);
+            normalAppearance[new PdfName(name)] = new FormXObject(page.Document, Box.Size);
         }
 
         internal Widget(PdfDirectObject baseObject) : base(baseObject)

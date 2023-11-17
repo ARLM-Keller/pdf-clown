@@ -97,9 +97,9 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
             float height = (float)(isRound ? width : (font.GetAscent(fontSize) * 1.2 + doubleBorderGap * 2 + (borderWidth * (borderDoubled ? 1.5 : 1) * 2)));
             SKSize size = new SKSize(width, height);
 
-            FormXObject appearance = new FormXObject(document, size);
+            var appearance = new FormXObject(document, size);
             {
-                PrimitiveComposer composer = new PrimitiveComposer(appearance);
+                var composer = new PrimitiveComposer(appearance);
                 if (color != null)
                 {
                     composer.SetStrokeColor(color);

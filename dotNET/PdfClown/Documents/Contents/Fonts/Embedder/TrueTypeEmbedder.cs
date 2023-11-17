@@ -163,7 +163,7 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 throw new IOException("os2 table is missing in font " + ttfName);
             }
-            
+
             PostScriptTable post = ttf.PostScript;
             if (post == null)
             {
@@ -172,7 +172,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
             var fd = new FontDescriptor(document, new PdfDictionary());
             fd.FontName = ttfName;
-            
+
             // Flags
             var hHeader = ttf.HorizontalHeader;
             var flags = (FlagsEnum)0;
@@ -218,7 +218,7 @@ namespace PdfClown.Documents.Contents.Fonts
             fd.FontBBox = new Rectangle(skRect);
 
             // Ascent, Descent
-            
+
             fd.Ascent = hHeader.Ascender * scaling;
             fd.Descent = hHeader.Descender * scaling;
 
@@ -289,18 +289,20 @@ namespace PdfClown.Documents.Contents.Fonts
             }
 
             // PDF spec required tables (if present), all others will be removed
-            List<string> tables = new List<string>();
-            tables.Add("head");
-            tables.Add("hhea");
-            tables.Add("loca");
-            tables.Add("maxp");
-            tables.Add("cvt ");
-            tables.Add("prep");
-            tables.Add("glyf");
-            tables.Add("hmtx");
-            tables.Add("fpgm");
-            // Windows ClearType
-            tables.Add("gasp");
+            var tables = new List<string>
+            {
+                "head",
+                "hhea",
+                "loca",
+                "maxp",
+                "cvt ",
+                "prep",
+                "glyf",
+                "hmtx",
+                "fpgm",
+                // Windows ClearType
+                "gasp"
+            };
 
             // set the GIDs to subset
             TTFSubsetter subsetter = new TTFSubsetter(ttf, tables);

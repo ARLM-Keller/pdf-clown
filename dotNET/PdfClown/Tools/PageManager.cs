@@ -50,15 +50,11 @@ namespace PdfClown.Tools
           the data of that page (deep level) are still within the document!
         */
 
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Gets the data size of the specified page expressed in bytes.</summary>
           <param name="page">Page whose data size has to be calculated.</param>
         */
-        public static long GetSize(Page page)
-        { return GetSize(page, new HashSet<PdfReference>()); }
+        public static long GetSize(Page page) => GetSize(page, new HashSet<PdfReference>());
 
         /**
           <summary>Gets the data size of the specified page expressed in bytes.</summary>
@@ -67,31 +63,21 @@ namespace PdfClown.Tools
             This set is useful, for example, to avoid recalculating the data size of shared resources.
             During the operation, this set is populated with references to visited data objects.</param>
         */
-        public static long GetSize(
-          Page page,
-          HashSet<PdfReference> visitedReferences
-          )
-        { return GetSize(page.BaseObject, visitedReferences, true); }
+        public static long GetSize(Page page, HashSet<PdfReference> visitedReferences) => GetSize(page.BaseObject, visitedReferences, true);
 
         /**
           <summary>Gets whether the specified page is blank.</summary>
           <param name="page">Page to evaluate.</param>
         */
-        public static bool IsBlank(
-          Page page
-          )
-        { return IsBlank(page, page.Box); }
+        public static bool IsBlank(Page page) => IsBlank(page, page.Box);
 
         /**
           <summary>Gets whether the specified page is blank.</summary>
           <param name="page">Page to evaluate.</param>
           <param name="contentBox">Area to evaluate within the page.</param>
         */
-        public static bool IsBlank(Page page, SKRect contentBox)
-        { return IsBlank(new ContentScanner(page), contentBox); }
-        #endregion
+        public static bool IsBlank(Page page, SKRect contentBox) => IsBlank(new ContentScanner(page), contentBox);
 
-        #region private
         /**
           <summary>Gets the data size of the specified object expressed in bytes.</summary>
           <param name="object">Data object whose size has to be calculated.</param>
@@ -107,14 +93,13 @@ namespace PdfClown.Tools
                 PdfDataObject dataObject = PdfObject.Resolve(obj);
 
                 // 1. Evaluating the current object...
-                if (obj is PdfReference)
+                if (obj is PdfReference reference)
                 {
-                    PdfReference reference = (PdfReference)obj;
                     if (visitedReferences.Contains(reference))
                         return 0; // Avoids circular references.
 
-                    if (dataObject is PdfDictionary
-                      && PdfName.Page.Equals(((PdfDictionary)dataObject)[PdfName.Type])
+                    if (dataObject is PdfDictionary dictionary
+                      && PdfName.Page.Equals(dictionary.GetName(PdfName.Type))
                       && !isRoot)
                         return 0; // Avoids references to other pages.
 
@@ -129,12 +114,12 @@ namespace PdfClown.Tools
                 // 2. Evaluating the current object's children...
                 ICollection<PdfDirectObject> values = null;
                 {
-                    if (dataObject is PdfStream)
-                    { dataObject = ((PdfStream)dataObject).Header; }
-                    if (dataObject is PdfDictionary)
-                    { values = ((PdfDictionary)dataObject).Values; }
-                    else if (dataObject is PdfArray)
-                    { values = (PdfArray)dataObject; }
+                    if (dataObject is PdfStream pdfStream)
+                    { dataObject = pdfStream.Header; }
+                    if (dataObject is PdfDictionary dictionary)
+                    { values = dictionary.Values; }
+                    else if (dataObject is PdfArray array)
+                    { values = array; }
                 }
                 if (values != null)
                 {
@@ -177,17 +162,10 @@ namespace PdfClown.Tools
             }
             return true;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private Document document;
         private Pages pages;
-        #endregion
 
-        #region constructors
         public PageManager() : this(null)
         { }
 
@@ -195,10 +173,7 @@ namespace PdfClown.Tools
         {
             Document = document;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Appends a document to the end of the document.</summary>
           <param name="document">Document to be added.</param>
@@ -385,7 +360,7 @@ namespace PdfClown.Tools
             {
                 int startPageIndex = 0;
                 long incrementalDataSize = 0;
-                HashSet<PdfReference> visitedReferences = new HashSet<PdfReference>();
+                var visitedReferences = new HashSet<PdfReference>();
                 foreach (Page page in pages)
                 {
                     long pageDifferentialDataSize = GetSize(page, visitedReferences);
@@ -406,8 +381,5 @@ namespace PdfClown.Tools
             }
             return documents;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

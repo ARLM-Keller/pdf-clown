@@ -44,7 +44,7 @@ namespace PdfClown.Viewer
                 case OperationType.AnnotationDrag:
                 case OperationType.AnnotationSize:
                     result =
-                        NewValue = Annotation.Box;
+                        NewValue = Annotation.GetBounds();
                     break;
                 case OperationType.AnnotationAdd:
                     result =
@@ -58,7 +58,7 @@ namespace PdfClown.Viewer
             if (Property is ControlPoint controlPoint)
             {
                 result =
-                    NewValue = controlPoint.Point;
+                    NewValue = controlPoint.MappedPoint;
             }
             Document?.OnEndOperation(result);
             return result;
@@ -75,10 +75,10 @@ namespace PdfClown.Viewer
                     Document.RemoveAnnotation(Annotation);
                     break;
                 case OperationType.AnnotationDrag:
-                    Annotation.MoveTo((SKRect)NewValue);
+                    Annotation.SetBounds((SKRect)NewValue);
                     break;
                 case OperationType.AnnotationSize:
-                    Annotation.Box = (SKRect)NewValue;
+                    Annotation.SetBounds((SKRect)NewValue);
                     break;
                 case OperationType.AnnotationRePage:
                     Annotation.Page = Document[(int)NewValue]?.Page;
@@ -91,7 +91,7 @@ namespace PdfClown.Viewer
                     {
                         if (Property is ControlPoint controlPoint)
                         {
-                            controlPoint.Point = (SKPoint)NewValue;
+                            controlPoint.MappedPoint = (SKPoint)NewValue;
                         }
                         break;
                     }
@@ -131,10 +131,10 @@ namespace PdfClown.Viewer
                     Document.AddAnnotation(Annotation.Page ?? Document[PageIndex]?.Page, Annotation);
                     break;
                 case OperationType.AnnotationDrag:
-                    Annotation.MoveTo((SKRect)OldValue);
+                    Annotation.SetBounds((SKRect)OldValue);
                     break;
                 case OperationType.AnnotationSize:
-                    Annotation.Box = (SKRect)OldValue;
+                    Annotation.SetBounds((SKRect)OldValue);
                     break;
                 case OperationType.AnnotationRePage:
                     Annotation.Page = Document.Pages[(int)OldValue];
@@ -147,7 +147,7 @@ namespace PdfClown.Viewer
                     {
                         if (Property is ControlPoint controlPoint)
                         {
-                            controlPoint.Point = (SKPoint)OldValue;
+                            controlPoint.MappedPoint = (SKPoint)OldValue;
                         }
                         break;
                     }

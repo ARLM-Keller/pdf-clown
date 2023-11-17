@@ -48,18 +48,18 @@ namespace PdfClown.Samples.CLI
             // Set default page size (A4)!
             document.PageSize = PageFormat.GetSize();
             // Add a font to the fonts collection!
-            document.Resources.Fonts[ResourceName_DefaultFont] = FontType1.Load(document, FontType1.FamilyEnum.Courier, true, false);
+            document.Resources.Fonts[ResourceName_DefaultFont] = FontType1.Load(document, FontName.CourierBold);
 
             // Add a page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new Page(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             // Create a content composer for the page content stream!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
-            string[] steps = new string[5];
-            colorSpaces::Color[] colors = new colorSpaces::Color[5];
-            SKSize pageSize = page.Size;
+            var steps = new string[5];
+            var colors = new colorSpaces::Color[5];
+            var pageSize = page.Size;
 
             BuildSteps(composer, steps, colors, pageSize);
 

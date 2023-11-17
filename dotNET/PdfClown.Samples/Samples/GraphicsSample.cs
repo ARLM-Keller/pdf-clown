@@ -56,7 +56,7 @@ namespace PdfClown.Samples.CLI
             PrimitiveComposer composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false), 32);
+            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.CourierBold), 32);
 
             {
                 BlockComposer blockComposer = new BlockComposer(composer);
@@ -267,7 +267,7 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false), 32);
+            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.CourierBold), 32);
             {
                 BlockComposer blockComposer = new BlockComposer(composer);
                 blockComposer.Begin(SKRect.Create(30, 0, pageSize.Width - 60, 50), XAlignmentEnum.Center, YAlignmentEnum.Middle);
@@ -441,7 +441,7 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(page);
             // 3. Inserting contents...
             // Set the font to use!
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false), 32);
+            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.CourierBold), 32);
 
             var xAlignments = Enum.GetValues<XAlignmentEnum>();
             var yAlignments = Enum.GetValues<YAlignmentEnum>();
@@ -563,16 +563,16 @@ namespace PdfClown.Samples.CLI
         private void BuildTextBlockPage(Document document)
         {
             // 1. Add the page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new Page(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
 
             // 2. Create a content composer for the page!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            fonts::Font mainFont = fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false);
+            var mainFont = fonts::FontType1.Load(document, fonts::FontName.CourierBold);
             int step;
             {
                 XAlignmentEnum[] xAlignments = Enum.GetValues<XAlignmentEnum>();
@@ -581,23 +581,14 @@ namespace PdfClown.Samples.CLI
             }
             BlockComposer blockComposer = new BlockComposer(composer);
             {
-                blockComposer.Begin(
-                  SKRect.Create(
-                    30,
-                    0,
-                    pageSize.Width - 60,
-                    step * .8f
-                    ),
-                  XAlignmentEnum.Center,
-                  YAlignmentEnum.Middle
-                  );
+                blockComposer.Begin(SKRect.Create(30, 0, pageSize.Width - 60, step * .8f), XAlignmentEnum.Center, YAlignmentEnum.Middle);
                 composer.SetFont(mainFont, 32);
                 blockComposer.ShowText("Block alignment");
                 blockComposer.End();
             }
 
             // Drawing the text blocks...
-            fonts::Font sampleFont = fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Times, false, false);
+            var sampleFont = fonts::FontType1.Load(document, fonts::FontName.TimesRoman);
             int x = 30;
             int y = (int)(step * 1.2);
             foreach (XAlignmentEnum xAlignment in Enum.GetValues<XAlignmentEnum>())
@@ -630,16 +621,9 @@ namespace PdfClown.Samples.CLI
                                 throw new Exception();
                         }
 
-                        SKRect frame = SKRect.Create(
-                          frameX,
-                          y - step * .4f,
-                          200,
-                          step * .8f
-                          );
+                        SKRect frame = SKRect.Create(frameX, y - step * .4f, 200, step * .8f);
                         blockComposer.Begin(frame, xAlignment, yAlignment);
-                        blockComposer.ShowText(
-                          "Demonstrating how to constrain text inside a page area. See the other code samples for more usage tips."
-                          );
+                        blockComposer.ShowText("Demonstrating how to constrain text inside a page area. See the other code samples for more usage tips.");
                         blockComposer.End();
 
                         composer.BeginLocalState();
@@ -661,25 +645,24 @@ namespace PdfClown.Samples.CLI
         private void BuildTextBlockPage2(Document document)
         {
             // 1. Add the page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new Page(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
 
             // 2. Create a content composer for the page!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            fonts::Font mainFont = fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false);
+            var mainFont = fonts::FontType1.Load(document, fonts::FontName.CourierBold);
             int stepCount = 5;
             int step = (int)(pageSize.Height) / (stepCount + 1);
-            BlockComposer blockComposer = new BlockComposer(composer);
+            var blockComposer = new BlockComposer(composer);
             {
                 blockComposer.Begin(
                   SKRect.Create(30, 0, pageSize.Width - 60, step * .8f),
                   XAlignmentEnum.Center,
-                  YAlignmentEnum.Middle
-                  );
+                  YAlignmentEnum.Middle);
                 composer.SetFont(mainFont, 32);
                 blockComposer.ShowText("Block line alignment");
                 blockComposer.End();
@@ -687,9 +670,9 @@ namespace PdfClown.Samples.CLI
 
             // Drawing the text block...
             {
-                fonts::Font sampleFont = fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Times, false, false);
-                entities::Image sampleImage = entities::Image.Get(GetResourcePath("images" + System.IO.Path.DirectorySeparatorChar + "gnu.jpg"));
-                xObjects::XObject sampleImageXObject = sampleImage.ToXObject(document);
+                var sampleFont = fonts::FontType1.Load(document, fonts::FontName.TimesRoman);
+                var sampleImage = entities::Image.Get(GetResourcePath("images" + System.IO.Path.DirectorySeparatorChar + "gnu.jpg"));
+                var sampleImageXObject = sampleImage.ToXObject(document);
 
                 var lineAlignments = new List<LineAlignmentEnum>(Enum.GetValues<LineAlignmentEnum>());
                 float frameHeight = (pageSize.Height - 130 - 5 * lineAlignments.Count * 2) / (lineAlignments.Count * 2);
@@ -766,39 +749,37 @@ namespace PdfClown.Samples.CLI
         private void BuildTextBlockPage3(Document document)
         {
             // 1. Add the page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new Page(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
 
             // 2. Create a content composer for the page!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            fonts::Font mainFont = fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false);
+            var mainFont = fonts::FontType1.Load(document, fonts::FontName.CourierBold);
             int stepCount = 5;
             int step = (int)(pageSize.Height) / (stepCount + 1);
 
             // 3.1. Drawing the page title...
-            BlockComposer blockComposer = new BlockComposer(composer);
+            var blockComposer = new BlockComposer(composer);
             {
                 blockComposer.Begin(
                   SKRect.Create(
                     30,
                     0,
                     pageSize.Width - 60,
-                    step * .8f
-                    ),
+                    step * .8f),
                   XAlignmentEnum.Center,
-                  YAlignmentEnum.Middle
-                  );
+                  YAlignmentEnum.Middle);
                 composer.SetFont(mainFont, 32);
                 blockComposer.ShowText("Block line space");
                 blockComposer.End();
             }
 
             // 3.2. Drawing the text blocks...
-            fonts::Font sampleFont = fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Times, false, false);
+            var sampleFont = fonts::FontType1.Load(document, fonts::FontName.TimesRoman);
             int x = 30;
             int y = (int)(step * 1.1);
             blockComposer.LineSpace.UnitMode = Length.UnitModeEnum.Relative;
@@ -813,11 +794,10 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(x, y),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Middle,
-                  0
-                  );
+                  0);
 
                 composer.SetFont(sampleFont, 10);
-                SKRect frame = SKRect.Create(150, y - step * .4f, 350, step * .9f);
+                var frame = SKRect.Create(150, y - step * .4f, 350, step * .9f);
                 blockComposer.Begin(frame, XAlignmentEnum.Left, YAlignmentEnum.Top);
                 blockComposer.ShowText("Demonstrating how to set the block line space. Line space can be expressed either as an absolute value (in user-space units) or as a relative one (floating-point ratio); in the latter case the base value is represented by the current font's line height (so that, for example, 2 means \"a line space that's twice as the line height\").");
                 blockComposer.End();
@@ -841,30 +821,24 @@ namespace PdfClown.Samples.CLI
         private void BuildTextBlockPage4(Document document)
         {
             // 1. Add the page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new Page(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
 
             // 2. Create a content composer for the page!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            fonts::Font mainFont = fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false);
+            var mainFont = fonts::FontType1.Load(document, fonts::FontName.CourierBold);
             int stepCount = 5;
             int step = (int)pageSize.Height / (stepCount + 1);
             BlockComposer blockComposer = new BlockComposer(composer);
             {
                 blockComposer.Begin(
-                  SKRect.Create(
-                    30,
-                    0,
-                    pageSize.Width - 60,
-                    step * .8f
-                    ),
+                  SKRect.Create(30, 0, pageSize.Width - 60, step * .8f),
                   XAlignmentEnum.Center,
-                  YAlignmentEnum.Middle
-                  );
+                  YAlignmentEnum.Middle);
                 composer.SetFont(mainFont, 32);
                 blockComposer.ShowText("Unspaced block");
                 blockComposer.End();
@@ -872,7 +846,7 @@ namespace PdfClown.Samples.CLI
 
             // Drawing the text block...
             {
-                fonts::Font sampleFont = fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Times, false, false);
+                var sampleFont = fonts::FontType1.Load(document, fonts::FontName.TimesRoman);
                 composer.SetFont(sampleFont, 15);
 
                 float topMargin = 100;
@@ -880,12 +854,7 @@ namespace PdfClown.Samples.CLI
                 float boxWidth = pageSize.Width - boxMargin * 2;
                 float boxHeight = (pageSize.Height - topMargin - boxMargin - boxMargin) / 2;
                 {
-                    SKRect frame = SKRect.Create(
-                      boxMargin,
-                      topMargin,
-                      boxWidth,
-                      boxHeight
-                      );
+                    var frame = SKRect.Create(boxMargin, topMargin, boxWidth, boxHeight);
                     blockComposer.Begin(frame, XAlignmentEnum.Left, YAlignmentEnum.Top);
                     // Add text until the frame area is completely filled!
                     while (blockComposer.ShowText("DemonstratingHowUnspacedTextIsManagedInCaseOfInsertionInADelimitedPageAreaThroughBlockComposerClass.") > 0) ;

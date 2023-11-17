@@ -42,9 +42,8 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF15)]
     public abstract class VertexShape : Shape
     {
-        private SKPoint[] pagePoints;
-        private Dictionary<int, IndexControlPoint> controlPoints = new Dictionary<int, IndexControlPoint>();
         private SKPoint[] points;
+        private Dictionary<int, IndexControlPoint> controlPoints = new Dictionary<int, IndexControlPoint>();
 
         protected VertexShape(Page page, SKRect box, string text, PdfName subtype)
             : base(page, box, text, subtype)
@@ -57,31 +56,31 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets/Sets the coordinates of each vertex.</summary>
         */
-        public SKPoint[] PagePoints
+        public SKPoint[] Points
         {
             get
             {
-                if (pagePoints == null)
+                if (points == null)
                 {
                     PdfArray verticesObject = Vertices;
 
                     var length = verticesObject.Count;
-                    pagePoints = new SKPoint[length / 2];
+                    points = new SKPoint[length / 2];
                     for (int i = 0, j = 0; i < length; i += 2, j++)
                     {
                         var mappedPoint = new SKPoint(
                             verticesObject.GetFloat(i),
                             verticesObject.GetFloat(i + 1));
-                        pagePoints[j] = mappedPoint;
+                        points[j] = mappedPoint;
                     }
                 }
-                return pagePoints;
+                return points;
             }
             set
             {
-                if (pagePoints != value)
+                if (points != value)
                 {
-                    pagePoints = value;
+                    points = value;
                 }
                 PdfArray verticesObject = Vertices;
                 verticesObject.Clear();
@@ -93,19 +92,9 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
                 RefreshBox();
                 Vertices = verticesObject;
-                points = null;
             }
         }
 
-        public SKPoint[] Points
-        {
-            get => points ??= PageMatrix.MapPoints(PagePoints);
-            set
-            {
-                PagePoints = InvertPageMatrix.MapPoints(value);
-                points = value;
-            }
-        }
         public PdfArray Vertices
         {
             get => (PdfArray)BaseDataObject.Get<PdfArray>(PdfName.Vertices);
@@ -132,7 +121,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public SKPoint FirstPoint
         {
-            get => Points.Length == 0 ? SKPoint.Empty : pagePoints[0];
+            get => Points.Length == 0 ? SKPoint.Empty : points[0];
             set
             {
                 if (Points.Length > 0)
@@ -145,12 +134,12 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public SKPoint LastPoint
         {
-            get => Points.Length == 0 ? SKPoint.Empty : pagePoints[pagePoints.Length - 1];
+            get => Points.Length == 0 ? SKPoint.Empty : points[points.Length - 1];
             set
             {
                 if (Points.Length > 0)
                 {
-                    Points[pagePoints.Length - 1] = value;
+                    Points[points.Length - 1] = value;
                     Points = Points;
                 }
             }
@@ -208,7 +197,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             Appearance.Normal[null] = null;
             SKRect box = SKRect.Empty;
-            foreach (SKPoint point in PagePoints)
+            foreach (SKPoint point in Points)
             {
                 if (box == SKRect.Empty)
                 { box = SKRect.Create(point.X, point.Y, 10, 10); }
@@ -216,7 +205,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 { box.Add(point); }
 
             }
-            PageBox = box;
+            Box = box;
         }
 
 
@@ -224,26 +213,26 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             using (var path = new SKPath())
             {
-                path.AddPoly(PagePoints.ToArray());
+                path.AddPoly(Points.ToArray());
                 path.Close();
                 DrawPath(canvas, path);
             }
         }
 
-        public override void PageMoveTo(SKRect newBox)
+        public override void MoveTo(SKRect newBox)
         {
-            var oldBox = PageBox;
+            var oldBox = Box;
             //base.MoveTo(newBox);
             var dif = SKMatrix.CreateIdentity()
                 .PreConcat(SKMatrix.CreateTranslation(newBox.MidX, newBox.MidY))
                 .PreConcat(SKMatrix.CreateScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height))
                 .PreConcat(SKMatrix.CreateTranslation(-oldBox.MidX, -oldBox.MidY));
-            for (int i = 0; i < PagePoints.Length; i++)
+            for (int i = 0; i < Points.Length; i++)
             {
-                pagePoints[i] = dif.MapPoint(pagePoints[i]);
+                points[i] = dif.MapPoint(points[i]);
             }
-            PagePoints = pagePoints;
-            base.PageMoveTo(newBox);
+            Points = points;
+            base.MoveTo(newBox);
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()

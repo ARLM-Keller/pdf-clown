@@ -51,7 +51,7 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(page);
 
             int x = Margin, y = Margin;
-            var titleFont = FontType1.Load(document, FontType1.FamilyEnum.Times, true, true);
+            var titleFont = FontType1.Load(document, FontName.TimesBoldItalic);
             FontType1 font = null;
             // Iterating through the standard Type 1 fonts...
             foreach (FontType1.FamilyEnum fontFamily in Enum.GetValues<FontType1.FamilyEnum>())

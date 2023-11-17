@@ -43,6 +43,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Globalization;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Documents.Contents.Objects;
+using PdfClown.Documents.Contents.Tokens;
 //using System.Diagnostics;
 
 namespace PdfClown.Documents.Interaction.Annotations
@@ -61,7 +63,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         protected BottomLeftControlPoint cpBottomLeft;
         protected TopRightControlPoint cpTopRight;
         protected TopLeftControlPoint cpTopLeft;
-        private SKRect? pageBox;
+        private SetFont setFontOperation;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -144,7 +146,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             GenerateName();
             Page = page;
-            Box = box;
+            SetBounds(box);
             Contents = text;
             Printable = true;
             IsNew = true;
@@ -259,38 +261,24 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public virtual SKRect PageBox
-        {
-            get => pageBox ??= Rect?.ToRect() ?? SKRect.Empty;
-            set
-            {
-                pageBox = new SKRect((float)Math.Round(value.Left, 4),
-                                      (float)Math.Round(value.Top, 4),
-                                      (float)Math.Round(value.Right, 4),
-                                      (float)Math.Round(value.Bottom, 4));
-                Rect = new Objects.Rectangle(pageBox.Value);
-                box = null;
-            }
-        }
-
         /**
-          <summary>Gets/Sets the location of the annotation on the page in default user space units.
+          <summary>Gets/Sets the location of the annotation on the page.
           </summary>
         */
         public virtual SKRect Box
         {
-            get => box ??= PageMatrix.MapRect(PageBox);
+            get => box ??= Rect?.ToRect() ?? SKRect.Empty;
             set
             {
                 var oldValue = Box;
-                var box = new SKRect((float)Math.Round(value.Left, 4),
-                                      (float)Math.Round(value.Top, 4),
-                                      (float)Math.Round(value.Right, 4),
-                                      (float)Math.Round(value.Bottom, 4));
-                if (!oldValue.Equals(box))
+                box = new SKRect((float)Math.Round(value.Left, 4),
+                                         (float)Math.Round(value.Top, 4),
+                                         (float)Math.Round(value.Right, 4),
+                                         (float)Math.Round(value.Bottom, 4));
+                if (oldValue != box)
                 {
-                    PageBox = InvertPageMatrix.MapRect(box);
-                    this.box = box;
+
+                    Rect = new Objects.Rectangle(box.Value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -330,7 +318,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public virtual SKColor SKColor
         {
-            get => color ?? (color = Color == null ? SKColors.Transparent : DeviceColorSpace.CalcSKColor(Color, Alpha)).Value;
+            get => color ??= (Color == null ? SKColors.Transparent : DeviceColorSpace.CalcSKColor(Color, Alpha));
             set
             {
                 var oldValue = SKColor;
@@ -523,24 +511,14 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        protected SKMatrix PageMatrix
+        protected internal SKMatrix PageMatrix
         {
             get => Page?.RotateMatrix ?? GraphicsState.GetRotationLeftBottomMatrix(SKRect.Create(Document.GetSize()), 0);
         }
 
-        protected SKMatrix InvertPageMatrix
+        protected internal SKMatrix InvertPageMatrix
         {
             get => Page?.InvertRotateMatrix ?? (GraphicsState.GetRotationLeftBottomMatrix(SKRect.Create(Document.GetSize()), 0).TryInvert(out var inverted) ? inverted : SKMatrix.Identity);
-        }
-
-        public SKPoint PageTopLeftPoint
-        {
-            get => new SKPoint(PageBox.Left, PageBox.Top);
-            set
-            {
-                var rect = new SKRect(value.X, value.Y, PageBox.Right, PageBox.Bottom);
-                PageMoveTo(rect);
-            }
         }
 
         public SKPoint TopLeftPoint
@@ -550,16 +528,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 var rect = new SKRect(value.X, value.Y, Box.Right, Box.Bottom);
                 MoveTo(rect);
-            }
-        }
-
-        public SKPoint PageTopRightPoint
-        {
-            get => new SKPoint(PageBox.Right, PageBox.Top);
-            set
-            {
-                var rect = new SKRect(PageBox.Left, value.Y, value.X, PageBox.Bottom);
-                PageMoveTo(rect);
             }
         }
 
@@ -573,16 +541,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public SKPoint PageBottomLeftPoint
-        {
-            get => new SKPoint(PageBox.Left, PageBox.Bottom);
-            set
-            {
-                var rect = new SKRect(value.X, PageBox.Top, PageBox.Right, value.Y);
-                PageMoveTo(rect);
-            }
-        }
-
         public SKPoint BottomLeftPoint
         {
             get => new SKPoint(Box.Left, Box.Bottom);
@@ -590,16 +548,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 var rect = new SKRect(value.X, Box.Top, Box.Right, value.Y);
                 MoveTo(rect);
-            }
-        }
-
-        public SKPoint PageBottomRightPoint
-        {
-            get => new SKPoint(PageBox.Right, PageBox.Bottom);
-            set
-            {
-                var rect = new SKRect(PageBox.Left, PageBox.Top, value.X, value.Y);
-                PageMoveTo(rect);
             }
         }
 
@@ -613,15 +561,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public void MoveTo(SKRect newBox)
-        {
-            PageMoveTo(InvertPageMatrix.MapRect(newBox));
-            box = newBox;
-        }
 
-        public virtual void PageMoveTo(SKRect newBox)
+        public virtual void MoveTo(SKRect newBox)
         {
-            PageBox = newBox;
+            Box = newBox;
         }
         /**
           <summary>Deletes this annotation removing also its reference on the page.</summary>
@@ -651,6 +594,42 @@ namespace PdfClown.Documents.Interaction.Annotations
         public bool IsNew { get; set; }
 
         public List<Annotation> Replies { get; set; } = new List<Annotation>();
+
+        protected PdfString DAString
+        {
+            get => (PdfString)Dictionary[PdfName.DA];
+            set => Dictionary[PdfName.DA] = value;
+        }
+
+        protected SetFont DAOperation
+        {
+            get
+            {
+                if (setFontOperation != null)
+                    return setFontOperation;
+                if (DAString == null)
+                    return null;
+                var parser = new ContentParser(DAString.RawValue);
+                foreach (ContentObject content in parser.ParseContentObjects())
+                {
+                    if (content is SetFont setFont)
+                    {
+                        return setFontOperation = setFont;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                setFontOperation = value;
+                if (setFontOperation != null)
+                {
+                    var buffer = new ByteStream(64);
+                    value.WriteTo(buffer, Document);
+                    DAString = new PdfString(buffer.AsMemory());
+                }
+            }
+        }
 
         protected RotationEnum GetPageRotation()
         {
@@ -706,11 +685,15 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public virtual SKRect GetBounds() => PageMatrix.MapRect(Box);
+
         public virtual SKRect GetBounds(SKMatrix matrix)
         {
-            var box = Box;
+            var box = PageMatrix.MapRect(Box);
             return matrix.MapRect(box);
         }
+
+        public virtual void SetBounds(SKRect value) => MoveTo(InvertPageMatrix.MapRect(value));
 
         protected void OnPropertyChanged(object oldValue, object newValue, [CallerMemberName] string propertyName = "")
         {
@@ -753,10 +736,35 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public IEnumerable<ControlPoint> GetDefaultControlPoint()
         {
-            yield return cpTopLeft ?? (cpTopLeft = new TopLeftControlPoint { Annotation = this });
-            yield return cpTopRight ?? (cpTopRight = new TopRightControlPoint { Annotation = this });
-            yield return cpBottomLeft ?? (cpBottomLeft = new BottomLeftControlPoint { Annotation = this });
-            yield return cpBottomRight ?? (cpBottomRight = new BottomRightControlPoint { Annotation = this });
+            yield return cpTopLeft ??= new TopLeftControlPoint { Annotation = this };
+            yield return cpTopRight ??= new TopRightControlPoint { Annotation = this };
+            yield return cpBottomLeft ??= new BottomLeftControlPoint { Annotation = this };
+            yield return cpBottomRight ??= new BottomRightControlPoint { Annotation = this };
+        }
+
+        public FormXObject ResetAppearance(out SKMatrix zeroMatrix) => ResetAppearance(Box, out zeroMatrix);
+
+        public FormXObject ResetAppearance(SKRect box, out SKMatrix zeroMatrix)
+        {
+            var boxSize = SKRect.Create(box.Width, box.Height);
+            zeroMatrix = PageMatrix;
+            var pageBox = zeroMatrix.MapRect(box);
+            zeroMatrix = zeroMatrix.PostConcat(SKMatrix.CreateTranslation(-pageBox.Left, -pageBox.Top));
+            AppearanceStates normalAppearances = Appearance.Normal;
+            FormXObject normalAppearance = normalAppearances[null];
+            if (normalAppearance != null)
+            {
+                normalAppearance.Box = boxSize;
+                normalAppearance.BaseDataObject.Body.SetLength(0);
+                normalAppearance.ClearContents();
+            }
+            else
+            {
+                normalAppearances[null] =
+                      normalAppearance = new FormXObject(Document, boxSize);
+            }
+
+            return normalAppearance;
         }
     }
 

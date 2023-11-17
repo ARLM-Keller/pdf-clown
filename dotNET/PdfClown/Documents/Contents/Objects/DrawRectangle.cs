@@ -36,8 +36,7 @@ namespace PdfClown.Documents.Contents.Objects
       [PDF:1.6:4.4.1].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class DrawRectangle
-      : Operation
+    public sealed class DrawRectangle : Operation
     {
         public static readonly string OperatorKeyword = "re";
 

@@ -33,12 +33,20 @@ namespace PdfClown.Documents.Interaction.Annotations.ControlPoints
         private const int r = 3;
 
         public Annotation Annotation { get; set; }
+
         public abstract SKPoint Point { get; set; }
+
+        public SKPoint MappedPoint
+        {
+            get => Annotation.PageMatrix.MapPoint(Point);
+            set => Point = Annotation.InvertPageMatrix.MapPoint(value);
+        }
+
         public SKRect Bounds
         {
             get
             {
-                var point = Point;
+                var point = MappedPoint;
                 return new SKRect(point.X - r, point.Y - r, point.X + r, point.Y + r);
             }
         }

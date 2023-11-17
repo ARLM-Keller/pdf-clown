@@ -164,73 +164,22 @@ namespace PdfClown.Documents.Interaction.Forms
 
         private void RefreshAppearance()
         {
-            Widget widget = Widgets[0];
-            FormXObject normalAppearance;
-            {
-                AppearanceStates normalAppearances = widget.Appearance.Normal;
-                normalAppearance = normalAppearances[null];
-                if (normalAppearance == null)
-                { normalAppearances[null] = normalAppearance = new FormXObject(Document, widget.PageBox.Size); }
-            }
+            var widget = Widgets[0];
+            var normalAppearance = widget.ResetAppearance(out var zeroMatrix);
             PdfName fontName = null;
             double fontSize = 0;
             {
-                PdfString defaultAppearanceState = DefaultAppearanceState;
+                PdfString defaultAppearanceState = DAString;
                 if (defaultAppearanceState == null)
                 {
-                    // Retrieving the font to define the default appearance...
-                    fonts::Font defaultFont = null;
-                    PdfName defaultFontName = null;
-                    {
-                        // Field fonts.
-                        FontResources normalAppearanceFonts = normalAppearance.Resources.Fonts;
-                        foreach (KeyValuePair<PdfName, fonts::Font> entry in normalAppearanceFonts)
-                        {
-                            if (!entry.Value.Symbolic)
-                            {
-                                defaultFont = entry.Value;
-                                defaultFontName = entry.Key;
-                                break;
-                            }
-                        }
-                        if (defaultFontName == null)
-                        {
-                            // Common fonts.
-                            FontResources formFonts = Document.Form.Resources.Fonts;
-                            foreach (KeyValuePair<PdfName, fonts::Font> entry in formFonts)
-                            {
-                                if (!entry.Value.Symbolic)
-                                {
-                                    defaultFont = entry.Value;
-                                    defaultFontName = entry.Key;
-                                    break;
-                                }
-                            }
-                            if (defaultFontName == null)
-                            {
-                                //TODO:manage name collision!
-                                formFonts[defaultFontName = new PdfName("default")] = defaultFont = fonts::FontType1.Load(Document, fonts::FontType1.FamilyEnum.Helvetica, false, false);
-                            }
-                            normalAppearanceFonts[defaultFontName] = defaultFont;
-                        }
-                    }
-                    var buffer = new ByteStream();
-                    new SetFont(defaultFontName, IsMultiline ? 10 : 0).WriteTo(buffer, Document);
-                    widget.BaseDataObject[PdfName.DA] = defaultAppearanceState = new PdfString(buffer.AsMemory());
+                    var defaultFontName = normalAppearance.GetDefaultFont(out _);
+                    DAOperation = new SetFont(defaultFontName, IsMultiline ? 10 : 0);
                 }
 
                 // Retrieving the font to use...
-                ContentParser parser = new ContentParser(defaultAppearanceState.RawValue);
-                foreach (ContentObject content in parser.ParseContentObjects())
-                {
-                    if (content is SetFont)
-                    {
-                        SetFont setFontOperation = (SetFont)content;
-                        fontName = setFontOperation.Name;
-                        fontSize = setFontOperation.Size;
-                        break;
-                    }
-                }
+                var setFont = DAOperation;
+                fontName = setFont.Name;
+                fontSize = setFont.Size;
                 normalAppearance.Resources.Fonts[fontName] = Document.Form.Resources.Fonts[fontName];
             }
 
@@ -239,8 +188,8 @@ namespace PdfClown.Documents.Interaction.Forms
              * TODO: resources MUST be resolved both through the apperance stream resource dictionary and
              * from the DR-entry acroform resource dictionary
              */
-            PrimitiveComposer baseComposer = new PrimitiveComposer(normalAppearance);
-            BlockComposer composer = new BlockComposer(baseComposer);
+            var baseComposer = new PrimitiveComposer(normalAppearance);
+            var composer = new BlockComposer(baseComposer);
             ContentScanner currentLevel = composer.Scanner;
             bool textShown = false;
             while (currentLevel != null)
@@ -252,9 +201,8 @@ namespace PdfClown.Documents.Interaction.Forms
                 }
 
                 ContentObject content = currentLevel.Current;
-                if (content is MarkedContent)
+                if (content is MarkedContent markedContent)
                 {
-                    MarkedContent markedContent = (MarkedContent)content;
                     if (PdfName.Tx.Equals(((BeginMarkedContent)markedContent.Header).Tag))
                     {
                         // Remove old text representation!

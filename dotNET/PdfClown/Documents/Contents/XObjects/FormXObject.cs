@@ -34,6 +34,7 @@ using PdfClown.Objects;
 using System;
 using SkiaSharp;
 using System.Collections.Generic;
+using PdfClown.Documents.Contents.Fonts;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
@@ -266,5 +267,47 @@ namespace PdfClown.Documents.Contents.XObjects
             picture = null;
         }
 
+        public PdfName GetDefaultFont(out Font defaultFont, FontName fontName = FontName.Helvetica)
+        {
+            // Retrieving the font to define the default appearance...
+            PdfName defaultFontName = null;
+            defaultFont = null;
+            defaultFontName = null;
+            {
+                // Field fonts.
+                FontResources normalAppearanceFonts = Resources.Fonts;
+                foreach (KeyValuePair<PdfName, Font> entry in normalAppearanceFonts)
+                {
+                    if (!entry.Value.Symbolic)
+                    {
+                        defaultFont = entry.Value;
+                        defaultFontName = entry.Key;
+                        break;
+                    }
+                }
+                if (defaultFontName == null)
+                {
+                    // Common fonts.
+                    FontResources formFonts = Document.Form.Resources.Fonts;
+                    foreach (KeyValuePair<PdfName, Font> entry in formFonts)
+                    {
+                        if (!entry.Value.Symbolic)
+                        {
+                            defaultFont = entry.Value;
+                            defaultFontName = entry.Key;
+                            break;
+                        }
+                    }
+                    if (defaultFontName == null)
+                    {
+                        //TODO:manage name collision!
+                        formFonts[defaultFontName = new PdfName("default")] = defaultFont = FontType1.Load(Document, fontName);
+                    }
+                    normalAppearanceFonts[defaultFontName] = defaultFont;
+                }
+            }
+
+            return defaultFontName;
+        }
     }
 }

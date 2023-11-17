@@ -254,36 +254,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
 
         }
-
-        protected FormXObject ResetAppearance()
-        {
-            return ResetAppearance(PageBox);
-        }
-
-        protected FormXObject ResetAppearance(SKRect box)
-        {
-            var boxSize = SKRect.Create(box.Width, box.Height);
-            AppearanceStates normalAppearances = Appearance.Normal;
-            FormXObject normalAppearance = normalAppearances[null];
-            if (normalAppearance != null)
-            {
-                normalAppearance.Box = boxSize;
-                normalAppearance.BaseDataObject.Body.SetLength(0);
-                normalAppearance.ClearContents();
-            }
-            else
-            {
-                normalAppearances[null] =
-                      normalAppearance = new FormXObject(Document, boxSize);
-            }
-
-            return normalAppearance;
-        }
-
-        public override SKRect GetBounds(SKMatrix pageMatrix)
-        {
-            return base.GetBounds(pageMatrix);
-        }
+        
+       
     }
 
     /**

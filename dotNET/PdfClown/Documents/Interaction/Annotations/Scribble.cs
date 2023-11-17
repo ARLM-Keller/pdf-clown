@@ -93,7 +93,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     }
                     pathsObject.Add(pathObject);
                 }
-                PageBox = box;
+                Box = box;
                 InkList = pathsObject;
                 ClearPath(paths);
             }
@@ -135,9 +135,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override void PageMoveTo(SKRect newBox)
+        public override void MoveTo(SKRect newBox)
         {
-            var oldBox = PageBox;
+            var oldBox = Box;
             if (oldBox.Width != newBox.Width
                 || oldBox.Height != newBox.Height)
             {

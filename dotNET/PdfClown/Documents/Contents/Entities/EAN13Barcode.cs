@@ -49,8 +49,7 @@ namespace PdfClown.Documents.Contents.Entities
       </list>
       <para>The rightmost symbol character shall encode the Check Digit.</para>
     */
-    public sealed class EAN13Barcode
-      : Barcode
+    public sealed class EAN13Barcode : Barcode
     {
         /*
           NOTE: Conventional terms used within this implementation:
@@ -60,8 +59,6 @@ namespace PdfClown.Documents.Contents.Entities
             * number set: symbol character encoding, representing the codomain of the digit domain
               (i.e. [0-9]).
         */
-        #region static
-        #region fields
         /**
           Symbol Character Encodation (Number Set A, odd parity) [GS1:7.1:5.1.1.2.1].
           NOTE: Number Set B uses the same patterns (though at inverted parity, i.e. even),
@@ -129,9 +126,7 @@ namespace PdfClown.Documents.Contents.Entities
       new int[]{NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A}, // 8
       new int[]{NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_A}  // 9
     };
-        #endregion
 
-        #region constructors
         static EAN13Barcode()
         {
             /*
@@ -188,25 +183,16 @@ namespace PdfClown.Documents.Contents.Entities
                 }
             }
         }
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
-        #endregion
 
-        #region constructors
         public EAN13Barcode(string code) : base(code)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override ContentObject ToInlineObject(PrimitiveComposer composer)
         {
             ContentObject barcodeObject = composer.BeginLocalState();
             {
-                fonts::Font font = fonts::FontType1.Load(composer.Scanner.Contents.Document, fonts::FontType1.FamilyEnum.Helvetica, false, false);
+                fonts::Font font = fonts::FontType1.Load(composer.Scanner.Contents.Document, fonts.FontName.Helvetica);
                 double fontSize = (DigitGlyphWidth / font.GetWidth(code.Substring(0, 1), 1));
 
                 // 1. Bars.
@@ -278,9 +264,7 @@ namespace PdfClown.Documents.Contents.Entities
             }
             return xObject;
         }
-        #endregion
 
-        #region private
         /**
           <summary>Gets the code elements widths.</summary>
         */
@@ -361,8 +345,5 @@ namespace PdfClown.Documents.Contents.Entities
                   BarHeight // Non-guard bar.
                     + DigitHeight // Digit.
                   );
-        #endregion
-        #endregion
-        #endregion
     }
 }

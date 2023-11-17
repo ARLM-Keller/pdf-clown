@@ -38,7 +38,6 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private IInputStream data;
         private IndexToLocationTable loca;
         private int numGlyphs;
-        private int cached = 0;
         private HorizontalMetricsTable hmt = null;
 
         public GlyphTable()

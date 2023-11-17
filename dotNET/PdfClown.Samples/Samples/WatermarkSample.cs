@@ -80,7 +80,7 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(watermark);
             // 2.2. Inserting the contents...
             // Set the font to use!
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Times, true, false), 120);
+            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.TimesBold), 120);
             // Set the color to fill the text characters!
             composer.SetFillColor(new DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
             // Apply transparency!
@@ -95,8 +95,8 @@ namespace PdfClown.Samples.CLI
               new SKPoint(size.Width / 2f, size.Height / 2f), // Anchor location: page center.
               XAlignmentEnum.Center, // Horizontal placement (relative to the anchor): center.
               YAlignmentEnum.Middle, // Vertical placement (relative to the anchor): middle.
-              50 // Rotation: 50-degree-counterclockwise.
-              );
+              50); // Rotation: 50-degree-counterclockwise.
+
             // 2.3. Flush the contents into the watermark!
             composer.Flush();
 

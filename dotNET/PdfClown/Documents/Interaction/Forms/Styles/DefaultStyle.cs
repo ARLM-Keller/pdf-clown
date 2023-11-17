@@ -89,7 +89,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
                 Appearance appearance = widget.Appearance;
                 AppearanceStates normalAppearance = appearance.Normal;
-                SKSize size = widget.PageBox.Size;
+                SKSize size = widget.Box.Size;
                 FormXObject onState = new FormXObject(document, size);
                 normalAppearance[PdfName.Yes] = onState;
 
@@ -115,13 +115,10 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                         composer.End();
                     }
 
-                    BlockComposer blockComposer = new BlockComposer(composer);
+                    var blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
-                    composer.SetFont(
-                      FontType1.Load(document, FontType1.FamilyEnum.ZapfDingbats, true, false),
-                      size.Height * 0.8
-                      );
+                    composer.SetFont(FontType1.Load(document, FontName.ZapfDingbats), size.Height * 0.8);
                     blockComposer.ShowText(new String(new char[] { CheckSymbol }));
                     blockComposer.End();
 
@@ -181,11 +178,11 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 //   appearance.getRollover()[PdfName.Off,offState);
                 //   appearance.getDown()[PdfName.Off,offState);
 
-                SKSize size = widget.PageBox.Size;
+                SKSize size = widget.Box.Size;
                 float lineWidth = 1;
                 SKRect frame = SKRect.Create(lineWidth / 2, lineWidth / 2, size.Width - lineWidth, size.Height - lineWidth);
                 {
-                    PrimitiveComposer composer = new PrimitiveComposer(onState);
+                    var composer = new PrimitiveComposer(onState);
 
                     if (GraphicsVisibile)
                     {
@@ -198,22 +195,22 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                         composer.End();
                     }
 
-                    BlockComposer blockComposer = new BlockComposer(composer);
+                    var blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
-                    composer.SetFont(FontType1.Load(document, FontType1.FamilyEnum.ZapfDingbats, true, false), size.Height * 0.8);
+                    composer.SetFont(FontType1.Load(document, FontName.ZapfDingbats), size.Height * 0.8);
                     blockComposer.ShowText(new String(new char[] { RadioSymbol }));
                     blockComposer.End();
 
                     composer.Flush();
                 }
 
-                FormXObject offState = new FormXObject(document, size);
+                var offState = new FormXObject(document, size);
                 normalAppearance[PdfName.Off] = offState;
                 {
                     if (GraphicsVisibile)
                     {
-                        PrimitiveComposer composer = new PrimitiveComposer(offState);
+                        var composer = new PrimitiveComposer(offState);
 
                         composer.BeginLocalState();
                         composer.SetLineWidth(lineWidth);
@@ -237,7 +234,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             Appearance appearance = widget.Appearance;
             FormXObject normalAppearanceState;
             {
-                SKSize size = widget.PageBox.Size;
+                SKSize size = widget.Box.Size;
                 normalAppearanceState = new FormXObject(document, size);
                 PrimitiveComposer composer = new PrimitiveComposer(normalAppearanceState);
 
@@ -257,10 +254,10 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 string title = (string)field.Value;
                 if (title != null)
                 {
-                    BlockComposer blockComposer = new BlockComposer(composer);
+                    var blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
-                    composer.SetFont(FontType1.Load(document, FontType1.FamilyEnum.Helvetica, true, false), size.Height * 0.5);
+                    composer.SetFont(FontType1.Load(document, FontName.HelveticaBold), size.Height * 0.5);
                     blockComposer.ShowText(title);
                     blockComposer.End();
                 }
@@ -274,7 +271,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
         {
             var document = field.Document;
             var widget = field.Widgets[0];
-            var size = widget.PageBox.Size;
+            var size = widget.Box.Size;
             var signatureName = field.SignatureName;
             var appearance = widget.Appearance;
             widget.DefaultAppearence = "/Helv " + FontSize + " Tf 0 0 0 rg";
@@ -297,7 +294,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
 
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(FontType1.Load(document, FontType1.FamilyEnum.Courier, true, false), 20);
+                composer.SetFont(FontType1.Load(document, FontName.CourierBold), 20);
                 composer.ShowText(
                   (string)signatureName,
                   new SKPoint(0, size.Height / 2),
@@ -321,9 +318,9 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
             FormXObject normalAppearanceState;
             {
-                SKSize size = widget.PageBox.Size;
+                SKSize size = widget.Box.Size;
                 normalAppearanceState = new FormXObject(document, size);
-                PrimitiveComposer composer = new PrimitiveComposer(normalAppearanceState);
+                var composer = new PrimitiveComposer(normalAppearanceState);
 
                 float lineWidth = 1;
                 SKRect frame = SKRect.Create(lineWidth / 2, lineWidth / 2, size.Width - lineWidth, size.Height - lineWidth);
@@ -339,7 +336,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
 
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(FontType1.Load(document, FontType1.FamilyEnum.Helvetica, false, false), FontSize);
+                composer.SetFont(FontType1.Load(document, FontName.Helvetica), FontSize);
                 composer.ShowText(
                   (string)field.Value,
                   new SKPoint(0, size.Height / 2),
@@ -363,7 +360,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
             FormXObject normalAppearanceState;
             {
-                SKSize size = widget.PageBox.Size;
+                SKSize size = widget.Box.Size;
                 normalAppearanceState = new FormXObject(document, size);
                 PrimitiveComposer composer = new PrimitiveComposer(normalAppearanceState);
 
@@ -381,7 +378,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
 
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(FontType1.Load(document, FontType1.FamilyEnum.Helvetica, false, false), FontSize);
+                composer.SetFont(FontType1.Load(document, FontName.Helvetica), FontSize);
                 composer.ShowText(
                   (string)field.Value,
                   new SKPoint(0, size.Height / 2),
@@ -413,7 +410,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
             FormXObject normalAppearanceState;
             {
-                SKSize size = widget.PageBox.Size;
+                SKSize size = widget.Box.Size;
                 normalAppearanceState = new FormXObject(document, size);
                 PrimitiveComposer composer = new PrimitiveComposer(normalAppearanceState);
 
@@ -437,7 +434,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                     composer.Clip(); // Ensures that the visible content is clipped within the rounded frame.
                 }
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(FontType1.Load(document, FontType1.FamilyEnum.Helvetica, false, false), FontSize);
+                composer.SetFont(FontType1.Load(document, FontName.Helvetica), FontSize);
                 double y = 3;
                 foreach (ChoiceItem item in field.Items)
                 {

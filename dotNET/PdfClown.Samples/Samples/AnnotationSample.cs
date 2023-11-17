@@ -43,7 +43,7 @@ namespace PdfClown.Samples.CLI
             document.Pages.Add(page);
 
             var composer = new PrimitiveComposer(page);
-            var font = FontType1.Load(document, FontType1.FamilyEnum.Courier, true, false);
+            var font = FontType1.Load(document, FontName.CourierBold);
             composer.SetFont(font, 12);
 
             // Sticky note.

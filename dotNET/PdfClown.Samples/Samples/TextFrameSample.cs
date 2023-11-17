@@ -39,28 +39,27 @@ namespace PdfClown.Samples.CLI
             // 2. Create a content composer for the page!
             var composer = new PrimitiveComposer(page);
 
-            colors::Color textColor = new colors::DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d);
+            var textColor = new colors::DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d);
             composer.SetFillColor(textColor);
             composer.SetLineDash(new LineDash(new float[] { 10 }));
             composer.SetLineWidth(.25);
 
             var blockComposer = new BlockComposer(composer);
             blockComposer.Begin(SKRect.Create(300, 400, 200, 100), XAlignmentEnum.Left, YAlignmentEnum.Middle);
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Times, false, true), 12);
+            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.TimesItalic), 12);
             blockComposer.ShowText("PrimitiveComposer.ShowText(...) methods return the actual bounding box of the text shown, allowing to precisely determine its location on the page.");
             blockComposer.End();
 
             // 3. Inserting contents...
             // Set the font to use!
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontType1.FamilyEnum.Courier, true, false), 72);
+            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.CourierBold), 72);
             composer.DrawPolygon(
               composer.ShowText(
                 "Text frame",
                 new SKPoint(150, 360),
                 XAlignmentEnum.Left,
                 YAlignmentEnum.Middle,
-                45
-                ).GetPoints());
+                45).GetPoints());
             composer.Stroke();
 
             composer.SetFont(fonts::FontType0.Load(document, GetResourcePath("fonts" + System.IO.Path.DirectorySeparatorChar + "Ruritania-Outline.ttf")), 102);
@@ -70,8 +69,7 @@ namespace PdfClown.Samples.CLI
                 new SKPoint(250, 600),
                 XAlignmentEnum.Center,
                 YAlignmentEnum.Middle,
-                -25
-                ).GetPoints());
+                -25).GetPoints());
             composer.Stroke();
 
             // 4. Flush the contents into the page!

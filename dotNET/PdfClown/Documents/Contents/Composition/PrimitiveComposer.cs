@@ -53,6 +53,7 @@ namespace PdfClown.Documents.Contents.Composition
     */
     public sealed class PrimitiveComposer
     {
+        private const float QuadToQubicKoefficent = 2.0F / 3.0F;
         private ContentScanner scanner;
 
         public PrimitiveComposer(ContentScanner scanner)
@@ -264,6 +265,17 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void DrawEllipse(SKRect location) => DrawArc(location, 0, 360);
 
+
+        /**
+         <summary>Draws an circle by square Ellipce.</summary>
+         <param name="center">Circle center.</param>
+         <param name="radius">Circle radius</param>
+         <seealso cref="Fill()"/>
+         <seealso cref="FillStroke()"/>
+         <seealso cref="Stroke()"/>
+       */
+        public void DrawCircle(SKPoint center, float radius) => DrawEllipse(new SKRect(center.X - radius, center.Y - radius, center.X + radius, center.Y + radius));
+
         /**
           <summary>Draws a line from the current point [PDF:1.6:4.4.1].</summary>
           <param name="endPoint">Ending point.</param>
@@ -298,6 +310,54 @@ namespace PdfClown.Documents.Contents.Composition
         }
 
         /**
+          <summary>Draws a path.</summary>
+          <remarks>Iterate path</remarks>
+          <param name="path">SKPath.</param>
+          <seealso cref="Fill()"/>
+          <seealso cref="FillStroke()"/>
+          <seealso cref="Stroke()"/>
+        */
+        public void DrawPath(SKPath path)
+        {
+            //path.ConicTo(point1,)
+            var iterator = path.CreateRawIterator();
+            Span<SKPoint> points = stackalloc SKPoint[4];
+            SKPathVerb verb;
+            while ((verb = iterator.Next(points)) != SKPathVerb.Done)
+            {
+                switch (verb)
+                {
+                    case SKPathVerb.Move:
+                        StartPath(points[0]);
+                        break;
+                    case SKPathVerb.Line:
+                        DrawLine(points[0]);
+                        break;
+                    case SKPathVerb.Quad:
+                        var qp0 = points[0];
+                        var qp1 = points[1];
+                        var qp2 = points[2];
+                        var controlPoint1 = qp0 + (qp1 - qp0).Multiply(QuadToQubicKoefficent);
+                        var controlPoint2 = qp2 + (qp1 - qp2).Multiply(QuadToQubicKoefficent);
+                        DrawCurve(qp2, controlPoint1, controlPoint2);
+                        break;
+                    case SKPathVerb.Conic:
+                        //TODO
+                        DrawLine(points[0]);
+                        break;
+                    case SKPathVerb.Cubic:
+                        DrawCurve(points[3], points[1], points[2]);
+                        break;
+                    case SKPathVerb.Close:
+                        ClosePath();
+                        break;
+                    case SKPathVerb.Done:
+                        break;
+                }
+            }
+        }
+
+        /**
           <summary>Draws a multiple line.</summary>
           <param name="points">Points.</param>
           <seealso cref="Stroke()"/>
@@ -319,6 +379,27 @@ namespace PdfClown.Documents.Contents.Composition
           <seealso cref="Stroke()"/>
         */
         public void DrawRectangle(SKRect location) => DrawRectangle(location, 0);
+
+        public void DrawQuad(SKPoint location, SKPoint vector)
+        {
+            var leftMiddle = location - vector;
+            var topLeft = leftMiddle + leftMiddle.PerpendicularClockwise();
+            var bottomLeft = leftMiddle + leftMiddle.PerpendicularCounterClockwise();
+            var rightMiddle = location + vector;
+            var topRight = rightMiddle + rightMiddle.PerpendicularCounterClockwise();
+            var bottomRight = rightMiddle + rightMiddle.PerpendicularClockwise();
+            var quad = new Quad(topLeft, topRight, bottomRight, bottomLeft);
+            DrawQuad(quad);
+        }
+
+        private void DrawQuad(Quad quad)
+        {
+            StartPath(quad.TopLeft);
+            DrawLine(quad.TopRight);
+            DrawLine(quad.BottomRight);
+            DrawLine(quad.BottomLeft);
+            ClosePath();
+        }
 
         /**
           <summary>Draws a rounded rectangle.</summary>
@@ -392,8 +473,7 @@ namespace PdfClown.Documents.Contents.Composition
                       (float)MathUtils.ToDegrees(radians2),
                       0,
                       1,
-                      false
-                      );
+                      false);
 
                     radians = radians2;
                 }

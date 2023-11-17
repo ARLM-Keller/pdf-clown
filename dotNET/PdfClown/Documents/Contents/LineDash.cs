@@ -87,7 +87,6 @@ namespace PdfClown.Documents.Contents
                 }
                 stroke.PathEffect = SKPathEffect.CreateDash(dashArray, DashPhase);
             }
-
         }
 
         public bool Equals(LineDash other)

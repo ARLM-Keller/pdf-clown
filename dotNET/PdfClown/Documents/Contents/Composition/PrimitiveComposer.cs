@@ -854,7 +854,10 @@ namespace PdfClown.Documents.Contents.Composition
                                     { textParams.Add(PdfReal.Get(wordSpaceAdjust)); }
                                     // Word.
                                     var l = (spaceIndex > -1 ? spaceIndex + 1 : textLine.Length) - (lastSpaceIndex + 1);
-                                    textParams.Add(new PdfByteString(font.Encode(textLine.AsSpan(lastSpaceIndex + 1, l))));
+                                    if (l > 0)
+                                    {
+                                        textParams.Add(new PdfByteString(font.Encode(textLine.AsSpan(lastSpaceIndex + 1, l))));
+                                    }
                                 }
                                 showText = Add(new ShowAdjustedText(textParams));
                             }

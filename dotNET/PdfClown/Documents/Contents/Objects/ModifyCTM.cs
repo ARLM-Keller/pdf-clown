@@ -42,9 +42,11 @@ namespace PdfClown.Documents.Contents.Objects
 
         public static ModifyCTM GetResetCTM(GraphicsState state)
         {
-            state.Ctm.TryInvert(out var inverseCtm);
+            var rootScanner = state.Scanner.RootLevel;
+            var initialMatrix = rootScanner.State.GetInitialCtm();
+            var temp = initialMatrix.PreConcat(state.Ctm);
             return new ModifyCTM(
-              inverseCtm
+              temp.Invert()
               // TODO: inverseCtm is a simplification which assumes an identity initial ctm!
               //        SquareMatrix.get(state.Ctm).solve(
               //          SquareMatrix.get(state.GetInitialCtm())

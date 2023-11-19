@@ -94,7 +94,7 @@ namespace PdfClown.Samples.CLI
                 maxCtmInversionApproximation = Max(ctmInversionApproximations);
             }
 
-            BlockComposer blockComposer = new BlockComposer(composer);
+            var blockComposer = new BlockComposer(composer);
             blockComposer.LineSpace = new Length(.25, Length.UnitModeEnum.Relative);
 
             composer.BeginLocalState();
@@ -123,9 +123,7 @@ namespace PdfClown.Samples.CLI
             {
                 composer.SetFillColor(colors[i]);
                 blockComposer.ShowText("Step " + i + ")");
-                composer.SetFillColor(
-                  new colorSpaces::DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d)
-                  );
+                composer.SetFillColor(new colorSpaces::DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
                 blockComposer.ShowText(" " + steps[i]);
                 blockComposer.ShowBreak(breakSize);
             }

@@ -336,7 +336,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                                     float length = (float)Math.Sqrt(Math.Pow(step, 2) * 2);
                                     var bottomUp = SKPoint.Normalize(markupBox.BottomLeft - markupBox.TopLeft);
                                     bottomUp = new SKPoint(bottomUp.X * lineWidth, bottomUp.Y * lineWidth);
-                                    var startPoint = markupBox.BottomLeft + (new SKPoint(bottomUp.X * 2, bottomUp.Y * 2));
+                                    var startPoint = markupBox.BottomLeft - (new SKPoint(bottomUp.X * 2, bottomUp.Y * 2));
                                     var leftRight = SKPoint.Normalize(markupBox.BottomRight - markupBox.BottomLeft);
                                     leftRight = new SKPoint(leftRight.X * step, leftRight.Y * step);
                                     var leftRightPerp = leftRight.GetPerp(step * sign);
@@ -371,7 +371,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                                         lineYRatio = -.5f;
                                         break;
                                     case TextMarkupType.Underline:
-                                        lineYRatio = .1f;
+                                        lineYRatio = -.05f;
                                         break;
                                     default:
                                         throw new NotImplementedException();

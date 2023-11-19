@@ -1,29 +1,20 @@
-﻿using Org.BouncyCastle.Security;
-using PdfClown.Documents;
-using PdfClown.Documents.Contents;
-using PdfClown.Documents.Contents.Objects;
+﻿using PdfClown.Documents.Contents;
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Objects;
-using PdfClown.Tools;
 using PdfClown.Util.Math.Geom;
 using PdfClown.Util.Reflection;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Xamarin.Forms;
-using static Xamarin.Forms.Internals.GIFBitmap;
 
 namespace PdfClown.Viewer
 {
@@ -181,6 +172,7 @@ namespace PdfClown.Viewer
                 document = value;
                 OnPropertyChanged(nameof(PagesCount));
                 UpdateMaximums();
+
                 if (document != null)
                 {
                     document.AnnotationAdded += OnDocumentAnnotationAdded;
@@ -609,20 +601,12 @@ namespace PdfClown.Viewer
                         var pageMatrix = pageView.Matrix;
                         state.Canvas.Concat(ref pageMatrix);
                         var pageRect = SKRect.Create(pageView.Size);
-#if RELEASE
                         state.Canvas.ClipRect(pageRect);
-#endif
                         state.Canvas.DrawRect(pageRect, paintPageBackground);
 
                         var picture = pageView.GetPicture(this);
                         if (picture != null)
                         {
-                            //var image = pageView.GetImage(this, scale, scale);
-                            //if (image != null)
-                            //{
-                            //    state.Canvas.DrawImage(image, SKPoint.Empty);
-                            //}
-
                             state.Canvas.DrawPicture(picture);
 
 
@@ -1353,16 +1337,16 @@ namespace PdfClown.Viewer
             if (Document == null)
                 return;
 
-            Save(Document.FilePath);
+            SaveWithClearOperation(Document.FilePath);
+        }
+
+        public void SaveWithClearOperation(string filePath)
+        {
+            Document?.Save(filePath);
+            ClearOperations();
         }
 
         public void Save(string filePath)
-        {
-            ClearOperations();
-            Document?.Save(filePath);
-        }
-
-        public void SaveWithoutClearOperations(string filePath)
         {
             Document?.Save(filePath);
         }
@@ -1389,8 +1373,7 @@ namespace PdfClown.Viewer
                 operations = newOperations;
                 lastOperationLink = operations.Last;
             }
-            var oldDocument = Document;
-            oldDocument.Dispose();
+            Close();
 
             Document = newDocument;
             InvalidateSurface();
@@ -1399,20 +1382,25 @@ namespace PdfClown.Viewer
 
         public void Load(string filePath)
         {
-            if (Document != null)
-                Document.Dispose();
+            Close();
 
             Document = PdfDocumentView.LoadFrom(filePath);
             ClearOperations();
         }
 
-        public void Load(System.IO.Stream stream)
+        public void Load(Stream stream)
         {
-            if (Document != null)
-                Document.Dispose();
+            Close();
 
             Document = PdfDocumentView.LoadFrom(stream);
             ClearOperations();
+        }
+
+        public void Close()
+        {
+            var document = Document;
+            Document = null;
+            document?.Dispose();
         }
 
         public void ScrollTo(PdfPageView page)

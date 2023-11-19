@@ -32,16 +32,12 @@ namespace PdfClown.Files
     */
     public sealed class FileConfiguration
     {
-        #region dynamic
-        #region fields
         private string realFormat;
         private bool streamFilterEnabled;
         private XRefModeEnum xrefMode = XRefModeEnum.Plain;
 
         private readonly File file;
-        #endregion
 
-        #region constructors
         internal FileConfiguration(File file)
         {
             this.file = file;
@@ -49,10 +45,7 @@ namespace PdfClown.Files
             RealPrecision = 0;
             StreamFilterEnabled = true;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the file associated with this configuration.</summary>
         */
@@ -84,12 +77,7 @@ namespace PdfClown.Files
             get => xrefMode;
             set => file.Document.CheckCompatibility(xrefMode = value);
         }
-        #endregion
 
-        #region internal
         internal string RealFormat => realFormat;
-        #endregion
-        #endregion
-        #endregion
     }
 }

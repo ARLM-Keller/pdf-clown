@@ -80,7 +80,7 @@ namespace PdfClown.Viewer
                 var box = page.RotatedBox;
                 var dpi = 1F;
                 var imageSize = new SKSize(box.Width * dpi, box.Height * dpi);
-                var pageView = new PdfPageView()
+                var pageView = new PdfPageView
                 {
                     Document = this,
                     Order = order++,
@@ -146,15 +146,6 @@ namespace PdfClown.Viewer
             }
         }
 
-        public void Load(string filePath)
-        {
-            FilePath = filePath;
-            TempFilePath = GetTempPath(filePath);
-            System.IO.File.Copy(filePath, TempFilePath, true);
-            var fileStream = new FileStream(TempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-            Load(fileStream);
-        }
-
         private static string GetTempPath(string filePath)
         {
             int? index = null;
@@ -166,6 +157,15 @@ namespace PdfClown.Viewer
             }
             while (System.IO.File.Exists(tempPath));
             return tempPath;
+        }
+
+        public void Load(string filePath)
+        {
+            FilePath = filePath;
+            TempFilePath = GetTempPath(filePath);
+            System.IO.File.Copy(filePath, TempFilePath, true);
+            var fileStream = new FileStream(TempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            Load(fileStream);
         }
 
         public void Load(Stream stream)

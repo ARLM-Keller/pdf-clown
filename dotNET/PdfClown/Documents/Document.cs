@@ -64,6 +64,7 @@ namespace PdfClown.Documents
 
         internal Dictionary<PdfDirectObject, object> Cache = new();
         internal ConcurrentDictionary<FontName, FontType1> Type1FontCache = new();
+        internal ConcurrentDictionary<TrueTypeFont, FontType0> Type0FontCache = new();
 
         private DocumentConfiguration configuration;
 
@@ -323,6 +324,8 @@ namespace PdfClown.Documents
                     disposable.Dispose();
                 }
             }
+            Type0FontCache.Clear();
+            Type1FontCache.Clear();
             Cache.Clear();
         }
 

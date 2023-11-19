@@ -92,7 +92,7 @@ namespace PdfClown.Files
             reader = new Reader(stream, this);
             try // [FIX:45] File constructor didn't dispose reader on error.
             {
-                Reader.FileInfo info = reader.ReadInfo();
+                var info = reader.ReadInfo();
                 version = info.Version;
                 trailer = PrepareTrailer(info.Trailer);
                 indirectObjects = new IndirectObjects(this, info.XrefEntries);
@@ -228,6 +228,7 @@ namespace PdfClown.Files
               overwrite it (see Dispose() method).
             */
             Save(TempPath, mode);
+            CompleatSave();
         }
 
         /**
@@ -250,10 +251,7 @@ namespace PdfClown.Files
           <param name="stream">Target stream.</param>
           <param name="mode">Serialization mode.</param>
         */
-        public void Save(Stream stream, SerializationModeEnum mode)
-        {
-            Save((IOutputStream)new StreamContainer(stream), mode);
-        }
+        public void Save(Stream stream, SerializationModeEnum mode) => Save((IOutputStream)new StreamContainer(stream), mode);
 
         /**
           <summary>Serializes the file to the specified stream.</summary>
@@ -279,7 +277,7 @@ namespace PdfClown.Files
             else
             { information.ModificationDate = DateTime.Now; }
 
-            Writer writer = Writer.Get(this, stream);
+            var writer = Writer.Get(this, stream);
             writer.Write(mode);
         }
 
@@ -297,13 +295,7 @@ namespace PdfClown.Files
         */
         public Cloner Cloner
         {
-            get
-            {
-                if (cloner == null)
-                { cloner = new Cloner(this); }
-
-                return cloner;
-            }
+            get => cloner ??= new Cloner(this);
             set => cloner = value;
         }
 
@@ -326,17 +318,19 @@ namespace PdfClown.Files
                 {
                     reader.Dispose();
                     reader = null;
-
-                    /*
-                      NOTE: If the temporary file exists (see Save() method), it must overwrite the document file.
-                    */
-                    if (System.IO.File.Exists(TempPath))
-                    {
-                        System.IO.File.Delete(path);
-                        System.IO.File.Move(TempPath, path);
-                    }
+                    CompleatSave();
                 }
                 Document?.ClearCache();
+            }
+        }
+
+        private void CompleatSave()
+        {
+            //NOTE: If the temporary file exists (see Save() method), it must overwrite the document file.
+            if (System.IO.File.Exists(TempPath))
+            {
+                System.IO.File.Delete(path);
+                System.IO.File.Move(TempPath, path);
             }
         }
 

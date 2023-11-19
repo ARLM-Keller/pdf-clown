@@ -125,7 +125,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private FontTrueType(Document document, TrueTypeFont ttf, Encoding encoding, bool closeTTF)
             : base(document)
         {
-            FontTrueTypeEmbedder embedder = new FontTrueTypeEmbedder(document, Dictionary, ttf, encoding);
+            var embedder = new FontTrueTypeEmbedder(document, Dictionary, ttf, encoding);
             this.encoding = encoding;
             this.ttf = ttf;
             FontDescriptor = embedder.FontDescriptor;

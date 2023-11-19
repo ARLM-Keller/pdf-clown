@@ -119,7 +119,7 @@ namespace PdfClown.Documents.Contents.Fonts
          */
         public static FontType0 Load(Document doc, TrueTypeFont ttf, bool embedSubset)
         {
-            return new FontType0(doc, ttf, embedSubset, false, false);
+            return doc.Type0FontCache.GetOrAdd(ttf, (t) => new FontType0(doc, t, embedSubset, false, false));
         }
 
         /**
@@ -185,7 +185,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private ICmapLookup cmapLookup;
         private TrueTypeFont ttf;
 #if DEBUG
-        private readonly HashSet<int> noUnicode = new ();
+        private readonly HashSet<int> noUnicode = new();
 #endif
 
         internal FontType0(Document document, TrueTypeFont ttf, bool embedSubset, bool closeTTF, bool vertical)

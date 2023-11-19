@@ -612,15 +612,16 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         private int ParseUniName(string name)
         {
-            if (name.StartsWith("uni", StringComparison.Ordinal))
+            if (name.StartsWith("uni", StringComparison.Ordinal)
+                && (name.Length - 3) % 4 == 0)
             {
                 int nameLength = name.Length;
                 try
                 {
                     for (int chPos = 3; chPos + 4 <= nameLength; chPos += 4)
                     {
-                        int codePoint = int.Parse(name.AsSpan(chPos, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                        if (codePoint <= 0xD7FF || codePoint >= 0xE000) // disallowed code area
+                        if (int.TryParse(name.AsSpan(chPos, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var codePoint)
+                          && (codePoint <= 0xD7FF || codePoint >= 0xE000))// disallowed code area
                         {
                             return codePoint;
                         }

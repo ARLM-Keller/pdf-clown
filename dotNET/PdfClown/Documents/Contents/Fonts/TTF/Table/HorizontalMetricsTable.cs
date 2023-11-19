@@ -31,7 +31,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public const string TAG = "hmtx";
 
-        private int[] advanceWidth;
+        private ushort[] advanceWidth;
         private short[] leftSideBearing;
         private short[] nonHorizontalLeftSideBearing;
         private int numHMetrics;
@@ -57,7 +57,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             int numGlyphs = ttf.NumberOfGlyphs;
 
             int bytesRead = 0;
-            advanceWidth = new int[numHMetrics];
+            advanceWidth = new ushort[numHMetrics];
             leftSideBearing = new short[numHMetrics];
             for (int i = 0; i < numHMetrics; i++)
             {

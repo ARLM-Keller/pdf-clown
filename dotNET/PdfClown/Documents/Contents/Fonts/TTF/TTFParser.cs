@@ -89,7 +89,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             if (string.Equals(raf.ReadString(4), TrueTypeCollection.TAG, StringComparison.Ordinal))
             {
                 raf.Seek(raf.Position - 4);
-                TrueTypeCollection fontCollection = new TrueTypeCollection(raf);
+                var fontCollection = new TrueTypeCollection(raf);
 
                 var nameFont = fontCollection.GetFontByName(fontName);
                 if (nameFont == null)

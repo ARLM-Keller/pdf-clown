@@ -65,9 +65,10 @@ namespace PdfClown.Documents.Contents.Fonts
 
             // descendant CIDFont
             cidFont = CreateCIDFont();
-            PdfArray descendantFonts = new PdfArray();
-            descendantFonts.Add(document.File.Register(cidFont));
-            dict[PdfName.DescendantFonts] = descendantFonts;
+            dict[PdfName.DescendantFonts] = new PdfArray(1)
+            {
+                document.File.Register(cidFont)
+            };
 
             if (!embedSubset)
             {
@@ -82,7 +83,7 @@ namespace PdfClown.Documents.Contents.Fonts
         protected override void BuildSubset(ByteStream ttfSubset, string tag, Dictionary<int, int> gidToCid)
         {
             // build CID2GIDMap, because the content stream has been written with the old GIDs
-            Dictionary<int, int> cidToGid = new Dictionary<int, int>(gidToCid.Count);
+            var cidToGid = new Dictionary<int, int>(gidToCid.Count);
             foreach (var entry in gidToCid)
             {
                 //(newGID, oldGID)->
@@ -132,9 +133,13 @@ namespace PdfClown.Documents.Contents.Fonts
                     int codePoint = codes[0];
                     if (codePoint > 0xFFFF)
                     {
+                        toUniWriter.Add(cid, char.ConvertFromUtf32(codePoint));
                         hasSurrogates = true;
                     }
-                    toUniWriter.Add(cid, new string(new char[] { (char)codePoint }, 0, 1));
+                    else
+                    {
+                        toUniWriter.Add(cid, ((char)codePoint).ToString());
+                    }
                 }
             }
 
@@ -142,7 +147,7 @@ namespace PdfClown.Documents.Contents.Fonts
             toUniWriter.WriteTo(cMapStream);
 
             var header = new PdfDictionary() { { PdfName.Length, PdfInteger.Get(cMapStream.Length) } };
-            PdfStream stream = new PdfStream(header, cMapStream);
+            var stream = new PdfStream(header, cMapStream);
 
             // surrogate code points, requires PDF 1.5
             if (hasSurrogates)
@@ -157,29 +162,27 @@ namespace PdfClown.Documents.Contents.Fonts
             dict[PdfName.ToUnicode] = document.File.Register(stream);
         }
 
-        private PdfDictionary toCIDSystemInfo(string registry, string ordering, int supplement)
+        private PdfDictionary ToCIDSystemInfo(string registry, string ordering, int supplement)
         {
-            PdfDictionary info = new PdfDictionary();
-            info[PdfName.Registry] = new PdfString(registry);
-            info[PdfName.Ordering] = new PdfString(ordering);
-            info[PdfName.Supplement] = new PdfInteger(supplement);
+            var info = new PdfDictionary
+            {
+                [PdfName.Registry] = new PdfString(registry),
+                [PdfName.Ordering] = new PdfString(ordering),
+                [PdfName.Supplement] = new PdfInteger(supplement)
+            };
             return info;
         }
 
         private PdfDictionary CreateCIDFont()
         {
-            PdfDictionary cidFont = new PdfDictionary();
-
-            // Type, Subtype
-            cidFont[PdfName.Type] = PdfName.Font;
-            cidFont[PdfName.Subtype] = PdfName.CIDFontType2;
-            // BaseFont
-            cidFont[PdfName.BaseFont] = PdfName.Get(fontDescriptor.FontName);
-            // CIDSystemInfo
-            PdfDictionary info = toCIDSystemInfo("Adobe", "Identity", 0);
-            cidFont[PdfName.CIDSystemInfo] = info;
-            // FontDescriptor
-            cidFont[PdfName.FontDescriptor] = fontDescriptor.BaseObject;
+            var cidFont = new PdfDictionary
+            {
+                [PdfName.Type] = PdfName.Font,
+                [PdfName.Subtype] = PdfName.CIDFontType2,
+                [PdfName.BaseFont] = PdfName.Get(fontDescriptor.FontName),
+                [PdfName.CIDSystemInfo] = ToCIDSystemInfo("Adobe", "Identity", 0),
+                [PdfName.FontDescriptor] = fontDescriptor.BaseObject
+            };
 
             // W - widths
             BuildWidths(cidFont);
@@ -201,9 +204,9 @@ namespace PdfClown.Documents.Contents.Fonts
             string name = fontDescriptor.FontName;
             string newName = tag + name;
 
-            dict[PdfName.BaseFont] = new PdfName(newName);
             fontDescriptor.FontName = newName;
-            cidFont[PdfName.BaseFont] = new PdfName(newName);
+            dict[PdfName.BaseFont] =
+                cidFont[PdfName.BaseFont] = new PdfName(newName);
         }
 
         private void BuildCIDToGIDMap(Dictionary<int, int> cidToGid)
@@ -240,8 +243,8 @@ namespace PdfClown.Documents.Contents.Fonts
                 bytes[cid / 8] = (byte)(bytes[cid / 8] | mask);
             }
 
-            var input = new Bytes.ByteStream(bytes);
-            PdfStream stream = new PdfStream(input);
+            var input = new ByteStream(bytes);
+            var stream = new PdfStream(input);
 
             fontDescriptor.CIDSet = stream;
         }
@@ -253,8 +256,8 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             float scaling = 1000f / ttf.Header.UnitsPerEm;
 
-            PdfArray widths = new PdfArray();
-            PdfArray ws = new PdfArray();
+            var widths = new PdfArray();
+            var ws = new PdfArray();
             int prev = int.MinValue;
             // Use a sorted list to get an optimal width array  
 
@@ -400,8 +403,8 @@ namespace PdfClown.Documents.Contents.Fonts
             long lastCid = widths[0];
             long lastValue = (long)Math.Round(widths[1] * scaling);
 
-            PdfArray inner = new PdfArray();
-            PdfArray outer = new PdfArray();
+            var inner = new PdfArray();
+            var outer = new PdfArray();
             outer.Add(PdfInteger.Get(lastCid));
 
             State state = State.FIRST;

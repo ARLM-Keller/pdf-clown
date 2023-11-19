@@ -86,7 +86,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             cmaps = new CmapSubtable[numberOfTables];
             for (int i = 0; i < numberOfTables; i++)
             {
-                CmapSubtable cmap = new CmapSubtable();
+                var cmap = new CmapSubtable();
                 cmap.InitData(data);
                 cmaps[i] = cmap;
             }

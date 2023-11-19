@@ -185,11 +185,11 @@ namespace PdfClown.Documents.Contents.Fonts
         private ICmapLookup cmapLookup;
         private TrueTypeFont ttf;
 #if DEBUG
-        private readonly HashSet<int> noUnicode = new HashSet<int>();
+        private readonly HashSet<int> noUnicode = new ();
 #endif
 
         internal FontType0(Document document, TrueTypeFont ttf, bool embedSubset, bool closeTTF, bool vertical)
-            : base(document, new PdfDictionary())
+            : base(document, new PdfDictionary(6))
         {
             if (vertical)
             {

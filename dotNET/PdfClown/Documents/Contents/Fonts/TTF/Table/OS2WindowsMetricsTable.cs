@@ -566,6 +566,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public override void Read(TrueTypeFont ttf, IInputStream data)
         {
+            var limit = Offset + Length;
+            if (limit > data.Length)
+                limit = data.Length;
             version = data.ReadUInt16();
             averageCharWidth = data.ReadInt16();
             weightClass = data.ReadUInt16();
@@ -591,7 +594,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             fsSelection = data.ReadUInt16();
             firstCharIndex = data.ReadUInt16();
             lastCharIndex = data.ReadUInt16();
-            if ((data.Length - data.Position) >= 10)
+            if ((limit - data.Position) >= 10)
             {
                 typoAscender = data.ReadInt16();
                 typoDescender = data.ReadInt16();
@@ -607,7 +610,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
             if (version >= 1)
             {
-                if ((data.Length - data.Position) >= 4)
+                if ((limit - data.Position) >= 4)
                 {
                     codePageRange1 = data.ReadUInt32();
                     codePageRange2 = data.ReadUInt32();
@@ -620,7 +623,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
             if (version >= 2)
             {
-                if ((data.Length - data.Position) >= 10)
+                if ((limit - data.Position) >= 10)
                 {
                     sxHeight = data.ReadInt16();
                     sCapHeight = data.ReadInt16();

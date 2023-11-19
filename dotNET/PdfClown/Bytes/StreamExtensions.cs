@@ -59,6 +59,14 @@ namespace PdfClown.Bytes
             return encoding.GetString(span);
         }
 
+        public static ReadOnlySpan<char> ReadROS(this IInputStream target, int length, System.Text.Encoding encoding)
+        {
+            Span<byte> bytes = target.ReadSpan(length);
+            Span<char> chars = new char[encoding.GetCharCount(bytes)];
+            encoding.GetChars(bytes, chars);
+            return chars;
+        }
+
         public static float ReadFixed32(this IInputStream target)
         {
             return target.ReadInt16() // Signed Fixed-point mantissa (16 bits).

@@ -50,6 +50,7 @@ namespace PdfClown.Documents.Contents.Scanner
             public void ScanChar(char textChar, Quad textCharQuad)
             {
                 wrapper.textChars.Add(new TextChar(textChar, textCharQuad, wrapper, false));
+                wrapper.text = null;
             }
         }
 

@@ -73,7 +73,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 subtables = new KerningSubtable[numSubtables];
                 for (int i = 0; i < numSubtables; ++i)
                 {
-                    KerningSubtable subtable = new KerningSubtable();
+                    var subtable = new KerningSubtable();
                     subtable.Read(data, version);
                     subtables[i] = subtable;
                 }

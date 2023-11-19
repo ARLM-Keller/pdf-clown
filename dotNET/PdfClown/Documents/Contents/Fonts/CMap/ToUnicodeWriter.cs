@@ -111,9 +111,9 @@ namespace PdfClown.Documents.Contents.Fonts
             WriteLine(writer, "endcodespacerange\n");
 
             // CID -> Unicode mappings, we use ranges to generate a smaller CMap
-            List<int> srcFrom = new List<int>();
-            List<int> srcTo = new List<int>();
-            List<string> dstString = new List<string>();
+            var srcFrom = new List<int>();
+            var srcTo = new List<int>();
+            var dstString = new List<string>();
 
             int srcPrev = -1;
             string dstPrev = "";

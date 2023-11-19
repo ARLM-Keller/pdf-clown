@@ -60,24 +60,23 @@ namespace PdfClown.Documents.Contents.Fonts
             this.embedSubset = embedSubset;
             this.ttf = ttf;
             fontDescriptor = CreateFontDescriptor(ttf);
-
+#if RELEASE
             if (!IsEmbeddingPermitted(ttf))
             {
                 throw new IOException("This font does not permit embedding");
             }
-
+#endif
             if (!embedSubset)
             {
                 // full embedding
                 // TrueType collections are not supported
                 var iStream = ttf.GetOriginalData(out _);
-                var b = new byte[4];
-                if (iStream.Read(b) == b.Length && PdfEncoding.Pdf.Decode(b).Equals("ttcf"))
+                if (MemoryExtensions.Equals(iStream.ReadROS(4, Charset.ISO88591), "ttcf", StringComparison.Ordinal))
                 {
                     throw new IOException("Full embedding of TrueType font collections not supported");
                 }
                 iStream.Seek(0);
-                PdfStream stream = new PdfStream(new ByteStream(iStream));
+                var stream = new PdfStream(new ByteStream(iStream));
                 stream.Header[PdfName.Length] =
                     stream.Header[PdfName.Length1] = PdfInteger.Get(ttf.OriginalDataSize);
                 fontDescriptor.FontFile2 = new FontFile(document, stream);
@@ -170,7 +169,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 throw new IOException("post table is missing in font " + ttfName);
             }
 
-            var fd = new FontDescriptor(document, new PdfDictionary());
+            var fd = new FontDescriptor(document, new PdfDictionary(14));
             fd.FontName = ttfName;
 
             // Flags
@@ -248,7 +247,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 else
                 {
                     // estimate by halving the typographical ascender
-                    fd.XHeight = os2.TypoAscender / (2.0f * scaling);
+                    fd.XHeight = (os2.TypoAscender / 2.0f) * scaling;
                 }
             }
 

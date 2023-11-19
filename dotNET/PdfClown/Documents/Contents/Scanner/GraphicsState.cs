@@ -572,7 +572,7 @@ namespace PdfClown.Documents.Contents
         */
         public object Clone()
         {
-            GraphicsState clone = new GraphicsState
+            var clone = new GraphicsState
             {
                 scanner = scanner,
                 //Text

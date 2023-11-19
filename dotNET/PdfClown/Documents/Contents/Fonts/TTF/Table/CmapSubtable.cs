@@ -390,7 +390,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 return;
             }
             characterCodeToGlyphId = new Dictionary<int, int>(numGlyphs);
-            ushort[] glyphIdArray = data.ReadUShortArray(entryCount);
+            var glyphIdArray = data.ReadUShortArray(entryCount);
             int maxGlyphId = 0;
             for (int i = 0; i < entryCount; i++)
             {
@@ -504,7 +504,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         void ProcessSubtype2(IInputStream data, int numGlyphs)
         {
-            int[] subHeaderKeys = new int[256];
+            var subHeaderKeys = new ushort[256];
             // ---- keep the Max Index of the SubHeader array to know its length
             int maxSubHeaderIndex = 0;
             for (int i = 0; i < 256; i++)
@@ -514,12 +514,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
 
             // ---- Read all SubHeaders to avoid useless seek on DataSource
-            SubHeader[] subHeaders = new SubHeader[maxSubHeaderIndex + 1];
+            var subHeaders = new SubHeader[maxSubHeaderIndex + 1];
             for (int i = 0; i <= maxSubHeaderIndex; ++i)
             {
-                int firstCode = data.ReadUInt16();
-                int entryCount = data.ReadUInt16();
-                short idDelta = data.ReadInt16();
+                var firstCode = data.ReadUInt16();
+                var entryCount = data.ReadUInt16();
+                var idDelta = data.ReadInt16();
                 int idRangeOffset = data.ReadUInt16() - (maxSubHeaderIndex + 1 - i - 1) * 8 - 2;
                 subHeaders[i] = new SubHeader(firstCode, entryCount, idDelta, idRangeOffset);
             }
@@ -534,16 +534,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             for (int i = 0; i <= maxSubHeaderIndex; ++i)
             {
                 SubHeader sh = subHeaders[i];
-                int firstCode = sh.FirstCode;
-                int idRangeOffset = sh.IdRangeOffset;
-                int idDelta = sh.IdDelta;
-                int entryCount = sh.EntryCount;
+                var firstCode = sh.FirstCode;
+                var idRangeOffset = sh.IdRangeOffset;
+                var idDelta = sh.IdDelta;
+                var entryCount = sh.EntryCount;
                 data.Seek(startGlyphIndexOffset + idRangeOffset);
                 for (int j = 0; j < entryCount; ++j)
                 {
                     // ---- compute the Character Code
-                    int charCode = i;
-                    charCode = (charCode << 8) | (firstCode + j);
+                    int charCode = (i << 8) | (firstCode + j);
 
                     // ---- Go to the CharacterCOde position in the Sub Array
                     // of the glyphIndexArray
@@ -694,10 +693,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * Class used to manage CMap - Format 2.
          * 
          */
-        private class SubHeader
+        private struct SubHeader
         {
-            private readonly int firstCode;
-            private readonly int entryCount;
+            private readonly ushort firstCode;
+            private readonly ushort entryCount;
             /**
              * used to compute the GlyphIndex : P = glyphIndexArray.SubArray[pos] GlyphIndex = P + idDelta % 65536.
              */
@@ -707,7 +706,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
              */
             private readonly int idRangeOffset;
 
-            public SubHeader(int firstCodeValue, int entryCountValue, short idDeltaValue, int idRangeOffsetValue)
+            public SubHeader(ushort firstCodeValue, ushort entryCountValue, short idDeltaValue, int idRangeOffsetValue)
             {
                 firstCode = firstCodeValue;
                 entryCount = entryCountValue;
@@ -718,7 +717,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             /**
              * @return the firstCode
              */
-            public int FirstCode
+            public ushort FirstCode
             {
                 get => firstCode;
             }
@@ -726,7 +725,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             /**
              * @return the entryCount
              */
-            public int EntryCount
+            public ushort EntryCount
             {
                 get => entryCount;
             }

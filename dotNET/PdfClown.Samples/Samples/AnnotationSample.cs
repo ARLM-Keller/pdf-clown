@@ -186,7 +186,7 @@ namespace PdfClown.Samples.CLI
 
             // Rectangle.
             composer.ShowText("Rectangle annotation:", new SKPoint(35, 350));
-            new PdfClown.Documents.Interaction.Annotations.Rectangle(
+            new Rectangle(
               page,
               SKRect.Create(50, 370, 100, 30),
               "Text of the Rectangle annotation")
@@ -218,7 +218,7 @@ namespace PdfClown.Samples.CLI
             // Rubber stamp.
             composer.ShowText("Rubber stamp annotations:", new SKPoint(35, 505));
             {
-                var stampFont = fonts::FontType0.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
+                var stampFont = FontType0.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
                 new Stamp(
                   page,
                   new SKPoint(75, 570),

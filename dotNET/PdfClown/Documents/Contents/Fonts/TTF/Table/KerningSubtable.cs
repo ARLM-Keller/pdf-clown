@@ -256,7 +256,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private class PairData0Format0 : IComparer<int[]>, IPairData
         {
             private int searchRange;
-            private int[][] pairs;
+            private KerningFormat0[] pairs;
 
             public void Read(IInputStream data)
             {
@@ -264,23 +264,23 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 searchRange = data.ReadUInt16() / 6;
                 int entrySelector = data.ReadUInt16();
                 int rangeShift = data.ReadUInt16();
-                pairs = new int[numPairs][];
+                pairs = new KerningFormat0[numPairs];
                 for (int i = 0; i < numPairs; ++i)
                 {
-                    int left = data.ReadUInt16();
-                    int right = data.ReadUInt16();
-                    int value = data.ReadInt16();
-                    pairs[i] = new int[3] { left, right, value };
+                    var left = data.ReadUInt16();
+                    var right = data.ReadUInt16();
+                    var value = data.ReadInt16();
+                    pairs[i] = new KerningFormat0(left, right, value);
                 }
             }
 
             public int GetKerning(int l, int r)
             {
-                int[] key = new int[] { l, r, 0 };
-                int index = Array.BinarySearch(pairs, key, this);
+                var key = new KerningFormat0((ushort)l, (ushort)r, 0);
+                int index = Array.BinarySearch(pairs, key);
                 if (index >= 0)
                 {
-                    return pairs[index][2];
+                    return pairs[index].Value;
                 }
                 return 0;
             }
@@ -297,6 +297,26 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     return cmp1;
                 }
                 return p1[1].CompareTo(p2[1]);
+            }
+
+            private struct KerningFormat0 : IComparable<KerningFormat0>
+            {
+                public readonly ushort Left;
+                public readonly ushort Right;
+                public readonly short Value;
+
+                public KerningFormat0(ushort left, ushort right, short value)
+                {
+                    Left = left;
+                    Right = right;
+                    Value = value;
+                }
+
+                public int CompareTo(KerningFormat0 other)
+                {
+                    var result = Left.CompareTo(other.Left);
+                    return result != 0 ? result : Right.CompareTo(other.Right);
+                }
             }
         }
     }

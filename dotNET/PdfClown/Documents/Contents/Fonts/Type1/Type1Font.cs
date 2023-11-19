@@ -81,8 +81,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         Encoding encoding = null;
         int paintType;
         int fontType;
-        List<float> fontMatrix = new List<float>();
-        List<float> fontBBox = new List<float>();
+        List<float> fontMatrix = new();
+        List<float> fontBBox = new();
         private SKRect? rectBBox;
         int uniqueID;
         float strokeWidth;
@@ -100,25 +100,25 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         float underlineThickness;
 
         // Private dictionary
-        List<float> blueValues = new List<float>();
-        List<float> otherBlues = new List<float>();
-        List<float> familyBlues = new List<float>();
-        List<float> familyOtherBlues = new List<float>();
+        List<float> blueValues = new();
+        List<float> otherBlues = new();
+        List<float> familyBlues = new();
+        List<float> familyOtherBlues = new();
         float blueScale;
         int blueShift, blueFuzz;
-        List<float> stdHW = new List<float>();
-        List<float> stdVW = new List<float>();
-        List<float> stemSnapH = new List<float>();
-        List<float> stemSnapV = new List<float>();
+        List<float> stdHW = new();
+        List<float> stdVW = new();
+        List<float> stemSnapH = new();
+        List<float> stemSnapV = new();
         bool forceBold;
         int languageGroup;
 
         // Subrs array, and CharStrings dictionary
-        readonly List<Memory<byte>> subrs = new List<Memory<byte>>();
-        readonly Dictionary<string, Memory<byte>> charstrings = new Dictionary<string, Memory<byte>>(StringComparer.Ordinal);
+        readonly List<Memory<byte>> subrs = new();
+        readonly Dictionary<string, Memory<byte>> charstrings = new(StringComparer.Ordinal);
 
         // private caches
-        private readonly Dictionary<string, Type1CharString> charStringCache = new Dictionary<string, Type1CharString>(StringComparer.Ordinal);
+        private readonly Dictionary<string, Type1CharString> charStringCache = new(StringComparer.Ordinal);
 
         private Type1CharStringParser charStringParser = null;
 

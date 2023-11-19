@@ -77,12 +77,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             else if (formatType.CompareTo(2.0f) == 0)
             {
                 int numGlyphs = data.ReadUInt16();
-                int[] glyphNameIndex = new int[numGlyphs];
+                var glyphNameIndex = new ushort[numGlyphs];
                 glyphNames = new string[numGlyphs];
-                int maxIndex = int.MinValue;
+                var maxIndex = ushort.MinValue;
                 for (int i = 0; i < numGlyphs; i++)
                 {
-                    int index = data.ReadUInt16();
+                    var index = data.ReadUInt16();
                     glyphNameIndex[i] = index;
                     // PDFBOX-808: Index numbers between 32768 and 65535 are
                     // reserved for future use, so we should just ignore them
@@ -130,11 +130,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
             else if (formatType.CompareTo(2.5f) == 0)
             {
-                int[] glyphNameIndex = new int[ttf.NumberOfGlyphs];
+                var glyphNameIndex = new ushort[ttf.NumberOfGlyphs];
                 for (int i = 0; i < glyphNameIndex.Length; i++)
                 {
-                    int offset = data.ReadSByte();
-                    glyphNameIndex[i] = i + 1 + offset;
+                    var offset = data.ReadSByte();
+                    glyphNameIndex[i] = (ushort)(i + 1 + offset);
                 }
                 glyphNames = new string[glyphNameIndex.Length];
                 for (int i = 0; i < glyphNames.Length; i++)

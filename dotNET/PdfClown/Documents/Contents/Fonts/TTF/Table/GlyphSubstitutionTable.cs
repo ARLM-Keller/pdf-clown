@@ -85,7 +85,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         {
             data.Seek(offset);
             int scriptCount = data.ReadUInt16();
-            var scriptOffsets = new int[scriptCount];
+            var scriptOffsets = new ushort[scriptCount];
             var scriptTags = new string[scriptCount];
             var resultScriptList = new Dictionary<string, ScriptTable>(scriptCount, StringComparer.Ordinal);
             for (int i = 0; i < scriptCount; i++)
@@ -106,8 +106,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             data.Seek(offset);
             int defaultLangSys = data.ReadUInt16();
             int langSysCount = data.ReadUInt16();
-            string[] langSysTags = new string[langSysCount];
-            int[] langSysOffsets = new int[langSysCount];
+            var langSysTags = new string[langSysCount];
+            var langSysOffsets = new ushort[langSysCount];
             for (int i = 0; i < langSysCount; i++)
             {
                 langSysTags[i] = data.ReadString(4);
@@ -142,13 +142,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             int lookupOrder = data.ReadUInt16();
             int requiredFeatureIndex = data.ReadUInt16();
             int featureIndexCount = data.ReadUInt16();
-            int[] featureIndices = new int[featureIndexCount];
+            var featureIndices = new int[featureIndexCount];
             for (int i = 0; i < featureIndexCount; i++)
             {
                 featureIndices[i] = data.ReadUInt16();
             }
-            return new LangSysTable(lookupOrder, requiredFeatureIndex, featureIndexCount,
-                    featureIndices);
+            return new LangSysTable(lookupOrder, requiredFeatureIndex, featureIndexCount, featureIndices);
         }
 
         private FeatureListTable ReadFeatureList(IInputStream data, long offset)

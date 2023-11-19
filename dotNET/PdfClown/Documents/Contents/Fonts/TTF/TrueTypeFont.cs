@@ -22,6 +22,7 @@ using System.Diagnostics;
 using PdfClown.Documents.Contents.Fonts.TTF.Model;
 using System.Text;
 using PdfClown.Bytes;
+using System.Globalization;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
@@ -611,26 +612,20 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         private int ParseUniName(string name)
         {
-            if (name.StartsWith("uni", StringComparison.Ordinal) && name.Length == 7)
+            if (name.StartsWith("uni", StringComparison.Ordinal))
             {
                 int nameLength = name.Length;
-                var uniStr = new StringBuilder();
                 try
                 {
                     for (int chPos = 3; chPos + 4 <= nameLength; chPos += 4)
                     {
-                        int codePoint = Convert.ToInt32(name.Substring(chPos, 4), 16);
+                        int codePoint = int.Parse(name.AsSpan(chPos, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                         if (codePoint <= 0xD7FF || codePoint >= 0xE000) // disallowed code area
                         {
-                            uniStr.Append((char)codePoint);
+                            return codePoint;
                         }
                     }
-                    string unicode = uniStr.ToString();
-                    if (unicode.Length == 0)
-                    {
-                        return -1;
-                    }
-                    return unicode[0];
+                    return -1;
                 }
                 catch (Exception e)
                 {

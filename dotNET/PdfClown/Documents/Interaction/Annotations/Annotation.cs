@@ -146,7 +146,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             GenerateName();
             Page = page;
-            SetBounds(box);
+            Box = Page.InvertRotateMatrix.MapRect(box);
             Contents = text;
             Printable = true;
             IsNew = true;

@@ -234,6 +234,8 @@ namespace PdfClown.Viewer
             }
         }
 
+        public bool IsClosed => File == null;
+
         public Field AddField(Field field)
         {
             if (string.IsNullOrEmpty(field.Name))

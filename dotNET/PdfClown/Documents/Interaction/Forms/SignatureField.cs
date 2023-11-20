@@ -44,11 +44,9 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF13)]
     public sealed class SignatureField : Field
     {
-        //TODO
         /**
           <summary>Creates a new signature field within the given document context.</summary>
         */
-        //TODO:dictionary mandatory items (if any)!!!
         public SignatureField(string name, Widget widget) : base(PdfName.Sig, name, widget)
         { }
 
@@ -124,7 +122,7 @@ namespace PdfClown.Documents.Interaction.Forms
             var availible = horizontal ? (box.Width / 2) - 4 : box.Width - 4;
             var headerFontSize = availible / maxSize;
             var composer = new PrimitiveComposer(normalAppearanceState);
-           
+
             composer.BeginLocalState();
             composer.SetFillColor(DeviceRGBColor.Black);
             composer.SetFont(font, headerFontSize);
@@ -136,7 +134,7 @@ namespace PdfClown.Documents.Interaction.Forms
                 YAlignmentEnum.Middle, 0);
             composer.End();
 
-            
+
             composer.BeginLocalState();
             var blockComp = new BlockComposer(composer)
             {

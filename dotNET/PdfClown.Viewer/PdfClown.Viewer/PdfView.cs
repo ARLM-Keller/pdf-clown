@@ -1359,7 +1359,7 @@ namespace PdfClown.Viewer
         public void Reload()
         {
             var newDocument = PdfDocumentView.LoadFrom(Document.FilePath);
-            if (operations.Count > 0)
+            if (operations.Count > 0 && !(Document?.IsClosed ?? true))
             {
                 var newOperations = new LinkedList<EditorOperation>();
                 foreach (var oldOperation in operations)

@@ -465,14 +465,7 @@ namespace PdfClown.Documents
 
         public SKMatrix RotateMatrix
         {
-            get
-            {
-                if (rotateMatrix == null)
-                {
-                    rotateMatrix = GraphicsState.GetRotationLeftBottomMatrix(Box, Rotate);
-                }
-                return rotateMatrix.Value;
-            }
+            get => rotateMatrix ??= GraphicsState.GetRotationLeftBottomMatrix(Box, Rotate);
             set
             {
                 rotateMatrix = value;
@@ -495,7 +488,7 @@ namespace PdfClown.Documents
 
         public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PieceInfo), this);
 
-        public DateTime? ModificationDate => (DateTime)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.LastModified]);
+        public DateTime? ModificationDate => BaseDataObject.GetDate(PdfName.LastModified);
 
         public List<ITextString> Strings { get; } = new List<ITextString>();
 

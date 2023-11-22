@@ -143,10 +143,10 @@ namespace PdfClown.Documents.Encryption
                 var extraInfo = new StringBuilder();
                 for (int i = 0; i < array.Count; i++)
                 {
-                    PdfString recipientFieldString = (PdfString)array.Resolve(i);
+                    var recipientFieldString = (PdfString)array.Resolve(i);
                     var recipientBytes = recipientFieldString.RawValue;
                     var stream = new ByteStream(recipientBytes);
-                    CmsEnvelopedData data = new CmsEnvelopedData(stream);
+                    var data = new CmsEnvelopedData(stream);
                     var recipCertificatesIt = data.GetRecipientInfos().GetRecipients();
                     int j = 0;
                     foreach (RecipientInformation ri in recipCertificatesIt)

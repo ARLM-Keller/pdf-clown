@@ -44,6 +44,7 @@ namespace PdfClown.Documents.Contents
           Current stream base position (cumulative size of preceding streams).
         */
         private long basePosition;
+        private long? length;
         /**
           Current stream.
         */
@@ -66,19 +67,20 @@ namespace PdfClown.Documents.Contents
             set => throw new NotSupportedException();
         }
 
-        public override long Length
+        public bool IsAvailable => Length > Position;
+
+        public override long Length => length ??= GetLength();
+
+        private long GetLength()
         {
-            get
+            if (baseDataObject is PdfStream pdfStream) // Single stream.
+                return pdfStream.Body.Length;
+            else // Array of streams.
             {
-                if (baseDataObject is PdfStream pdfStream) // Single stream.
-                    return pdfStream.Body.Length;
-                else // Array of streams.
-                {
-                    long length = 0;
-                    foreach (PdfDirectObject stream in (PdfArray)baseDataObject)
-                    { length += ((PdfStream)((PdfReference)stream).DataObject).Body.Length; }
-                    return length;
-                }
+                long length = 0;
+                foreach (PdfDirectObject stream in (PdfArray)baseDataObject)
+                { length += ((PdfStream)((PdfReference)stream).DataObject).Body.Length; }
+                return length;
             }
         }
 
@@ -229,7 +231,7 @@ namespace PdfClown.Documents.Contents
         private bool EnsureStream()
         {
             return !(stream == null
-                || stream.Position >= stream.Length)
+                || !stream.IsAvailable)
                 || MoveNextStream();
         }
 

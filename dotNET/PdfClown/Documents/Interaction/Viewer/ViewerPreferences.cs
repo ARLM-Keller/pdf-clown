@@ -40,7 +40,6 @@ namespace PdfClown.Documents.Interaction.Viewer
     [PDF(VersionEnum.PDF12)]
     public sealed class ViewerPreferences : PdfObjectWrapper<PdfDictionary>
     {
-        #region types
         /**
           <summary>Predominant reading order for text [PDF:1.7:8.1].</summary>
         */
@@ -148,29 +147,20 @@ namespace PdfClown.Documents.Interaction.Viewer
             */
             DuplexLongEdge
         };
-        #endregion
 
-        #region static
-        #region fields
         private static readonly DirectionEnum DefaultDirection = DirectionEnum.LeftToRight;
         private static readonly bool DefaultFlag = false;
         private static readonly PageLayoutEnum DefaultPageLayout = PageLayoutEnum.SinglePage;
         private static readonly PageModeEnum DefaultPageMode = PageModeEnum.Simple;
         private static readonly int DefaultPrintCount = 1;
         private static readonly PdfName DefaultPrintScaledObject = PdfName.AppDefault;
-        #endregion
 
-        #region dynamic
-        #region constructors
         public ViewerPreferences(Document context) : base(context, new PdfDictionary())
         { }
 
         public ViewerPreferences(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the predominant reading order for text.</summary>
         */
@@ -188,7 +178,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF14)]
         public bool DocTitleDisplayed
         {
-            get => (bool)Get(PdfName.DisplayDocTitle, DefaultFlag);
+            get => BaseDataObject.GetBool(PdfName.DisplayDocTitle, DefaultFlag);
             set => BaseDataObject[PdfName.DisplayDocTitle] = (value != DefaultFlag ? PdfBoolean.Get(value) : null);
         }
 
@@ -198,7 +188,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         */
         public bool MenubarVisible
         {
-            get => !(bool)Get(PdfName.HideMenubar, DefaultFlag);
+            get => !BaseDataObject.GetBool(PdfName.HideMenubar, DefaultFlag);
             set => BaseDataObject[PdfName.HideMenubar] = (value != !DefaultFlag ? PdfBoolean.Get(!value) : null);
         }
 
@@ -252,7 +242,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF17)]
         public bool PaperTraySelected
         {
-            get => (bool)Get(PdfName.PickTrayByPDFSize, DefaultFlag);
+            get => BaseDataObject.GetBool(PdfName.PickTrayByPDFSize, DefaultFlag);
             set => BaseDataObject[PdfName.PickTrayByPDFSize] = (value != DefaultFlag ? PdfBoolean.Get(value) : null);
         }
 
@@ -263,7 +253,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF17)]
         public int PrintCount
         {
-            get => (int)Get(PdfName.NumCopies, DefaultPrintCount);
+            get => BaseDataObject.GetInt(PdfName.NumCopies, DefaultPrintCount);
             set
             {
                 /*
@@ -287,7 +277,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         {
             get
             {
-                PdfArray printPageRangesObject = (PdfArray)BaseDataObject.Resolve(PdfName.PrintPageRange);
+                var printPageRangesObject = BaseDataObject.GetArray(PdfName.PrintPageRange);
                 if (printPageRangesObject == null
                   || printPageRangesObject.Count == 0
                   || printPageRangesObject.Count % 2 != 0)
@@ -351,7 +341,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         */
         public bool ToolbarVisible
         {
-            get => !(bool)Get(PdfName.HideToolbar, DefaultFlag);
+            get => !BaseDataObject.GetBool(PdfName.HideToolbar, DefaultFlag);
             set => BaseDataObject[PdfName.HideToolbar] = (value != !DefaultFlag ? PdfBoolean.Get(!value) : null);
         }
 
@@ -361,7 +351,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         */
         public bool WindowCentered
         {
-            get => (bool)Get(PdfName.CenterWindow, DefaultFlag);
+            get => BaseDataObject.GetBool(PdfName.CenterWindow, DefaultFlag);
             set => BaseDataObject[PdfName.CenterWindow] = (value != DefaultFlag ? PdfBoolean.Get(value) : null);
         }
 
@@ -371,7 +361,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         */
         public bool WindowFitted
         {
-            get => (bool)Get(PdfName.FitWindow, DefaultFlag);
+            get => BaseDataObject.GetBool(PdfName.FitWindow, DefaultFlag);
             set => BaseDataObject[PdfName.FitWindow] = (value != DefaultFlag ? PdfBoolean.Get(value) : null);
         }
 
@@ -381,17 +371,9 @@ namespace PdfClown.Documents.Interaction.Viewer
         */
         public bool WindowUIVisible
         {
-            get => !(bool)Get(PdfName.HideWindowUI, DefaultFlag);
+            get => !BaseDataObject.GetBool(PdfName.HideWindowUI, DefaultFlag);
             set => BaseDataObject[PdfName.HideWindowUI] = (value != !DefaultFlag ? PdfBoolean.Get(!value) : null);
-        }
-        #endregion
-
-        #region private
-        private object Get(PdfName key, object defaultValue)
-        { return PdfSimpleObject<object>.GetValue(BaseDataObject[key], defaultValue); }
-        #endregion
-        #endregion
-        #endregion
+        }        
     }
 
     internal static class ViewerPreferencesDirectionEnumExtension
@@ -494,9 +476,7 @@ namespace PdfClown.Documents.Interaction.Viewer
             return value.Value;
         }
 
-        public static PdfName Code(
-          this ViewerPreferences.PageModeEnum value
-          )
+        public static PdfName Code(this ViewerPreferences.PageModeEnum value)
         { return codes[value]; }
     }
 
@@ -531,6 +511,5 @@ namespace PdfClown.Documents.Interaction.Viewer
 
         public static PdfName Code(this ViewerPreferences.PaperModeEnum value)
         { return codes[value]; }
-        #endregion
     }
 }

@@ -57,8 +57,8 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF14)]
         public bool AlphaShape
         {
-            get => (bool)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.AIS], false);
-            set => BaseDataObject[PdfName.AIS] = PdfBoolean.Get(value);
+            get => BaseDataObject.GetBool(PdfName.AIS, false);
+            set => BaseDataObject.SetBool(PdfName.AIS, value);
         }
 
         public void ApplyTo(GraphicsState state)

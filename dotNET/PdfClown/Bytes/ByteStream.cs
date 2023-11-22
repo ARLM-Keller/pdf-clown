@@ -48,7 +48,7 @@ namespace PdfClown.Bytes
 
         public event EventHandler OnChange;
         ///<summary>Inner buffer where data are stored.</summary>
-        private Memory<byte> data;
+        private ArraySegment<byte> data;
         ///<summary>Number of bytes actually used in the buffer.</summary>
         private int length;
         ///<summary>Pointer position within the buffer.</summary>
@@ -67,14 +67,13 @@ namespace PdfClown.Bytes
             if (capacity < 1)
             { capacity = DefaultCapacity; }
 
-            this.data = new byte[capacity];
-            this.length = 0;
+            data = new byte[capacity];
+            length = 0;
         }
 
         public ByteStream(Memory<byte> data)
         {
-            this.data = data;
-            this.length = data.Length;
+            SetBuffer(data);
         }
 
         public ByteStream(byte[] data, int start, int end) : this(data.AsMemory(start, end - start))
@@ -100,12 +99,14 @@ namespace PdfClown.Bytes
 
         public long Available { get => length - position; }
 
+        public bool IsAvailable => length > position;
+
         public override long Length
         {
             get => length;
         }
 
-        public int Capacity => data.Length;
+        public int Capacity => data.Count;
 
         public bool Dirty
         {
@@ -135,7 +136,7 @@ namespace PdfClown.Bytes
         public IByteStream Append(byte data)
         {
             EnsureCapacity(1);
-            this.data.Span[this.length++] = data;
+            this.data[length++] = data;
             NotifyChange();
             return this;
         }
@@ -147,22 +148,23 @@ namespace PdfClown.Bytes
         public IByteStream Append(ReadOnlySpan<byte> data)
         {
             EnsureCapacity(data.Length);
-            data.CopyTo(AsSpan(this.length, data.Length));
-            this.length += data.Length;
+            data.CopyTo(AsSpan(length, data.Length));
+            length += data.Length;
             NotifyChange();
             return this;
         }
 
         public IByteStream Clone()
         {
-            IByteStream clone = new ByteStream(Capacity);
-            clone.Append(data.Span.Slice(0, length));
+            var clone = new ByteStream(length);
+            clone.Append(AsSpan(0, length));
             return clone;
         }
 
         public void Decode(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            data = filter.Decode(this, parameters, header);
+            var data = filter.Decode(this, parameters, header);
+            this.data = Unsafe.As<Memory<byte>, ArraySegment<byte>>(ref data);
             position = 0;
             length = data.Length;
         }
@@ -190,7 +192,7 @@ namespace PdfClown.Bytes
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte GetByte(int index) => data.Span[index];
+        public byte GetByte(int index) => data[index];
 
         public byte[] GetByteArray(int index, int length)
         {
@@ -204,17 +206,14 @@ namespace PdfClown.Bytes
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<byte> AsSpan(int index, int length)
-        {
-            return data.Span.Slice(index, length);
-        }
+        public Span<byte> AsSpan(int index, int length) => data.AsSpan(index, length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<byte> AsSpan(int index) => AsSpan(index, length - index);
 
-        public string GetString(int index, int length) => Encoding.Pdf.Decode(AsSpan(index, length));
+        public string GetString(int index, int length) => Charset.ISO88591.GetString(AsSpan(index, length));
 
-        public string GetString() => Charset.ISO88591.GetString(data.Span);
+        public string GetString() => Charset.ISO88591.GetString(AsSpan());
 
         public void Insert(int index, byte[] data) => Insert(index, data, 0, data.Length);
 
@@ -307,9 +306,9 @@ namespace PdfClown.Bytes
 
         public Span<byte> ReadSpan(int length)
         {
-            if (position + length > Length)
+            if (position + length > this.length)
             {
-                length = (int)(Length - position);
+                length = (int)(this.length - position);
             }
             var start = position;
             position += length;
@@ -318,9 +317,9 @@ namespace PdfClown.Bytes
 
         public Memory<byte> ReadMemory(int length)
         {
-            if (position + length > Length)
+            if (position + length > this.length)
             {
-                length = (int)(Length - position);
+                length = (int)(this.length - position);
             }
             var start = position;
             position += length;
@@ -329,7 +328,7 @@ namespace PdfClown.Bytes
 
         public override int ReadByte()
         {
-            if (position >= data.Length)
+            if (position >= length)
                 return -1;
 
             return GetByte(position++);
@@ -337,7 +336,7 @@ namespace PdfClown.Bytes
 
         public byte ReadUByte()
         {
-            if (position >= data.Length)
+            if (position >= length)
                 throw new EndOfStreamException();
 
             return GetByte(position++);
@@ -345,7 +344,7 @@ namespace PdfClown.Bytes
 
         public sbyte ReadSByte()
         {
-            if (position >= data.Length)
+            if (position >= length)
                 throw new EndOfStreamException();
 
             return unchecked((sbyte)GetByte(position++));
@@ -353,14 +352,14 @@ namespace PdfClown.Bytes
 
         public int PeekByte()
         {
-            if (position >= data.Length)
+            if (position >= length)
                 return -1;
             return GetByte(position);
         }
 
         public byte PeekUByte(int offset)
         {
-            if (position + offset >= data.Length)
+            if (position + offset >= length)
                 throw new EndOfStreamException();
             return GetByte(position + offset);
         }
@@ -416,11 +415,11 @@ namespace PdfClown.Bytes
 
         public string ReadLine()
         {
-            if (position >= data.Length)
+            if (position >= length)
                 throw new EndOfStreamException();
 
-            text::StringBuilder buffer = new text::StringBuilder();
-            while (position < data.Length)
+            var buffer = new text::StringBuilder();
+            while (position < length)
             {
                 int c = GetByte(position++);
                 if (c == '\r'
@@ -436,7 +435,7 @@ namespace PdfClown.Bytes
         {
             this.bitShift = -1;
         }
-        
+
         public int ReadBit()
         {
             if (bitShift < 0)
@@ -473,8 +472,8 @@ namespace PdfClown.Bytes
         {
             if (position < 0)
             { position = 0; }
-            else if (position > data.Length)
-            { position = data.Length; }
+            else if (position > length)
+            { position = length; }
 
             return this.position = (int)position;
         }
@@ -491,16 +490,13 @@ namespace PdfClown.Bytes
 
         public Memory<byte> AsMemory() => data.Slice(0, length);
 
-        public Span<byte> AsSpan() => data.Span.Slice(0, length);
+        public Span<byte> AsSpan() => data.AsSpan(0, length);
 
-        public byte[] GetArrayBuffer()
-        {
-            return Unsafe.As<Memory<byte>, ArraySegment<byte>>(ref data).Array;
-        }
+        public byte[] GetArrayBuffer() => data.Array;
 
         public void SetBuffer(Memory<byte> data)
         {
-            this.data = data;
+            this.data = Unsafe.As<Memory<byte>, ArraySegment<byte>>(ref data);
             length = data.Length;
             position = 0;
         }
@@ -538,17 +534,16 @@ namespace PdfClown.Bytes
         */
         private void EnsureCapacity(int additionalLength)
         {
-            int minCapacity = this.length + additionalLength;
+            int minCapacity = length + additionalLength;
             // Is additional data within the buffer capacity?
-            if (minCapacity <= this.data.Length)
+            if (minCapacity <= data.Count)
                 return;
 
             // Additional data exceed buffer capacity.
             // Reallocate the buffer!
-            var data = new byte[Math.Max(this.data.Length << 1, minCapacity)];
-            //Array.Copy(this.data, 0, data, 0, this.length);
-            this.data.Span.CopyTo(data);
-            this.data = data;
+            var newBuffer = new byte[Math.Max(data.Count << 1, minCapacity)];
+            AsSpan().CopyTo(newBuffer);
+            data = newBuffer;
         }
 
         private void NotifyChange()

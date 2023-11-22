@@ -59,6 +59,8 @@ namespace PdfClown.Bytes
             set => byteOrder = value;
         }
 
+        public bool IsAvailable => stream.Length > stream.Position;
+
         public override long Position
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

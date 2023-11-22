@@ -29,6 +29,14 @@ namespace PdfClown.Util
 {
     public class StringStream : BuffedStream<char>
     {
+        public StringStream()
+        {
+        }
+
+        public StringStream(int capacity) : base(capacity)
+        {
+        }
+
         public StringStream AppendNumber(int intValue)
         {
             var lenth = intValue == 0 ? 1 : (intValue > 0 ? 1 : 2) + (int)System.Math.Log10(System.Math.Abs((double)intValue));

@@ -217,7 +217,7 @@ namespace PdfClown.Documents.Multimedia
             */
             public DeviceRGBColor BackgroundColor
             {
-                get => DeviceRGBColor.Get((PdfArray)BaseDataObject[PdfName.B]);
+                get => DeviceRGBColor.Get(BaseDataObject.GetArray(PdfName.B));
                 set => BaseDataObject[PdfName.B] = PdfObjectWrapper.GetBaseObject(value);
             }
 
@@ -228,14 +228,14 @@ namespace PdfClown.Documents.Multimedia
             */
             public double BackgroundOpacity
             {
-                get => (double)PdfReal.GetValue(BaseDataObject[PdfName.O], 1d);
+                get => BaseDataObject.GetDouble(PdfName.O, 1d);
                 set
                 {
                     if (value < 0)
                     { value = 0; }
                     else if (value > 1)
                     { value = 1; }
-                    BaseDataObject[PdfName.O] = PdfReal.Get(value);
+                    BaseDataObject.SetDouble(PdfName.O, value);
                 }
             }
 

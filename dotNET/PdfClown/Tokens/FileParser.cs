@@ -34,6 +34,7 @@ using PdfClown.Util.Parsers;
 using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace PdfClown.Tokens
@@ -287,7 +288,7 @@ namespace PdfClown.Tokens
             IInputStream stream = Stream;
             var streamLength = stream.Length;
 
-            long position = SeekRevers(stream, streamLength, Keyword.StartXRef);
+            long position = SeekRevers(streamLength, Keyword.StartXRef);
             if (position < 0)
                 throw new PostScriptParseException("'" + Keyword.StartXRef + "' keyword not found.", this);
 
@@ -307,7 +308,7 @@ namespace PdfClown.Tokens
                 || (TokenType == TokenTypeEnum.Keyword && !CharsToken.Equals(Keyword.XRef, StringComparison.Ordinal))
                 || (TokenType != TokenTypeEnum.InderectObject && TokenType != TokenTypeEnum.Keyword))
             {
-                xrefPosition = SeekRevers(stream, streamLength, "\n" + Keyword.XRef);
+                xrefPosition = SeekRevers(streamLength, "\n" + Keyword.XRef);
                 if (xrefPosition >= 0)
                     xrefPosition++;
 
@@ -315,30 +316,32 @@ namespace PdfClown.Tokens
             return xrefPosition;
         }
 
-        private static long SeekRevers(IInputStream stream, long startPosition, string keyWord)
+        private long SeekRevers(long startPosition, string keyWord)
         {
-            string text = null;
-            long streamLength = stream.Length;
-            long position = startPosition;
-            int chunkSize = (int)Math.Min(streamLength, EOFMarkerChunkSize);
-            int index = -1;
+            Seek(startPosition);
+            return SkipKeyRevers(keyWord) ? Position : -1;
+            //string text = null;
+            //long streamLength = stream.Length;
+            //long position = startPosition;
+            //int chunkSize = (int)Math.Min(streamLength, EOFMarkerChunkSize);
+            //int index = -1;
 
-            while (index < 0 && position > 0)
-            {
-                /*
-                  NOTE: This condition prevents the keyword from being split by the chunk boundary.
-                */
-                if (position < streamLength)
-                { position += keyWord.Length; }
-                position -= chunkSize;
-                if (position < 0)
-                { position = 0; }
-                stream.Seek(position);
+            //while (index < 0 && position > 0)
+            //{
+            //    /*
+            //      NOTE: This condition prevents the keyword from being split by the chunk boundary.
+            //    */
+            //    if (position < streamLength)
+            //    { position += keyWord.Length; }
+            //    position -= chunkSize;
+            //    if (position < 0)
+            //    { position = 0; }
+            //    stream.Seek(position);
 
-                text = stream.ReadString(chunkSize);
-                index = text.LastIndexOf(keyWord, StringComparison.Ordinal);
-            }
-            return index < 0 ? -1 : position + index;
+            //    text = stream.ReadString(chunkSize);
+            //    index = text.LastIndexOf(keyWord, StringComparison.Ordinal);
+            //}
+            //return index < 0 ? -1 : position + index;
         }
 
         /**

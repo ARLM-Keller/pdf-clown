@@ -1161,17 +1161,17 @@ namespace PdfClown.Bytes.Filters.Jpx
 
                 var currentCodingpassType = 2; // first bit plane starts from cleanup
 
-                var encodedData = new byte[totalLength];
+                Memory<byte> encodedData = new byte[totalLength];
                 var position = 0;
                 for (j = 0, jj = data.Count; j < jj; j++)
                 {
                     dataItem = data[j];
-                    dataItem.Data.CopyTo(encodedData.AsMemory(position));
+                    dataItem.Data.CopyTo(encodedData.Slice(position));
                     position += dataItem.Data.Length;
                 }
                 // decoding the item
                 var bitModel = new BitModel(blockWidth, blockHeight, codeblock.SubbandType, codeblock.ZeroBitPlanes, mb);
-                var decoder = new ArithmeticDecoder(encodedData.AsMemory());
+                var decoder = new ArithmeticDecoder(encodedData);
                 bitModel.SetDecoder(decoder);
 
                 for (j = 0; j < codingpasses; j++)
@@ -2174,7 +2174,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             var contexts = Contexts;
             var labels = ContextLabelTable;
             var bitsDecoded = BitsDecoded;
-            var processedInverseMask = ~1;
+            var processedInverseMask = (sbyte)(~1);
             var processedMask = 1;
             var firstMagnitudeBitMask = 2;
 
@@ -2191,7 +2191,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             break;
                         }
                         // clear processed flag first
-                        processingFlags[index] = FiltersExtension.ToByte(processingFlags[index] & processedInverseMask);
+                        processingFlags[index] = (byte)(processingFlags[index] & processedInverseMask);
 
                         if (coefficentsMagnitude[index] != 0 ||
                         neighborsSignificance[index] == 0)

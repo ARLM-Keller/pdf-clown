@@ -98,7 +98,7 @@ namespace PdfClown.Util.Parsers
         private IInputStream stream;
         private object token;
         private TokenTypeEnum tokenType;
-        private StringStream sBuffer = new StringStream();
+        private StringStream sBuffer = new StringStream(64);
         private MemoryStream mBuffer = new MemoryStream();
 
         public PostScriptParser(IInputStream stream)
@@ -523,7 +523,7 @@ namespace PdfClown.Util.Parsers
                 if (c < char.MaxValue && (char)c == key[index])
                 {
                     index--;
-                    if (index == 0)
+                    if (index < 0)
                     {
                         break;
                     }

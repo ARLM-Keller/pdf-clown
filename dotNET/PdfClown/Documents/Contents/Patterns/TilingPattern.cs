@@ -184,7 +184,7 @@ namespace PdfClown.Documents.Contents.Patterns
 
         public SKShader GetShader(GraphicsState state)
         {
-            return SKShader.CreatePicture(GetPicture(), SKShaderTileMode.Repeat, SKShaderTileMode.Repeat, SKMatrix, SKRect.Create(XStep, YStep));
+            return SKShader.CreatePicture(GetPicture(), SKShaderTileMode.Repeat, SKShaderTileMode.Repeat, SKMatrix, SKRect.Create(XStep, Math.Abs(YStep)));
         }
 
         public void Render(SKCanvas context, SKSize size, bool clearContext = true)
@@ -231,7 +231,7 @@ namespace PdfClown.Documents.Contents.Patterns
 
         public AppDataCollection AppData => throw new NotImplementedException();
 
-        public DateTime? ModificationDate => (DateTime?)PdfSimpleObject<object>.GetValue(Dictionary[PdfName.LastModified]);
+        public DateTime? ModificationDate => Dictionary.GetDate(PdfName.LastModified);
 
         public List<ITextString> Strings { get; } = new List<ITextString>();
 

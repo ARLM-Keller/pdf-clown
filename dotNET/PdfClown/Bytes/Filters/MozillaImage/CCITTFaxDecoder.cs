@@ -1206,7 +1206,7 @@ namespace PdfClown.Bytes.Filters.CCITT
         }
     }
 
-    internal class TableCode
+    internal struct TableCode
     {
         internal bool v1;
         internal int v2;

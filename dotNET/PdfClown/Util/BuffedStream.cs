@@ -34,7 +34,7 @@ namespace PdfClown.Util
     {
         private const int DefaultCapacity = 1 << 3;
 
-        private Memory<T> data;
+        private ArraySegment<T> data;
         private int length;
         private int position = 0;
         private int mark;
@@ -53,8 +53,7 @@ namespace PdfClown.Util
 
         public BuffedStream(Memory<T> data)
         {
-            this.data = data;
-            this.length = data.Length;
+           SetBuffer(data);
         }
 
         public BuffedStream(T[] data, int start, int end)
@@ -72,7 +71,7 @@ namespace PdfClown.Util
             get => length;
         }
 
-        public int Capacity => data.Length;
+        public int Capacity => data.Count;
 
         public int Position
         {
@@ -83,7 +82,7 @@ namespace PdfClown.Util
         public BuffedStream<T> Append(T data)
         {
             EnsureCapacity(1);
-            this.data.Span[this.length++] = data;
+            this.data[this.length++] = data;
             return this;
         }
 
@@ -101,8 +100,8 @@ namespace PdfClown.Util
 
         public BuffedStream<T> Clone()
         {
-            var clone = new BuffedStream<T>(Capacity);
-            clone.Append(data.Span.Slice(0, length));
+            var clone = new BuffedStream<T>(length);
+            clone.Append(data.Slice(0, length));
             return clone;
         }
 
@@ -117,7 +116,7 @@ namespace PdfClown.Util
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T Get(int index) => data.Span[index];
+        public T Get(int index) => data[index];
 
         public T[] GetArray(int index, int length)
         {
@@ -131,10 +130,7 @@ namespace PdfClown.Util
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<T> AsSpan(int index, int length)
-        {
-            return data.Span.Slice(index, length);
-        }
+        public Span<T> AsSpan(int index, int length) => data.AsSpan(index, length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<T> AsSpan(int index) => AsSpan(index, length - index);
@@ -149,7 +145,7 @@ namespace PdfClown.Util
         public void Insert(int index, ReadOnlySpan<T> data)
         {
             EnsureCapacity(length);
-            var leftLength = this.length - index;
+            var leftLength = length - index;
             // Shift right the existing data block to make room for new data!
             //Array.Copy(this.data, index, this.data, index + length, leftLength);
             AsSpan(index, leftLength).CopyTo(AsSpan(index + length, leftLength));
@@ -224,7 +220,7 @@ namespace PdfClown.Util
 
         public T Read()
         {
-            if (position >= data.Length)
+            if (position >= length)
                 return default(T);
 
             return Get(position++);
@@ -232,7 +228,7 @@ namespace PdfClown.Util
 
         public T Peek()
         {
-            if (position >= data.Length)
+            if (position >= length)
                 return default(T);
             return Get(position);
         }
@@ -241,16 +237,13 @@ namespace PdfClown.Util
         {
             if (position < 0)
             { position = 0; }
-            else if (position > data.Length)
-            { position = data.Length; }
+            else if (position > length)
+            { position = length; }
 
             return this.position = (int)position;
         }
 
-        public long Skip(long offset)
-        {
-            return Seek(position + offset);
-        }
+        public long Skip(long offset) => Seek(position + offset);
 
         public long Seek(int offset, SeekOrigin origin)
         {
@@ -262,35 +255,17 @@ namespace PdfClown.Util
             };
         }
 
-        public int Mark()
-        {
-            return mark = position;
-        }
+        public int Mark() => mark = position;
 
-        public void ResetMark()
-        {
-            Seek(mark);
-        }
+        public void ResetMark() => Seek(mark);
 
-        public void Reset()
-        {
-            SetLength(0);
-        }
+        public void Reset() => SetLength(0);
 
-        public T[] ToArray()
-        {
-            return data.Slice(0, length).ToArray();
-        }
+        public T[] ToArray() => data.Slice(0, length).ToArray();
 
-        public Memory<T> GetMemoryBuffer()
-        {
-            return data.Slice(0, length);
-        }
+        public Memory<T> GetMemoryBuffer() => data.Slice(0, length);
 
-        public T[] GetArrayBuffer()
-        {
-            return Unsafe.As<Memory<T>, ArraySegment<T>>(ref data).Array;
-        }
+        public T[] GetArrayBuffer() => data.Array;
 
         public void SetBuffer(T[] data)
         {
@@ -301,7 +276,7 @@ namespace PdfClown.Util
 
         public void SetBuffer(Memory<T> data)
         {
-            this.data = data;
+            this.data = Unsafe.As<Memory<T>, ArraySegment<T>>(ref data);
             length = data.Length;
             position = 0;
         }
@@ -312,17 +287,17 @@ namespace PdfClown.Util
         ///  adding data.</summary>
         private void EnsureCapacity(int additionalLength)
         {
-            int minCapacity = this.length + additionalLength;
+            int minCapacity = length + additionalLength;
             // Is additional data within the buffer capacity?
-            if (minCapacity <= this.data.Length)
+            if (minCapacity <= data.Count)
                 return;
 
             // Additional data exceed buffer capacity.
             // Reallocate the buffer!
-            var data = new T[System.Math.Max(this.data.Length << 1, minCapacity)];
+            var newBuffer = new T[System.Math.Max(data.Count << 1, minCapacity)];
             //Array.Copy(this.data, 0, data, 0, this.length);
-            this.data.Span.CopyTo(data);
-            this.data = data;
+            data.AsSpan().CopyTo(newBuffer);
+            data = newBuffer;
         }
 
 

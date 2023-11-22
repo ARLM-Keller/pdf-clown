@@ -160,10 +160,11 @@ namespace PdfClown.Documents.Contents.Fonts
                         {
                             throw new IOException("Font data unavailable");
                         }
-                        length1 = RepairLength1(bytes.Span, length1);
-                        length2 = RepairLength2(bytes.Span, length1, length2);
+                        var span = bytes.Span;
+                        length1 = RepairLength1(span, length1);
+                        length2 = RepairLength2(span, length1, length2);
 
-                        if ((bytes.Span[0] & 0xff) == PFB_START_MARKER)
+                        if ((span[0] & 0xff) == PFB_START_MARKER)
                         {
                             // some bad files embed the entire PFB, see PDFBOX-2607
                             t1 = Type1Font.CreateWithPFB(bytes);

@@ -65,7 +65,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override SKColor GetSKColor(Color color, float? alpha = null)
         {
-            DeviceRGBColor spaceColor = (DeviceRGBColor)color;
+            var spaceColor = (DeviceRGBColor)color;
             var skColor = new SKColor(
                (byte)Math.Round(spaceColor.R * 255),
                (byte)Math.Round(spaceColor.G * 255),

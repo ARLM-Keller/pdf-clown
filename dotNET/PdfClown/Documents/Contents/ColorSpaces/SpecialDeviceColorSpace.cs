@@ -74,14 +74,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override SKColor GetSKColor(Color color, float? alpha)
         {
-            return GetSKColor(color.Components.Select(p => ((IPdfNumber)p).FloatValue).ToArray(), alpha);
+            Span<float> components = stackalloc float[color.Components.Count];
+            color.CopyTo(components);
+            return GetSKColor(components, alpha);
         }
 
         public override SKColor GetSKColor(Span<float> components, float? alpha = null)
         {
             var alternateComponents = TintFunction.Calculate(components);
-            ColorSpace alternateSpace = AlternateSpace;
-            return alternateSpace.GetSKColor(alternateComponents, alpha);
+            return AlternateSpace.GetSKColor(alternateComponents, alpha);
         }
     }
 }

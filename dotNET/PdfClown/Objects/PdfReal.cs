@@ -95,7 +95,7 @@ namespace PdfClown.Objects
                 var value = FloatValue;
                 return Unsafe.As<float, T>(ref value);
             }
-            else if (typeof(T) == typeof(double))
+            else if (typeof(T) == typeof(int))
             {
                 var value = IntValue;
                 return Unsafe.As<int, T>(ref value);

@@ -307,7 +307,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 */
         private Dictionary<string, List<Token>> ReadSimpleDict()
         {
-            Dictionary<string, List<Token>> dict = new Dictionary<string, List<Token>>(StringComparer.Ordinal);
+            var dict = new Dictionary<string, List<Token>>(StringComparer.Ordinal);
 
             int Length = Read(TokenKind.INTEGER).IntValue;
             Read(TokenKind.NAME, "dict");

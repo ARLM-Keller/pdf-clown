@@ -47,8 +47,8 @@ namespace PdfClown.Documents.Interaction.Actions
             PdfDataObject scriptObject = baseDataObject.Resolve(key);
             if (scriptObject == null)
                 return null;
-            else if (scriptObject is PdfTextString)
-                return ((PdfTextString)scriptObject).StringValue;
+            else if (scriptObject is PdfTextString pdfString)
+                return pdfString.StringValue;
             else
             {
                 var scriptBuffer = ((PdfStream)scriptObject).Body;

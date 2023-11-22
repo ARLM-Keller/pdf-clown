@@ -27,6 +27,7 @@ using PdfClown.Objects;
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -76,5 +77,22 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             get;
         }
+
+        public void CopyTo(Span<float> to)
+        {
+            var components = Components;
+            for (int i = 0; i < components.Count; i++)
+            {
+                to[i] = ((IPdfNumber)components[i]).FloatValue;
+            }
+        }
+
+        public Span<float> AsSpan()
+        {
+            Span<float> components = new float[Components.Count];
+            CopyTo(components);
+            return components;
+        }
+
     }
 }

@@ -40,6 +40,8 @@ namespace PdfClown.Bytes
         */
         ByteOrderEnum ByteOrder { get; set; }
 
+        bool IsAvailable { get; }
+
         /**
           <summary>Gets the hash representation of the sequence.</summary>
         */

@@ -56,7 +56,7 @@ namespace PdfClown.Tokens
             }
         }
 
-        private static readonly int EOFMarkerChunkSize = 1024; // [PDF:1.6:H.3.18].
+       // private static readonly int EOFMarkerChunkSize = 1024; // [PDF:1.6:H.3.18].
 
         private Files.File file;
         private PdfEncryption encryption;

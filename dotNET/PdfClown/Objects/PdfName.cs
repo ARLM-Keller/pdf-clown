@@ -451,10 +451,12 @@ namespace PdfClown.Objects
         public static readonly PdfName ON = new PdfName("ON");
         public static readonly PdfName OneColumn = new PdfName("OneColumn");
         public static readonly PdfName OP = new PdfName("OP");
+        public static readonly PdfName op = new PdfName("op");
         public static readonly PdfName Open = new PdfName("Open");
         public static readonly PdfName OpenAction = new PdfName("OpenAction");
         public static readonly PdfName OpenArrow = new PdfName("OpenArrow");
         public static readonly PdfName OpenType = new PdfName("OpenType");
+        public static readonly PdfName OPM = new PdfName("OPM");
         public static readonly PdfName Opt = new PdfName("Opt");
         public static readonly PdfName Or = new PdfName("Or");
         public static readonly PdfName Order = new PdfName("Order");
@@ -538,6 +540,7 @@ namespace PdfClown.Objects
         public static readonly PdfName RT = new PdfName("RT");
         public static readonly PdfName RunLengthDecode = new PdfName("RunLengthDecode");
         public static readonly PdfName S = new PdfName("S");
+        public static readonly PdfName SA = new PdfName("SA");
         public static readonly PdfName Saturation = new PdfName("Saturation");
         public static readonly PdfName SBApproved = new PdfName("SBApproved");
         public static readonly PdfName SBCompleted = new PdfName("SBCompleted");

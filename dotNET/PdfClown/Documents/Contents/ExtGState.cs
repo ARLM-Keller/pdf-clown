@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Documents;
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Scanner;
@@ -80,22 +81,50 @@ namespace PdfClown.Documents.Contents
                     if (!AlphaShape)
                         state.FillAlpha = FillAlpha;
                 }
+                else if (parameterName.Equals(PdfName.SA))
+                {
+                    state.StrokeAdjustment = StrokeAdjustment;
+                }
+                else if (parameterName.Equals(PdfName.OP))
+                {
+                    state.StrokeOverprint = StrokeOverprint;
+                }
+                else if (parameterName.Equals(PdfName.op))
+                {
+                    state.FillOverprint = FillOverprint;
+                }
+                else if (parameterName.Equals(PdfName.OPM))
+                {
+                    state.OverprintMode = OverprintMode;
+                }
                 else if (parameterName.Equals(PdfName.AIS))
-                { state.AlphaIsShape = AlphaShape; }
+                {
+                    state.AlphaIsShape = AlphaShape;
+                }
                 else if (parameterName.Equals(PdfName.LC))
-                { state.LineCap = LineCap.Value; }
+                {
+                    state.LineCap = LineCap.Value;
+                }
                 else if (parameterName.Equals(PdfName.D))
-                { state.LineDash = LineDash; }
+                {
+                    state.LineDash = LineDash;
+                }
                 else if (parameterName.Equals(PdfName.LJ))
-                { state.LineJoin = LineJoin.Value; }
+                {
+                    state.LineJoin = LineJoin.Value;
+                }
                 else if (parameterName.Equals(PdfName.LW))
-                { state.LineWidth = LineWidth.Value; }
+                {
+                    state.LineWidth = LineWidth.Value;
+                }
                 else if (parameterName.Equals(PdfName.ML))
-                { state.MiterLimit = MiterLimit.Value; }
+                {
+                    state.MiterLimit = MiterLimit.Value;
+                }
                 else if (parameterName.Equals(PdfName.BM))
-                { state.BlendMode = BlendMode; }
-                else if (parameterName.Equals(PdfName.Type))
-                { }
+                {
+                    state.BlendMode = BlendMode;
+                }
                 else if (parameterName.Equals(PdfName.SMask))
                 {
                     state.SMask = SMask;
@@ -193,6 +222,30 @@ namespace PdfClown.Documents.Contents
             set => BaseDataObject.SetFloat(PdfName.CA, value);
         }
 
+        public bool FillOverprint
+        {
+            get => BaseDataObject.GetBool(PdfName.op);
+            set => BaseDataObject.SetBool(PdfName.op, value);
+        }
+
+        public bool StrokeOverprint
+        {
+            get => BaseDataObject.GetBool(PdfName.OP);
+            set => BaseDataObject.SetBool(PdfName.OP, value);
+        }
+
+        public int OverprintMode
+        {
+            get => BaseDataObject.GetInt(PdfName.OPM);
+            set => BaseDataObject.SetInt(PdfName.OPM, value);
+        }
+
+        public bool StrokeAdjustment
+        {
+            get => BaseDataObject.GetBool(PdfName.SA);
+            set => BaseDataObject.SetBool(PdfName.SA, value);
+        }
+
         [PDF(VersionEnum.PDF13)]
         public Font Font
         {
@@ -283,7 +336,7 @@ namespace PdfClown.Documents.Contents
 
         public Function BG
         {
-            get => Function.Wrap(BaseDataObject[PdfName.BG]);
+            get => BaseDataObject[PdfName.BG] is PdfName ? null : Function.Wrap(BaseDataObject[PdfName.BG]);
             set => BaseDataObject[PdfName.BG] = value.BaseObject;
         }
 

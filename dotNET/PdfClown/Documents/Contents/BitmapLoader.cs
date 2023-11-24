@@ -372,7 +372,7 @@ namespace PdfClown.Documents.Contents
             // create the buffer that will hold the pixels
             var raster = new uint[info.Width * info.Height];//var bitmap = new SKBitmap();
             Span<float> components = stackalloc float[componentsCount];
-            Span<float> maskComponents = stackalloc float[componentsCount];
+            Span<float> maskComponents = sMaskLoader != null ? stackalloc float[sMaskLoader.componentsCount] : Span<float>.Empty;
             var buffer = this.buffer.Span;
             var maskBuffer = sMaskLoader != null ? sMaskLoader.buffer.Span : Span<byte>.Empty;
             for (int y = 0; y < info.Height; y++)

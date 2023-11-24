@@ -42,8 +42,6 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
     [PDF(VersionEnum.PDF13)]
     public abstract class Shading : PdfObjectWrapper<PdfDataObject>
     {
-        private float[] bakground;
-
         //TODO:shading types!
         public static Shading Wrap(PdfDirectObject baseObject)
         {
@@ -93,22 +91,20 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             set => Dictionary[PdfName.ColorSpace] = value?.BaseObject;
         }
 
-        public float[] Background
+        public PdfArray Background
         {
-            get => bakground ??= ((PdfArray)Dictionary.Resolve(PdfName.Background))?.Select(p => ((IPdfNumber)p).FloatValue).ToArray();
-            set
-            {
-                bakground = value;
-                Dictionary[PdfName.Background] = new PdfArray(value.Select(p => PdfReal.Get(p)));
-            }
+            get => Dictionary.GetArray(PdfName.Background);
+            set => Dictionary[PdfName.Background] = value;
         }
 
-        public SKRect? Box
+        public Color BackgroundColor => Background is PdfArray array ? ColorSpace.GetColor(array, null) : null;
+
+        public virtual SKRect Box
         {
             get
             {
                 var box = Wrap<Rectangle>(Dictionary[PdfName.BBox]);
-                return box?.ToRect();
+                return box?.ToRect() ?? SKRect.Empty;
             }
         }
 

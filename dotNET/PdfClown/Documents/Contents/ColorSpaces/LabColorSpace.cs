@@ -133,11 +133,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
         }
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
-        { return new LabColor(components); }
+        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context) => new LabColor(components);
 
-        public override bool IsSpaceColor(Color color)
-        { return color is LabColor; }
+        public override bool IsSpaceColor(Color color) => color is LabColor;
 
         public override SKColor GetSKColor(Color color, float? alpha = null)
         {

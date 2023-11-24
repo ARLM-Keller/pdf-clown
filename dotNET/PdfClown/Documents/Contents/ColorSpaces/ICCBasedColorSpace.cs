@@ -56,25 +56,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override int ComponentCount => N;
 
-        public override Color DefaultColor => DeviceGrayColor.Default;
+        public override Color DefaultColor => AlternateColorSpace.DefaultColor;
 
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         {
             return AlternateColorSpace.GetColor(components, context);
         }
 
-        public override bool IsSpaceColor(Color color)
-        { return AlternateColorSpace.IsSpaceColor(color); }
+        public override bool IsSpaceColor(Color color) => AlternateColorSpace.IsSpaceColor(color);
 
-        public override SKColor GetSKColor(Color color, float? alpha = null)
-        {
-            return AlternateColorSpace.GetSKColor(color, alpha);
-        }
+        public override SKColor GetSKColor(Color color, float? alpha = null) => AlternateColorSpace.GetSKColor(color, alpha);
 
-        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
-        {
-            return AlternateColorSpace.GetSKColor(components, alpha);
-        }
+        public override SKColor GetSKColor(Span<float> components, float? alpha = null) => AlternateColorSpace.GetSKColor(components, alpha);
 
         public PdfStream Profile => (PdfStream)((PdfArray)BaseDataObject).Resolve(1);
 

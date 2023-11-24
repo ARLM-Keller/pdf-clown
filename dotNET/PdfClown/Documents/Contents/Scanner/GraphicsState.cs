@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using colors = PdfClown.Documents.Contents.ColorSpaces;
-using fonts = PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Objects;
 
 using System;
@@ -36,6 +34,7 @@ using PdfClown.Util.Math.Geom;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Functions;
 using PdfClown.Documents.Contents.Patterns;
+using PdfClown.Documents.Contents.ColorSpaces;
 
 namespace PdfClown.Documents.Contents
 {
@@ -46,17 +45,17 @@ namespace PdfClown.Documents.Contents
     {
         private IList<BlendModeEnum> blendMode;
         private SKMatrix ctm;
-        private colors::Color fillColor;
-        private colors::ColorSpace fillColorSpace;
-        private colors::Color strokeColor;
-        private colors::ColorSpace strokeColorSpace;
+        private Color fillColor;
+        private ColorSpace fillColorSpace;
+        private Color strokeColor;
+        private ColorSpace strokeColorSpace;
         private LineCapEnum lineCap;
         private LineDash lineDash;
         private LineJoinEnum lineJoin;
         private float lineWidth;
         private float miterLimit;
 
-        private fonts::Font font;
+        private Font font;
         private float fontSize;
 
         private TextRenderModeEnum renderMode;
@@ -82,7 +81,7 @@ namespace PdfClown.Documents.Contents
         /**
          <summary>Gets/Sets the current font [PDF:1.6:5.2].</summary>
        */
-        public fonts::Font Font
+        public Font Font
         {
             get => font;
             set => font = value;
@@ -200,7 +199,7 @@ namespace PdfClown.Documents.Contents
         /**
           <summary>Gets/Sets the current color for nonstroking operations [PDF:1.6:4.5.1].</summary>
         */
-        public colors::Color FillColor
+        public Color FillColor
         {
             get => fillColor;
             set => fillColor = value;
@@ -209,7 +208,7 @@ namespace PdfClown.Documents.Contents
         /**
           <summary>Gets/Sets the current color space for nonstroking operations [PDF:1.6:4.5.1].</summary>
         */
-        public colors::ColorSpace FillColorSpace
+        public ColorSpace FillColorSpace
         {
             get => fillColorSpace;
             set => fillColorSpace = value;
@@ -268,7 +267,7 @@ namespace PdfClown.Documents.Contents
         /**
           <summary>Gets/Sets the current color for stroking operations [PDF:1.6:4.5.1].</summary>
         */
-        public colors::Color StrokeColor
+        public Color StrokeColor
         {
             get => strokeColor;
             set => strokeColor = value;
@@ -277,7 +276,7 @@ namespace PdfClown.Documents.Contents
         /**
           <summary>Gets/Sets the current color space for stroking operations [PDF:1.6:4.5.1].</summary>
         */
-        public colors::ColorSpace StrokeColorSpace
+        public ColorSpace StrokeColorSpace
         {
             get => strokeColorSpace;
             set => strokeColorSpace = value;
@@ -296,6 +295,14 @@ namespace PdfClown.Documents.Contents
         public bool Knockout { get; internal set; }
 
         public Function Function { get; internal set; }
+
+        public bool StrokeOverprint { get; internal set; }
+
+        public bool FillOverprint { get; internal set; }
+
+        public int OverprintMode { get; internal set; }
+
+        public bool StrokeAdjustment { get; internal set; }
 
         /**
   <summary>Gets the initial current transformation matrix.</summary>
@@ -544,10 +551,10 @@ namespace PdfClown.Documents.Contents
             // State parameters initialization.
             blendMode = ExtGState.DefaultBlendMode;
             Ctm = GetInitialCtm();
-            fillColor = colors::DeviceGrayColor.Default;
-            fillColorSpace = colors::DeviceGrayColorSpace.Default;
-            strokeColor = colors::DeviceGrayColor.Default;
-            strokeColorSpace = colors::DeviceGrayColorSpace.Default;
+            fillColor = DeviceGrayColor.Default;
+            fillColorSpace = DeviceGrayColorSpace.Default;
+            strokeColor = DeviceGrayColor.Default;
+            strokeColorSpace = DeviceGrayColorSpace.Default;
             lineCap = LineCapEnum.Butt;
             lineDash = new LineDash();
             lineJoin = LineJoinEnum.Miter;
@@ -585,7 +592,7 @@ namespace PdfClown.Documents.Contents
                 wordSpace = wordSpace,
                 lead = lead,
                 //Paint
-                blendMode = new List<BlendModeEnum>(blendMode),
+                blendMode = blendMode,
                 ctm = ctm,
                 fillColor = fillColor,
                 fillColorSpace = fillColorSpace,
@@ -600,6 +607,9 @@ namespace PdfClown.Documents.Contents
                 AlphaIsShape = AlphaIsShape,
                 StrokeAlpha = StrokeAlpha,
                 FillAlpha = FillAlpha,
+                FillOverprint = FillOverprint,
+                StrokeOverprint = StrokeOverprint,
+                OverprintMode = OverprintMode,
                 TextState = new TextGraphicsState
                 {
                     Tm = textState.Tm,
@@ -641,6 +651,10 @@ namespace PdfClown.Documents.Contents
             state.AlphaIsShape = AlphaIsShape;
             state.FillAlpha = FillAlpha;
             state.StrokeAlpha = StrokeAlpha;
+            state.FillOverprint = FillOverprint;
+            state.StrokeOverprint = StrokeOverprint;
+            state.OverprintMode = OverprintMode;
+
         }
 
     }

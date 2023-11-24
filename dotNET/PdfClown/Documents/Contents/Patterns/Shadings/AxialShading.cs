@@ -36,12 +36,18 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         private SKPoint[] coords;
         private float[] domain;
         private bool[] extend;
+        private SKRect? box;
 
         internal AxialShading(PdfDirectObject baseObject) : base(baseObject)
         { }
         public AxialShading()
         {
             ShadingType = 2;
+        }
+
+        public override SKRect Box
+        {
+            get => box ??= new SKRect(Coords[0].X, Coords[0].Y, Coords[1].X, Coords[1].Y).Standardized;
         }
 
         public SKPoint[] Coords
@@ -106,12 +112,13 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             var colors = new SKColor[2];
             //var background = Background;
             var domain = Domain;
+            Span<float> components = stackalloc float[compCount];
             for (int i = 0; i < domain.Length; i++)
             {
-                Span<float> components = stackalloc float[compCount];
                 components[0] = domain[i];
                 var result = Function.Calculate(components);
                 colors[i] = colorSpace.GetSKColor(result, null);
+                components.Clear();
             }
             var mode = Extend[0] && Extend[1] ? SKShaderTileMode.Clamp
                 : Extend[0] && !Extend[1] ? SKShaderTileMode.Mirror

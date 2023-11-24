@@ -54,9 +54,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets the base color space in which the values in the color table
           are to be interpreted.</summary>
         */
-        public ColorSpace BaseSpace => baseSpace ?? (baseSpace = ColorSpace.Wrap(((PdfArray)BaseDataObject)[1]));
+        public ColorSpace BaseSpace => baseSpace ??= ColorSpace.Wrap(((PdfArray)BaseDataObject)[1]);
 
-        public int BaseSpaceComponentCount => componentCount ?? (componentCount = baseSpace.ComponentCount).Value;
+        public int BaseSpaceComponentCount => componentCount ??= BaseSpace.ComponentCount;
 
         public override object Clone(Document context)
         { throw new NotImplementedException(); }

@@ -184,7 +184,8 @@ namespace PdfClown.Documents.Contents.Patterns
 
         public SKShader GetShader(GraphicsState state)
         {
-            return SKShader.CreatePicture(GetPicture(), SKShaderTileMode.Repeat, SKShaderTileMode.Repeat, SKMatrix, SKRect.Create(XStep, Math.Abs(YStep)));
+            var rect = SKRect.Create(Math.Abs(XStep), Math.Abs(YStep));
+            return SKShader.CreatePicture(GetPicture(), SKShaderTileMode.Repeat, SKShaderTileMode.Repeat, SKMatrix, rect);
         }
 
         public void Render(SKCanvas context, SKSize size, bool clearContext = true)

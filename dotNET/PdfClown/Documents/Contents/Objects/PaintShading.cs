@@ -77,9 +77,27 @@ namespace PdfClown.Documents.Contents.Objects
             {
                 var shading = GetShading(scanner);
                 var paint = state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha);
+                if (shading.Background != null)
+                {
+                    var color = shading.BackgroundColor;
+                    paint.Color = shading.ColorSpace.GetSKColor(color);
+                    scanner.RenderContext.DrawPaint(paint);
+                }
                 paint.Shader = shading?.GetShader(SKMatrix.Identity, state);
                 scanner.RenderContext.DrawPaint(paint);
             }
+        }
+
+        private static SKMatrix GenerateMatrix(ContentScanner scanner, Shadings.Shading shading)
+        {
+            var matrix = SKMatrix.Identity;
+            if (scanner.RenderContext.GetLocalClipBounds(out var clipBound))
+            {
+                matrix = SKMatrix.CreateScale(shading.Box.Width == 0 ? 1 : clipBound.Width / shading.Box.Width,
+                                                  shading.Box.Height == 0 ? 1 : clipBound.Width / shading.Box.Height);
+            }
+
+            return matrix;
         }
     }
 }

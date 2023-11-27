@@ -74,25 +74,25 @@ namespace PdfClown.Documents.Contents.Fonts
                 if (fontFile != null)
                 {
                     using var input = fontFile.BaseDataObject.ExtractBody(true);
-                    try
+                    //try
+                    //{
+                    if (input != null && input.Length > 0 && (input.PeekByte() & 0xff) == '%')
                     {
-                        if (input != null && input.Length > 0 && (input.PeekByte() & 0xff) == '%')
-                        {
-                            // PDFBOX-2642 contains a corrupt PFB font instead of a CFF
-                            Debug.WriteLine("warn: Found PFB but expected embedded CFF font " + fd.FontName);
-                            fontIsDamaged = true;
-                        }
-                        else
-                        {
-                            CFFParser cffParser = new CFFParser();
-                            cffFont = cffParser.Parse(input).FirstOrDefault();
-                        }
-                    }
-                    catch (IOException e)
-                    {
-                        Debug.WriteLine("error: Can't read the embedded CFF font " + fd.FontName, e);
+                        // PDFBOX-2642 contains a corrupt PFB font instead of a CFF
+                        Debug.WriteLine("warn: Found PFB but expected embedded CFF font " + fd.FontName);
                         fontIsDamaged = true;
                     }
+                    else
+                    {
+                        var cffParser = new CFFParser();
+                        cffFont = cffParser.Parse(input).FirstOrDefault();
+                    }
+                    //}
+                    //catch (IOException e)
+                    //{
+                    //    Debug.WriteLine("error: Can't read the embedded CFF font " + fd.FontName, e);
+                    //    fontIsDamaged = true;
+                    //}
                 }
             }
 
@@ -451,6 +451,6 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             // todo: not implemented, highly suspect
             return 500;
-        }       
+        }
     }
 }

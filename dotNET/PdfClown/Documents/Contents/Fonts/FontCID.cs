@@ -63,7 +63,14 @@ namespace PdfClown.Documents.Contents.Fonts
             PdfName subType = dictionary.GetName(PdfName.Subtype);
             if (PdfName.CIDFontType0.Equals(subType))
             {
-                return new FontCIDType0(dictionary, parent);
+                try
+                {
+                    return new FontCIDType0(dictionary, parent);
+                }
+                catch
+                {
+                    return new FontCIDType2(dictionary, parent);
+                }
             }
             else if (PdfName.CIDFontType2.Equals(subType))
             {

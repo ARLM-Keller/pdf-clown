@@ -63,8 +63,7 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get => new SKPoint(
                   ((IPdfNumber)operands[0]).FloatValue,
-                  ((IPdfNumber)operands[1]).FloatValue
-                  );
+                  ((IPdfNumber)operands[1]).FloatValue);
             set
             {
                 operands[0] = PdfReal.Get(value.X);
@@ -74,12 +73,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override void Scan(GraphicsState state)
         {
-            var pathObject = state.Scanner.RenderObject;
-            if (pathObject != null)
-            {
-                SKPoint point = Point;
-                pathObject.LineTo(Point);
-            }
+            state.Scanner.RenderObject?.LineTo(Point);
         }
     }
 }

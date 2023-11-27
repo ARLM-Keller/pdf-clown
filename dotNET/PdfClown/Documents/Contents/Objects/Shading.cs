@@ -55,7 +55,7 @@ namespace PdfClown.Documents.Contents.Objects
         public override void Scan(GraphicsState state)
         {
             var shading = GetResource(state.Scanner);
-            state.Shading = shading;
+            //state.Shading = shading;
             base.Scan(state);
         }
 

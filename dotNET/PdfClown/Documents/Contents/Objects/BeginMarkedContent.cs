@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents.Layers;
 using PdfClown.Objects;
 
 using System.Collections.Generic;
@@ -54,7 +55,14 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override void Scan(GraphicsState state)
         {
-            base.Scan(state);
+            var properties = GetProperties(state.Scanner);
+            if (properties is Layer layer
+                && layer.Viewable == false)
+            {
+               //state.Scanner.ContentContext.HiddenLayer++;
+            }
         }
     }
+
+
 }

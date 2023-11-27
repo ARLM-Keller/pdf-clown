@@ -66,6 +66,8 @@ namespace PdfClown.Documents.Contents.Objects
             object properties = Properties;
             if (properties is PropertyList list)
                 return list;
+            if (properties == null)
+                return null;
             var name = (PdfName)properties;
             var pscanner = scanner;
 
@@ -84,7 +86,7 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get
             {
-                PdfDirectObject propertiesObject = operands[1];
+                PdfDirectObject propertiesObject = operands.Count > 1 ? operands[1] : null;
                 if (propertiesObject == null)
                     return null;
                 else if (propertiesObject is PdfName)

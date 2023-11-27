@@ -111,13 +111,11 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get
             {
-                if (@operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal))
-                    return null;
-                else
-                    return new SKPoint(
+                return @operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal)
+                    ? null
+                    : new SKPoint(
                       ((IPdfNumber)operands[0]).FloatValue,
-                      ((IPdfNumber)operands[1]).FloatValue
-                      );
+                      ((IPdfNumber)operands[1]).FloatValue);
             }
             set
             {
@@ -142,16 +140,13 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get
             {
-                if (@operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal))
-                    return new SKPoint(
+                return @operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal)
+                    ? new SKPoint(
                       ((IPdfNumber)operands[0]).FloatValue,
-                      ((IPdfNumber)operands[1]).FloatValue
-                      );
-                else
-                    return new SKPoint(
+                      ((IPdfNumber)operands[1]).FloatValue)
+                    : new SKPoint(
                       ((IPdfNumber)operands[2]).FloatValue,
-                      ((IPdfNumber)operands[3]).FloatValue
-                      );
+                      ((IPdfNumber)operands[3]).FloatValue);
             }
             set
             {
@@ -175,16 +170,13 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get
             {
-                if (@operator.Equals(FullOperatorKeyword, StringComparison.Ordinal))
-                    return new SKPoint(
+                return @operator.Equals(FullOperatorKeyword, StringComparison.Ordinal)
+                    ? new SKPoint(
                       ((IPdfNumber)operands[4]).FloatValue,
-                      ((IPdfNumber)operands[5]).FloatValue
-                      );
-                else
-                    return new SKPoint(
+                      ((IPdfNumber)operands[5]).FloatValue)
+                    : new SKPoint(
                       ((IPdfNumber)operands[2]).FloatValue,
-                      ((IPdfNumber)operands[3]).FloatValue
-                      );
+                      ((IPdfNumber)operands[3]).FloatValue);
             }
             set
             {

@@ -37,7 +37,6 @@ namespace PdfClown.Documents.Contents.Layers
     [PDF(VersionEnum.PDF15)]
     public sealed class LayerMembership : LayerEntity
     {
-        #region types
         /**
           <summary>Layers whose states determine the visibility of content controlled by a membership.</summary>
         */
@@ -148,26 +147,16 @@ namespace PdfClown.Documents.Contents.Layers
                 return (PdfArray)baseDataObject;
             }
         }
-        #endregion
 
-        #region static
-        #region fields
         public static PdfName TypeName = PdfName.OCMD;
-        #endregion
 
-        #endregion
 
-        #region dynamic
-        #region constructors
         public LayerMembership(Document context) : base(context, TypeName)
         { }
 
         internal LayerMembership(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override LayerEntity Membership => this;
 
         public override VisibilityExpression VisibilityExpression
@@ -193,8 +182,5 @@ namespace PdfClown.Documents.Contents.Layers
             get => VisibilityPolicyEnumExtension.Get((PdfName)BaseDataObject[PdfName.P]);
             set => BaseDataObject[PdfName.P] = value.GetName();
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

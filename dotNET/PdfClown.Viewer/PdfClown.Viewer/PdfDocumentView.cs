@@ -192,12 +192,30 @@ namespace PdfClown.Viewer
             System.IO.File.Copy(tempPath, path, true);
         }
 
-        public void Save(string path, SerializationModeEnum mode = SerializationModeEnum.Standard)
+        public void Save(string path)
+        {
+            Save(path, GetMode());
+        }
+
+        public void Save(string path, SerializationModeEnum mode)
         {
             File.Save(path, mode);
         }
 
-        public void SaveTo(Stream stream, SerializationModeEnum mode = SerializationModeEnum.Standard)
+        public void SaveTo(Stream stream)
+        {
+            SaveTo(stream, GetMode());
+        }
+
+        private SerializationModeEnum GetMode()
+        {
+            return ((IEnumerable<Field>)Fields).Any(x => x is SignatureField signature
+                                                                && signature.Contents != null)
+                            ? SerializationModeEnum.Incremental
+                            : SerializationModeEnum.Standard;
+        }
+
+        public void SaveTo(Stream stream, SerializationModeEnum mode)
         {
             File.Save(stream, mode);
         }

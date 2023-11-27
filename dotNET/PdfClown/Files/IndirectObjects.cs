@@ -345,7 +345,7 @@ namespace PdfClown.Files
             // Get the old indirect object to be replaced!
             PdfIndirectObject old = this[index];
             if (old != obj)
-            { old.DropFile(); } // Disconnect the old indirect object.
+            { old?.DropFile(); } // Disconnect the old indirect object.
 
             // Insert the new indirect object into the modified objects collection!
             modifiedObjects[index] = obj;

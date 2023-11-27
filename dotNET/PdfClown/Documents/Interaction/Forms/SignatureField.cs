@@ -25,6 +25,7 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents;
+using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
@@ -122,8 +123,9 @@ namespace PdfClown.Documents.Interaction.Forms
             var availible = horizontal ? (box.Width / 2) - 4 : box.Width - 4;
             var headerFontSize = availible / maxSize;
             var composer = new PrimitiveComposer(normalAppearanceState);
-
+            
             composer.BeginLocalState();
+            composer.ApplyMatrix(GraphicsState.GetRotationMatrix(box, widget.Page.Rotate));
             composer.SetFillColor(DeviceRGBColor.Black);
             composer.SetFont(font, headerFontSize);
             composer.ShowText(string.Join('\n', nameArray),

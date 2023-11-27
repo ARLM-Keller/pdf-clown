@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using Microsoft.Win32.SafeHandles;
 using PdfClown.Objects;
 
 using System;
@@ -44,77 +45,27 @@ namespace PdfClown.Documents.Functions
     {
         private float[] _c0;
         private float[] _c1;
-        private List<float[]> outputBounds;
         //TODO:implement function creation!
 
         internal Type2Function(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public override float[] Calculate(Span<float> inputs)
+        public override ReadOnlySpan<float> Calculate(ReadOnlySpan<float> inputs)
         {
-            var n = Exponent;
             var c0 = C0;
             var c1 = C1;
-            var domains = Domains;
-            var ranges = Ranges;
-            for (int i = 0; i < domains.Count; i++)
-            {
-                var domain = domains[i];
-                inputs[i] = ClipToRange(inputs[i], domain.Low, domain.High);
-            }
-            var outCount = ranges?.Count ?? c0.Length;
+            var outCount = Math.Min(c1.Length, c0.Length);
             var result = new float[outCount];
-            var x = inputs[0];
-            var inputN = (float)Math.Pow(x, Exponent);
+            var inputN = (float)Math.Pow(inputs[0], Exponent);
             for (int i = 0; i < outCount; i++)
             {
-                var range = ranges?[i] ?? null;
-                var exponenta = n == 1
-                    ? Linear(x, domains[0].Low, domains[0].High, c0[i], c1[i])
-                    : Exponential(x, c0[i], c1[i], inputN);
+                var range = Ranges?[i];
+                var exponenta = Exponential(c0[i], c1[i], inputN);
                 result[i] = ClipToRange(exponenta, range?.Low ?? 0F, range?.High ?? 1F);
             }
-            return result;// new float[] { inputs[0], inputs[0], inputs[0], inputs[0] };
+            return result;
         }
 
-        /**
-          <summary>Gets the output value pairs <code>(C0,C1)</code> for lower (<code>0.0</code>)
-          and higher (<code>1.0</code>) input values.</summary>
-        */
-        public IList<float[]> BoundOutputValues
-        {
-            get
-            {
-                if (outputBounds == null)
-                {
-                    PdfArray lowOutputBoundsObject = (PdfArray)Dictionary[PdfName.C0];
-                    PdfArray highOutputBoundsObject = (PdfArray)Dictionary[PdfName.C1];
-                    if (lowOutputBoundsObject == null)
-                    {
-                        outputBounds = new List<float[]>();
-                        outputBounds.Add(new float[] { 0, 1 });
-                    }
-                    else
-                    {
-                        outputBounds = new List<float[]>();
-                        IEnumerator<PdfDirectObject> lowOutputBoundsObjectIterator = lowOutputBoundsObject.GetEnumerator();
-                        IEnumerator<PdfDirectObject> highOutputBoundsObjectIterator = highOutputBoundsObject.GetEnumerator();
-                        while (lowOutputBoundsObjectIterator.MoveNext()
-                          && highOutputBoundsObjectIterator.MoveNext())
-                        {
-                            outputBounds.Add(
-                              new float[]
-                              {
-                                  ((IPdfNumber)lowOutputBoundsObjectIterator.Current).FloatValue,
-                                  ((IPdfNumber)highOutputBoundsObjectIterator.Current).FloatValue
-                              }
-                              );
-                        }
-                    }
-                }
-                return outputBounds;
-            }
-        }
 
         /**
           <summary>Gets the interpolation exponent.</summary>
@@ -123,48 +74,12 @@ namespace PdfClown.Documents.Functions
 
         public float[] C0
         {
-            get
-            {
-                if (_c0 == null)
-                {
-                    var c0 = (PdfArray)Dictionary[PdfName.C0];
-
-                    if (c0 == null)
-                    {
-                        _c0 = new float[] { 0, 0 };
-                    }
-                    else
-                    {
-                        _c0 = new float[c0.Count];
-                        for (int index = 0, length = c0.Count; index < length; index++)
-                        { _c0[index] = c0.GetFloat(index); }
-                    }
-                }
-                return _c0;
-            }
+            get => _c0 ??= Dictionary.GetArray(PdfName.C0)?.ToFloatArray() ?? new float[] { 0, 0 };
         }
 
         public float[] C1
         {
-            get
-            {
-                if (_c1 == null)
-                {
-                    var c1 = (PdfArray)Dictionary[PdfName.C1];
-
-                    if (c1 == null)
-                    {
-                        _c1 = new float[] { 1, 0 };
-                    }
-                    else
-                    {
-                        _c1 = new float[c1.Count];
-                        for (int index = 0, length = c1.Count; index < length; index++)
-                        { _c1[index] = c1.GetFloat(index); }
-                    }
-                }
-                return _c1;
-            }
+            get => _c1 ??= Dictionary.GetArray(PdfName.C1)?.ToFloatArray() ?? new float[] { 1, 0 };
         }
     }
 }

@@ -66,8 +66,14 @@ namespace PdfClown.Documents.Functions
                 baseObject.Wrapper = referenceFunction;
                 return referenceFunction;
             }
-
             var dataObject = baseObject.Resolve();
+
+            if (dataObject is PdfName dataName
+                && PdfName.Identity.Equals(dataName))
+            {
+                return TypeIdentityFunction.Instance;
+            }
+
             var dictionary = GetDictionary(dataObject);
             int functionType = dictionary.GetInt(PdfName.FunctionType);
             switch (functionType)
@@ -110,7 +116,7 @@ namespace PdfClown.Documents.Functions
           to the specified input values.</summary>
           <param name="inputs">Input values.</param>
          */
-        public abstract float[] Calculate(Span<float> inputs);
+        public abstract ReadOnlySpan<float> Calculate(ReadOnlySpan<float> inputs);
 
         /**
           <summary>Gets the result of the calculation applied by this function
@@ -124,7 +130,7 @@ namespace PdfClown.Documents.Functions
                 float[] inputValues = new float[inputs.Count];
                 for (int index = 0, length = inputValues.Length; index < length; index++)
                 { inputValues[index] = ((IPdfNumber)inputs[index]).FloatValue; }
-                float[] outputValues = Calculate(inputValues);
+                var outputValues = Calculate(inputValues);
                 for (int index = 0, length = outputValues.Length; index < length; index++)
                 { outputs.Add(PdfReal.Get(outputValues[index])); }
             }
@@ -153,7 +159,7 @@ namespace PdfClown.Documents.Functions
           if this entry is absent, no clipping is done.</remarks>
           <returns><code>null</code> in case of unbounded ranges.</returns>
         */
-        public IList<Interval<float>> Ranges => ranges ?? (ranges = GetIntervals<float>(PdfName.Range, null));
+        public IList<Interval<float>> Ranges => ranges ??= GetIntervals<float>(PdfName.Range, null);
 
         /**
           <summary>Gets this function's dictionary.</summary>
@@ -164,8 +170,7 @@ namespace PdfClown.Documents.Functions
         protected IList<Interval<T>> GetIntervals<T>(PdfName key, DefaultIntervalsCallback<T> defaultIntervalsCallback)
             where T : struct, IComparable<T>
         {
-            var intervalsObject = Dictionary.GetArray(key);
-            return intervalsObject.GetIntervals(defaultIntervalsCallback);
+            return Dictionary.GetArray(key).GetIntervals(defaultIntervalsCallback);
         }
 
         //https://stackoverflow.com/questions/12838007/c-sharp-linear-interpolation
@@ -178,15 +183,7 @@ namespace PdfClown.Documents.Functions
             return y0 + (x - x0) * ((y1 - y0) / (x1 - x0));
         }
 
-        public static float ExponentialCalc(float x, float c0, float c1, float Exponent)
-        {
-            return Exponential(x, c0, c1, (float)Math.Pow(x, Exponent));
-        }
-
-        static public float Exponential(float x, float c0, float c1, float inputN)
-        {
-            return c0 + inputN * (c1 - c0);
-        }
+        static public float Exponential(float c0, float c1, float inputN) => c0 + inputN * (c1 - c0);
 
         /**
      * Clip the given input value to the given range.
@@ -200,6 +197,28 @@ namespace PdfClown.Documents.Functions
         protected float ClipToRange(float x, float rangeMin, float rangeMax)
         {
             return Math.Min(Math.Max(x, rangeMin), rangeMax);
+        }
+
+        /**
+     * Clip the given input values to the ranges.
+     * 
+     * @param inputValues the input values
+     * @return the clipped values
+     */
+        protected void ClipToRange(Span<float> inputValues) => ClipToRange(inputValues, Ranges);
+
+        protected void ClipToDomain(Span<float> inputValues) => ClipToRange(inputValues, Domains);
+
+        private void ClipToRange(Span<float> inputValues, IList<Interval<float>> rangesArray)
+        {
+            if (rangesArray != null && rangesArray.Count > 0)
+            {
+                for (int i = 0; i < rangesArray.Count; i++)
+                {
+                    var range = rangesArray[i];
+                    inputValues[i] = ClipToRange(inputValues[i], range.Low, range.High);
+                }
+            }
         }
     }
 }

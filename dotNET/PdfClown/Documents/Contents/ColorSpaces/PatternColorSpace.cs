@@ -92,7 +92,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return SKColors.Black;
         }
 
-        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
+        public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null)
         {
             // FIXME: Auto-generated method stub
             return SKColors.Black;

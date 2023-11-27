@@ -132,7 +132,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return BaseSpace.GetSKColor(GetBaseColor((IndexedColor)color), alpha);
         }
 
-        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
+        public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null)
         {
             var color = GetBaseSKColor(components);
             if (alpha != null)

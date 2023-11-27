@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using Org.BouncyCastle.Utilities;
 using PdfClown;
 using PdfClown.Bytes;
 using PdfClown.Files;
@@ -347,6 +348,30 @@ namespace PdfClown.Objects
             var array = new PdfArray(source.Count);
             array.AddRange(source.Select(p => PdfReal.Get(p)));
             return array;
+        }
+
+        public int[] ToIntArray()
+        {
+            var newArray = new int[Count];
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    newArray[i] = GetInt(i);
+                }
+            }
+            return newArray;
+        }
+
+        public float[] ToFloatArray()
+        {
+            var newArray = new float[Count];
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    newArray[i] = GetFloat(i);
+                }
+            }
+            return newArray;
         }
 
         protected internal override bool Virtual

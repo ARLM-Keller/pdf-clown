@@ -75,7 +75,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return skColor;
         }
 
-        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
+        public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null)
         {
             var g = (byte)Math.Round(components[0] * 255);
             var skColor = new SKColor(g, g, g);

@@ -55,7 +55,7 @@ namespace PdfClown.Documents.Functions
             }
         }
 
-        public override float[] Calculate(Span<float> input)
+        public override ReadOnlySpan<float> Calculate(ReadOnlySpan<float> input)
         {
             var context = new ExecutionContext();
             for (int i = 0; i < input.Length; i++)

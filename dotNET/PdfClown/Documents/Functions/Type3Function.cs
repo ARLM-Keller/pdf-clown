@@ -28,6 +28,8 @@ using PdfClown.Util.Math;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace PdfClown.Documents.Functions
 {
@@ -38,41 +40,84 @@ namespace PdfClown.Documents.Functions
     [PDF(VersionEnum.PDF13)]
     public sealed class Type3Function : Function
     {
+        private float[] bounds;
+        private IList<Interval<float>> encodes;
+
         //TODO:implement function creation!
 
         internal Type3Function(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public override float[] Calculate(Span<float> inputs)
+        public override ReadOnlySpan<float> Calculate(ReadOnlySpan<float> input)
         {
-            // FIXME: Auto-generated method stub
+            //This function is known as a "stitching" function. Based on the input, it decides which child function to call.
+            // All functions in the array are 1-value-input functions
+            //See PDF Reference section 3.9.3.
+            Function function = null;
+            var domain = Domains[0];
+            // clip input value to domain
+            var x = ClipToRange(input[0], domain.Low, domain.High);
 
-            return Functions[0].Calculate(inputs);
+            if (Functions.Count == 1)
+            {
+                // This doesn't make sense but it may happen ...
+                function = Functions[0];
+                var encRange = Encodes[0];
+                x = Linear(x, domain.Low, domain.High, encRange.Low, encRange.High);
+            }
+            else
+            {
+                var boundsValues = Bounds;
+                int boundsSize = boundsValues.Length;
+                // create a combined array containing the domain and the bounds values
+                // domain.min, bounds[0], bounds[1], ...., bounds[boundsSize-1], domain.max
+                float[] partitionValues = new float[boundsSize + 2];
+                int partitionValuesSize = partitionValues.Length;
+                partitionValues[0] = domain.Low;
+                partitionValues[partitionValuesSize - 1] = domain.High;
+                boundsValues.CopyTo(partitionValues.AsSpan(1, boundsSize));
+                // find the partition 
+                for (int i = 0; i < partitionValuesSize - 1; i++)
+                {
+                    if (x >= partitionValues[i]
+                        && (x < partitionValues[i + 1]
+                            || (i == partitionValuesSize - 2
+                                && x == partitionValues[i + 1])))
+                    {
+                        function = Functions[i];
+                        var encRange = Encodes[i];
+                        x = Linear(x, partitionValues[i], partitionValues[i + 1], encRange.Low, encRange.High);
+                        break;
+                    }
+                }
+            }
+            if (function == null)
+            {
+                throw new IOException("partition not found in type 3 function");
+            }
+            float[] functionValues = { x };
+            // calculate the output values using the chosen function
+            var functionResult = function.Calculate(functionValues).ToArray();
+            // clip to range if available
+            ClipToRange(functionResult);
+            return functionResult;
         }
 
         /**
           <summary>Gets the <see cref="Domains">domain</see> partition bounds whose resulting intervals
           are respectively applied to each <see cref="Functions">function</see>.</summary>
         */
-        public IList<float> DomainBounds
+        public float[] Bounds
         {
-            get
-            {
-                IList<float> domainBounds = new List<float>();
-                {
-                    PdfArray domainBoundsObject = (PdfArray)Dictionary.Resolve(PdfName.Bounds);
-                    foreach (PdfDirectObject domainBoundObject in domainBoundsObject)
-                    { domainBounds.Add(((IPdfNumber)domainBoundObject).FloatValue); }
-                }
-                return domainBounds;
-            }
+            get => bounds ??= Dictionary.GetArray(PdfName.Bounds).ToFloatArray();
+            set => Dictionary[PdfName.Bounds] = PdfArray.FromFloats(bounds = value);
         }
 
         /**
-          <summary>Gets the mapping of each <see cref="DomainBounds">subdomain</see> into the domain
+          <summary>Gets the mapping of each <see cref="Bounds">subdomain</see> into the domain
           of the corresponding <see cref="Functions">function</see>.</summary>
         */
-        public IList<Interval<float>> DomainEncodes => GetIntervals<float>(PdfName.Encode, null);
+        public IList<Interval<float>> Encodes => encodes ??= GetIntervals<float>(PdfName.Encode, null);
 
         /**
           <summary>Gets the 1-input functions making up this stitching function.</summary>

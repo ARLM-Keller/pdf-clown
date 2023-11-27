@@ -59,8 +59,7 @@ namespace PdfClown.Documents.Functions
         */
         public Type3Function Parent => parent;
 
-        public int IndexOf(Function value)
-        { return BaseDataObject.IndexOf(value.BaseObject); }
+        public int IndexOf(Function value) => BaseDataObject.IndexOf(value.BaseObject);
 
         public void Insert(int index, Function value)
         {
@@ -68,8 +67,7 @@ namespace PdfClown.Documents.Functions
             BaseDataObject.Insert(index, value.BaseObject);
         }
 
-        public void RemoveAt(int index)
-        { BaseDataObject.RemoveAt(index); }
+        public void RemoveAt(int index) => BaseDataObject.RemoveAt(index);
 
         public Function this[int index]
         {
@@ -87,11 +85,9 @@ namespace PdfClown.Documents.Functions
             BaseDataObject.Add(value.BaseObject);
         }
 
-        public void Clear()
-        { BaseDataObject.Clear(); }
+        public void Clear() => BaseDataObject.Clear();
 
-        public bool Contains(Function value)
-        { return BaseDataObject.Contains(value.BaseObject); }
+        public bool Contains(Function value) => BaseDataObject.Contains(value.BaseObject);
 
         public void CopyTo(Function[] values, int index)
         { throw new NotImplementedException(); }
@@ -100,8 +96,7 @@ namespace PdfClown.Documents.Functions
 
         public bool IsReadOnly => false;
 
-        public bool Remove(Function value)
-        { return BaseDataObject.Remove(value.BaseObject); }
+        public bool Remove(Function value) => BaseDataObject.Remove(value.BaseObject);
 
         IEnumerator<Function> IEnumerable<Function>.GetEnumerator()
         {

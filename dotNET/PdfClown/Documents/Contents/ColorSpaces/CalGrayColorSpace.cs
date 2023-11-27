@@ -95,7 +95,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return Calculate(grayColor.G, alpha);
         }
 
-        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
+        public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null)
         {
             return Calculate(components[0], alpha);
         }

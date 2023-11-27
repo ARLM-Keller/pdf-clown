@@ -79,7 +79,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return GetSKColor(components, alpha);
         }
 
-        public override SKColor GetSKColor(Span<float> components, float? alpha = null)
+        public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null)
         {
             var alternateComponents = TintFunction.Calculate(components);
             return AlternateSpace.GetSKColor(alternateComponents, alpha);

@@ -146,7 +146,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public abstract SKColor GetSKColor(Color color, float? alpha = null);
 
-        public abstract SKColor GetSKColor(Span<float> components, float? alpha = null);
+        public abstract SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null);
 
         public abstract bool IsSpaceColor(Color value);
 

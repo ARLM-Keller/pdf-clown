@@ -474,7 +474,7 @@ namespace PdfClown.Documents.Contents
                         var byteValue = buffer[byteIndex];
 
                         var bitIndex = 7 - x % 8;
-                        value = ((byteValue >> bitIndex) & 1) == 1 ? (byte)255 : (byte)0;
+                        value = ((byteValue >> bitIndex) & 1) == 0 ? (byte)255 : (byte)0;
                         if (decode[0] == 1)
                         {
                             value = value == 0 ? (byte)255 : (byte)0;

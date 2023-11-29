@@ -199,7 +199,7 @@ namespace PdfClown.Documents.Functions
             var inPrev = rinterpol.Prev;
             var inNext = rinterpol.Next;
             float[] resultSample = new float[OutputCount];
-            if (step == input.Length - 1)
+            if (step == coord.Length - 1)
             {
                 // leaf
                 if (inPrev[step] == inNext[step])

@@ -25,6 +25,7 @@
 
 using PdfClown.Documents.Functions;
 using PdfClown.Objects;
+using SkiaSharp;
 using System;
 
 namespace PdfClown.Documents.Contents.XObjects
@@ -67,6 +68,6 @@ namespace PdfClown.Documents.Contents.XObjects
             set => BaseDataObject[PdfName.TR] = value.BaseObject;
         }
 
-
+        public SKMatrix InitialMatrix { get; internal set; }
     }
 }

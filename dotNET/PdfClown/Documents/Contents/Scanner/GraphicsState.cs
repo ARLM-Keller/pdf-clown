@@ -323,8 +323,11 @@ namespace PdfClown.Documents.Contents
         {
             SKMatrix initialCtm;
             var rotation = contentContext.Rotation;
-            if (contentContext is TilingPattern tiling
-                || contentContext is FormXObject xObject
+            if (contentContext is FormXObject xObject)
+            {
+                return xObject.InitialMatrix;
+            }
+            else if (contentContext is TilingPattern tiling
                 || contentContext is Type3CharProc charProc)
             {
                 return SKMatrix.Identity;
@@ -373,6 +376,10 @@ namespace PdfClown.Documents.Contents
                         ApplyBlend(paint, mode);
                     }
                 }
+                if (SMask != null)
+                {
+                    ApplyMask(paint);
+                }
             }
             return paint;
         }
@@ -397,8 +404,55 @@ namespace PdfClown.Documents.Contents
                         ApplyBlend(paint, mode);
                     }
                 }
+                if (SMask != null)
+                {
+                    ApplyMask(paint);
+                }
             }
             return paint;
+        }
+
+        private void ApplyMask(SKPaint paint)// , SKCanvas canvas, SKPicture picture)
+        {
+            var softMask = SMask;
+            var softMaskFormObject = softMask.Group;
+            var subtype = softMask.SubType;
+            var isLuminosity = subtype.Equals(PdfName.Luminosity);
+
+            var group = softMaskFormObject.Group;
+            var isolated = group.Isolated;
+            var knockout = group.Knockout;
+            var softMaskPicture = softMaskFormObject.Render(Scanner);//
+
+            if (isLuminosity)
+            {
+                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
+                {
+                    //0.33f, 0.33f, 0.33f, 0, 0,
+                    //0.33f, 0.33f, 0.33f, 0, 0,
+                    //0.33f, 0.33f, 0.33f, 0, 0,
+                    //0.33f, 0.33f, 0.33f, 0, 0
+                    0.30f, 0.59f, 0.11f, 0, 0,
+                    0.30f, 0.59f, 0.11f, 0, 0,
+                    0.30f, 0.59f, 0.11f, 0, 0,
+                    0.30f, 0.59f, 0.11f, 0, 0
+                });
+                paint.Shader = SKShader.CreatePicture(softMaskPicture);
+                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
+            }
+            else // alpha
+            {
+                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
+                {
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0
+                });
+                paint.Shader = SKShader.CreatePicture(softMaskPicture);
+                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
+
+            }
         }
 
         private static void ApplyBlend(SKPaint paint, BlendModeEnum mode)

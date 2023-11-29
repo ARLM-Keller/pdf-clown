@@ -35,6 +35,7 @@ using System;
 using SkiaSharp;
 using System.Collections.Generic;
 using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.ColorSpaces;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
@@ -168,27 +169,28 @@ namespace PdfClown.Documents.Contents.XObjects
             InvalidatePicture();
         }
 
-        public SKPicture Render(ContentScanner parentLevel, SoftMask mask = null)
+        public SKPicture Render(ContentScanner parentLevel)
         {
             if (picture != null)
                 return picture;
+            var parentState = parentLevel?.State;
+            SoftMask mask = parentState?.SMask;
             var box = Box;
             using (var recorder = new SKPictureRecorder())
             using (var canvas = recorder.BeginRecording(box))
             {
                 if (mask != null)
                 {
+                    parentState.SMask = null;
                     if (!mask.SubType.Equals(PdfName.Luminosity))
                     {
                         // alpha
                         canvas.Clear(SKColors.Transparent);
                     }
-                    else
+                    else if(Group.ColorSpace is ColorSpace colorSpace)
                     {
-                        var colorSpace = Group.ColorSpace;
-
                         var backgroundColorArray = (IList<PdfDirectObject>)mask.BackColor;
-                        if (backgroundColorArray == null)
+                        if (backgroundColorArray == null || backgroundColorArray.Count < colorSpace.ComponentCount)
                         {
                             backgroundColorArray = new List<PdfDirectObject>();
                             for (int i = 0; i < colorSpace.ComponentCount; i++)
@@ -199,9 +201,14 @@ namespace PdfClown.Documents.Contents.XObjects
 
                         canvas.Clear(backgroundColorSK);
                     }
+                    InitialMatrix = mask.InitialMatrix;
                 }
 
                 Render(canvas, box.Size, false, parentLevel);
+                if (mask != null)
+                {
+                    parentState.SMask = mask;
+                }
                 return picture = recorder.EndRecording();
             }
         }
@@ -241,6 +248,8 @@ namespace PdfClown.Documents.Contents.XObjects
         }
 
         public DateTime? ModificationDate => BaseDataObject.Header.GetNDate(PdfName.LastModified);
+
+        public SKMatrix InitialMatrix { get; internal set; } = SKMatrix.Identity;
 
         public Stack<GraphicsState> GetGraphicsStateContext() => states ??= new Stack<GraphicsState>();
 

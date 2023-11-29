@@ -128,6 +128,8 @@ namespace PdfClown.Documents.Contents
                 else if (parameterName.Equals(PdfName.SMask))
                 {
                     state.SMask = SMask;
+                    if (state.SMask != null)
+                        state.SMask.InitialMatrix = state.Ctm;
                 }
                 else if (parameterName.Equals(PdfName.TK))
                 {

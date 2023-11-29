@@ -113,23 +113,9 @@ namespace PdfClown.Documents.Contents.Objects
 
                         if (imageObject.ImageMask)
                         {
-                            using (var paint = new SKPaint())
+                            using (var paint = state.CreateFillPaint())
                             {
-                                paint.Color = state.GetFillColor() ?? SKColors.Black;
                                 canvas.DrawBitmap(image, 0, 0, paint);
-                            }
-                        }
-                        else if (state.SMask is SoftMask softMask)
-                        {
-                            using (var recorder = new SKPictureRecorder())
-                            using (var recorderCanvas = recorder.BeginRecording(new SKRect(0, 0, image.Width, image.Height)))
-                            {
-                                recorderCanvas.DrawBitmap(image, 0, 0, ImagePaint);
-
-                                using (var picture = recorder.EndRecording())
-                                {
-                                    ApplyMask(scanner, softMask, canvas, picture);
-                                }
                             }
                         }
                         else
@@ -149,16 +135,9 @@ namespace PdfClown.Documents.Contents.Objects
                     ctm = ctm.PreConcat(formObject.Matrix);
                     canvas.SetMatrix(ctm);
 
-                    if (state.SMask is SoftMask softMask)
+                    using (var paint = state.CreateFillPaint())
                     {
-                        ApplyMask(scanner, softMask, canvas, picture);
-                    }
-                    else
-                    {
-                        using (var paint = state.CreateFillPaint())
-                        {
-                            canvas.DrawPicture(picture, paint);
-                        }
+                        canvas.DrawPicture(picture, paint);
                     }
 
                     foreach (var textString in formObject.Strings)
@@ -177,49 +156,7 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        private static void ApplyMask(ContentScanner parentLevel, SoftMask softMask, SKCanvas canvas, SKPicture picture)
-        {
-            var softMaskFormObject = softMask.Group;
-            var subtype = softMask.SubType;
-            var isLuminosity = subtype.Equals(PdfName.Luminosity);
 
-            var group = softMaskFormObject.Group;
-            var isolated = group.Isolated;
-            var knockout = group.Knockout;
-            var softMaskPicture = softMaskFormObject.Render(parentLevel, softMask);//
-
-            var paint = new SKPaint();
-            if (isLuminosity)
-            {
-                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-                {
-                    0.33f, 0.33f, 0.33f, 0, 0,
-                    0.33f, 0.33f, 0.33f, 0, 0,
-                    0.33f, 0.33f, 0.33f, 0, 0,
-                    0.33f, 0.33f, 0.33f, 0, 0
-                    //0.30f, 0.59f, 0.11f, 0, 0,
-                    //0.30f, 0.59f, 0.11f, 0, 0,
-                    //0.30f, 0.59f, 0.11f, 0, 0,
-                    //0.30f, 0.59f, 0.11f, 0, 0
-                });
-                paint.ImageFilter = SKImageFilter.CreatePicture(softMaskPicture);
-                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
-                canvas.DrawPicture(picture, paint);
-            }
-            else // alpha
-            {
-                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-                {
-                    0, 0, 0, 1, 0,
-                    0, 0, 0, 1, 0,
-                    0, 0, 0, 1, 0,
-                    0, 0, 0, 1, 0
-                });
-                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
-                canvas.DrawPicture(softMaskPicture, paint);
-                canvas.DrawPicture(picture);
-            }
-        }
 
     }
 }

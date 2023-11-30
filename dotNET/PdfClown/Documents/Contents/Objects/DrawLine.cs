@@ -37,14 +37,8 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class DrawLine : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "l";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <param name="point">Final endpoint.</param>
         */
@@ -56,15 +50,12 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="pointY">Final endpoint Y.</param>
         */
         public DrawLine(double pointX, double pointY)
-            : base(OperatorKeyword, new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(pointX), PdfReal.Get(pointY) }))
+            : base(OperatorKeyword, new List<PdfDirectObject>(2) { PdfReal.Get(pointX), PdfReal.Get(pointY) })
         { }
 
         public DrawLine(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the final endpoint.</summary>
         */
@@ -72,8 +63,7 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get => new SKPoint(
                   ((IPdfNumber)operands[0]).FloatValue,
-                  ((IPdfNumber)operands[1]).FloatValue
-                  );
+                  ((IPdfNumber)operands[1]).FloatValue);
             set
             {
                 operands[0] = PdfReal.Get(value.X);
@@ -83,15 +73,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override void Scan(GraphicsState state)
         {
-            var pathObject = state.Scanner.RenderObject;
-            if (pathObject != null)
-            {
-                SKPoint point = Point;
-                pathObject.LineTo(Point);
-            }
+            state.Scanner.RenderObject?.LineTo(Point);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

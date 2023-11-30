@@ -23,10 +23,14 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Functions.Type4;
 using PdfClown.Objects;
-
+using PdfClown.Tokens;
+using PdfClown.Util.Math;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace PdfClown.Documents.Functions
 {
@@ -37,23 +41,50 @@ namespace PdfClown.Documents.Functions
     [PDF(VersionEnum.PDF13)]
     public sealed class Type4Function : Function
     {
-        #region dynamic
-        #region constructors
+        private InstructionSequence instructions;
+
         //TODO:implement function creation!
 
         internal Type4Function(PdfDirectObject baseObject) : base(baseObject)
-        { }
-        #endregion
-
-        #region interface
-        #region public
-        public override float[] Calculate(float[] inputs)
         {
-            // FIXME: Auto-generated method stub
-            return new float[] { inputs[0], inputs[0], inputs[0], inputs[0] };
+            if (BaseDataObject is PdfStream stream)
+            {
+                using var data = (Stream)stream.ExtractBody(true);
+                using var input = new StreamReader(data, Charset.ISO88591);
+                this.instructions = InstructionSequenceBuilder.Parse(input);
+            }
         }
-        #endregion
-        #endregion
-        #endregion
+
+        public override ReadOnlySpan<float> Calculate(ReadOnlySpan<float> input)
+        {
+            var context = new ExecutionContext();
+            for (int i = 0; i < input.Length; i++)
+            {
+                Interval<float> domain = Domains[i];
+                float value = ClipToRange(input[i], domain.Low, domain.High);
+                context.Push(value);
+            }
+
+            instructions.Execute(context);
+
+            //Extract the output values
+            int numberOfOutputValues = OutputCount;
+            int numberOfActualOutputValues = context.Stack.Count;
+            if (numberOfActualOutputValues < numberOfOutputValues)
+            {
+                throw new Exception("The type 4 function returned "
+                        + numberOfActualOutputValues
+                        + " values but the Range entry indicates that "
+                        + numberOfOutputValues + " values be returned.");
+            }
+            float[] outputValues = new float[numberOfOutputValues];
+            for (int i = numberOfOutputValues - 1; i >= 0; i--)
+            {
+                var range = Ranges[i];
+                outputValues[i] = context.PopReal();
+                outputValues[i] = ClipToRange(outputValues[i], range.Low, range.High);
+            }
+            return outputValues;
+        }
     }
 }

@@ -28,8 +28,14 @@
   this list of conditions.
 */
 
+using ICSharpCode.SharpZipLib.Zip.Compression;
+using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using PdfClown.Objects;
+using PdfClown.Util;
+using PdfClown.Util.IO;
+using SkiaSharp;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -42,65 +48,67 @@ namespace PdfClown.Bytes.Filters
     [PDF(VersionEnum.PDF12)]
     public class FlateFilter : Filter
     {
-        #region dynamic
-        #region constructors
+        private const int BufferSize = 4 * 1024;
         internal FlateFilter()
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(ByteStream inputStream, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            using (var outputStream = new MemoryStream())
-            using (var inputStream = new MemoryStream(data.GetBuffer(), 0, (int)data.Length))
-            using (var inputFilter = new ICSharpCode.SharpZipLib.Zip.Compression.Streams.InflaterInputStream(inputStream))
+            using var outputStream = new MemoryStream();
+            try
             {
+                using var inputFilter = new InflaterInputStream(inputStream);
                 Transform(inputFilter, outputStream);
                 inputFilter.Close();
-                return DecodePredictor(outputStream.ToArray(), parameters, header);
             }
+            catch(ICSharpCode.SharpZipLib.SharpZipBaseException)
+            {               
+                outputStream.Reset();
+                inputStream.Position = 0;
+                using var inputFilter = new DeflateStream(inputStream, CompressionMode.Decompress);
+                Transform(inputStream, outputStream);
+                inputFilter.Close();
+            }
+            return DecodePredictor(outputStream, parameters, header);
         }
 
-        public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(ByteStream inputStream, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            using (var inputStream = new MemoryStream(data.GetBuffer(), 0, (int)data.Length))
+            inputStream.Position = 0;
             using (var outputStream = new MemoryStream())
-            using (var outputFilter = new ICSharpCode.SharpZipLib.Zip.Compression.Streams.DeflaterOutputStream(outputStream))
+            using (var outputFilter = new DeflaterOutputStream(outputStream))
             {
                 // Add zlib's 2-byte header [RFC 1950] [FIX:0.0.8:JCT]!
                 //outputStream.WriteByte(0x78); // CMF = {CINFO (bits 7-4) = 7; CM (bits 3-0) = 8} = 0x78.
                 //outputStream.WriteByte(0xDA); // FLG = {FLEVEL (bits 7-6) = 3; FDICT (bit 5) = 0; FCHECK (bits 4-0) = {31 - ((CMF * 256 + FLG - FCHECK) Mod 31)} = 26} = 0xDA.
                 Transform(inputStream, outputFilter);
-                outputFilter.Close();
-                return outputStream.ToArray();
+                outputFilter.Flush();
+                outputFilter.Finish();
+                return outputStream.AsMemory();
             }
         }
-        #endregion
 
-        #region private
-        protected byte[] DecodePredictor(byte[] data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        protected Memory<byte> DecodePredictor(Stream input, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            if (!(parameters is PdfDictionary))
-                return data;
-            var dictionary = parameters as PdfDictionary;
+            if (parameters is not PdfDictionary dictionary)
+                return input.AsMemory();
 
             int predictor = dictionary.GetInt(PdfName.Predictor, 1);
             if (predictor == 1) // No predictor was applied during data encoding.
-                return data;
+                return input.AsMemory();
 
-            int sampleComponentBitsCount = (dictionary.TryGetValue(PdfName.BitsPerComponent, out var bintsPerComponent) ? ((PdfInteger)bintsPerComponent).RawValue : 8);
-            int sampleComponentsCount = (dictionary.TryGetValue(PdfName.Colors, out var colors) ? ((PdfInteger)colors).RawValue : 1);
-            int rowSamplesCount = (dictionary.TryGetValue(PdfName.Columns, out var columns) ? ((PdfInteger)columns).RawValue : 1);
+            int sampleComponentBitsCount = dictionary.GetInt(PdfName.BitsPerComponent, 8);
+            int sampleComponentsCount = dictionary.GetInt(PdfName.Colors, 1);
+            int rowSamplesCount = dictionary.GetInt(PdfName.Columns, 1);
 
-            using (MemoryStream input = new MemoryStream(data))
-            using (MemoryStream output = new MemoryStream())
+            input.Position = 0;
+            var output = new MemoryStream();
             {
                 switch (predictor)
                 {
                     case 2: // TIFF Predictor 2 (component-based).
                         {
-                            int[] sampleComponentPredictions = new int[sampleComponentsCount];
+                            Span<int> sampleComponentPredictions = stackalloc int[sampleComponentsCount];
                             int sampleComponentDelta = 0;
                             int sampleComponentIndex = 0;
                             while ((sampleComponentDelta = input.ReadByte()) != -1)
@@ -118,14 +126,14 @@ namespace PdfClown.Bytes.Filters
                         {
                             int sampleBytesCount = (int)Math.Ceiling(sampleComponentBitsCount * sampleComponentsCount / 8d); // Number of bytes per pixel (bpp).
                             int rowSampleBytesCount = (int)Math.Ceiling(sampleComponentBitsCount * sampleComponentsCount * rowSamplesCount / 8d) + sampleBytesCount; // Number of bytes per row (comprising a leading upper-left sample (see Paeth method)).
-                            int[] previousRowBytePredictions = new int[rowSampleBytesCount];
-                            int[] currentRowBytePredictions = new int[rowSampleBytesCount];
-                            int[] leftBytePredictions = new int[sampleBytesCount];
+                            Span<int> previousRowBytePredictions = stackalloc int[rowSampleBytesCount];
+                            Span<int> currentRowBytePredictions = stackalloc int[rowSampleBytesCount];
+                            Span<int> leftBytePredictions = stackalloc int[sampleBytesCount];
                             int predictionMethod;
                             while ((predictionMethod = input.ReadByte()) != -1)
                             {
-                                Array.Copy(currentRowBytePredictions, 0, previousRowBytePredictions, 0, currentRowBytePredictions.Length);
-                                Array.Clear(leftBytePredictions, 0, leftBytePredictions.Length);
+                                currentRowBytePredictions.CopyTo(previousRowBytePredictions);
+                                leftBytePredictions.Fill(0);
                                 for (
                                   int rowSampleByteIndex = sampleBytesCount; // Starts after the leading upper-left sample (see Paeth method).
                                   rowSampleByteIndex < rowSampleBytesCount;
@@ -184,19 +192,20 @@ namespace PdfClown.Bytes.Filters
                             break;
                         }
                 }
-                return output.ToArray();
+                return output.AsMemory();
             }
         }
 
-        private void Transform(System.IO.Stream input, System.IO.Stream output)
+        protected void Transform(Stream input, Stream output)
         {
-            byte[] buffer = new byte[8192]; int bufferLength;
-            while ((bufferLength = input.Read(buffer, 0, buffer.Length)) != 0)
-            { output.Write(buffer, 0, bufferLength); }
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+            int bufferRead;
+            while ((bufferRead = input.Read(buffer, 0, buffer.Length)) != 0)
+            {
+                output.Write(buffer, 0, bufferRead);
+            }
             output.Flush();
+            ArrayPool<byte>.Shared.Return(buffer);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

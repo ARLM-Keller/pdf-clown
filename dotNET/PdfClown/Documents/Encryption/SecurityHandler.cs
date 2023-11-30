@@ -17,11 +17,14 @@
 
 //using PdfClown.Bytes;
 using Org.BouncyCastle.Security;
+using PdfClown.Bytes;
+using PdfClown.Bytes.Filters.Jpx;
 using PdfClown.Documents.Contents.Fonts.TTF.GSUB;
 using PdfClown.Objects;
 using PdfClown.Tokens;
 using PdfClown.Util.IO;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -39,24 +42,31 @@ namespace PdfClown.Documents.Encryption
      * @author Benoit Guillon
      * @author Manuel Kasper
      */
-    public abstract class SecurityHandler
+    public abstract class SecurityHandler<T> : ISecurityHandler where T : ProtectionPolicy
     {
-        private static readonly int DEFAULT_KEY_LENGTH = 40;
+        private static readonly int DEFAULT_VERSION = 1;
+
+        private static readonly short DEFAULT_KEY_LENGTH = 40;
 
         // see 7.6.2, page 58, PDF 32000-1:2008
         private static readonly byte[] AES_SALT = { (byte)0x73, (byte)0x41, (byte)0x6c, (byte)0x54 };
 
+        private T protectionPolicy = null;
+
         /** The Length in bits of the secret key used to encrypt the document. */
-        protected int keyLength = DEFAULT_KEY_LENGTH;
+        private short keyLength = DEFAULT_KEY_LENGTH;
 
         /** The encryption key that will used to encrypt / decrypt.*/
-        protected byte[] encryptionKey;
+        private byte[] encryptionKey;
 
         /** The RC4 implementation used for cryptographic functions. */
-        private readonly RC4Cipher rc4 = new RC4Cipher();
+        private readonly ConcurrentBag<RC4Cipher> rc4Bag = new();
 
         /** indicates if the Metadata have to be decrypted of not. */
         private bool decryptMetadata;
+
+        /** Can be used to allow stateless AES encryption */
+        private SecureRandom customSecureRandom;
 
         // PDFBOX-4453, PDFBOX-4477: Originally this was just a Set. This failed in rare cases
         // when a decrypted string was identical to an encrypted string.
@@ -83,14 +93,24 @@ namespace PdfClown.Documents.Encryption
 		 */
         private PdfName stringFilterName;
 
+        protected SecurityHandler()
+        { }
+
+        protected SecurityHandler(T protectionPolicy)
+        {
+            this.protectionPolicy = protectionPolicy;
+            keyLength = protectionPolicy.EncryptionKeyLength;
+        }
+
         /**
 		 * Set whether to decrypt meta data.
 		 *
 		 * @param decryptMetadata true if meta data has to be decrypted.
 		 */
-        protected void SetDecryptMetadata(bool decryptMetadata)
+        protected bool DecryptMetadata
         {
-            this.decryptMetadata = decryptMetadata;
+            get => this.decryptMetadata;
+            set => this.decryptMetadata = value;
         }
 
         /**
@@ -98,9 +118,10 @@ namespace PdfClown.Documents.Encryption
 		 * 
 		 * @param stringFilterName the string filter name.
 		 */
-        protected void SetStringFilterName(PdfName stringFilterName)
+        protected PdfName StringFilterName
         {
-            this.stringFilterName = stringFilterName;
+            get => stringFilterName;
+            set => stringFilterName = value;
         }
 
         /**
@@ -108,9 +129,21 @@ namespace PdfClown.Documents.Encryption
 		 * 
 		 * @param streamFilterName the stream filter name.
 		 */
-        protected void SetStreamFilterName(PdfName streamFilterName)
+        protected PdfName StreamFilterName
         {
-            this.streamFilterName = streamFilterName;
+            get => streamFilterName;
+            set => streamFilterName = value;
+        }
+
+        /**
+        * Set the custom SecureRandom.
+        * 
+        * @param secureRandom the custom SecureRandom for AES encryption
+        */
+        public SecureRandom CustomSecureRandom
+        {
+            get => this.customSecureRandom;
+            set => customSecureRandom = value;
         }
 
         /**
@@ -145,12 +178,12 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error reading the data.
 		 */
-        private bool EncryptData(long objectNumber, long genNumber, Stream data, Stream output, bool decrypt)
+        private bool EncryptData(long objectNumber, long genNumber, Stream data, Stream output)
         {
             // Determine whether we're using Algorithm 1 (for RC4 and AES-128), or 1.A (for AES-256)
-            if (useAES && encryptionKey.Length == 32)
+            if (useAES && EncryptionKey.Length == 32)
             {
-                return EncryptDataAES256(data, output, decrypt);
+                return EncryptDataAES256(data, output);
             }
             else
             {
@@ -158,7 +191,30 @@ namespace PdfClown.Documents.Encryption
 
                 if (useAES)
                 {
-                    return EncryptDataAESother(readonlyKey, data, output, decrypt);
+                    return EncryptDataAESother(readonlyKey, data, output);
+                }
+                else
+                {
+                    return EncryptDataRC4(readonlyKey, data, output);
+                }
+            }
+            //output.Flush();
+        }
+
+        private bool DecryptData(long objectNumber, long genNumber, Stream data, Stream output)
+        {
+            // Determine whether we're using Algorithm 1 (for RC4 and AES-128), or 1.A (for AES-256)
+            if (useAES && EncryptionKey.Length == 32)
+            {
+                return DecryptDataAES256(data, output);
+            }
+            else
+            {
+                var readonlyKey = CalcFinalKey(objectNumber, genNumber);
+
+                if (useAES)
+                {
+                    return DecryptDataAESother(readonlyKey, data, output);
                 }
                 else
                 {
@@ -177,8 +233,8 @@ namespace PdfClown.Documents.Encryption
 		 */
         private byte[] CalcFinalKey(long objectNumber, long genNumber)
         {
-            byte[] newKey = new byte[encryptionKey.Length + 5];
-            Array.Copy(encryptionKey, 0, newKey, 0, encryptionKey.Length);
+            var newKey = new byte[EncryptionKey.Length + 5];
+            EncryptionKey.CopyTo(newKey.AsSpan());
             // PDF 1.4 reference pg 73
             // step 1
             // we have the reference
@@ -189,21 +245,18 @@ namespace PdfClown.Documents.Encryption
             newKey[newKey.Length - 2] = (byte)(genNumber & 0xff);
             newKey[newKey.Length - 1] = (byte)(genNumber >> 8 & 0xff);
             // step 3
-            using (MD5 md = MD5.Create())
+            using var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+            md.Update(newKey);
+            if (useAES)
             {
-                md.Update(newKey);
-                if (useAES)
-                {
-                    md.Update(AES_SALT);
-                }
-                byte[] digestedKey = md.Digest();
-
-                // step 4
-                int Length = Math.Min(newKey.Length, 16);
-                byte[] readonlyKey = new byte[Length];
-                Array.Copy(digestedKey, 0, readonlyKey, 0, Length);
-                return readonlyKey;
+                md.Update(AES_SALT);
             }
+            byte[] digestedKey = md.Digest();
+
+            // step 4
+            int minLength = Math.Min(newKey.Length, 16);
+
+            return digestedKey.AsSpan(0, minLength).ToArray();
         }
 
         /**
@@ -215,10 +268,13 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error reading the data.
 		 */
-        protected bool EncryptDataRC4(byte[] readonlyKey, Stream input, Stream output)
+        protected bool EncryptDataRC4(ReadOnlySpan<byte> readonlyKey, Stream input, Stream output)
         {
+            if (!rc4Bag.TryTake(out var rc4))
+                rc4 = new RC4Cipher();
             rc4.SetKey(readonlyKey);
             rc4.Write(input, output);
+            rc4Bag.Add(rc4);
             return true;
         }
 
@@ -231,10 +287,13 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error reading the data.
 		 */
-        protected bool EncryptDataRC4(byte[] readonlyKey, byte[] input, Stream output)
+        protected bool EncryptDataRC4(ReadOnlySpan<byte> readonlyKey, ReadOnlySpan<byte> input, Stream output)
         {
+            if (!rc4Bag.TryTake(out var rc4))
+                rc4 = new RC4Cipher();
             rc4.SetKey(readonlyKey);
             rc4.Write(input, output);
+            rc4Bag.Add(rc4);
             return true;
         }
 
@@ -249,33 +308,48 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error reading the data.
 		 */
-        private bool EncryptDataAESother(byte[] readonlyKey, Stream data, Stream output, bool decrypt)
+        private bool EncryptDataAESother(byte[] readonlyKey, Stream data, Stream output)
         {
             byte[] iv = new byte[16];
 
-            if (!PrepareAESInitializationVector(decrypt, iv, data, output))
+            if (!PrepareAESEncryptIV(iv, output))
             {
                 return false;
             }
 
             try
             {
-                using (var cipher = CreateCipher(readonlyKey, iv))
-                using (var decryptCipher = decrypt ? cipher.CreateDecryptor() : cipher.CreateEncryptor())
+                using var cipher = CreateCipher(readonlyKey, iv);
+                using var writer = new CryptoStream(output, cipher.CreateEncryptor(), CryptoStreamMode.Write);
+                data.CopyTo(writer);
+                writer.FlushFinalBlock();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                if (!(exception is CryptographicException))
                 {
-                    byte[] buffer = new byte[decryptCipher.InputBlockSize];
-                    byte[] dst = new byte[decryptCipher.OutputBlockSize];
-                    int n;
-                    while ((n = data.Read(buffer, 0, buffer.Length)) > 0)
-                    {
-                        var len = decryptCipher.TransformBlock(buffer, 0, n, dst, 0);
-                        if (len > 0)
-                        {
-                            output.Write(dst, 0, len);
-                        }
-                    }
-                    output.Write(decryptCipher.TransformFinalBlock(Array.Empty<byte>(), 0, 0));
+                    throw exception;
                 }
+                Debug.WriteLine("debug: A CryptographicException occurred when decrypting some stream data " + exception);
+            }
+            return false;
+        }
+
+        private bool DecryptDataAESother(byte[] readonlyKey, Stream data, Stream output)
+        {
+            byte[] iv = new byte[16];
+
+            if (!PrepareAESDecryptIV(iv, data))
+            {
+                return false;
+            }
+
+            try
+            {
+                using var cipher = CreateCipher(readonlyKey, iv);
+                using var reader = new CryptoStream(data, cipher.CreateDecryptor(), CryptoStreamMode.Read);
+                reader.CopyTo(output);
                 return true;
             }
             catch (Exception exception)
@@ -298,37 +372,50 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error reading the data.
 		 */
-        private bool EncryptDataAES256(Stream data, Stream output, bool decrypt)
+        private bool EncryptDataAES256(Stream data, Stream output)
         {
             byte[] iv = new byte[16];
 
-            if (!PrepareAESInitializationVector(decrypt, iv, data, output))
+            if (!PrepareAESEncryptIV(iv, output))
             {
                 return false;
             }
 
             try
             {
-                using (var cipher = CreateCipher(this.encryptionKey, iv))
+                using var cipher = CreateCipher(this.EncryptionKey, iv);
+                using var writer = new CryptoStream(output, cipher.CreateEncryptor(), CryptoStreamMode.Write);
+                data.CopyTo(writer);
+                writer.FlushFinalBlock();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                // starting with java 8 the JVM wraps an IOException around a GeneralSecurityException
+                // it should be safe to swallow a GeneralSecurityException
+                if (!(exception is CryptographicException))
                 {
-                    //IOUtils.copy(cis, output);
-                    if (decrypt)
-                    {
-                        using (var decryptCipher = cipher.CreateDecryptor())
-                        using (CryptoStream reader = new CryptoStream(data, decryptCipher, CryptoStreamMode.Read))
-                        {
-                            reader.CopyTo(output);
-                        }
-                    }
-                    else
-                    {
-                        using (var decryptCipher = cipher.CreateEncryptor())
-                        using (CryptoStream writer = new CryptoStream(output, decryptCipher, CryptoStreamMode.Write))
-                        {
-                            data.CopyTo(writer);
-                        }
-                    }
+                    throw exception;
                 }
+                Debug.WriteLine("debug: A CryptographicException occurred when decrypting some stream data " + exception);
+            }
+            return false;
+        }
+
+        private bool DecryptDataAES256(Stream data, Stream output)
+        {
+            byte[] iv = new byte[16];
+
+            if (!PrepareAESDecryptIV(iv, data))
+            {
+                return false;
+            }
+
+            try
+            {
+                using var cipher = CreateCipher(this.EncryptionKey, iv);
+                using var reader = new CryptoStream(data, cipher.CreateDecryptor(), CryptoStreamMode.Read);
+                reader.CopyTo(output);
                 return true;
             }
             catch (Exception exception)
@@ -347,43 +434,48 @@ namespace PdfClown.Documents.Encryption
         private SymmetricAlgorithm CreateCipher(byte[] key, byte[] iv)
         {
             //@SuppressWarnings({ "squid:S4432"}) // PKCS#5 padding is requested by PDF specification
-
-            var cipher = new RijndaelManaged();
+            var cipher = Aes.Create("AES");
             cipher.Mode = CipherMode.CBC;
             cipher.Padding = PaddingMode.PKCS7;
             cipher.Key = key;
             cipher.IV = iv;
-            //VS
-            //Key keySpec = new SecretKeySpec(key, "AES");
-            //IvParameterSpec ips = new IvParameterSpec(iv);
-            //cipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, keySpec, ips);
             return cipher;
         }
 
-        private bool PrepareAESInitializationVector(bool decrypt, byte[] iv, Stream data, Stream output)
+        private bool PrepareAESEncryptIV(byte[] iv, Stream output)
         {
-            if (decrypt)
+            // generate random IV and write to stream
+            SecureRandom rnd = GetSecureRandom();
+            rnd.NextBytes(iv);
+            output.Write(iv);
+            return true;
+        }
+
+        /**
+        * Returns a SecureRandom If customSecureRandom is not defined, instantiate a new SecureRandom
+        * 
+        * @return SecureRandom
+        */
+        private SecureRandom GetSecureRandom()
+        {
+            return customSecureRandom ?? new SecureRandom();
+        }
+
+        private bool PrepareAESDecryptIV(byte[] iv, Stream data)
+        {
+            // read IV from stream
+            int ivSize = data.Read(iv, 0, iv.Length);
+            if (ivSize == 0)
             {
-                // read IV from stream
-                int ivSize = data.Read(iv, 0, iv.Length);
-                if (ivSize <= 0)
-                {
-                    return false;
-                }
-                if (ivSize != iv.Length)
-                {
-                    throw new IOException(
-                            "AES initialization vector not fully read: only "
-                                    + ivSize + " bytes read instead of " + iv.Length);
-                }
+                return false;
             }
-            else
+            if (ivSize != iv.Length)
             {
-                // generate random IV and write to stream
-                SecureRandom rnd = new SecureRandom();
-                rnd.NextBytes(iv);
-                output.Write(iv);
+                throw new IOException(
+                        "AES initialization vector not fully read: only "
+                                + ivSize + " bytes read instead of " + iv.Length);
             }
+
             return true;
         }
 
@@ -424,7 +516,7 @@ namespace PdfClown.Documents.Encryption
             else if (obj is PdfArray array)
             {
                 DecryptArray(array, objNum, genNum);
-            }            
+            }
         }
 
         /**
@@ -438,11 +530,15 @@ namespace PdfClown.Documents.Encryption
 		 */
         public void DecryptStream(PdfStream stream, long objNum, long genNum)
         {
+            if (stream.encoded == EncodeState.Decoding)
+            {
+                return;
+            }
             if (stream.encoded == EncodeState.Decoded)
             {
                 return;
             }
-            stream.encoded = EncodeState.Encoded;
+            stream.encoded = EncodeState.Decoding;
             // Stream encrypted with identity filter
             if (PdfName.Identity.Equals(streamFilterName))
             {
@@ -467,16 +563,14 @@ namespace PdfClown.Documents.Encryption
                 byte[] buf;
                 // PDFBOX-3229 check case where metadata is not encrypted despite /EncryptMetadata missing
                 var metadata = stream.GetBody(false);
-                using (var istream = new MemoryStream(metadata.GetBuffer(), 0, (int)metadata.Length))
-                {
-                    buf = new byte[10];
-                    long isResult = istream.Read(buf, 0, 10);
+                buf = new byte[10];
+                long isResult = metadata.Read(buf, 0, 10);
 
-                    if (isResult.CompareTo(buf.Length) != 0)
-                    {
-                        Debug.WriteLine("debug: Tried reading " + buf.Length + " bytes but only " + isResult + " bytes read");
-                    }
+                if (isResult.CompareTo(buf.Length) != 0)
+                {
+                    Debug.WriteLine($"debug: Tried reading {buf.Length} bytes but only {isResult} bytes read");
                 }
+
                 if (buf.AsSpan().SequenceEqual(Charset.ISO88591.GetBytes("<?xpacket ").AsSpan()))
                 {
                     Debug.WriteLine("warn: Metadata is not encrypted, but was expected to be");
@@ -486,16 +580,12 @@ namespace PdfClown.Documents.Encryption
             }
 
             DecryptDictionary(stream.Header, objNum, genNum);
-            var body = stream.GetBody(false);
-            using (var encryptedStream = new MemoryStream(body.GetBuffer(), 0, (int)body.Length))
-            using (var output = new MemoryStream())
+            var encryptedStream = (Stream)stream.GetBody(false);
+            using var output = new MemoryStream();
+            if (DecryptData(objNum, genNum, encryptedStream, output))
             {
-                stream.encoded = EncodeState.Encoded;
-                if (EncryptData(objNum, genNum, encryptedStream, output, true /* decrypt */))
-                {
-                    stream.GetBody(false).SetBuffer(output.ToArray());
-                    stream.encoded = EncodeState.Decoded;
-                }
+                stream.GetBody(false).SetBuffer(output.AsMemory());
+                stream.encoded = EncodeState.Decoded;
             }
         }
 
@@ -512,14 +602,17 @@ namespace PdfClown.Documents.Encryption
 		 */
         public void EncryptStream(PdfStream stream, long objNum, int genNum)
         {
-            var body = stream.GetBody(false);
-            using (var encryptedStream = new MemoryStream(body.GetBuffer(), 0, (int)body.Length))
-            using (var output = new MemoryStream())
+            // empty streams don't need to be encrypted
+            if (stream.GetBody(false) is not IInputStream body
+                || body.Length == 0)
             {
-                if (EncryptData(objNum, genNum, encryptedStream, output, false /* encrypt */))
-                {
-                    stream.GetBody(false).SetBuffer(output.ToArray());
-                }
+                return;
+            }
+            var encryptedStream = (Stream)body;
+            using var output = new MemoryStream();
+            if (EncryptData(objNum, genNum, encryptedStream, output))
+            {
+                stream.GetBody(false).SetBuffer(output.AsMemory());
             }
         }
 
@@ -539,12 +632,12 @@ namespace PdfClown.Documents.Encryption
                 // PDFBOX-2936: avoid orphan /CF dictionaries found in US govt "I-" files
                 return;
             }
-            var type = dictionary.Resolve(PdfName.Type);
+            var type = dictionary.GetName(PdfName.Type);
             bool isSignature = PdfName.Sig.Equals(type) || PdfName.DocTimeStamp.Equals(type) ||
                     // PDFBOX-4466: /Type is optional, see
                     // https://ec.europa.eu/cefdigital/tracker/browse/DSS-1538
-                    (dictionary.Resolve(PdfName.Contents) is PdfString &&
-                     dictionary.Resolve(PdfName.ByteRange) is PdfArray);
+                    (dictionary[PdfName.ByteRange] is PdfArray
+                     && dictionary[PdfName.Contents] is PdfString);
             foreach (var entry in dictionary)
             {
                 if (isSignature && PdfName.Contents.Equals(entry.Key))
@@ -574,20 +667,18 @@ namespace PdfClown.Documents.Encryption
                 return;
             }
 
-            using (var data = new MemoryStream(pdfString.GetBuffer()))
-            using (var outputStream = new MemoryStream())
+            using var data = new ByteStream(pdfString.RawValue);
+            using var outputStream = new MemoryStream();
+            try
             {
-                try
+                if (DecryptData(objNum, genNum, data, outputStream))
                 {
-                    if (EncryptData(objNum, genNum, data, outputStream, true /* decrypt */))
-                    {
-                        pdfString.SetBuffer(outputStream.ToArray());
-                    }
+                    pdfString.SetBuffer(outputStream.AsMemory());
                 }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"error: Failed to decrypt PdfString of Length {pdfString.GetBuffer().Length} in object {objNum}: {ex.Message}", ex);
-                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"error: Failed to decrypt PdfString of Length {pdfString.RawValue.Length} in object {objNum}: {ex.Message}", ex);
             }
         }
 
@@ -602,13 +693,11 @@ namespace PdfClown.Documents.Encryption
 		 */
         public void EncryptString(PdfString pdfString, long objNum, int genNum)
         {
-            using (var data = new MemoryStream(pdfString.GetBuffer()))
-            using (var buffer = new MemoryStream())
+            using var data = new ByteStream(pdfString.RawValue);
+            using var buffer = new MemoryStream();
+            if (EncryptData(objNum, genNum, data, buffer))
             {
-                if (EncryptData(objNum, genNum, data, buffer, false /* encrypt */))
-                {
-                    pdfString.SetBuffer(buffer.GetBuffer());
-                }
+                pdfString.SetBuffer(buffer.AsMemory());
             }
         }
 
@@ -638,7 +727,7 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @param keyLen  The keyLength to set.
 		 */
-        public int KeyLength
+        public short KeyLength
         {
             get => keyLength;
             set => keyLength = value;
@@ -679,11 +768,51 @@ namespace PdfClown.Documents.Encryption
             set => useAES = value;
         }
 
+        public T ProtectionPolicy
+        {
+            get => protectionPolicy;
+            internal set => protectionPolicy = value;
+        }
+
+        protected byte[] EncryptionKey
+        {
+            get => encryptionKey;
+            set => encryptionKey = value;
+        }
+
         /**
 		 * Returns whether a protection policy has been set.
 		 *
 		 * @return true if a protection policy has been set.
 		 */
-        public abstract bool HasProtectionPolicy();
+        public bool HasProtectionPolicy() => protectionPolicy != null;
+
+        /**
+        * Computes the version number of the StandardSecurityHandler based on the encryption key
+        * length. See PDF Spec 1.6 p 93 and
+        * <a href="https://www.adobe.com/content/dam/acom/en/devnet/pdf/adobe_supplement_iso32000.pdf">PDF
+        * 1.7 Supplement ExtensionLevel: 3</a> and
+        * <a href="http://intranet.pdfa.org/wp-content/uploads/2016/08/ISO_DIS_32000-2-DIS4.pdf">PDF
+        * Spec 2.0</a>.
+        *
+        * @return The computed version number.
+        */
+        public int ComputeVersionNumber()
+        {
+            if (keyLength == 40)
+            {
+                return DEFAULT_VERSION;
+            }
+            else if (keyLength == 128 && ProtectionPolicy.IsPreferAES)
+            {
+                return 4;
+            }
+            else if (keyLength == 256)
+            {
+                return 5;
+            }
+
+            return 2;
+        }
     }
 }

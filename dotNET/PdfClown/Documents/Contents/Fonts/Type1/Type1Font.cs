@@ -16,22 +16,6 @@
  * limitations under the License.
  */
 
-//import java.awt.geom.GeneralPath;
-//import java.io.IOException;
-//import java.io.InputStream;
-//import java.util.List;
-//import java.util.Collections;
-//import java.util.LinkedHashMap;
-//import java.util.List;
-//import java.util.Dictionary;
-//import java.util.concurrent.ConcurrentHashMap;
-//import org.apache.fontbox.FontBoxFont;
-//import org.apache.fontbox.EncodedFont;
-//import org.apache.fontbox.cff.Type1CharString;
-//import org.apache.fontbox.cff.Type1CharStringParser;
-//import org.apache.fontbox.encoding.Encoding;
-//import org.apache.fontbox.pfb.PfbParser;
-//import org.apache.fontbox.util.BoundingBox;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -55,11 +39,11 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * 
 		 * @throws IOException if something went wrong
 		 */
-        public static Type1Font CreateWithPFB(Bytes.Buffer pfbStream)
+        public static Type1Font CreateWithPFB(Bytes.ByteStream pfbStream)
         {
             PfbParser pfb = new PfbParser(pfbStream);
             Type1Parser parser = new Type1Parser();
-            return parser.Parse(pfb.GetSegment1().ToArray(), pfb.GetSegment2().ToArray());
+            return parser.Parse(pfb.GetSegment1(), pfb.GetSegment2());
         }
 
         /**
@@ -70,11 +54,12 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 *
 		 * @throws IOException if something went wrong
 		 */
-        public static Type1Font CreateWithPFB(byte[] pfbBytes)
+        public static Type1Font CreateWithPFB(Memory<byte> pfbBytes) => CreateWithPFB(pfbBytes, new PfbParser(pfbBytes));
+
+        public static Type1Font CreateWithPFB(Memory<byte> pfbBytes, PfbParser pfb)
         {
-            PfbParser pfb = new PfbParser(pfbBytes);
             Type1Parser parser = new Type1Parser();
-            return parser.Parse(pfb.GetSegment1().ToArray(), pfb.GetSegment2().ToArray());
+            return parser.Parse(pfb.GetSegment1(), pfb.GetSegment2());
         }
 
         /**
@@ -85,7 +70,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * @return A new Type1Font instance
 		 * @throws IOException if something went wrong
 		 */
-        public static Type1Font CreateWithSegments(byte[] segment1, byte[] segment2)
+        public static Type1Font CreateWithSegments(Memory<byte> segment1, Memory<byte> segment2)
         {
             Type1Parser parser = new Type1Parser();
             return parser.Parse(segment1, segment2);
@@ -96,8 +81,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         Encoding encoding = null;
         int paintType;
         int fontType;
-        List<float> fontMatrix = new List<float>();
-        List<float> fontBBox = new List<float>();
+        List<float> fontMatrix = new();
+        List<float> fontBBox = new();
         private SKRect? rectBBox;
         int uniqueID;
         float strokeWidth;
@@ -115,33 +100,35 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         float underlineThickness;
 
         // Private dictionary
-        List<float> blueValues = new List<float>();
-        List<float> otherBlues = new List<float>();
-        List<float> familyBlues = new List<float>();
-        List<float> familyOtherBlues = new List<float>();
+        List<float> blueValues = new();
+        List<float> otherBlues = new();
+        List<float> familyBlues = new();
+        List<float> familyOtherBlues = new();
         float blueScale;
         int blueShift, blueFuzz;
-        List<float> stdHW = new List<float>();
-        List<float> stdVW = new List<float>();
-        List<float> stemSnapH = new List<float>();
-        List<float> stemSnapV = new List<float>();
+        List<float> stdHW = new();
+        List<float> stdVW = new();
+        List<float> stemSnapH = new();
+        List<float> stemSnapV = new();
         bool forceBold;
         int languageGroup;
 
         // Subrs array, and CharStrings dictionary
-        readonly List<byte[]> subrs = new List<byte[]>();
-        readonly Dictionary<string, byte[]> charstrings = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        readonly List<Memory<byte>> subrs = new();
+        readonly Dictionary<string, Memory<byte>> charstrings = new(StringComparer.Ordinal);
 
         // private caches
-        private readonly Dictionary<string, Type1CharString> charStringCache = new Dictionary<string, Type1CharString>(StringComparer.Ordinal);
+        private readonly Dictionary<string, Type1CharString> charStringCache = new(StringComparer.Ordinal);
+
+        private Type1CharStringParser charStringParser = null;
 
         // raw data
-        private readonly byte[] segment1, segment2;
+        private readonly Memory<byte> segment1, segment2;
 
         /**
 		 * Constructs a new Type1Font, called by Type1Parser.
 		 */
-        public Type1Font(byte[] segment1, byte[] segment2)
+        public Type1Font(Memory<byte> segment1, Memory<byte> segment2)
         {
             this.segment1 = segment1;
             this.segment2 = segment2;
@@ -152,7 +139,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 *
 		 * @return Type 1 char string bytes
 		 */
-        public List<byte[]> SubrsArray
+        public List<Memory<byte>> SubrsArray
         {
             get => subrs;
         }
@@ -162,7 +149,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 *
 		 * @return Type 1 char string bytes
 		 */
-        public Dictionary<string, byte[]> CharStringsDict
+        public Dictionary<string, Memory<byte>> CharStringsDict
         {
             get => charstrings;
         }
@@ -529,7 +516,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 *
 		 * @return the ASCII segment.
 		 */
-        public byte[] ASCIISegment
+        public Memory<byte> ASCIISegment
         {
             get => segment1;
         }
@@ -539,7 +526,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 *
 		 * @return the binary segment.
 		 */
-        public byte[] BinarySegment
+        public Memory<byte> BinarySegment
         {
             get => segment2;
         }
@@ -568,15 +555,20 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         {
             if (!charStringCache.TryGetValue(name, out Type1CharString type1))
             {
-                if (!charstrings.TryGetValue(name, out byte[] bytes))
+                if (!charstrings.TryGetValue(name, out var bytes))
                 {
                     bytes = charstrings[".notdef"];
                 }
-                List<Object> sequence = Type1CharStringParser.Parse(fontName, name, bytes, subrs);
+                List<Object> sequence = Parser.Parse(bytes, subrs, name);
                 type1 = new Type1CharString(this, fontName, name, sequence);
                 charStringCache.Add(name, type1);
             }
             return type1;
+        }
+
+        private Type1CharStringParser Parser
+        {
+            get => charStringParser ??= new Type1CharStringParser(fontName);
         }
 
         /**

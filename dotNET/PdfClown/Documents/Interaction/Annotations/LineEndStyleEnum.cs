@@ -81,26 +81,26 @@ namespace PdfClown.Documents.Interaction.Annotations
 
     internal static class LineEndStyleEnumExtension
     {
-        private static readonly BiDictionary<LineEndStyleEnum, PdfName> codes;
+        private static readonly BiDictionary<LineEndStyleEnum, string> codes;
 
         static LineEndStyleEnumExtension()
         {
-            codes = new BiDictionary<LineEndStyleEnum, PdfName>
+            codes = new BiDictionary<LineEndStyleEnum, string>
             {
-                [LineEndStyleEnum.Square] = PdfName.Square,
-                [LineEndStyleEnum.Circle] = PdfName.Circle,
-                [LineEndStyleEnum.Diamond] = PdfName.Diamond,
-                [LineEndStyleEnum.OpenArrow] = PdfName.OpenArrow,
-                [LineEndStyleEnum.ClosedArrow] = PdfName.ClosedArrow,
-                [LineEndStyleEnum.None] = PdfName.None,
-                [LineEndStyleEnum.Butt] = PdfName.Butt,
-                [LineEndStyleEnum.ReverseOpenArrow] = PdfName.ROpenArrow,
-                [LineEndStyleEnum.ReverseClosedArrow] = PdfName.RClosedArrow,
-                [LineEndStyleEnum.Slash] = PdfName.Slash
+                [LineEndStyleEnum.Square] = PdfName.Square.StringValue,
+                [LineEndStyleEnum.Circle] = PdfName.Circle.StringValue,
+                [LineEndStyleEnum.Diamond] = PdfName.Diamond.StringValue,
+                [LineEndStyleEnum.OpenArrow] = PdfName.OpenArrow.StringValue,
+                [LineEndStyleEnum.ClosedArrow] = PdfName.ClosedArrow.StringValue,
+                [LineEndStyleEnum.None] = PdfName.None.StringValue,
+                [LineEndStyleEnum.Butt] = PdfName.Butt.StringValue,
+                [LineEndStyleEnum.ReverseOpenArrow] = PdfName.ROpenArrow.StringValue,
+                [LineEndStyleEnum.ReverseClosedArrow] = PdfName.RClosedArrow.StringValue,
+                [LineEndStyleEnum.Slash] = PdfName.Slash.StringValue
             };
         }
 
-        public static LineEndStyleEnum Get(PdfName name)
+        public static LineEndStyleEnum Get(string name)
         {
             if (name == null)
                 return LineEndStyleEnum.None;
@@ -112,7 +112,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             return lineEndStyle.Value;
         }
 
-        public static PdfName GetName(this LineEndStyleEnum lineEndStyle)
+        public static string GetName(this LineEndStyleEnum lineEndStyle)
         {
             return codes[lineEndStyle];
         }

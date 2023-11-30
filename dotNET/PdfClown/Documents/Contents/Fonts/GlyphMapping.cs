@@ -25,8 +25,9 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents;
+using PdfClown.Documents.Contents.Objects;
 using PdfClown.Objects;
-
+using PdfClown.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -45,16 +46,32 @@ namespace PdfClown.Documents.Contents.Fonts
     */
     public class GlyphMapping
     {
-        public static readonly GlyphMapping Default = new GlyphMapping("AGL20");
-        public static readonly GlyphMapping ZapfDingbats = new GlyphMapping("ZapfDingbats");
-        public static readonly GlyphMapping DLFONT = new GlyphMapping("G500");
+        public static readonly GlyphMapping Default = new GlyphMapping("AGL20", 4300);
+        public static readonly GlyphMapping ZapfDingbats = new GlyphMapping("ZapfDingbats", 210);
+        public static readonly GlyphMapping DLFONT = new GlyphMapping("G500", 100);
         public static bool IsExist(string fontName) => typeof(GlyphMapping).Assembly.GetManifestResourceNames().Contains($"fonts.{fontName}");
 
-        private readonly Dictionary<string, int> nameToCode = new Dictionary<string, int>(StringComparer.Ordinal);
-        private readonly Dictionary<int, string> codeToName = new Dictionary<int, string>();
+        private readonly Dictionary<string, int> nameToCode;
+        private readonly Dictionary<int, string> codeToName;
         private readonly Dictionary<string, int> uniNameToUnicodeCache = new Dictionary<string, int>();
-        public GlyphMapping(string fontName)
-        { Load($"fonts.{fontName}"); }
+
+        private GlyphMapping(int capacity)
+        {
+            nameToCode = new Dictionary<string, int>(capacity, StringComparer.Ordinal);
+            codeToName = new Dictionary<int, string>(capacity);
+        }
+
+        public GlyphMapping(string fontName, int capacity = 100)
+            : this(capacity)
+        {
+            Load($"fonts.{fontName}");
+        }
+
+        public GlyphMapping(Stream stream, int capacity = 100)
+            : this(capacity)
+        {
+            Parse(stream);
+        }
 
         public int? ToUnicode(string name)
         {
@@ -62,12 +79,15 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 return null;
             }
-            if (nameToCode.TryGetValue(name, out var unicode))
+            if (nameToCode.TryGetValue(name, out var existing))
             {
-                return unicode;
+                return existing;
             }
+            int? unicode = null;
             // separate read/write cache for thread safety
-            if (!uniNameToUnicodeCache.TryGetValue(name, out unicode))
+            if (uniNameToUnicodeCache.TryGetValue(name, out existing))
+                unicode = existing;
+            else
             {
                 // test if we have a suffix and if so remove it
                 var dotIndex = name.IndexOf('.');
@@ -79,10 +99,11 @@ namespace PdfClown.Documents.Contents.Fonts
                 else if (name.StartsWith("uni", StringComparison.Ordinal) && name.Length == 7)
                 {
                     // test for Unicode name in the format uniXXXX where X is hex
-                    var uniStr = new StringBuilder();
                     try
                     {
-                        for (int chPos = 3; chPos + 4 <= nameLength; chPos += 4)
+                        int index = 0;
+                        unicode = 0;
+                        for (int chPos = 3; chPos + 4 <= nameLength; chPos += 4, index++)
                         {
                             int codePoint = Convert.ToInt32(name.Substring(chPos, 4), 16);
                             if (codePoint > 0xD7FF && codePoint < 0xE000)
@@ -91,11 +112,11 @@ namespace PdfClown.Documents.Contents.Fonts
                             }
                             else
                             {
-                                unicode = codePoint;// uniStr.Append((char)codePoint);
+                                unicode <<= 8;
+                                unicode |= (codePoint & 0xff);
                                 break;
                             }
                         }
-                        //unicode = uniStr.ToString();
                     }
                     catch (Exception nfe)
                     {
@@ -122,24 +143,13 @@ namespace PdfClown.Documents.Contents.Fonts
                         Debug.WriteLine($"warn: Not a number in Unicode character name: {name} {nfe}");
                     }
                 }
-                //else if (int.TryParse(name, out var number))
-                //{
-                //    if (number > 0xD7FF && number < 0xE000)
-                //    {
-                //        Debug.WriteLine($"Unicode character name with disallowed code area: {name}");
-                //    }
-                //    else
-                //    {
-                //        unicode = number;
-                //    }
-                //}
-                if (unicode > 0)
+                if (unicode != null)
                 {
                     // null value not allowed in ConcurrentHashMap
-                    uniNameToUnicodeCache[name] = unicode;
+                    uniNameToUnicodeCache[name] = (int)unicode;
                 }
             }
-            return unicode != 0 ? unicode : (int?)null;
+            return unicode;
         }
 
         public string UnicodeToName(int unicode)
@@ -157,54 +167,65 @@ namespace PdfClown.Documents.Contents.Fonts
         */
         private void Load(string fontName)
         {
-            StreamReader glyphListStream = null;
-            try
+            // Open the glyph list!
+            /*
+              NOTE: The Adobe Glyph List [AGL:2.0] represents the reference name-to-unicode map
+              for consumer applications.
+            */
+            using var resourceAsStream = typeof(GlyphMapping).Assembly.GetManifestResourceStream(fontName);
+            if (resourceAsStream == null)
             {
-                // Open the glyph list!
-                /*
-                  NOTE: The Adobe Glyph List [AGL:2.0] represents the reference name-to-unicode map
-                  for consumer applications.
-                */
-                glyphListStream = new StreamReader(typeof(GlyphMapping).Assembly.GetManifestResourceStream(fontName));
-
-                // Parsing the glyph list...
-                string line;
-                Regex linePattern = new Regex("^(\\w+);([A-F0-9]+)$");
-                while ((line = glyphListStream.ReadLine()) != null)
-                {
-                    MatchCollection lineMatches = linePattern.Matches(line);
-                    if (lineMatches.Count < 1)
-                        continue;
-
-                    Match lineMatch = lineMatches[0];
-
-                    string name = lineMatch.Groups[1].Value;
-                    int code = Int32.Parse(lineMatch.Groups[2].Value, NumberStyles.HexNumber);
-
-                    // Associate the character name with its corresponding character code!
-                    nameToCode[name] = code;
-                    // reverse mapping
-                    // PDFBOX-3884: take the various standard encodings as canonical, 
-                    // e.g. tilde over ilde
-                    bool forceOverride =
-                          WinAnsiEncoding.Instance.Contains(name) ||
-                          MacRomanEncoding.Instance.Contains(name) ||
-                          MacExpertEncoding.Instance.Contains(name) ||
-                          SymbolEncoding.Instance.Contains(name) ||
-                          ZapfDingbatsEncoding.Instance.Contains(name);
-                    if (!codeToName.ContainsKey(code) || forceOverride)
-                    {
-                        codeToName[code] = name;
-                    }
-                }
+                throw new IOException($"GlyphList '{fontName}' not found");
             }
-            finally
-            {
-                if (glyphListStream != null)
-                { glyphListStream.Close(); }
-            }
+            Parse(resourceAsStream);
         }
 
+        private void Parse(Stream resourceAsStream)
+        {
+            using var glyphListStream = new StreamReader(resourceAsStream, Charset.ISO88591);
+            Parse(glyphListStream);
+        }
 
+        private void Parse(StreamReader glyphListStream)
+        {
+            // Parsing the glyph list...
+            string line;
+            Regex linePattern = new Regex(@"^(\w+);([A-F0-9 ]+)$");
+            while ((line = glyphListStream.ReadLine()) != null)
+            {
+                MatchCollection lineMatches = linePattern.Matches(line);
+                if (lineMatches.Count < 1)
+                    continue;
+
+                Match lineMatch = lineMatches[0];
+
+                string name = lineMatch.Groups[1].Value;
+                var codes = lineMatch.Groups[2].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                int code = 0;
+                for (int i = 0; i < codes.Length; i++)
+                {
+                    var parsed = ushort.Parse(codes[i], NumberStyles.HexNumber);
+                    code <<= 16;
+                    code |= parsed & 0xffff;
+                }
+
+                // Associate the character name with its corresponding character code!
+                nameToCode[name] = code;
+                // reverse mapping
+                // PDFBOX-3884: take the various standard encodings as canonical, 
+                // e.g. tilde over ilde
+                bool forceOverride =
+                      WinAnsiEncoding.Instance.Contains(name) ||
+                      MacRomanEncoding.Instance.Contains(name) ||
+                      MacExpertEncoding.Instance.Contains(name) ||
+                      SymbolEncoding.Instance.Contains(name) ||
+                      ZapfDingbatsEncoding.Instance.Contains(name);
+                if (!codeToName.ContainsKey(code) || forceOverride)
+                {
+                    codeToName[code] = name;
+                }
+            }
+        }
     }
 }

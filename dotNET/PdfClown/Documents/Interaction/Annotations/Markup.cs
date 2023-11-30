@@ -45,8 +45,6 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF11)]
     public abstract class Markup : Annotation
     {
-        #region dynamic
-        #region constructors
         protected Markup(Page page, PdfName subtype, SKRect box, string text)
             : base(page, subtype, box, text)
         {
@@ -56,11 +54,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         protected Markup(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
-
-        #region interface
-        #region public
-
 
         /**
           <summary>Gets/Sets the annotation editor. It is displayed as a text label in the title bar of
@@ -88,7 +81,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public override DateTime? CreationDate
         {
-            get => BaseDataObject.GetDate(PdfName.CreationDate);
+            get => BaseDataObject.GetNDate(PdfName.CreationDate);
             set
             {
                 var oldValue = CreationDate;
@@ -225,7 +218,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public SkiaSharp.SKColor? InteriorSKColor
+        public SKColor? InteriorSKColor
         {
             get => InteriorColor == null ? (SKColor?)null : DeviceColorSpace.CalcSKColor(InteriorColor, Alpha);
             set
@@ -261,41 +254,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
 
         }
-
-        protected FormXObject ResetAppearance()
-        {
-            return ResetAppearance(Rect.ToRect());
-        }
-
-        protected FormXObject ResetAppearance(SKRect box)
-        {
-            var boxSize = SKRect.Create(box.Width, box.Height);
-            FormXObject normalAppearance;
-            AppearanceStates normalAppearances = Appearance.Normal;
-            normalAppearance = normalAppearances[null];
-            if (normalAppearance != null)
-            {
-                normalAppearance.Box = boxSize;
-                normalAppearance.BaseDataObject.Body.Clear();
-                normalAppearance.ClearContents();
-            }
-            else
-            {
-                normalAppearances[null] =
-                      normalAppearance = new FormXObject(Document, boxSize);
-            }
-
-            return normalAppearance;
-        }
-
-        public override SKRect GetBounds(SKMatrix pageMatrix)
-        {
-            return base.GetBounds(pageMatrix);
-        }
-        #endregion
-
-        #endregion
-        #endregion
+        
+       
     }
 
     /**

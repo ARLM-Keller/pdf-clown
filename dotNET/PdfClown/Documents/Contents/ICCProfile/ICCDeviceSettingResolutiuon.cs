@@ -29,9 +29,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     {
         public ulong Value;
 
-        public void Load(Bytes.Buffer buffer)
+        public void Load(Bytes.ByteStream buffer)
         {
-            Value = buffer.ReadUnsignedLong();
+            Value = buffer.ReadUInt64();
         }
     }
 }

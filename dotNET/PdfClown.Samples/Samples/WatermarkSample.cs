@@ -49,7 +49,7 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Instantiate the stamper!
             /* NOTE: The PageStamper is optimized for dealing with pages. */
-            PageStamper stamper = new PageStamper();
+            var stamper = new PageStamper();
 
             // 2. Inserting the watermark into each page of the document...
             foreach (Page page in watermark.Document.Pages)
@@ -73,19 +73,19 @@ namespace PdfClown.Samples.CLI
             SKSize size = document.GetSize();
 
             // 1. Create an external form object to represent the watermark!
-            FormXObject watermark = new FormXObject(document, size);
+            var watermark = new FormXObject(document, size);
 
             // 2. Inserting the contents of the watermark...
             // 2.1. Create a content composer!
-            PrimitiveComposer composer = new PrimitiveComposer(watermark);
+            var composer = new PrimitiveComposer(watermark);
             // 2.2. Inserting the contents...
             // Set the font to use!
-            composer.SetFont(fonts::PdfType1Font.Load(document, fonts::PdfType1Font.FamilyEnum.Times, true, false), 120);
+            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.TimesBold), 120);
             // Set the color to fill the text characters!
             composer.SetFillColor(new DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
             // Apply transparency!
             {
-                ExtGState state = new ExtGState(document);
+                var state = new ExtGState(document);
                 state.FillAlpha = .3F;
                 composer.ApplyState(state);
             }
@@ -95,8 +95,8 @@ namespace PdfClown.Samples.CLI
               new SKPoint(size.Width / 2f, size.Height / 2f), // Anchor location: page center.
               XAlignmentEnum.Center, // Horizontal placement (relative to the anchor): center.
               YAlignmentEnum.Middle, // Vertical placement (relative to the anchor): middle.
-              50 // Rotation: 50-degree-counterclockwise.
-              );
+              50); // Rotation: 50-degree-counterclockwise.
+
             // 2.3. Flush the contents into the watermark!
             composer.Flush();
 

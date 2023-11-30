@@ -38,16 +38,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceCMYKColor : DeviceColor, IEquatable<DeviceCMYKColor>
     {
-        #region static
-        #region fields
         public static readonly DeviceCMYKColor Black = new DeviceCMYKColor(0, 0, 0, 1);
         public static readonly DeviceCMYKColor White = new DeviceCMYKColor(0, 0, 0, 0);
 
         public static readonly DeviceCMYKColor Default = Black;
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the color corresponding to the specified components.</summary>
           <param name="components">Color components to convert.</param>
@@ -58,34 +53,28 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 ? components.Wrapper is DeviceCMYKColor color ? color : new DeviceCMYKColor(components)
                 : Default;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public DeviceCMYKColor(double c, double m, double y, double k) : this(
-            new PdfArray(
+            new PdfArray(4)
+            {
                   PdfReal.Get(NormalizeComponent(c)),
                   PdfReal.Get(NormalizeComponent(m)),
                   PdfReal.Get(NormalizeComponent(y)),
-                  PdfReal.Get(NormalizeComponent(k))))
+                  PdfReal.Get(NormalizeComponent(k))
+            })
         { }
 
         internal DeviceCMYKColor(IList<PdfDirectObject> components)
             : base(DeviceCMYKColorSpace.Default, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the cyan component.</summary>
         */
         public float C
         {
-            get => GetComponentValue(0);
-            set => SetComponentValue(0, value);
+            get => this[0];
+            set => this[0] = value;
         }
 
         /**
@@ -93,8 +82,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public float M
         {
-            get => GetComponentValue(1);
-            set => SetComponentValue(1, value);
+            get => this[1];
+            set => this[1] = value;
         }
 
         /**
@@ -102,8 +91,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public float Y
         {
-            get => GetComponentValue(2);
-            set => SetComponentValue(2, value);
+            get => this[2];
+            set => this[2] = value;
         }
 
         /**
@@ -111,8 +100,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public float K
         {
-            get => GetComponentValue(3);
-            set => SetComponentValue(3, value);
+            get => this[3];
+            set => this[3] = value;
         }
 
         public override bool IsZero => Equals(White);
@@ -132,8 +121,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 && K.Equals(other.K);
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

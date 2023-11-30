@@ -184,6 +184,8 @@ namespace PdfClown.Bytes.Filters
         /// </summary>
         public const char Currency = '¤';
 
+        public const char Date = 'D';
+
         // ReSharper restore InconsistentNaming
     }
 }

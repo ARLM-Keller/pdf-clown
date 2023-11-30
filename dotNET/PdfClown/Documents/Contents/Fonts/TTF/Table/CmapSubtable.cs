@@ -18,8 +18,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System;
-using PdfClown.Documents.Contents.Fonts.Type1;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
@@ -68,11 +67,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public void InitData(TTFDataStream data)
+        public void InitData(IInputStream data)
         {
-            platformId = data.ReadUnsignedShort();
-            platformEncodingId = data.ReadUnsignedShort();
-            subTableOffset = data.ReadUnsignedInt();
+            platformId = data.ReadUInt16();
+            platformEncodingId = data.ReadUInt16();
+            subTableOffset = data.ReadUInt32();
         }
 
         /**
@@ -83,23 +82,23 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public void InitSubtable(CmapTable cmap, int numGlyphs, TTFDataStream data)
+        public void InitSubtable(CmapTable cmap, int numGlyphs, IInputStream data)
         {
             data.Seek(cmap.Offset + subTableOffset);
-            int subtableFormat = data.ReadUnsignedShort();
+            int subtableFormat = data.ReadUInt16();
             uint length;
             uint language;
             if (subtableFormat < 8)
             {
-                length = data.ReadUnsignedShort();
-                language = data.ReadUnsignedShort();
+                length = data.ReadUInt16();
+                language = data.ReadUInt16();
             }
             else
             {
                 // read an other UnsignedShort to read a Fixed32
-                data.ReadUnsignedShort();
-                length = data.ReadUnsignedInt();
-                language = data.ReadUnsignedInt();
+                data.ReadUInt16();
+                length = data.ReadUInt32();
+                language = data.ReadUInt32();
             }
 
             switch (subtableFormat)
@@ -143,11 +142,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param numGlyphs number of glyphs to be read
          * @ If there is an error parsing the true type font.
          */
-        void ProcessSubtype8(TTFDataStream data, int numGlyphs)
+        void ProcessSubtype8(IInputStream data, int numGlyphs)
         {
             // --- is32 is a 65536 BITS array ( = 8192 BYTES)
-            byte[] is32 = data.ReadUnsignedByteArray(8192);
-            long nbGroups = data.ReadUnsignedInt();
+            var is32 = data.ReadSpan(8192);
+            long nbGroups = data.ReadUInt32();
 
             // --- nbGroups shouldn't be greater than 65536
             if (nbGroups > 65536)
@@ -165,9 +164,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             // -- Read all sub header
             for (long i = 0; i < nbGroups; ++i)
             {
-                long firstCode = data.ReadUnsignedInt();
-                long endCode = data.ReadUnsignedInt();
-                long startGlyph = data.ReadUnsignedInt();
+                long firstCode = data.ReadUInt32();
+                long endCode = data.ReadUInt32();
+                long startGlyph = data.ReadUInt32();
 
                 // -- process simple validation
                 if (firstCode > endCode || 0 > firstCode)
@@ -226,10 +225,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param numGlyphs number of glyphs to be read
          * @ If there is an error parsing the true type font.
          */
-        void ProcessSubtype10(TTFDataStream data, int numGlyphs)
+        void ProcessSubtype10(IInputStream data, int numGlyphs)
         {
-            long startCode = data.ReadUnsignedInt();
-            long numChars = data.ReadUnsignedInt();
+            long startCode = data.ReadUInt32();
+            long numChars = data.ReadUInt32();
             if (numChars > int.MaxValue)
             {
                 throw new IOException("Invalid number of Characters");
@@ -250,9 +249,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param numGlyphs number of glyphs to be read
          * @ If there is an error parsing the true type font.
          */
-        void ProcessSubtype12(TTFDataStream data, int numGlyphs)
+        void ProcessSubtype12(IInputStream data, int numGlyphs)
         {
-            long nbGroups = data.ReadUnsignedInt();
+            int maxGlyphId = 0;
+            long nbGroups = data.ReadUInt32();
             glyphIdToCharacterCode = NewGlyphIdToCharacterCode(numGlyphs);
             characterCodeToGlyphId = new Dictionary<int, int>(numGlyphs);
             if (numGlyphs == 0)
@@ -262,9 +262,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
             for (long i = 0; i < nbGroups; ++i)
             {
-                long firstCode = data.ReadUnsignedInt();
-                long endCode = data.ReadUnsignedInt();
-                long startGlyph = data.ReadUnsignedInt();
+                long firstCode = data.ReadUInt32();
+                long endCode = data.ReadUInt32();
+                long startGlyph = data.ReadUInt32();
 
                 if (firstCode < 0 || firstCode > 0x0010FFFF ||
                     firstCode >= 0x0000D800 && firstCode <= 0x0000DFFF)
@@ -293,10 +293,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                         Debug.WriteLine("warn: Format 12 cmap contains character beyond UCS-4");
                     }
 
-                    glyphIdToCharacterCode[(int)glyphIndex] = (int)(firstCode + j);
+                    //glyphIdToCharacterCode[(int)glyphIndex] = (int)(firstCode + j);
+                    maxGlyphId = Math.Max(maxGlyphId, (int)glyphIndex);
                     characterCodeToGlyphId[(int)(firstCode + j)] = (int)glyphIndex;
                 }
             }
+            BuildGlyphIdToCharacterCodeLookup(maxGlyphId);
         }
 
         /**
@@ -306,9 +308,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param numGlyphs number of glyphs to be read
          * @ If there is an error parsing the true type font.
          */
-        void ProcessSubtype13(TTFDataStream data, int numGlyphs)
+        void ProcessSubtype13(IInputStream data, int numGlyphs)
         {
-            long nbGroups = data.ReadUnsignedInt();
+            long nbGroups = data.ReadUInt32();
             glyphIdToCharacterCode = NewGlyphIdToCharacterCode(numGlyphs);
             characterCodeToGlyphId = new Dictionary<int, int>(numGlyphs);
             if (numGlyphs == 0)
@@ -318,9 +320,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
             for (long i = 0; i < nbGroups; ++i)
             {
-                long firstCode = data.ReadUnsignedInt();
-                long endCode = data.ReadUnsignedInt();
-                long glyphId = data.ReadUnsignedInt();
+                long firstCode = data.ReadUInt32();
+                long endCode = data.ReadUInt32();
+                long glyphId = data.ReadUInt32();
 
                 if (glyphId > numGlyphs)
                 {
@@ -364,7 +366,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param numGlyphs number of glyphs to be read
          * @ If there is an error parsing the true type font.
          */
-        void ProcessSubtype14(TTFDataStream data, int numGlyphs)
+        void ProcessSubtype14(IInputStream data, int numGlyphs)
         {
             // Unicode Variation Sequences (UVS)
             // see http://blogs.adobe.com/CCJKType/2013/05/opentype-cmap-table-ramblings.html
@@ -378,17 +380,17 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param numGlyphs number of glyphs to be read
          * @ If there is an error parsing the true type font.
          */
-        void ProcessSubtype6(TTFDataStream data, int numGlyphs)
+        void ProcessSubtype6(IInputStream data, int numGlyphs)
         {
-            int firstCode = data.ReadUnsignedShort();
-            int entryCount = data.ReadUnsignedShort();
+            int firstCode = data.ReadUInt16();
+            int entryCount = data.ReadUInt16();
             // skip empty tables
             if (entryCount == 0)
             {
                 return;
             }
             characterCodeToGlyphId = new Dictionary<int, int>(numGlyphs);
-            ushort[] glyphIdArray = data.ReadUnsignedShortArray(entryCount);
+            var glyphIdArray = data.ReadUShortArray(entryCount);
             int maxGlyphId = 0;
             for (int i = 0; i < entryCount; i++)
             {
@@ -405,19 +407,19 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param numGlyphs number of glyphs to be read
          * @ If there is an error parsing the true type font.
          */
-        void ProcessSubtype4(TTFDataStream data, int numGlyphs)
+        void ProcessSubtype4(IInputStream data, int numGlyphs)
         {
-            var segCountX2 = data.ReadUnsignedShort();
+            var segCountX2 = data.ReadUInt16();
             var segCount = segCountX2 / 2;
-            var searchRange = data.ReadUnsignedShort();
-            var entrySelector = data.ReadUnsignedShort();
-            var rangeShift = data.ReadUnsignedShort();
-            var endCode = data.ReadUnsignedShortArray(segCount);
-            var reservedPad = data.ReadUnsignedShort();
-            var startCode = data.ReadUnsignedShortArray(segCount);
-            var idDelta = data.ReadSignedShortArray(segCount);
-            var idRangeOffsetPosition = data.CurrentPosition;
-            var idRangeOffset = data.ReadUnsignedShortArray(segCount);
+            var searchRange = data.ReadUInt16();
+            var entrySelector = data.ReadUInt16();
+            var rangeShift = data.ReadUInt16();
+            var endCode = data.ReadUShortArray(segCount);
+            var reservedPad = data.ReadUInt16();
+            var startCode = data.ReadUShortArray(segCount);
+            var idDelta = data.ReadUShortArray(segCount);
+            var idRangeOffsetPosition = data.Position;
+            var idRangeOffset = data.ReadUShortArray(segCount);
 
             characterCodeToGlyphId = new Dictionary<int, int>(numGlyphs);
             int maxGlyphId = 0;
@@ -428,7 +430,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 int end = endCode[i];
                 int delta = idDelta[i];
                 int rangeOffset = idRangeOffset[i];
-                long segmentRangeOffset = idRangeOffsetPosition + (i * 2) + rangeOffset;
+                long segmentRangeOffset = idRangeOffsetPosition + (i * 2L) + rangeOffset;
                 if (start != 65535 && end != 65535)
                 {
                     for (int j = start; j <= end; j++)
@@ -443,7 +445,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                         {
                             long glyphOffset = segmentRangeOffset + ((j - start) * 2);
                             data.Seek(glyphOffset);
-                            int glyphIndex = data.ReadUnsignedShort();
+                            int glyphIndex = data.ReadUInt16();
                             if (glyphIndex != 0)
                             {
                                 glyphIndex = (glyphIndex + delta) & 0xFFFF;
@@ -482,7 +484,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     // there is already a mapping for the given glyphId
                     if (!glyphIdToCharacterCodeMultiple.TryGetValue(entry.Value, out List<int> mappedValues))
                     {
-                        mappedValues = new List<int>();
+                        mappedValues = new List<int>(2);
                         glyphIdToCharacterCodeMultiple[entry.Value] = mappedValues;
                         mappedValues.Add(glyphIdToCharacterCode[entry.Value]);
                         // mark value as multiple mapping
@@ -500,28 +502,28 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param numGlyphs number of glyphs to be read
          * @ If there is an error parsing the true type font.
          */
-        void ProcessSubtype2(TTFDataStream data, int numGlyphs)
+        void ProcessSubtype2(IInputStream data, int numGlyphs)
         {
-            int[] subHeaderKeys = new int[256];
+            var subHeaderKeys = new ushort[256];
             // ---- keep the Max Index of the SubHeader array to know its length
             int maxSubHeaderIndex = 0;
             for (int i = 0; i < 256; i++)
             {
-                subHeaderKeys[i] = data.ReadUnsignedShort();
+                subHeaderKeys[i] = data.ReadUInt16();
                 maxSubHeaderIndex = Math.Max(maxSubHeaderIndex, subHeaderKeys[i] / 8);
             }
 
             // ---- Read all SubHeaders to avoid useless seek on DataSource
-            SubHeader[] subHeaders = new SubHeader[maxSubHeaderIndex + 1];
+            var subHeaders = new SubHeader[maxSubHeaderIndex + 1];
             for (int i = 0; i <= maxSubHeaderIndex; ++i)
             {
-                int firstCode = data.ReadUnsignedShort();
-                int entryCount = data.ReadUnsignedShort();
-                short idDelta = data.ReadSignedShort();
-                int idRangeOffset = data.ReadUnsignedShort() - (maxSubHeaderIndex + 1 - i - 1) * 8 - 2;
+                var firstCode = data.ReadUInt16();
+                var entryCount = data.ReadUInt16();
+                var idDelta = data.ReadInt16();
+                int idRangeOffset = data.ReadUInt16() - (maxSubHeaderIndex + 1 - i - 1) * 8 - 2;
                 subHeaders[i] = new SubHeader(firstCode, entryCount, idDelta, idRangeOffset);
             }
-            long startGlyphIndexOffset = data.CurrentPosition;
+            long startGlyphIndexOffset = data.Position;
             glyphIdToCharacterCode = NewGlyphIdToCharacterCode(numGlyphs);
             characterCodeToGlyphId = new Dictionary<int, int>(numGlyphs);
             if (numGlyphs == 0)
@@ -532,22 +534,21 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             for (int i = 0; i <= maxSubHeaderIndex; ++i)
             {
                 SubHeader sh = subHeaders[i];
-                int firstCode = sh.FirstCode;
-                int idRangeOffset = sh.IdRangeOffset;
-                int idDelta = sh.IdDelta;
-                int entryCount = sh.EntryCount;
+                var firstCode = sh.FirstCode;
+                var idRangeOffset = sh.IdRangeOffset;
+                var idDelta = sh.IdDelta;
+                var entryCount = sh.EntryCount;
                 data.Seek(startGlyphIndexOffset + idRangeOffset);
                 for (int j = 0; j < entryCount; ++j)
                 {
                     // ---- compute the Character Code
-                    int charCode = i;
-                    charCode = (charCode << 8) + (firstCode + j);
+                    int charCode = (i << 8) | (firstCode + j);
 
                     // ---- Go to the CharacterCOde position in the Sub Array
                     // of the glyphIndexArray
                     // glyphIndexArray contains Unsigned Short so add (j * 2) bytes
                     // at the index position
-                    int p = data.ReadUnsignedShort();
+                    int p = data.ReadUInt16();
                     // ---- compute the glyphIndex
                     if (p > 0)
                     {
@@ -576,9 +577,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data the data stream of the to be parsed ttf font
          * @ If there is an error parsing the true type font.
          */
-        void ProcessSubtype0(TTFDataStream data)
+        void ProcessSubtype0(IInputStream data)
         {
-            byte[] glyphMapping = data.Read(256);
+            var glyphMapping = data.ReadSpan(256);
             glyphIdToCharacterCode = NewGlyphIdToCharacterCode(256);
             characterCodeToGlyphId = new Dictionary<int, int>(glyphMapping.Length);
             for (int i = 0; i < glyphMapping.Length; i++)
@@ -596,7 +597,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private int[] NewGlyphIdToCharacterCode(int size)
         {
             int[] gidToCode = new int[size];
-            gidToCode.Fill(-1);
+            Array.Fill(gidToCode, -1);
             return gidToCode;
         }
 
@@ -621,6 +622,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @deprecated the mapping may be ambiguous, see {@link #getCharCodes(int)}. The first mapped value is returned by
          * default.
          */
+        [Obsolete]
         public int? GetCharacterCode(int gid)
         {
             int code = GetCharCode(gid);
@@ -642,7 +644,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private int GetCharCode(int gid)
         {
-            if (gid < 0 || gid >= glyphIdToCharacterCode.Length)
+            if (gid < 0 || glyphIdToCharacterCode == null || gid >= glyphIdToCharacterCode.Length)
             {
                 return -1;
             }
@@ -675,8 +677,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
             else
             {
-                codes = new List<int>(1);
-                codes.Add(code);
+                codes = new List<int>(1) { code };
             }
             return codes;
         }
@@ -692,10 +693,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * Class used to manage CMap - Format 2.
          * 
          */
-        private class SubHeader
+        private struct SubHeader
         {
-            private readonly int firstCode;
-            private readonly int entryCount;
+            private readonly ushort firstCode;
+            private readonly ushort entryCount;
             /**
              * used to compute the GlyphIndex : P = glyphIndexArray.SubArray[pos] GlyphIndex = P + idDelta % 65536.
              */
@@ -705,7 +706,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
              */
             private readonly int idRangeOffset;
 
-            public SubHeader(int firstCodeValue, int entryCountValue, short idDeltaValue, int idRangeOffsetValue)
+            public SubHeader(ushort firstCodeValue, ushort entryCountValue, short idDeltaValue, int idRangeOffsetValue)
             {
                 firstCode = firstCodeValue;
                 entryCount = entryCountValue;
@@ -716,7 +717,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             /**
              * @return the firstCode
              */
-            public int FirstCode
+            public ushort FirstCode
             {
                 get => firstCode;
             }
@@ -724,7 +725,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             /**
              * @return the entryCount
              */
-            public int EntryCount
+            public ushort EntryCount
             {
                 get => entryCount;
             }

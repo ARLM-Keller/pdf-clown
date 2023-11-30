@@ -45,8 +45,6 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF15)]
     public sealed class Screen : Annotation
     {
-        #region static
-        #region fields
         private const string PlayerPlaceholder = "%player%";
         /**
           <summary>Script for preview and rendering control.</summary>
@@ -62,11 +60,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             + "});"
           + "var " + PlayerPlaceholder + "=app.media.openPlayer({settings:settings,events:events});"
           + "}";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public Screen(Page page, SKRect box, String text, String mediaPath, String mimeType)
             : this(page, box, text, new MediaRendition(
               new MediaClipData(
@@ -113,14 +107,17 @@ namespace PdfClown.Documents.Interaction.Annotations
                     FileAttachment attachment = new FileAttachment(page, box, text, (FileSpecification)data);
                     BaseDataObject[PdfName.T] = PdfString.Get(((FileSpecification)data).Path);
                     // Force empty appearance to ensure no default icon is drawn on the canvas!
-                    attachment.BaseDataObject[PdfName.AP] = new PdfDictionary(new PdfName[] { PdfName.D, PdfName.R, PdfName.N }, new PdfDirectObject[] { new PdfDictionary(), new PdfDictionary(), new PdfDictionary() });
+                    attachment.BaseDataObject[PdfName.AP] = new PdfDictionary(3)
+                    {
+                        { PdfName.D, new PdfDictionary() },
+                        { PdfName.R, new PdfDictionary() },
+                        { PdfName.N, new PdfDictionary() }
+                    };
                 }
             }
         }
 
         internal Screen(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
-        #endregion
     }
 }

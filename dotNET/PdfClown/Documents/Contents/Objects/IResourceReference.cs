@@ -41,9 +41,7 @@ namespace PdfClown.Documents.Contents.Objects
             respectively either shared or private.</remarks>
           <param name="context">Content context.</param>
         */
-        TResource GetResource(
-          IContentContext context
-          );
+        TResource GetResource(ContentScanner context);
 
         /**
           <summary>Gets/Sets the resource name.</summary>

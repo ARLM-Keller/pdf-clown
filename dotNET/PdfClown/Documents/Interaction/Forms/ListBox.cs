@@ -36,31 +36,18 @@ namespace PdfClown.Documents.Interaction.Forms
       <summary>List box [PDF:1.6:8.6.3].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class ListBox
-      : ChoiceField
+    public sealed class ListBox : ChoiceField
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new listbox within the given document context.</summary>
         */
-        public ListBox(
-          string name,
-          Widget widget
-          ) : base(
-            name,
-            widget
-            )
+        public ListBox(string name, Widget widget)
+            : base(name, widget)
         { }
 
-        internal ListBox(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal ListBox(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #endregion
-        #endregion
     }
 }

@@ -39,18 +39,13 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF12)]
     public sealed class Movie : Annotation
     {
-        #region dynamic
-        #region constructors
         public Movie(Page page, SKRect box, string text, multimedia::Movie content)
             : base(page, PdfName.Movie, box, text)
         { Content = content; }
 
         internal Movie(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the movie to be played.</summary>
         */
@@ -65,8 +60,5 @@ namespace PdfClown.Documents.Interaction.Annotations
                 BaseDataObject[PdfName.Movie] = value.BaseObject;
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

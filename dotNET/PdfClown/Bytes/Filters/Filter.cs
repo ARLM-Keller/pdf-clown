@@ -37,8 +37,6 @@ namespace PdfClown.Bytes.Filters
     [PDF(VersionEnum.PDF10)]
     public abstract class Filter
     {
-        #region static
-        #region fields
         private static readonly Filter ASCII85Filter = new ASCII85Filter();
         private static readonly Filter ASCIIHexFilter = new ASCIIHexFilter();
         private static readonly Filter FlateDecode = new FlateFilter();
@@ -47,10 +45,7 @@ namespace PdfClown.Bytes.Filters
         private static readonly Filter JPXDecode = new JPXFilter();
         private static readonly Filter DCTFilter = new DCTFilter();
         private static readonly Filter LZWFilter = new LZWFilter();
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets a specific filter object.</summary>
           <param name="name">Name of the requested filter.</param>
@@ -94,23 +89,12 @@ namespace PdfClown.Bytes.Filters
 
             return null;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         protected Filter()
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public abstract byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
+        public abstract Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
 
-        public abstract byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
-        #endregion
-        #endregion
-        #endregion
+        public abstract Memory<byte> Encode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
     }
 }

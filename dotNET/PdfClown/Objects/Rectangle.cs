@@ -43,9 +43,6 @@ namespace PdfClown.Objects
     */
     public sealed class Rectangle : PdfObjectWrapper<PdfArray>, IEquatable<Rectangle>
     {
-        #region static
-        #region interface
-        #region private
         private static PdfArray Normalize(PdfArray rectangle)
         {
             if (rectangle.Count > 3)
@@ -66,12 +63,6 @@ namespace PdfClown.Objects
             return rectangle;
         }
 
-        #endregion
-        #endregion
-        #endregion
-
-        #region dynamic
-        #region constructors
         public Rectangle(SKRect rectangle)
             : this(rectangle.Left, rectangle.Bottom, rectangle.Width, rectangle.Height)
         { }
@@ -81,45 +72,42 @@ namespace PdfClown.Objects
         { }
 
         public Rectangle(double left, double top, double width, double height)
-            : this(new PdfArray(new PdfDirectObject[]
+            : this(new PdfArray(4)
               {
                   PdfReal.Get(left), // Left (X).
                   PdfReal.Get(top - height), // Bottom (Y).
                   PdfReal.Get(left + width), // Right.
                   PdfReal.Get(top) // Top.
-              }
-              )
-            )
+              })
         { }
 
-        public Rectangle(PdfDirectObject baseObject) : base(Normalize((PdfArray)baseObject.Resolve()))
-        { }
-        #endregion
 
-        #region interface
-        #region public
+        public Rectangle(PdfDirectObject baseObject)
+            : base(Normalize((PdfArray)baseObject.Resolve()))
+        { }
+
         public double Left
         {
-            get => BaseDataObject.GetNumber(0).RawValue;
-            set => BaseDataObject[0] = PdfReal.Get(value);
+            get => BaseDataObject.GetDouble(0);
+            set => BaseDataObject.SetDouble(0, value);
         }
 
         public double Bottom
         {
-            get => BaseDataObject.GetNumber(1).RawValue;
-            set => BaseDataObject[1] = PdfReal.Get(value);
+            get => BaseDataObject.GetDouble(1);
+            set => BaseDataObject.SetDouble(1, value);
         }
 
         public double Right
         {
-            get => BaseDataObject.GetNumber(2).RawValue;
-            set => BaseDataObject[2] = PdfReal.Get(value);
+            get => BaseDataObject.GetDouble(2);
+            set => BaseDataObject.SetDouble(2, value);
         }
 
         public double Top
         {
-            get => BaseDataObject.GetNumber(3).RawValue;
-            set => BaseDataObject[3] = PdfReal.Get(value);
+            get => BaseDataObject.GetDouble(3);
+            set => BaseDataObject.SetDouble(3, value);
         }
 
         public SKRect ToRect()
@@ -158,8 +146,5 @@ namespace PdfClown.Objects
             get => Bottom;
             set => Bottom = value;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

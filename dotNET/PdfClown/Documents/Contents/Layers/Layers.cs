@@ -35,15 +35,10 @@ namespace PdfClown.Documents.Contents.Layers
     [PDF(VersionEnum.PDF15)]
     public sealed class Layers : Array<Layer>
     {
-        #region dynamic
-        #region constructors
-        internal Layers(PdfDirectObject baseObject)
+        public Layers(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Insert(int index, Layer item)
         { throw new NotSupportedException(); }
 
@@ -54,8 +49,5 @@ namespace PdfClown.Documents.Contents.Layers
         {
             set => throw new NotSupportedException();
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

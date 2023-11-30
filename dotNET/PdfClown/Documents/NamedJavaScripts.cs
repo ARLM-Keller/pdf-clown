@@ -37,21 +37,13 @@ namespace PdfClown.Documents
     public sealed class NamedJavaScripts : NameTree<JavaScript>
     {
 
-        #region dynamic
-        #region constructors
         public NamedJavaScripts(Document context) : base(context)
         { }
 
         public NamedJavaScripts(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override JavaScript WrapValue(PdfDirectObject baseObject)
         { return (JavaScript)Interaction.Actions.Action.Wrap(baseObject); }
-        #endregion
-        #endregion
-        #endregion
     }
 }

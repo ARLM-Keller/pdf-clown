@@ -47,13 +47,8 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class TextMarkup : Markup
     {
-
-        #region static
-        #region fields
         private static readonly Dictionary<TextMarkupType, PdfName> MarkupTypeEnumCodes;
-        #endregion
 
-        #region constructors
         static TextMarkup()
         {
             MarkupTypeEnumCodes = new Dictionary<TextMarkupType, PdfName>
@@ -64,10 +59,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 [TextMarkupType.Underline] = PdfName.Underline
             };
         }
-        #endregion
 
-        #region interface
-        #region private
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
@@ -90,26 +82,17 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             throw new Exception("Invalid markup type.");
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region static
-        #region fields
         private static readonly PdfName HighlightExtGStateName = new PdfName("highlight");
-        private List<Quad> markupBoxes = new List<Quad>();
-        #endregion
+        private IList<Quad> markupBoxes;
+        private IList<Quad> pageMarkupBoxes;
 
-        #region interface
+
         private static float GetMarkupBoxMargin(float boxHeight)
         {
             return boxHeight * .25f;
         }
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new text markup on the specified page, making it printable by default.
           </summary>
@@ -142,16 +125,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public TextMarkup(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override DeviceColor Color
         {
             set
             {
                 base.Color = value;
-                if (MarkupBoxes.Count > 0)
+                if (PageMarkupBoxes.Count > 0)
                 {
                     RefreshAppearance();
                 }
@@ -164,7 +144,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 base.Page = value;
-                if (MarkupBoxes.Count > 0)
+                if (PageMarkupBoxes.Count > 0)
                 {
                     RefreshAppearance();
                 }
@@ -180,58 +160,29 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (oldValue != value)
                 {
                     BaseDataObject[PdfName.QuadPoints] = value;
-                    markupBoxes.Clear();
+                    markupBoxes = null;
+                    pageMarkupBoxes = null;
                     OnPropertyChanged(oldValue, value);
                     RefreshAppearance();
                 }
             }
         }
-        /**
-          <summary>Gets/Sets the quadrilaterals encompassing a word or group of contiguous words in the
-          text underlying the annotation.</summary>
-        */
-        public IList<Quad> MarkupBoxes
+
+        ///<summary>Gets/Sets the quadrilaterals encompassing a word or group of contiguous words in the
+        ///text underlying the annotation.</summary>
+        public IList<Quad> PageMarkupBoxes
         {
-            get
-            {
-
-                var quadPoints = QuadPoints;
-                if (quadPoints != null)
-                {
-                    var length = quadPoints.Count;
-                    if (markupBoxes.Count * 8 != length)
-                    {
-                        markupBoxes.Clear();
-                        var pageMatrix = PageMatrix;
-
-                        for (int index = 0; index < length; index += 8)
-                        {
-                            /*
-                              NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
-                            */
-                            var quad = new Quad(
-                                new SKPoint(quadPoints.GetFloat(index), quadPoints.GetFloat(index + 1)),
-                                new SKPoint(quadPoints.GetFloat(index + 2), quadPoints.GetFloat(index + 3)),
-                                new SKPoint(quadPoints.GetFloat(index + 6), quadPoints.GetFloat(index + 7)),
-                                new SKPoint(quadPoints.GetFloat(index + 4), quadPoints.GetFloat(index + 5)));
-                            quad.Transform(ref pageMatrix);
-                            markupBoxes.Add(quad);
-                        }
-                    }
-                }
-                return markupBoxes;
-            }
+            get => pageMarkupBoxes ??= GetMarkupBoxes();
             set
             {
                 var quadPoints = new PdfArray();
-                var pageMatrix = InvertPageMatrix;
                 SKRect box = SKRect.Empty;
                 foreach (Quad markupBox in value)
                 {
                     /*
                       NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
                     */
-                    SKPoint[] points = pageMatrix.MapPoints(markupBox.GetPoints());
+                    SKPoint[] points = markupBox.GetPoints();
 
                     quadPoints.Add(PdfReal.Get(points[0].X)); // x1.
                     quadPoints.Add(PdfReal.Get(points[0].Y)); // y1.
@@ -253,8 +204,19 @@ namespace PdfClown.Documents.Interaction.Annotations
                 float markupBoxMargin = GetMarkupBoxMargin(box.Height);
                 box.Inflate(markupBoxMargin, 0);
                 Box = box;
-
                 QuadPoints = quadPoints;
+                pageMarkupBoxes = value;
+                markupBoxes = null;
+            }
+        }
+
+        public IList<Quad> MarkupBoxes
+        {
+            get => markupBoxes ??= TransformMarkupBoxes(PageMarkupBoxes, PageMatrix);
+            set
+            {
+                PageMarkupBoxes = TransformMarkupBoxes(value, InvertPageMatrix);
+                markupBoxes = value;
             }
         }
 
@@ -281,9 +243,12 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
         }
-        #endregion
 
-        #region private
+        public override void DrawSpecial(SKCanvas canvas)
+        {
+            RefreshAppearance();
+        }
+
         /*
           TODO: refresh should happen for every Annotation with overwrite\remove check 
         */
@@ -295,18 +260,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             if (Rect == null)
             {
-                MarkupBoxes = MarkupBoxes;
+                PageMarkupBoxes = PageMarkupBoxes;
                 return;
             }
-            SKRect box = Rect.ToRect();
-            FormXObject normalAppearance = ResetAppearance(box);
-            normalAppearance.Matrix = SKMatrix.CreateTranslation(box.Left, box.Top);
-            PrimitiveComposer composer = new PrimitiveComposer(normalAppearance);
+            SKRect box = Box;
+            var normalAppearance = ResetAppearance(box, out var matrix);
+            var composer = new PrimitiveComposer(normalAppearance);
             {
-                var first = MarkupBoxes.FirstOrDefault();
-                var matrix = SKMatrix.CreateTranslation(-box.Left, -box.Top).PreConcat(InvertPageMatrix);
+                var first = PageMarkupBoxes.FirstOrDefault();
 
-                TextMarkupType markupType = MarkupType;
+                var markupType = MarkupType;
                 switch (markupType)
                 {
                     case TextMarkupType.Highlight:
@@ -322,19 +285,19 @@ namespace PdfClown.Documents.Interaction.Annotations
 
                                     extGStates[HighlightExtGStateName] = defaultExtGState = new ExtGState(Document);
                                     defaultExtGState.AlphaShape = false;
-                                    defaultExtGState.BlendMode = new List<BlendModeEnum>(new BlendModeEnum[] { BlendModeEnum.Multiply });
+                                    defaultExtGState.BlendMode = new List<BlendModeEnum>(1) { BlendModeEnum.Multiply };
                                 }
                             }
 
                             composer.ApplyState(defaultExtGState);
                             composer.SetFillColor(Color);
                             {
-                                foreach (Quad markup in MarkupBoxes)
+                                foreach (Quad markup in PageMarkupBoxes)
                                 {
                                     var markupBox = Quad.Transform(markup, ref matrix);
 
                                     var sign = Math.Sign((markupBox.TopLeft - markupBox.BottomLeft).Y);
-                                    sign = sign == 0 ? 1 : sign;
+                                    sign = -(sign == 0 ? 1 : sign);
 
                                     float markupBoxHeight = markupBox.Height;
                                     float markupBoxMargin = GetMarkupBoxMargin(markupBoxHeight) * sign;
@@ -360,7 +323,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                             composer.SetLineCap(LineCapEnum.Round);
                             composer.SetLineJoin(LineJoinEnum.Round);
                             {
-                                foreach (Quad markup in MarkupBoxes)
+                                foreach (Quad markup in PageMarkupBoxes)
                                 {
                                     var markupBox = Quad.Transform(markup, ref matrix);
                                     var sign = Math.Sign((markupBox.TopLeft - markupBox.BottomLeft).Y);
@@ -373,7 +336,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                                     float length = (float)Math.Sqrt(Math.Pow(step, 2) * 2);
                                     var bottomUp = SKPoint.Normalize(markupBox.BottomLeft - markupBox.TopLeft);
                                     bottomUp = new SKPoint(bottomUp.X * lineWidth, bottomUp.Y * lineWidth);
-                                    var startPoint = markupBox.TopLeft + (new SKPoint(bottomUp.X * 2, bottomUp.Y * 2));
+                                    var startPoint = markupBox.BottomLeft - (new SKPoint(bottomUp.X * 2, bottomUp.Y * 2));
                                     var leftRight = SKPoint.Normalize(markupBox.BottomRight - markupBox.BottomLeft);
                                     leftRight = new SKPoint(leftRight.X * step, leftRight.Y * step);
                                     var leftRightPerp = leftRight.GetPerp(step * sign);
@@ -405,20 +368,20 @@ namespace PdfClown.Documents.Interaction.Annotations
                                 switch (markupType)
                                 {
                                     case TextMarkupType.StrikeOut:
-                                        lineYRatio = .5f;
+                                        lineYRatio = -.5f;
                                         break;
                                     case TextMarkupType.Underline:
-                                        lineYRatio = .9f;
+                                        lineYRatio = -.05f;
                                         break;
                                     default:
                                         throw new NotImplementedException();
                                 }
-                                foreach (Quad markup in MarkupBoxes)
+                                foreach (Quad markup in PageMarkupBoxes)
                                 {
                                     var markupBox = Quad.Transform(markup, ref matrix);
                                     float markupBoxHeight = markupBox.Height;
                                     float boxYOffset = markupBoxHeight * lineYRatio;
-                                    var normal = SKPoint.Normalize(markupBox.TopLeft - markupBox.BottomLeft);
+                                    var normal = SKPoint.Normalize(markupBox.BottomLeft - markupBox.TopLeft);
                                     normal = new SKPoint(normal.X * boxYOffset, normal.Y * boxYOffset);
                                     composer.SetLineWidth(markupBoxHeight * .065);
                                     composer.DrawLine(markupBox.BottomLeft + normal, markupBox.BottomRight + normal);
@@ -443,9 +406,39 @@ namespace PdfClown.Documents.Interaction.Annotations
             return (pointB + normal) + perp;
         }
 
-        #endregion
-        #endregion
-        #endregion
+        private List<Quad> TransformMarkupBoxes(IList<Quad> source, SKMatrix matrix)
+        {
+            var list = new List<Quad>(source.Count);
+            foreach (var quad in source)
+            {
+                list.Add(Quad.Transform(quad, ref matrix));
+            }
+            return list;
+        }
+
+        private IList<Quad> GetMarkupBoxes()
+        {
+            var list = new List<Quad>();
+            var quadPoints = QuadPoints;
+            if (quadPoints != null)
+            {
+                var length = quadPoints.Count;
+
+                for (int index = 0; index < length; index += 8)
+                {
+                    /*
+                      NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
+                    */
+                    var quad = new Quad(
+                        new SKPoint(quadPoints.GetFloat(index), quadPoints.GetFloat(index + 1)),
+                        new SKPoint(quadPoints.GetFloat(index + 2), quadPoints.GetFloat(index + 3)),
+                        new SKPoint(quadPoints.GetFloat(index + 6), quadPoints.GetFloat(index + 7)),
+                        new SKPoint(quadPoints.GetFloat(index + 4), quadPoints.GetFloat(index + 5)));
+                    list.Add(quad);
+                }
+            }
+            return list;
+        }
     }
 
     /**

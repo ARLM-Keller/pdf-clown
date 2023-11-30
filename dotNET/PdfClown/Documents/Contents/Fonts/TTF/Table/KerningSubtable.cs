@@ -20,6 +20,7 @@ using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
@@ -63,7 +64,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param version The version of the table to be read
          * @ If there is an error reading the data.
          */
-        public void Read(TTFDataStream data, int version)
+        public void Read(IInputStream data, int version)
         {
             if (version == 0)
             {
@@ -177,21 +178,21 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return pairs.GetKerning(l, r);
         }
 
-        private void ReadSubtable0(TTFDataStream data)
+        private void ReadSubtable0(IInputStream data)
         {
-            int version = data.ReadUnsignedShort();
+            int version = data.ReadUInt16();
             if (version != 0)
             {
-                Debug.WriteLine("info: Unsupported kerning sub-table version: " + version);
+                Debug.WriteLine($"info: Unsupported kerning sub-table version: {version}");
                 return;
             }
-            int length = data.ReadUnsignedShort();
+            int length = data.ReadUInt16();
             if (length < 6)
             {
-                throw new IOException("Kerning sub-table too short, got " + length
-                        + " bytes, expect 6 or more.");
+                Debug.WriteLine($"warn: Kerning sub-table too short, got {length} bytes, expect 6 or more.");
+                return;
             }
-            int coverage = data.ReadUnsignedShort();
+            int coverage = data.ReadUInt16();
             if (IsBitsSet(coverage, COVERAGE_HORIZONTAL, COVERAGE_HORIZONTAL_SHIFT))
             {
                 this.horizontal = true;
@@ -205,32 +206,32 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 this.crossStream = true;
             }
             int format = GetBits(coverage, COVERAGE_FORMAT, COVERAGE_FORMAT_SHIFT);
-            if (format == 0)
+            switch (format)
             {
-                ReadSubtable0Format0(data);
-            }
-            else if (format == 2)
-            {
-                ReadSubtable0Format2(data);
-            }
-            else
-            {
-                Debug.WriteLine("debug: Skipped kerning subtable due to an unsupported kerning subtable version: " + format);
+                case 0:
+                    ReadSubtable0Format0(data);
+                    break;
+                case 2:
+                    ReadSubtable0Format2(data);
+                    break;
+                default:
+                    Debug.WriteLine($"debug: Skipped kerning subtable due to an unsupported kerning subtable version: {format}");
+                    break;
             }
         }
 
-        private void ReadSubtable0Format0(TTFDataStream data)
+        private void ReadSubtable0Format0(IInputStream data)
         {
             pairs = new PairData0Format0();
             pairs.Read(data);
         }
 
-        private void ReadSubtable0Format2(TTFDataStream data)
+        private void ReadSubtable0Format2(IInputStream data)
         {
             Debug.WriteLine("info: Kerning subtable format 2 not yet supported.");
         }
 
-        private void ReadSubtable1(TTFDataStream data)
+        private void ReadSubtable1(IInputStream data)
         {
             Debug.WriteLine("info: Kerning subtable format 1 not yet supported.");
         }
@@ -247,7 +248,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private interface IPairData
         {
-            void Read(TTFDataStream data);
+            void Read(IInputStream data);
 
             int GetKerning(int l, int r);
         }
@@ -255,31 +256,31 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private class PairData0Format0 : IComparer<int[]>, IPairData
         {
             private int searchRange;
-            private int[][] pairs;
+            private KerningFormat0[] pairs;
 
-            public void Read(TTFDataStream data)
+            public void Read(IInputStream data)
             {
-                int numPairs = data.ReadUnsignedShort();
-                searchRange = data.ReadUnsignedShort() / 6;
-                int entrySelector = data.ReadUnsignedShort();
-                int rangeShift = data.ReadUnsignedShort();
-                pairs = new int[numPairs][];
+                int numPairs = data.ReadUInt16();
+                searchRange = data.ReadUInt16() / 6;
+                int entrySelector = data.ReadUInt16();
+                int rangeShift = data.ReadUInt16();
+                pairs = new KerningFormat0[numPairs];
                 for (int i = 0; i < numPairs; ++i)
                 {
-                    int left = data.ReadUnsignedShort();
-                    int right = data.ReadUnsignedShort();
-                    int value = data.ReadSignedShort();
-                    pairs[i] = new int[3] { left, right, value };
+                    var left = data.ReadUInt16();
+                    var right = data.ReadUInt16();
+                    var value = data.ReadInt16();
+                    pairs[i] = new KerningFormat0(left, right, value);
                 }
             }
 
             public int GetKerning(int l, int r)
             {
-                int[] key = new int[] { l, r, 0 };
-                int index = Array.BinarySearch(pairs, key, this);
+                var key = new KerningFormat0((ushort)l, (ushort)r, 0);
+                int index = Array.BinarySearch(pairs, key);
                 if (index >= 0)
                 {
-                    return pairs[index][2];
+                    return pairs[index].Value;
                 }
                 return 0;
             }
@@ -296,6 +297,26 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     return cmp1;
                 }
                 return p1[1].CompareTo(p2[1]);
+            }
+
+            private struct KerningFormat0 : IComparable<KerningFormat0>
+            {
+                public readonly ushort Left;
+                public readonly ushort Right;
+                public readonly short Value;
+
+                public KerningFormat0(ushort left, ushort right, short value)
+                {
+                    Left = left;
+                    Right = right;
+                    Value = value;
+                }
+
+                public int CompareTo(KerningFormat0 other)
+                {
+                    var result = Left.CompareTo(other.Left);
+                    return result != 0 ? result : Right.CompareTo(other.Right);
+                }
             }
         }
     }

@@ -32,6 +32,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using PdfClown.Bytes;
+using PdfClown.Util.IO;
 
 namespace PdfClown.Files
 {
@@ -40,8 +42,6 @@ namespace PdfClown.Files
     */
     public sealed class FileIdentifier : PdfObjectWrapper<PdfArray>
     {
-        #region static
-        #region private
         private static void Digest(BinaryWriter buffer, object value)
         {
             buffer.Write(value.ToString());
@@ -49,13 +49,9 @@ namespace PdfClown.Files
 
         private static PdfArray CreateBaseDataObject()
         {
-            return new PdfArray(PdfString.Default, PdfString.Default);
+            return new PdfArray(2) { PdfString.Default, PdfString.Default };
         }
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new direct file identifier.</summary>
         */
@@ -74,10 +70,7 @@ namespace PdfClown.Files
         */
         public FileIdentifier(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the permanent identifier based on the contents of the file at the time it was
           originally created.</summary>
@@ -109,7 +102,7 @@ namespace PdfClown.Files
               NOTE: To help ensure the uniqueness of file identifiers, it is recommended that they are
               computed by means of a message digest algorithm such as MD5 [PDF:1.7:10.3].
             */
-            using (MD5 md5 = MD5.Create())
+            using (var md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5))
             {
                 using (BinaryWriter buffer = new BinaryWriter(new MemoryStream(), Charset.ISO88591, false))
                 {
@@ -148,17 +141,13 @@ namespace PdfClown.Files
                       correct file has been found.
                     */
                     PdfString versionID = new PdfString(
-                      md5.ComputeHash(((MemoryStream)buffer.BaseStream).ToArray()),
-                      PdfString.SerializationModeEnum.Hex
-                      );
+                      md5.Digest(((MemoryStream)buffer.BaseStream).AsSpan()),
+                      PdfString.SerializationModeEnum.Hex);
                     BaseDataObject[1] = versionID;
                     if (BaseDataObject[0].Equals(PdfString.Default))
                     { BaseDataObject[0] = versionID; }
                 }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

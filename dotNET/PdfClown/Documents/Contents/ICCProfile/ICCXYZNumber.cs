@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return $"{X} {Y} {Z}";
         }
 
-        public void Load(Bytes.Buffer buffer)
+        public void Load(Bytes.ByteStream buffer)
         {
             X = buffer.ReadFixed32();
             Y = buffer.ReadFixed32();

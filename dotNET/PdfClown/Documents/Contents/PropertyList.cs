@@ -40,9 +40,6 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF12)]
     public class PropertyList : PdfObjectWrapper<PdfDictionary>
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Wraps the specified base object into a property list object.</summary>
           <param name="baseObject">Base object of a property list object.</param>
@@ -67,20 +64,14 @@ namespace PdfClown.Documents.Contents
             else
                 return new PropertyList(baseObject);
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
-        public PropertyList(Document context, PdfDictionary baseDataObject) : base(context, baseDataObject)
+        public PropertyList(Document context, PdfDictionary baseDataObject)
+            : base(context, baseDataObject)
         { }
 
-        public PropertyList(PdfDirectObject baseObject) : base(baseObject) { }
-        #endregion
+        public PropertyList(PdfDirectObject baseObject)
+            : base(baseObject)
+        { }
 
-        #region interface
-        #endregion
-        #endregion
     }
 }

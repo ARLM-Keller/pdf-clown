@@ -40,18 +40,12 @@ namespace PdfClown.Documents.Files
     [PDF(VersionEnum.PDF13)]
     public sealed class RelatedFiles : PdfObjectWrapper<PdfArray>, IDictionary<string, EmbeddedFile>
     {
-        #region dynamic
-        #region constructors
         public RelatedFiles(Document context) : base(context, new PdfArray())
         { }
 
         public RelatedFiles(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        #region IDictionary
         public void Add(string key, EmbeddedFile value)
         {
             PdfArray itemPairs = BaseDataObject;
@@ -153,7 +147,6 @@ namespace PdfClown.Documents.Files
             }
         }
 
-        #region ICollection
         void ICollection<KeyValuePair<string, EmbeddedFile>>.Add(KeyValuePair<string, EmbeddedFile> entry)
         {
             Add(entry.Key, entry.Value);
@@ -183,7 +176,6 @@ namespace PdfClown.Documents.Files
             throw new NotImplementedException();
         }
 
-        #region IEnumerable<KeyValuePair<string,EmbeddedFile>>
         IEnumerator<KeyValuePair<string, EmbeddedFile>> IEnumerable<KeyValuePair<string, EmbeddedFile>>.GetEnumerator()
         {
             PdfArray itemPairs = BaseDataObject;
@@ -196,17 +188,9 @@ namespace PdfClown.Documents.Files
             }
         }
 
-        #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable<KeyValuePair<string, EmbeddedFile>>)this).GetEnumerator();
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

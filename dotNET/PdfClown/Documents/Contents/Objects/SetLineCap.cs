@@ -36,14 +36,8 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetLineCap : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "J";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetLineCap(LineCapEnum value)
             : base(OperatorKeyword, PdfInteger.Get((int)value))
         { }
@@ -51,10 +45,7 @@ namespace PdfClown.Documents.Contents.Objects
         public SetLineCap(IList<PdfDirectObject> operands)
             : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         { state.LineCap = Value; }
 
@@ -63,8 +54,5 @@ namespace PdfClown.Documents.Contents.Objects
             get => (LineCapEnum)((IPdfNumber)operands[0]).Value;
             set => operands[0] = PdfInteger.Get((int)value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

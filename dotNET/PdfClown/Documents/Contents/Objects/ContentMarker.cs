@@ -37,8 +37,6 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF12)]
     public abstract class ContentMarker : Operation, IResourceReference<PropertyList>
     {
-        #region dynamic
-        #region constructors
         protected ContentMarker(PdfName tag) : this(tag, null)
         { }
 
@@ -55,21 +53,28 @@ namespace PdfClown.Documents.Contents.Objects
 
         protected ContentMarker(string @operator, IList<PdfDirectObject> operands) : base(@operator, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
+        public PropertyList GetResource(ContentScanner scanner) => GetProperties(scanner);
+
         /**
           <summary>Gets the private information meaningful to the program (application or plugin extension)
           creating the marked content.</summary>
-          <param name="context">Content context.</param>
+          <param name="scanner">Content context.</param>
         */
-        public PropertyList GetProperties(IContentContext context)
+        public PropertyList GetProperties(ContentScanner scanner)
         {
             object properties = Properties;
-            return properties is PdfName
-              ? context.Resources.PropertyLists[(PdfName)properties]
-              : (PropertyList)properties;
+            if (properties is PropertyList list)
+                return list;
+            if (properties == null)
+                return null;
+            var name = (PdfName)properties;
+            var pscanner = scanner;
+
+            while ((list = pscanner.ContentContext.Resources.PropertyLists[name]) == null
+                && (pscanner = pscanner.ParentLevel) != null)
+            { }
+            return list;
         }
 
         /**
@@ -81,7 +86,7 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get
             {
-                PdfDirectObject propertiesObject = operands[1];
+                PdfDirectObject propertiesObject = operands.Count > 1 ? operands[1] : null;
                 if (propertiesObject == null)
                     return null;
                 else if (propertiesObject is PdfName)
@@ -127,23 +132,12 @@ namespace PdfClown.Documents.Contents.Objects
             set => operands[0] = value;
         }
 
-        #region IResourceReference
-        public PropertyList GetResource(IContentContext context)
-        { return GetProperties(context); }
-
         public PdfName Name
         {
-            get
-            {
-                object properties = Properties;
-                return (properties is PdfName ? (PdfName)properties : null);
-            }
+            get => Properties is PdfName name ? name : null;
             set => Properties = value;
         }
-        #endregion
-        #endregion
 
-        #region protected
         protected abstract string PropertyListOperator
         { get; }
 
@@ -155,8 +149,5 @@ namespace PdfClown.Documents.Contents.Objects
             base.Scan(state);
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -20,7 +20,6 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using PdfClown.Util.Collections.Generic;
 using PdfClown.Util;
 
 namespace PdfClown.Documents.Contents.Fonts.Type1
@@ -54,7 +53,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * @param segment2 Segment 2: Binary
 		 * @throws IOException
 		 */
-        public Type1Font Parse(byte[] segment1, byte[] segment2)
+        public Type1Font Parse(Memory<byte> segment1, Memory<byte> segment2)
         {
             font = new Type1Font(segment1, segment2);
             ParseASCII(segment1);
@@ -68,32 +67,32 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         /**
 		 * Parses the ASCII portion of a Type 1 font.
 		 */
-        private void ParseASCII(byte[] bytes)
+        private void ParseASCII(Memory<byte> bytes)
         {
             if (bytes.Length == 0)
             {
-                throw new ArgumentException("byte[] is empty");
+                throw new IOException("ASCII segment of type 1 font is empty");
             }
 
             // %!FontType1-1.0
             // %!PS-AdobeFont-1.0
-            if (bytes.Length < 2 || (bytes[0] != '%' && bytes[1] != '!'))
+            if (bytes.Length < 2 || (bytes.Span[0] != '%' && bytes.Span[1] != '!'))
             {
-                throw new IOException("Invalid start of ASCII segment");
+                throw new IOException("Invalid start of ASCII segment of type 1 font");
             }
 
             lexer = new Type1Lexer(bytes);
 
             // (corrupt?) synthetic font
-            if (lexer.PeekToken().Text.Equals("FontDirectory", StringComparison.Ordinal))
+            if (string.Equals("FontDirectory", lexer.PeekToken.Text, StringComparison.Ordinal))
             {
                 Read(TokenKind.NAME, "FontDirectory");
                 Read(TokenKind.LITERAL); // font name
                 Read(TokenKind.NAME, "known");
                 Read(TokenKind.START_PROC);
-                ReadProc();
+                ReadProcVoid();
                 Read(TokenKind.START_PROC);
-                ReadProc();
+                ReadProcVoid();
                 Read(TokenKind.NAME, "ifelse");
             }
 
@@ -108,7 +107,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             for (int i = 0; i < Length; i++)
             {
                 // premature end
-                Token token = lexer.PeekToken();
+                Token token = lexer.PeekToken;
                 if (token == null)
                 {
                     break;
@@ -184,11 +183,11 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 
         private void ReadEncoding()
         {
-            if (lexer.PeekToken().Kind == TokenKind.NAME)
+            if (lexer.PeekKind(TokenKind.NAME))
             {
                 string name = lexer.NextToken().Text;
 
-                if (name.Equals("StandardEncoding", StringComparison.Ordinal))
+                if (string.Equals(name, "StandardEncoding", StringComparison.Ordinal))
                 {
                     font.Encoding = StandardEncoding.Instance;
                 }
@@ -207,17 +206,18 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 // 0 1 255 {1 index exch /.notdef put } for
                 // we have to check "readonly" and "def" too
                 // as some fonts don't provide any dup-values, see PDFBOX-2134
-                while (!(lexer.PeekToken().Kind == TokenKind.NAME &&
-                        (lexer.PeekToken().Text.Equals("dup", StringComparison.Ordinal) ||
-                        lexer.PeekToken().Text.Equals("readonly", StringComparison.Ordinal) ||
-                        lexer.PeekToken().Text.Equals("def", StringComparison.Ordinal))))
+                while (!(lexer.PeekKind(TokenKind.NAME)
+                    && (lexer.PeekToken.Text.Equals("dup", StringComparison.Ordinal)
+                    || lexer.PeekToken.Text.Equals("readonly", StringComparison.Ordinal)
+                    || lexer.PeekToken.Text.Equals("def", StringComparison.Ordinal))))
                 {
-                    lexer.NextToken();
+                    if (lexer.NextToken() == null)
+                        throw new IOException("Incomplete data while reading encoding of type 1 font");
                 }
 
-                Dictionary<int, string> codeToName = new Dictionary<int, string>();
-                while (lexer.PeekToken().Kind == TokenKind.NAME &&
-                        lexer.PeekToken().Text.Equals("dup", StringComparison.Ordinal))
+                var codeToName = new Dictionary<int, string>();
+                while (lexer.PeekKind(TokenKind.NAME)
+                    && lexer.PeekToken.Text.Equals("dup", StringComparison.Ordinal))
                 {
                     Read(TokenKind.NAME, "dup");
                     int code = Read(TokenKind.INTEGER).IntValue;
@@ -236,7 +236,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 */
         private List<float> ArrayToNumbers(List<Token> value)
         {
-            List<float> numbers = new List<float>();
+            var numbers = new List<float>(value.Count - 2);
             for (int i = 1, size = value.Count - 1; i < size; i++)
             {
                 Token token = value[i];
@@ -307,7 +307,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 */
         private Dictionary<string, List<Token>> ReadSimpleDict()
         {
-            Dictionary<string, List<Token>> dict = new Dictionary<string, List<Token>>(StringComparer.Ordinal);
+            var dict = new Dictionary<string, List<Token>>(StringComparer.Ordinal);
 
             int Length = Read(TokenKind.INTEGER).IntValue;
             Read(TokenKind.NAME, "dict");
@@ -316,22 +316,22 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 
             for (int i = 0; i < Length; i++)
             {
-                if (lexer.PeekToken() == null)
+                if (lexer.PeekToken == null)
                 {
                     break;
                 }
-                if (lexer.PeekToken().Kind == TokenKind.NAME &&
-                   !lexer.PeekToken().Text.Equals("end", StringComparison.Ordinal))
+                if (lexer.PeekKind(TokenKind.NAME) &&
+                   !lexer.PeekToken.Text.Equals("end", StringComparison.Ordinal))
                 {
                     Read(TokenKind.NAME);
                 }
                 // premature end
-                if (lexer.PeekToken() == null)
+                if (lexer.PeekToken == null)
                 {
                     break;
                 }
-                if (lexer.PeekToken().Kind == TokenKind.NAME &&
-                    lexer.PeekToken().Text.Equals("end", StringComparison.Ordinal))
+                if (lexer.PeekKind(TokenKind.NAME) &&
+                    lexer.PeekToken.Text.Equals("end", StringComparison.Ordinal))
                 {
                     break;
                 }
@@ -368,7 +368,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         {
             List<Token> value = new List<Token>();
             Token token = lexer.NextToken();
-            if (lexer.PeekToken() == null)
+            if (lexer.PeekToken == null)
             {
                 return value;
             }
@@ -379,11 +379,11 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 int openArray = 1;
                 while (true)
                 {
-                    if (lexer.PeekToken() == null)
+                    if (lexer.PeekToken == null)
                     {
                         return value;
                     }
-                    if (lexer.PeekToken().Kind == TokenKind.START_ARRAY)
+                    if (lexer.PeekKind(TokenKind.START_ARRAY))
                     {
                         openArray++;
                     }
@@ -419,17 +419,17 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         private void ReadPostScriptWrapper(List<Token> value)
         {
             // postscript wrapper (not in the Type 1 spec)
-            if (lexer.PeekToken().Text.Equals("systemdict", StringComparison.Ordinal))
+            if (string.Equals(lexer.PeekToken.Text, "systemdict", StringComparison.Ordinal))
             {
                 Read(TokenKind.NAME, "systemdict");
                 Read(TokenKind.LITERAL, "internaldict");
                 Read(TokenKind.NAME, "known");
 
                 Read(TokenKind.START_PROC);
-                ReadProc();
+                ReadProcVoid();
 
                 Read(TokenKind.START_PROC);
-                ReadProc();
+                ReadProcVoid();
 
                 Read(TokenKind.NAME, "ifelse");
 
@@ -454,7 +454,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             int openProc = 1;
             while (true)
             {
-                if (lexer.PeekToken().Kind == TokenKind.START_PROC)
+                if (lexer.PeekKind(TokenKind.START_PROC))
                 {
                     openProc++;
                 }
@@ -480,32 +480,55 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return value;
         }
 
+
+        /**
+         * Reads a procedure but without returning anything.
+         */
+        private void ReadProcVoid()
+        {
+            int openProc = 1;
+            while (true)
+            {
+                if (lexer.PeekKind(TokenKind.START_PROC))
+                {
+                    openProc++;
+                }
+
+                Token token = lexer.NextToken();
+
+                if (token.Kind == TokenKind.END_PROC)
+                {
+                    openProc--;
+                    if (openProc == 0)
+                    {
+                        break;
+                    }
+                }
+            }
+            ReadMaybe(TokenKind.NAME, "executeonly");
+        }
+
         /**
 		 * Parses the binary portion of a Type 1 font.
 		 */
-        private void ParseBinary(byte[] bytes)
+        private void ParseBinary(Memory<byte> bytes)
         {
-            byte[] decrypted;
             // Sometimes, fonts use the hex format, so this needs to be converted before decryption
-            if (IsBinary(bytes))
-            {
-                decrypted = Decrypt(bytes, EEXEC_KEY, 4);
-            }
-            else
-            {
-                decrypted = Decrypt(hexToBinary(bytes), EEXEC_KEY, 4);
-            }
+            Memory<byte> decrypted = IsBinary(bytes.Span)
+                ? Decrypt(bytes, EEXEC_KEY, 4)
+                : Decrypt(hexToBinary(bytes.Span), EEXEC_KEY, 4);
+
             lexer = new Type1Lexer(decrypted);
 
             // find /Private dict
-            Token peekToken = lexer.PeekToken();
-            while (peekToken != null && !peekToken.Text.Equals("Private", StringComparison.Ordinal))
+            Token peekToken = lexer.PeekToken;
+            while (peekToken != null && !string.Equals(peekToken.Text, "Private", StringComparison.Ordinal))
             {
                 // for a more thorough validation, the presence of "begin" before Private
                 // determines how code before and following charstrings should look
                 // it is not currently checked anyway
                 lexer.NextToken();
-                peekToken = lexer.PeekToken();
+                peekToken = lexer.PeekToken;
             }
             if (peekToken == null)
             {
@@ -526,7 +549,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             for (int i = 0; i < Length; i++)
             {
                 // premature end
-                if (lexer.PeekToken() == null || lexer.PeekToken().Kind != TokenKind.LITERAL)
+                if (!lexer.PeekKind(TokenKind.LITERAL))
                 {
                     break;
                 }
@@ -552,6 +575,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                         Read(TokenKind.NAME, "def");
                         Read(TokenKind.END_PROC);
                         ReadMaybe(TokenKind.NAME, "executeonly");
+                        ReadMaybe(TokenKind.NAME, "readonly");
                         Read(TokenKind.NAME, "def");
                         break;
                     case "NP":
@@ -560,14 +584,16 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                         Read(TokenKind.NAME);
                         Read(TokenKind.END_PROC);
                         ReadMaybe(TokenKind.NAME, "executeonly");
+                        ReadMaybe(TokenKind.NAME, "readonly");
                         Read(TokenKind.NAME, "def");
                         break;
                     case "RD":
                         // /RD {string currentfile exch readstring pop} bind executeonly def
                         Read(TokenKind.START_PROC);
-                        ReadProc();
+                        ReadProcVoid();
                         ReadMaybe(TokenKind.NAME, "bind");
                         ReadMaybe(TokenKind.NAME, "executeonly");
+                        ReadMaybe(TokenKind.NAME, "readonly");
                         Read(TokenKind.NAME, "def");
                         break;
                     default:
@@ -579,10 +605,11 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             // some fonts have "2 index" here, others have "end noaccess put"
             // sometimes followed by "put". Either way, we just skip until
             // the /CharStrings dict is found
-            while (!(lexer.PeekToken().Kind == TokenKind.LITERAL &&
-                     lexer.PeekToken().Text.Equals("CharStrings", StringComparison.Ordinal)))
+            while (!(lexer.PeekKind(TokenKind.LITERAL)
+                && lexer.PeekToken.Text.Equals("CharStrings", StringComparison.Ordinal)))
             {
-                lexer.NextToken();
+                if (lexer.NextToken() == null)
+                    throw new IOException("Missing 'CharStrings' dictionary in type 1 font");
             }
 
             // CharStrings dict
@@ -661,12 +688,12 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 
             {
                 // premature end
-                if (lexer.PeekToken() == null)
+                if (lexer.PeekToken == null)
                 {
                     break;
                 }
-                if (!(lexer.PeekToken().Kind == TokenKind.NAME &&
-                      lexer.PeekToken().Text.Equals("dup", StringComparison.Ordinal)))
+                if (!(lexer.PeekKind(TokenKind.NAME) &&
+                      lexer.PeekToken.Text.Equals("dup", StringComparison.Ordinal)))
                 {
                     break;
                 }
@@ -677,7 +704,9 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 
                 // RD
                 Token charstring = Read(TokenKind.CHARSTRING);
-                font.SubrsArray.Insert(index.IntValue, Decrypt(charstring.Data, CHARSTRING_KEY, lenIV));
+                var sIndex = index.IntValue;
+                if (sIndex <= font.SubrsArray.Count)
+                    font.SubrsArray.Insert(sIndex, Decrypt(charstring.Data, CHARSTRING_KEY, lenIV));
                 ReadPut();
             }
             ReadDef();
@@ -686,7 +715,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         // OtherSubrs are embedded PostScript procedures which we can safely ignore
         private void ReadOtherSubrs()
         {
-            if (lexer.PeekToken().Kind == TokenKind.START_ARRAY)
+            if (lexer.PeekKind(TokenKind.START_ARRAY))
             {
                 ReadValue();
                 ReadDef();
@@ -722,15 +751,14 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             Read(TokenKind.NAME, "begin");
 
             for (int i = 0; i < Length; i++)
-
             {
                 // premature end
-                if (lexer.PeekToken() == null)
+                if (lexer.PeekToken == null)
                 {
                     break;
                 }
-                if (lexer.PeekToken().Kind == TokenKind.NAME &&
-                    lexer.PeekToken().Text.Equals("end", StringComparison.Ordinal))
+                if (lexer.PeekKind(TokenKind.NAME) &&
+                    lexer.PeekToken.Text.Equals("end", StringComparison.Ordinal))
                 {
                     break;
                 }
@@ -740,7 +768,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 // RD
                 Read(TokenKind.INTEGER);
                 Token charstring = Read(TokenKind.CHARSTRING);
-                font.CharStringsDict.Add(name, Decrypt(charstring.Data, CHARSTRING_KEY, lenIV));
+                font.CharStringsDict[name ?? string.Empty] = Decrypt(charstring.Data, CHARSTRING_KEY, lenIV);
                 ReadDef();
             }
 
@@ -838,8 +866,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 */
         private Token ReadMaybe(TokenKind kind, string name)
         {
-            Token token = lexer.PeekToken();
-            if (token != null && token.Kind == kind && token.Text.Equals(name, StringComparison.Ordinal))
+            if (lexer.PeekKind(kind) && lexer.PeekToken.Text.Equals(name, StringComparison.Ordinal))
 
             {
                 return lexer.NextToken();
@@ -855,7 +882,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 * @param n number of random bytes (lenIV)
 		 * @return plain text
 		 */
-        private byte[] Decrypt(byte[] cipherBytes, int r, int n)
+        private Memory<byte> Decrypt(Memory<byte> cipherBytes, int r, int n)
         {
             // lenIV of -1 means no encryption (not documented)
             if (n == -1)
@@ -870,10 +897,11 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             // decrypt
             int c1 = 52845;
             int c2 = 22719;
+            var span = cipherBytes.Span;
             byte[] plainBytes = new byte[cipherBytes.Length - n];
             for (int i = 0; i < cipherBytes.Length; i++)
             {
-                int cipher = cipherBytes[i] & 0xFF;
+                int cipher = span[i] & 0xFF;
                 int plain = cipher ^ r >> 8;
                 if (i >= n)
                 {
@@ -886,7 +914,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 
         // Check whether binary or hex encoded. See Adobe Type 1 Font Format specification
         // 7.2 eexec encryption
-        private bool IsBinary(byte[] bytes)
+        private bool IsBinary(ReadOnlySpan<byte> bytes)
         {
             if (bytes.Length < 4)
             {
@@ -906,7 +934,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return false;
         }
 
-        private byte[] hexToBinary(byte[] bytes)
+        private byte[] hexToBinary(ReadOnlySpan<byte> bytes)
         {
             // calculate needed Length
             int len = 0;

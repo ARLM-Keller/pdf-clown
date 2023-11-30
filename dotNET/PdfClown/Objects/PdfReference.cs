@@ -36,12 +36,8 @@ namespace PdfClown.Objects
     */
     public sealed class PdfReference : PdfDirectObject, IPdfIndirectObject
     {
-        #region static
         private const int DelegatedReferenceNumber = -1;
-        #endregion
 
-        #region dynamic
-        #region fields
         private readonly int generationNumber;
         private readonly int objectNumber;
 
@@ -51,9 +47,7 @@ namespace PdfClown.Objects
         private PdfObject parent;
         private bool updated;
         private string id;
-        #endregion
 
-        #region constructors
         internal PdfReference(PdfIndirectObject indirectObject)
         {
             this.objectNumber = DelegatedReferenceNumber;
@@ -69,10 +63,7 @@ namespace PdfClown.Objects
 
             this.file = file;
         }
-        #endregion
 
-        #region interface
-        #region public
         public override File File => file ?? base.File;
 
         /**
@@ -106,11 +97,8 @@ namespace PdfClown.Objects
         public override bool Updateable
         {
             get => IndirectObject?.Updateable ?? false;
-            set =>
-                /*
-NOTE: Fail fast if the referenced indirect object is undefined.
-*/
-                IndirectObject.Updateable = value;
+            //NOTE: Fail fast if the referenced indirect object is undefined.
+            set => IndirectObject.Updateable = value;
         }
 
         public override bool Updated
@@ -120,15 +108,11 @@ NOTE: Fail fast if the referenced indirect object is undefined.
         }
 
 
-        #region IPdfIndirectObject
         public PdfDataObject DataObject
         {
             get => IndirectObject?.DataObject;
-            set =>
-                /*
-NOTE: Fail fast if the referenced indirect object is undefined.
-*/
-                IndirectObject.DataObject = value;
+            //NOTE: Fail fast if the referenced indirect object is undefined.
+            set => IndirectObject.DataObject = value;
         }
 
         /**
@@ -137,18 +121,12 @@ NOTE: Fail fast if the referenced indirect object is undefined.
         public override PdfIndirectObject IndirectObject => indirectObject ??= file.IndirectObjects[objectNumber];
 
         public override PdfReference Reference => this;
-        #endregion
-        #endregion
 
-        #region protected
         protected internal override bool Virtual
         {
             get => IndirectObject?.Virtual ?? false;
-            set =>
-                /*
-NOTE: Fail fast if the referenced indirect object is undefined.
-*/
-                IndirectObject.Virtual = value;
+            //NOTE: Fail fast if the referenced indirect object is undefined.
+            set => IndirectObject.Virtual = value;
         }
 
         public override PdfObject Swap(PdfObject other)
@@ -168,25 +146,13 @@ NOTE: Fail fast if the referenced indirect object is undefined.
             return Id.GetHashCode() ^ File.GetHashCode();
         }
 
-        public override string ToString()
-        {
-            return IndirectReference;
-        }
+        public override string ToString() => IndirectReference;
 
-        public override void WriteTo(IOutputStream stream, File context)
-        {
-            stream.Write(IndirectReference);
-        }
+        public override void WriteTo(IOutputStream stream, File context) => stream.Write(IndirectReference);
 
-        public override PdfObject Accept(IVisitor visitor, object data)
-        {
-            return visitor.Visit(this, data);
-        }
+        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 
-        public override PdfDataObject Resolve()
-        {
-            return DataObject;
-        }
+        public override PdfDataObject Resolve() => DataObject;
 
         public override int CompareTo(PdfDirectObject obj)
         {
@@ -216,10 +182,5 @@ NOTE: Fail fast if the referenced indirect object is undefined.
             return otherReference.File == File
                 && otherReference.Id.Equals(Id, StringComparison.Ordinal);
         }
-
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

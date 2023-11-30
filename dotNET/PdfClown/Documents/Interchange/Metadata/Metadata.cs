@@ -41,60 +41,45 @@ namespace PdfClown.Documents.Interchange.Metadata
         public static Metadata Wrap(PdfDirectObject baseObject)
         { return baseObject?.Wrapper as Metadata ?? new Metadata(baseObject); }
 
-        #region dynamic
-        #region constructors
+        private XmlDocument content;
+
         public Metadata(Document context)
-            : base(context,
-                  new PdfStream(
-                      new PdfDictionary(
-                          new PdfName[] { PdfName.Type, PdfName.Subtype },
-                          new PdfDirectObject[] { PdfName.Metadata, PdfName.XML }
-                          ))
-                  )
+            : base(context, new PdfStream(new PdfDictionary(2)
+                      {
+                          { PdfName.Type, PdfName.Metadata },
+                          { PdfName.Subtype, PdfName.XML }
+                      }))
         { }
 
         public Metadata(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        /**
-          <summary>Gets/Sets the metadata contents.</summary>
-        */
+        ///<summary>Gets/Sets the metadata contents.</summary>
         public XmlDocument Content
         {
             get
             {
-                XmlDocument content;
+                if (content == null)
                 {
-                    using (var contentStream = new MemoryStream(BaseDataObject.Body.ToByteArray()))
+                    var body = BaseDataObject.Body;
+                    if (body.Length > 0)
                     {
-                        if (contentStream.Length > 0)
-                        {
-                            content = new XmlDocument();
-                            content.Load(contentStream);
-                        }
-                        else
-                        { content = null; }
+                        content = new XmlDocument();
+                        content.Load((Stream)body);
                     }
+                    else
+                    { content = null; }
+
                 }
                 return content;
             }
             set
             {
-                using (var contentStream = new MemoryStream())
-                {
-                    value.Save(contentStream);
-
-                    IBuffer body = BaseDataObject.Body;
-                    body.Clear();
-                    body.Write(contentStream.ToArray());
-                }
+                var body = BaseDataObject.Body;
+                body.SetLength(0);
+                value.Save((Stream)body);
+                content = value;
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

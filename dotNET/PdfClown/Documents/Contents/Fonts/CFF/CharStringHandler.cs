@@ -47,7 +47,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 if (obj is CharStringCommand charStringCommand)
                 {
                     List<float> results = handleCommand(stack, charStringCommand);
-                    stack.Clear();  // this is basically returning the new stack
+                    stack.Clear();  
                     stack.AddRange(results);
                 }
                 else

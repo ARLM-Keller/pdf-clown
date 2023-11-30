@@ -39,16 +39,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF13)]
     public sealed class DeviceNColorSpace : SpecialDeviceColorSpace
     {
-        #region dynamic
-        #region constructors
         //TODO:IMPL new element constructor!
 
         internal DeviceNColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
@@ -85,8 +80,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override bool IsSpaceColor(Color color)
         { return color is DeviceNColor; }
-        #endregion
-        #endregion
-        #endregion
     }
 }

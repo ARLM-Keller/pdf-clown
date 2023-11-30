@@ -37,10 +37,7 @@ namespace PdfClown.Documents.Interchange.Metadata
         /**
           <summary>Gets the page-piece dictionary holding private application data.</summary>
         */
-        AppDataCollection AppData
-        {
-            get;
-        }
+        AppDataCollection AppData { get; }
 
         /**
           <summary>Gets the private data of the specified application, creating it in case no entry in

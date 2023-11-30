@@ -36,27 +36,18 @@ namespace PdfClown.Documents.Interaction.Actions
       [PDF:1.6:8.6.4].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class ResetForm
-      : Action
+    public sealed class ResetForm : Action
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public ResetForm(
-          Document context
-          ) : base(context, PdfName.ResetForm)
+        public ResetForm(Document context)
+            : base(context, PdfName.ResetForm)
         { }
 
-        internal ResetForm(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal ResetForm(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #endregion
-        #endregion
     }
 }

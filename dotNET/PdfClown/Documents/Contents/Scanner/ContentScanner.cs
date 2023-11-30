@@ -47,34 +47,20 @@ namespace PdfClown.Documents.Contents
     */
     public sealed partial class ContentScanner
     {
-        #region delegates
         /**
           <summary>Handles the scan start notification.</summary>
           <param name="scanner">Content scanner started.</param>
         */
         public delegate void OnStartEventHandler(ContentScanner scanner);
-        #endregion
 
-        #region events
         /**
           <summary>Notifies the scan start.</summary>
         */
         public event OnStartEventHandler OnStart;
 
-        #endregion
-        #region types
-        #endregion
-
-        #region static
-        #region fields
         private static readonly int StartIndex = -1;
         private static readonly SKPaint paintWhiteBackground = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill };
 
-        #endregion
-        #endregion
-
-        #region dynamic
-        #region fields
         /**
           Child level.
         */
@@ -96,6 +82,7 @@ namespace PdfClown.Documents.Contents
           Parent level.
         */
         private ContentScanner parentLevel;
+        private ContentScanner resourceParentLevel;
         /**
           Current graphics state.
         */
@@ -121,9 +108,7 @@ namespace PdfClown.Documents.Contents
           <summary>Device-independent size of the graphics canvas.</summary>
         */
         private SKSize contextSize;
-        #endregion
 
-        #region constructors
         /**
           <summary>Instantiates a top-level content scanner.</summary>
           <param name="contents">Content objects collection to scan.</param>
@@ -166,8 +151,9 @@ namespace PdfClown.Documents.Contents
             MoveStart();
         }
 
-        public ContentScanner(xObjects::FormXObject formXObject, SKCanvas canvas, SKSize size)
+        public ContentScanner(xObjects::FormXObject formXObject, ContentScanner parentLevel, SKCanvas canvas, SKSize size)
         {
+            this.resourceParentLevel = parentLevel;
             objects =
                 contents = formXObject.Contents;
 
@@ -192,10 +178,7 @@ namespace PdfClown.Documents.Contents
 
             MoveStart();
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the size of the current imageable area.</summary>
           <remarks>It can be either the user-space area (dry scanning) or the device-space area (wet
@@ -255,12 +238,12 @@ namespace PdfClown.Documents.Contents
         /**
          <summary>Gets the current parent object.</summary>
        */
-        public CompositeObject Parent => parentLevel?.Current as CompositeObject;
+        public CompositeObject Parent => ParentLevel?.Current as CompositeObject;
 
         /**
           <summary>Gets the parent scan level.</summary>
         */
-        public ContentScanner ParentLevel => parentLevel;
+        public ContentScanner ParentLevel => parentLevel ?? resourceParentLevel;
 
         /**
           <summary>Inserts a content object at the current position.</summary>
@@ -294,8 +277,7 @@ namespace PdfClown.Documents.Contents
         /**
           <summary>Gets whether this level is the root of the hierarchy.</summary>
         */
-        public bool IsRootLevel()
-        { return parentLevel == null; }
+        public bool IsRootLevel() => parentLevel == null;
 
         /**
           <summary>Moves to the object at the given position.</summary>
@@ -317,14 +299,20 @@ namespace PdfClown.Documents.Contents
           <summary>Moves after the last object.</summary>
         */
         public void MoveEnd()
-        { MoveLast(); MoveNext(); }
+        {
+            MoveLast();
+            MoveNext();
+        }
 
         /**
           <summary>Moves to the first object.</summary>
           <returns>Whether the first object was successfully reached.</returns>
         */
         public bool MoveFirst()
-        { MoveStart(); return MoveNext(); }
+        {
+            MoveStart();
+            return MoveNext();
+        }
 
         /**
           <summary>Moves to the last object.</summary>
@@ -460,14 +448,11 @@ namespace PdfClown.Documents.Contents
             get
             {
                 ContentScanner level = this;
-                while (true)
+                while (level.ParentLevel != null)
                 {
-                    ContentScanner parentLevel = level.ParentLevel;
-                    if (parentLevel == null)
-                        return level;
-
-                    level = parentLevel;
+                    level = level.ParentLevel;
                 }
+                return level;
             }
         }
 
@@ -477,9 +462,7 @@ namespace PdfClown.Documents.Contents
         public GraphicsState State => state;
 
         public bool ClearContext { get; set; } = true;
-        #endregion
 
-        #region protected
 #pragma warning disable 0628
         /**
           <summary>Notifies the scan start to listeners.</summary>
@@ -490,9 +473,7 @@ namespace PdfClown.Documents.Contents
             { OnStart(this); }
         }
 #pragma warning restore 0628
-        #endregion
 
-        #region private
         /**
           <summary>Synchronizes the scanner state.</summary>
         */
@@ -503,8 +484,5 @@ namespace PdfClown.Documents.Contents
             else
             { childLevel = null; }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

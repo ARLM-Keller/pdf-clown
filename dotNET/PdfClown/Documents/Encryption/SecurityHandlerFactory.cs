@@ -76,7 +76,7 @@ namespace PdfClown.Documents.Encryption
 		 * @param policy the protection policy for which to create a security handler
 		 * @return a new SecurityHandler instance, or null if none is available
 		 */
-        public SecurityHandler NewSecurityHandlerForPolicy(ProtectionPolicy policy)
+        public ISecurityHandler NewSecurityHandlerForPolicy(ProtectionPolicy policy)
         {
             if (!policyToHandler.TryGetValue(policy.GetType(), out Type handlerClass))
             {
@@ -93,7 +93,7 @@ namespace PdfClown.Documents.Encryption
 		 * @param name the Filter name from the PDF encryption dictionary
 		 * @return a new SecurityHandler instance, or null if none is available
 		 */
-        public SecurityHandler NewSecurityHandlerForFilter(string name)
+        public ISecurityHandler NewSecurityHandlerForFilter(string name)
         {
             if (!nameToHandler.TryGetValue(name, out Type handlerClass))
             {
@@ -112,11 +112,11 @@ namespace PdfClown.Documents.Encryption
 		 * @param args array of objects to be passed as arguments to the constructor call.
 		 * @return a new SecurityHandler instance, or null if none is available.
 		 */
-        private SecurityHandler NewSecurityHandler(Type handlerClass, Type[] argsClasses, object[] args)
+        private ISecurityHandler NewSecurityHandler(Type handlerClass, Type[] argsClasses, object[] args)
         {
             try
             {
-                return (SecurityHandler)Activator.CreateInstance(handlerClass, args);
+                return (ISecurityHandler)Activator.CreateInstance(handlerClass, args);
             }
             catch (Exception e)
             {

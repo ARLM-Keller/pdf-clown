@@ -36,28 +36,18 @@ namespace PdfClown.Documents.Contents.Objects
       [PDF:1.6:4.4.1].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class DrawRectangle
-      : Operation
+    public sealed class DrawRectangle : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "re";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public DrawRectangle(double x, double y, double width, double height)
             : base(OperatorKeyword,
-                  new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(x), PdfReal.Get(y), PdfReal.Get(width), PdfReal.Get(height) }))
+                  new List<PdfDirectObject>(4) { PdfReal.Get(x), PdfReal.Get(y), PdfReal.Get(width), PdfReal.Get(height) })
         { }
 
         public DrawRectangle(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public double Height
         {
             get => ((IPdfNumber)operands[3]).RawValue;
@@ -69,8 +59,6 @@ namespace PdfClown.Documents.Contents.Objects
             var pathObject = state.Scanner.RenderObject;
             if (pathObject != null)
             {
-                //var rect = SKRect.Create((float)X, (float)Y, (float)Width, (float)Height);
-                //System.Diagnostics.Debug.WriteLine($"Draw Rectangle:{rect}");
                 pathObject.AddRect(SKRect.Create((float)X, (float)Y, (float)Width, (float)Height));
             }
         }
@@ -92,8 +80,5 @@ namespace PdfClown.Documents.Contents.Objects
             get => ((IPdfNumber)operands[1]).RawValue;
             set => operands[1] = PdfReal.Get(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

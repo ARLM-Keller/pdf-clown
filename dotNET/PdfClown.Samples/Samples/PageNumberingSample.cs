@@ -17,11 +17,9 @@ namespace PdfClown.Samples.CLI
       <remarks>Stamping is just one of the several ways PDF contents can be manipulated using PDF Clown:
       contents can be inserted as (raw) data chunks, mid-level content objects, external forms, etc.</remarks>
     */
-    public class PageNumberingSample
-      : Sample
+    public class PageNumberingSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
@@ -37,17 +35,15 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private void Stamp(
-          Document document
-          )
+        private void Stamp(Document document)
         {
             // 1. Instantiate the stamper!
             /* NOTE: The PageStamper is optimized for dealing with pages. */
-            PageStamper stamper = new PageStamper();
+            var stamper = new PageStamper();
 
             // 2. Numbering each page...
-            PdfType1Font font = PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Courier, true, false);
-            DeviceRGBColor redColor = DeviceRGBColor.Get(SKColors.Red);
+            var font = FontType1.Load(document, FontName.CourierBold);
+            var redColor = DeviceRGBColor.Get(SKColors.Red);
             int margin = 32;
             foreach (Page page in document.Pages)
             {
@@ -67,17 +63,13 @@ namespace PdfClown.Samples.CLI
                     foreground.ShowText(
                       pageNumber.ToString(),
                       new SKPoint(
-                        (pageIsEven
-                          ? margin
-                          : pageSize.Width - margin),
-                        pageSize.Height - margin
-                        ),
+                        (pageIsEven ? margin : pageSize.Width - margin),
+                        pageSize.Height - margin),
                       (pageIsEven
                         ? XAlignmentEnum.Left
                         : XAlignmentEnum.Right),
                       YAlignmentEnum.Bottom,
-                      0
-                      );
+                      0);
                 }
 
                 // 2.3. End the stamping!

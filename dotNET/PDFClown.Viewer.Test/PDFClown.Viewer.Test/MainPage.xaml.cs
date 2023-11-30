@@ -32,9 +32,9 @@ namespace PdfClown.Viewer.Test
                     label.Text = Path.GetFileName(fileInfo.FileName);
                     viewer.Load(fileInfo.Stream);
                     objects.Clear();
-                    var items = new List<string>();
-                    items.AddRange(ExtractDictionary(viewer.Document.File.Trailer));
-                    list.ItemsSource = items;
+                    //var items = new List<string>();
+                    //items.AddRange(ExtractDictionary(viewer.Document.File.Trailer));
+                    //list.ItemsSource = items;
                 }
             }
             catch (Exception ex)
@@ -106,7 +106,8 @@ namespace PdfClown.Viewer.Test
             }
             else
             {
-                yield return $"{prntKey} {obj} {obj.GetType()}";
+                var str = obj?.ToString() ?? "null";
+                yield return $"{prntKey} {(str.Length > 40 ? (str.Substring(0, 40) + "...") : str)} {obj?.GetType()}";
             }
         }
 

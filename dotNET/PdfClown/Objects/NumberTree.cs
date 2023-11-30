@@ -36,28 +36,15 @@ namespace PdfClown.Objects
       <summary>Number tree [PDF:1.7:3.8.6].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public abstract class NumberTree<TValue>
-      : Tree<PdfInteger, TValue>
+    public abstract class NumberTree<TValue> : Tree<PdfInteger, TValue>
       where TValue : PdfObjectWrapper
     {
-        #region dynamic
-        #region constructors
-        protected NumberTree(
-          Document context
-          ) : base(context)
+        protected NumberTree(Document context) : base(context)
         { }
 
-        protected NumberTree(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        protected NumberTree(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override PdfName PairsKey => PdfName.Nums;
-        #endregion
-        #endregion
-        #endregion
     }
 }

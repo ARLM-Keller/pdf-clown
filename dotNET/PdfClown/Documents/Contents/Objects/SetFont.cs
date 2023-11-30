@@ -37,33 +37,33 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetFont : Operation, IResourceReference<Font>
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "Tf";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetFont(PdfName name, double size) : base(OperatorKeyword, name, PdfReal.Get(size))
         { }
 
         public SetFont(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the <see cref="Font">font</see> resource to be set.</summary>
-          <param name="context">Content context.</param>
+          <param name="scanner">Content context.</param>
         */
-        public Font GetFont(IContentContext context)
-        { return GetResource(context); }
+        public Font GetFont(ContentScanner scanner) => GetResource(scanner);
+
+        public Font GetResource(ContentScanner scanner)
+        {
+            var pscanner = scanner;
+            Font font;
+            while ((font = pscanner.ContentContext.Resources.Fonts[Name]) == null
+                && (pscanner = pscanner.ParentLevel) != null)
+            { }
+            return font;
+        }
 
         public override void Scan(GraphicsState state)
         {
-            state.Font = GetFont(state.Scanner.ContentContext);
+            state.Font = GetFont(state.Scanner);
             state.FontSize = Size;
         }
 
@@ -76,18 +76,10 @@ namespace PdfClown.Documents.Contents.Objects
             set => operands[1] = PdfReal.Get(value);
         }
 
-        #region IResourceReference
-        public Font GetResource(IContentContext context)
-        { return context.Resources.Fonts[Name]; }
-
         public PdfName Name
         {
             get => (PdfName)operands[0];
             set => operands[0] = value;
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

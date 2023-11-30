@@ -34,43 +34,25 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Marked-content point' operation [PDF:1.6:10.5].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class MarkedContentPoint
-      : ContentMarker
+    public sealed class MarkedContentPoint : ContentMarker
     {
-        #region static
-        #region fields
         public static readonly string PropertyListOperatorKeyword = "DP";
         public static readonly string SimpleOperatorKeyword = "MP";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
-        public MarkedContentPoint(
-          PdfName tag
-          ) : base(tag)
+        public MarkedContentPoint(PdfName tag)
+            : base(tag)
         { }
 
-        public MarkedContentPoint(
-          PdfName tag,
-          PdfDirectObject properties
-          ) : base(tag, properties)
+        public MarkedContentPoint(PdfName tag, PdfDirectObject properties)
+            : base(tag, properties)
         { }
 
-        internal MarkedContentPoint(
-          string @operator,
-          IList<PdfDirectObject> operands
-          ) : base(@operator, operands)
+        internal MarkedContentPoint(string @operator, IList<PdfDirectObject> operands)
+            : base(@operator, operands)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override string PropertyListOperator => PropertyListOperatorKeyword;
 
         protected override string SimpleOperator => SimpleOperatorKeyword;
-        #endregion
-        #endregion
-        #endregion
     }
 }

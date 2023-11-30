@@ -27,10 +27,12 @@ namespace PdfClown.Documents.Contents.Fonts
      */
     public class Panose
     {
-        private readonly byte[] bytes;
+        public static readonly int PanoseLength = 12;
+
+        private readonly Memory<byte> bytes;
         private PanoseClassification classification;
 
-        public Panose(byte[] bytes)
+        public Panose(Memory<byte> bytes)
         {
             this.bytes = bytes;
         }
@@ -43,7 +45,7 @@ namespace PdfClown.Documents.Contents.Fonts
          */
         public int FamilyClass
         {
-            get => bytes[0] << 8 | bytes[1];
+            get => (bytes.Span[0] & 0xff) << 8 | (bytes.Span[1] & 0xff);
         }
 
         /**
@@ -53,19 +55,10 @@ namespace PdfClown.Documents.Contents.Fonts
          */
         public PanoseClassification PanoseClassification
         {
-            get
-            {
-                if (classification == null)
-                {
-                    byte[] panose = new byte[12];
-                    Array.Copy(bytes, 2, panose, 0, 10);
-                    classification = new PanoseClassification(panose);
-                }
-                return classification;
-            }
+            get => classification ??= new PanoseClassification(bytes.Slice(2, 10));
         }
 
-        public byte[] Bytes
+        public Memory<byte> Bytes
         {
             get => bytes;
         }

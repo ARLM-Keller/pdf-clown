@@ -25,7 +25,7 @@
 
 using PdfClown.Files;
 using PdfClown.Objects;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Util.Collections;
 
 using System;
 using System.Collections;
@@ -39,7 +39,6 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF10)]
     public sealed class Pages : PdfObjectWrapper<PdfDictionary>, IExtList<Page>, IList<Page>
     {
-        #region types
         private class Enumerator : IEnumerator<Page>
         {
             /**
@@ -167,29 +166,24 @@ namespace PdfClown.Documents
             public void Dispose()
             { }
         }
-        #endregion
 
         /*
           TODO:IMPL A B-tree algorithm should be implemented to optimize the inner layout
           of the page tree (better insertion/deletion performance). In this case, it would
           be necessary to keep track of the modified tree nodes for incremental update.
         */
-        #region dynamic
-        #region constructors
         public Pages(Document context)
-            : base(context,
-            new PdfDictionary(
-              new PdfName[3] { PdfName.Type, PdfName.Kids, PdfName.Count },
-              new PdfDirectObject[3] { PdfName.Pages, new PdfArray(), PdfInteger.Default }))
+            : base(context, new PdfDictionary(3)
+            {
+                { PdfName.Type, PdfName.Pages },
+                { PdfName.Kids, new PdfArray() },
+                { PdfName.Count, PdfInteger.Default }
+            })
         { }
 
         public Pages(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        #region IExtList<Page>
         public IList<Page> GetRange(int index, int count)
         {
             return GetSlice(index, index + count);
@@ -211,7 +205,6 @@ namespace PdfClown.Documents
             CommonAddAll(index, pages);
         }
 
-        #region IExtCollection<Page>
         public void AddAll<TVar>(ICollection<TVar> pages)
           where TVar : Page
         {
@@ -247,10 +240,7 @@ namespace PdfClown.Documents
 
             return removingPages.Count;
         }
-        #endregion
-        #endregion
 
-        #region IList<Page>
         public int IndexOf(Page page)
         {
             return page.Index;
@@ -322,7 +312,6 @@ namespace PdfClown.Documents
             }
         }
 
-        #region ICollection<Page>
         public void Add(Page page)
         {
             CommonAddAll(-1, (ICollection<Page>)new Page[] { page });
@@ -378,24 +367,16 @@ namespace PdfClown.Documents
             return true;
         }
 
-        #region IEnumerable<Page>
         public IEnumerator<Page> GetEnumerator()
         {
             return new Enumerator(this);
         }
 
-        #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
 
-        #region private
         /**
           Add a collection of pages at the specified position.
           <param name="index">Addition position. To append, use value -1.</param>
@@ -455,17 +436,14 @@ namespace PdfClown.Documents
             do
             {
                 // Get the page collection counter!
-                PdfInteger countObject = (PdfInteger)parentData[PdfName.Count];
+                var count = parentData.GetInt(PdfName.Count);
                 // Increment the counter at the current level!
-                parentData[PdfName.Count] = PdfInteger.Get(countObject.IntValue + pages.Count);
+                parentData[PdfName.Count] = PdfInteger.Get(count + pages.Count);
 
                 // Iterate upward!
                 parent = parentData[PdfName.Parent];
                 parentData = (PdfDictionary)PdfObject.Resolve(parent);
             } while (parent != null);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

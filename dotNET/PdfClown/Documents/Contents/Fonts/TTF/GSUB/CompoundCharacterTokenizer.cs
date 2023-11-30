@@ -63,7 +63,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
                 lastIndexOfPrevMatch = match.Index + match.Length;
             }
 
-            string tail = text.Substring(lastIndexOfPrevMatch, text.Length - lastIndexOfPrevMatch);
+            string tail = text.Substring(lastIndexOfPrevMatch);
 
             if (tail.Length > 0)
             {
@@ -75,16 +75,17 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 
         private string GetRegexFromTokens(ISet<string> compoundWords)
         {
-            StringBuilder sb = new StringBuilder();
+            //string.Join(")|(",)
+            var sb = new StringBuilder();
 
             foreach (string compoundWord in compoundWords)
             {
-                sb.Append("(");
+                sb.Append('(');
                 sb.Append(compoundWord);
-                sb.Append(")|");
+                sb.Append(')').Append('|');
             }
 
-            sb.Length = sb.Length - 1;
+            sb.Length--;
 
             return sb.ToString();
         }

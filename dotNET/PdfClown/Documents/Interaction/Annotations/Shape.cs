@@ -31,6 +31,7 @@ using PdfClown.Objects;
 using System;
 using SkiaSharp;
 using System.Collections.Generic;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -40,8 +41,6 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public abstract class Shape : Markup
     {
-        #region dynamic
-        #region constructors
         protected Shape(Page page, SKRect box, string text, PdfName subtype)
             : base(page, subtype, box, text)
         { }
@@ -49,11 +48,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         protected Shape(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
-
-        #region interface
-        #region public
-
 
         public void DrawPath(SKCanvas canvas, SKPath path)
         {
@@ -98,9 +92,5 @@ namespace PdfClown.Documents.Interaction.Annotations
                 yield return cpBase;
             }
         }
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

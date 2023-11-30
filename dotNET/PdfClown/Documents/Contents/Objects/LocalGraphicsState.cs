@@ -38,44 +38,23 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class LocalGraphicsState : ContainerObject
     {
-        #region static
-        #region fields
         public static readonly string BeginOperatorKeyword = SaveGraphicsState.OperatorKeyword;
         public static readonly string EndOperatorKeyword = RestoreGraphicsState.OperatorKeyword;
 
         private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(BeginOperatorKeyword + Symbol.LineFeed);
         private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public LocalGraphicsState()
         { }
 
         public LocalGraphicsState(IList<ContentObject> objects) : base(objects)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         {
-            var context = state.Scanner.RenderContext;
-            if (context != null)
-            {
-                /*
-                  NOTE: Local graphics state is purposely isolated from surrounding graphics state,
-                  so no inner operation can alter its subsequent scanning.
-                */
-                // Save outer graphics state!
-                context.Save();
-
-                Render(state);
-
-                // Restore outer graphics state!
-                context.Restore();
-            }
+            state.Save();
+            Render(state);
+            state.Restore();
         }
 
         public override void WriteTo(IOutputStream stream, Document context)
@@ -84,8 +63,5 @@ namespace PdfClown.Documents.Contents.Objects
             base.WriteTo(stream, context);
             stream.Write(EndChunk);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -19,26 +19,21 @@ namespace PdfClown.Bytes.Filters
 {
     public static class FiltersExtension
     {
+        public static sbyte ReadInt8(this IInputStream data)
+        {
+            return (sbyte)((data.ReadUByte() << 24) >> 24);
+        }
+
         public static sbyte ReadInt8(this byte[] data, int offset)
         {
             return (sbyte)((data[offset] << 24) >> 24);
         }
 
-        public static ushort ReadUint16(this byte[] data, int offset)
+        public static sbyte ReadInt8(this ReadOnlySpan<byte> data, int offset)
         {
-            return (ushort)((data[offset] << 8) | data[offset + 1]);
+            return (sbyte)((data[offset] << 24) >> 24);
         }
 
-        public static uint ReadUint32(this byte[] data, int offset)
-        {
-            return (
-              ((uint)((data[offset] << 24) |
-                (data[offset + 1] << 16) |
-                (data[offset + 2] << 8) |
-                data[offset + 3])) >>
-              0
-            );
-        }
 
         // Calculate the base 2 logarithm of the number `x`. This differs from the
         // native function in the sense that it returns the ceiling value and that it

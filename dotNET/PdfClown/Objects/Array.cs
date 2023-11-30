@@ -38,7 +38,6 @@ namespace PdfClown.Objects
     public class Array<TItem> : PdfObjectWrapper<PdfArray>, IList<TItem>
         where TItem : IPdfObjectWrapper
     {
-        #region types
         /**
           <summary>Item instancer.</summary>
         */
@@ -57,22 +56,9 @@ namespace PdfClown.Objects
                 return PdfObjectWrapper.Wrap<T>(baseObject);
             }
         }
-        #endregion
 
-        #region static
-        #region interface
-        #region public
-
-        #endregion
-        #endregion
-        #endregion
-
-        #region dynamic
-        #region fields
         protected IWrapper<TItem> itemWrapper;
-        #endregion
 
-        #region constructors
         /**
           <summary>Wraps a new base array using the default wrapper for wrapping its items.</summary>
           <param name="context">Document context.</param>
@@ -116,7 +102,7 @@ namespace PdfClown.Objects
           <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
           everytime available.</param>
         */
-        protected Array(PdfDirectObject baseObject)
+        public Array(PdfDirectObject baseObject)
             : this(new DefaultWrapper<TItem>(), baseObject)
         { }
 
@@ -126,29 +112,16 @@ namespace PdfClown.Objects
           <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
           everytime available.</param>
         */
-        protected Array(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject) : base(baseObject)
+        public Array(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject) : base(baseObject)
         {
             this.itemWrapper = itemWrapper;
         }
-        #endregion
 
-        #region interface
-        #region public
-        #region IList<TItem>
-        public virtual int IndexOf(TItem item)
-        {
-            return BaseDataObject.IndexOf(item.BaseObject);
-        }
+        public virtual int IndexOf(TItem item) => BaseDataObject.IndexOf(item.BaseObject);
 
-        public virtual void Insert(int index, TItem item)
-        {
-            BaseDataObject.Insert(index, item.BaseObject);
-        }
+        public virtual void Insert(int index, TItem item) => BaseDataObject.Insert(index, item.BaseObject);
 
-        public virtual void RemoveAt(int index)
-        {
-            BaseDataObject.RemoveAt(index);
-        }
+        public virtual void RemoveAt(int index) => BaseDataObject.RemoveAt(index);
 
         public virtual TItem this[int index]
         {
@@ -156,11 +129,7 @@ namespace PdfClown.Objects
             set => BaseDataObject[index] = value.BaseObject;
         }
 
-        #region ICollection<TItem>
-        public virtual void Add(TItem item)
-        {
-            BaseDataObject.Add(item.BaseObject);
-        }
+        public virtual void Add(TItem item) => BaseDataObject.Add(item.BaseObject);
 
         public virtual void Clear()
         {
@@ -169,10 +138,7 @@ namespace PdfClown.Objects
             { RemoveAt(index); }
         }
 
-        public virtual bool Contains(TItem item)
-        {
-            return BaseDataObject.Contains(item.BaseObject);
-        }
+        public virtual bool Contains(TItem item) => BaseDataObject.Contains(item.BaseObject);
 
         public virtual void CopyTo(TItem[] items, int index)
         {
@@ -186,29 +152,14 @@ namespace PdfClown.Objects
 
         public virtual bool IsReadOnly => false;
 
-        public virtual bool Remove(TItem item)
-        {
-            return BaseDataObject.Remove(item.BaseObject);
-        }
+        public virtual bool Remove(TItem item) => BaseDataObject.Remove(item.BaseObject);
 
-        #region IEnumerable<TItem>
         public virtual IEnumerator<TItem> GetEnumerator()
         {
             for (int index = 0, length = Count; index < length; index++)
             { yield return this[index]; }
         }
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
     }
 }

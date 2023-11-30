@@ -37,7 +37,6 @@ namespace PdfClown.Tools
     public class TextStringPositionComparer<T> : IComparer<T>
       where T : ITextString
     {
-        #region static
         /**
           <summary>Gets whether the specified boxes lay on the same text line.</summary>
         */
@@ -55,14 +54,11 @@ namespace PdfClown.Tools
               || (box2.Top > box1.Top - yThreshold
                 && box2.Top < box1.Bottom + yThreshold - minHeight));
         }
-        #endregion
 
-        #region dynamic
-        #region IComparer
         public int Compare(T textString1, T textString2)
         {
-            var quad1 = textString1.Quad ?? Quad.Empty;
-            var quad2 = textString2.Quad ?? Quad.Empty;
+            var quad1 = textString1.Quad;
+            var quad2 = textString2.Quad;
             if (IsOnTheSameLine(quad1, quad2))
             {
                 /*
@@ -75,7 +71,5 @@ namespace PdfClown.Tools
             }
             return quad1.Top.CompareTo(quad2.Top);
         }
-        #endregion
-        #endregion
     }
 }

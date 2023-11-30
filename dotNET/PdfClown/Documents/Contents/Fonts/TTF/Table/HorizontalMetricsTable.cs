@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
@@ -30,14 +31,13 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public const string TAG = "hmtx";
 
-        private int[] advanceWidth;
+        private ushort[] advanceWidth;
         private short[] leftSideBearing;
         private short[] nonHorizontalLeftSideBearing;
         private int numHMetrics;
 
-        public HorizontalMetricsTable(TrueTypeFont font) : base(font)
-        {
-        }
+        public HorizontalMetricsTable()
+        { }
 
         /**
          * This will read the required data from the stream.
@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             HorizontalHeaderTable hHeader = ttf.HorizontalHeader;
             if (hHeader == null)
@@ -57,12 +57,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             int numGlyphs = ttf.NumberOfGlyphs;
 
             int bytesRead = 0;
-            advanceWidth = new int[numHMetrics];
+            advanceWidth = new ushort[numHMetrics];
             leftSideBearing = new short[numHMetrics];
             for (int i = 0; i < numHMetrics; i++)
             {
-                advanceWidth[i] = data.ReadUnsignedShort();
-                leftSideBearing[i] = data.ReadSignedShort();
+                advanceWidth[i] = data.ReadUInt16();
+                leftSideBearing[i] = data.ReadInt16();
                 bytesRead += 4;
             }
 
@@ -84,7 +84,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 {
                     if (bytesRead < Length)
                     {
-                        nonHorizontalLeftSideBearing[i] = data.ReadSignedShort();
+                        nonHorizontalLeftSideBearing[i] = data.ReadInt16();
                         bytesRead += 2;
                     }
                 }

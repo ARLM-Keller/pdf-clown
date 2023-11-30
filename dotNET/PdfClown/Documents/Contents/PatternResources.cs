@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Patterns;
 using PdfClown.Objects;
 
 using System;
@@ -39,21 +39,13 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF12)]
     public sealed class PatternResources : ResourceItems<Pattern>
     {
-        #region dynamic
-        #region constructors
         public PatternResources(Document context) : base(context)
         { }
 
         public PatternResources(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override Pattern WrapItem(PdfDirectObject baseObject)
         { return Pattern.Wrap(baseObject); }
-        #endregion
-        #endregion
-        #endregion
     }
 }

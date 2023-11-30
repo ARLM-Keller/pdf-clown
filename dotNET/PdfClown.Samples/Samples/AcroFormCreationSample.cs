@@ -51,16 +51,16 @@ namespace PdfClown.Samples.CLI
             Fields fields = form.Fields;
 
             // 2. Define the page where to place the fields!
-            Page page = new Page(document);
+            var page = new Page(document);
             document.Pages.Add(page);
 
             // 3. Define the appearance style to apply to the fields!
-            DefaultStyle fieldStyle = new DefaultStyle();
+            var fieldStyle = new DefaultStyle();
             fieldStyle.FontSize = 12;
             fieldStyle.GraphicsVisibile = true;
 
-            PrimitiveComposer composer = new PrimitiveComposer(page);
-            composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Courier, true, false), 14);
+            var composer = new PrimitiveComposer(page);
+            composer.SetFont(FontType1.Load(document, FontName.CourierBold), 14);
 
             // 4. Field creation.
             // 4.a. Push button.
@@ -72,13 +72,13 @@ namespace PdfClown.Samples.CLI
                   YAlignmentEnum.Middle,
                   0);
 
-                Widget fieldWidget = new Widget(
+                var fieldWidget = new Widget(
                   page,
                   SKRect.Create(150, 50, 136, 36));
                 fieldWidget.Actions.OnActivate = new JavaScript(
                   document,
                   "app.alert(\"Radio button currently selected: '\" + this.getField(\"myRadio\").value + \"'.\",3,0,\"Activation event\");");
-                PushButton field = new PushButton(
+                var field = new PushButton(
                   "okButton",
                   fieldWidget,
                   "Push" // Current value.
@@ -98,7 +98,7 @@ namespace PdfClown.Samples.CLI
             // 4.b. Check box.
             {
                 composer.ShowText("CheckBox:", new SKPoint(140, 118), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
-                CheckBox field = new CheckBox("myCheck", new Widget(page, SKRect.Create(150, 100, 36, 36)), true); // 4.1. Field instantiation.
+                var field = new CheckBox("myCheck", new Widget(page, SKRect.Create(150, 100, 36, 36)), true); // 4.1. Field instantiation.
                 fieldStyle.Apply(field);
                 fields.Add(field);
                 field = new CheckBox("myCheck2", new Widget(page, SKRect.Create(200, 100, 36, 36)), true); // 4.1. Field instantiation.
@@ -112,7 +112,7 @@ namespace PdfClown.Samples.CLI
             // 4.c. Radio button.
             {
                 composer.ShowText("RadioButton:", new SKPoint(140, 168), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
-                RadioButton field = new RadioButton(
+                var field = new RadioButton(
                   "myRadio",
                   /*
                     NOTE: A radio button field typically combines multiple alternative widgets.
@@ -132,7 +132,7 @@ namespace PdfClown.Samples.CLI
             // 4.d. Text field.
             {
                 composer.ShowText("TextField:", new SKPoint(140, 218), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
-                TextField field = new TextField("myText", new Widget(page, SKRect.Create(150, 200, 200, 36)), "Carmen Consoli"); // 4.1. Field instantiation. // Current value.
+                var field = new TextField("myText", new Widget(page, SKRect.Create(150, 200, 200, 36)), "Carmen Consoli"); // 4.1. Field instantiation. // Current value.
 
                 field.SpellChecked = false; // Avoids text spell check.
                 FieldActions fieldActions = new FieldActions(document);

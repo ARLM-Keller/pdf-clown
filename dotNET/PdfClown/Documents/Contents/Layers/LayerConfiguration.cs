@@ -39,7 +39,6 @@ namespace PdfClown.Documents.Contents.Layers
     [PDF(VersionEnum.PDF15)]
     public sealed class LayerConfiguration : PdfObjectWrapper<PdfDictionary>, ILayerConfiguration
     {
-        #region types
         /**
           <summary>Base state used to initialize the states of all the layers in a document when this
           configuration is applied.</summary>
@@ -59,25 +58,18 @@ namespace PdfClown.Documents.Contents.Layers
             */
             Unchanged
         }
-        #endregion
 
 
-        #region dynamic
-        #region constructors
         public LayerConfiguration(Document context) : base(context, new PdfDictionary())
         { }
 
         public LayerConfiguration(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        #region ILayerConfiguration
         public string Creator
         {
-            get => (string)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.Creator]);
-            set => BaseDataObject[PdfName.Creator] = PdfTextString.Get(value);
+            get => BaseDataObject.GetString(PdfName.Creator);
+            set => BaseDataObject.SetText(PdfName.Creator, value);
         }
 
         public ISet<PdfName> Intents
@@ -127,8 +119,8 @@ namespace PdfClown.Documents.Contents.Layers
 
         public string Title
         {
-            get => (string)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.Name]);
-            set => BaseDataObject[PdfName.Name] = PdfTextString.Get(value);
+            get => BaseDataObject.GetString(PdfName.Name);
+            set => BaseDataObject.SetText(PdfName.Name, value);
         }
 
         public UILayers UILayers => Wrap<UILayers>(BaseDataObject.Get<PdfArray>(PdfName.Order));
@@ -152,10 +144,7 @@ namespace PdfClown.Documents.Contents.Layers
                 { BaseDataObject[PdfName.BaseState] = BaseStateEnumExtension.Get(value).GetName(); }
             }
         }
-        #endregion
-        #endregion
 
-        #region internal
         internal bool IsVisible(Layer layer)
         {
             bool? visible = Visible;
@@ -242,9 +231,7 @@ namespace PdfClown.Documents.Contents.Layers
                 { offLayersObject.Add(layerObject); }
             }
         }
-        #endregion
 
-        #region private
         /**
           <summary>Gets the collection of the layer objects whose state is set to OFF.</summary>
         */
@@ -254,9 +241,6 @@ namespace PdfClown.Documents.Contents.Layers
           <summary>Gets the collection of the layer objects whose state is set to ON.</summary>
         */
         private PdfArray OnLayersObject => BaseDataObject.Resolve<PdfArray>(PdfName.ON);
-        #endregion
-        #endregion
-        #endregion
     }
 
     internal static class BaseStateEnumExtension

@@ -27,70 +27,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
      */
     public sealed class CFFOperator
     {
-        private ByteArray operatorKey = null;
-        private string operatorName = null;
+        private static void Register(int b0, int b1, string name) => Register(CalculateKey(b0, b1), name);
 
-        private CFFOperator(ByteArray key, string name)
+        private static void Register(int key, string name)
         {
-            operatorKey = key;
-            operatorName = name;
-        }
-
-        /**
-		 * The key of the operator.
-		 * @return the key
-		 */
-        public ByteArray Key
-        {
-            get => operatorKey;
-            set => operatorKey = value;
-        }
-
-        /**
-		 * The name of the operator.
-		 * @return the name
-		 */
-        public string Name
-        {
-            get => operatorName;
-            set => operatorName = value;
-        }
-
-        /**
-		 * {@inheritDoc}
-		 */
-
-        public override string ToString()
-        {
-            return Name;
-        }
-
-        /**
-		 * {@inheritDoc}
-		 */
-
-        public override int GetHashCode()
-        {
-            return Key.GetHashCode();
-        }
-
-        /**
-		 * {@inheritDoc}
-		 */
-        public override bool Equals(object obj)
-        {
-            if (obj is CFFOperator that)
-            {
-                return Key.Equals(that.Key);
-            }
-            return false;
-        }
-
-        private static void Register(ByteArray key, string name)
-        {
-            CFFOperator ccfOperator = new CFFOperator(key, name);
-            keyMap[key] = ccfOperator;
-            nameMap[name] = ccfOperator;
+            keyMap[key] = name;
+            nameMap[name] = key;
         }
 
         /**
@@ -98,17 +40,21 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 * @param key the given key
 		 * @return the corresponding operator
 		 */
-        public static CFFOperator GetOperator(ByteArray key)
+        public static string GetOperator(int key)
         {
             return keyMap.TryGetValue(key, out var cFFOperator) ? cFFOperator : null;
         }
+
+        public static string GetOperator(int b0, int b1) => GetOperator(CalculateKey(b0, b1));
+
+        private static int CalculateKey(int b0, int b1) => (b0 << 8) | b1;
 
         /**
 		 * Returns the operator corresponding to the given name.
 		 * @param name the given name
 		 * @return the corresponding operator
 		 */
-        public static CFFOperator GetOperator(string name)
+        public static int? GetOperator(string name)
         {
             return nameMap.TryGetValue(name, out var cFFOperator) ? cFFOperator : null;
         }
@@ -119,66 +65,66 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 */
 
 
-        private static Dictionary<ByteArray, CFFOperator> keyMap = new Dictionary<ByteArray, CFFOperator>(52);
-        private static Dictionary<string, CFFOperator> nameMap = new Dictionary<string, CFFOperator>(52, StringComparer.Ordinal);
+        private static Dictionary<int, string> keyMap = new(52);
+        private static Dictionary<string, int> nameMap = new(52, StringComparer.Ordinal);
 
         static CFFOperator()
         {
             // Top DICT
-            Register(new ByteArray(0), "version");
-            Register(new ByteArray(1), "Notice");
-            Register(new ByteArray(12, 0), "Copyright");
-            Register(new ByteArray(2), "FullName");
-            Register(new ByteArray(3), "FamilyName");
-            Register(new ByteArray(4), "Weight");
-            Register(new ByteArray(12, 1), "isFixedPitch");
-            Register(new ByteArray(12, 2), "ItalicAngle");
-            Register(new ByteArray(12, 3), "UnderlinePosition");
-            Register(new ByteArray(12, 4), "UnderlineThickness");
-            Register(new ByteArray(12, 5), "PaintType");
-            Register(new ByteArray(12, 6), "CharstringType");
-            Register(new ByteArray(12, 7), "FontMatrix");
-            Register(new ByteArray(13), "UniqueID");
-            Register(new ByteArray(5), "FontBBox");
-            Register(new ByteArray(12, 8), "StrokeWidth");
-            Register(new ByteArray(14), "XUID");
-            Register(new ByteArray(15), "charset");
-            Register(new ByteArray(16), "Encoding");
-            Register(new ByteArray(17), "CharStrings");
-            Register(new ByteArray(18), "Private");
-            Register(new ByteArray(12, 20), "SyntheticBase");
-            Register(new ByteArray(12, 21), "PostScript");
-            Register(new ByteArray(12, 22), "BaseFontName");
-            Register(new ByteArray(12, 23), "BaseFontBlend");
-            Register(new ByteArray(12, 30), "ROS");
-            Register(new ByteArray(12, 31), "CIDFontVersion");
-            Register(new ByteArray(12, 32), "CIDFontRevision");
-            Register(new ByteArray(12, 33), "CIDFontType");
-            Register(new ByteArray(12, 34), "CIDCount");
-            Register(new ByteArray(12, 35), "UIDBase");
-            Register(new ByteArray(12, 36), "FDArray");
-            Register(new ByteArray(12, 37), "FDSelect");
-            Register(new ByteArray(12, 38), "FontName");
+            Register(0, "version");
+            Register(1, "Notice");
+            Register(12, 0, "Copyright");
+            Register(2, "FullName");
+            Register(3, "FamilyName");
+            Register(4, "Weight");
+            Register(12, 1, "isFixedPitch");
+            Register(12, 2, "ItalicAngle");
+            Register(12, 3, "UnderlinePosition");
+            Register(12, 4, "UnderlineThickness");
+            Register(12, 5, "PaintType");
+            Register(12, 6, "CharstringType");
+            Register(12, 7, "FontMatrix");
+            Register(13, "UniqueID");
+            Register(5, "FontBBox");
+            Register(12, 8, "StrokeWidth");
+            Register(14, "XUID");
+            Register(15, "charset");
+            Register(16, "Encoding");
+            Register(17, "CharStrings");
+            Register(18, "Private");
+            Register(12, 20, "SyntheticBase");
+            Register(12, 21, "PostScript");
+            Register(12, 22, "BaseFontName");
+            Register(12, 23, "BaseFontBlend");
+            Register(12, 30, "ROS");
+            Register(12, 31, "CIDFontVersion");
+            Register(12, 32, "CIDFontRevision");
+            Register(12, 33, "CIDFontType");
+            Register(12, 34, "CIDCount");
+            Register(12, 35, "UIDBase");
+            Register(12, 36, "FDArray");
+            Register(12, 37, "FDSelect");
+            Register(12, 38, "FontName");
 
             // Private DICT
-            Register(new ByteArray(6), "BlueValues");
-            Register(new ByteArray(7), "OtherBlues");
-            Register(new ByteArray(8), "FamilyBlues");
-            Register(new ByteArray(9), "FamilyOtherBlues");
-            Register(new ByteArray(12, 9), "BlueScale");
-            Register(new ByteArray(12, 10), "BlueShift");
-            Register(new ByteArray(12, 11), "BlueFuzz");
-            Register(new ByteArray(10), "StdHW");
-            Register(new ByteArray(11), "StdVW");
-            Register(new ByteArray(12, 12), "StemSnapH");
-            Register(new ByteArray(12, 13), "StemSnapV");
-            Register(new ByteArray(12, 14), "ForceBold");
-            Register(new ByteArray(12, 15), "LanguageGroup");
-            Register(new ByteArray(12, 16), "ExpansionFactor");
-            Register(new ByteArray(12, 17), "initialRandomSeed");
-            Register(new ByteArray(19), "Subrs");
-            Register(new ByteArray(20), "defaultWidthX");
-            Register(new ByteArray(21), "nominalWidthX");
+            Register(6, "BlueValues");
+            Register(7, "OtherBlues");
+            Register(8, "FamilyBlues");
+            Register(9, "FamilyOtherBlues");
+            Register(12, 9, "BlueScale");
+            Register(12, 10, "BlueShift");
+            Register(12, 11, "BlueFuzz");
+            Register(10, "StdHW");
+            Register(11, "StdVW");
+            Register(12, 12, "StemSnapH");
+            Register(12, 13, "StemSnapV");
+            Register(12, 14, "ForceBold");
+            Register(12, 15, "LanguageGroup");
+            Register(12, 16, "ExpansionFactor");
+            Register(12, 17, "initialRandomSeed");
+            Register(19, "Subrs");
+            Register(20, "defaultWidthX");
+            Register(21, "nominalWidthX");
         }
     }
 }

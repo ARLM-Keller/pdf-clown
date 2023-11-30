@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Patterns.Shadings;
 using PdfClown.Objects;
 
 using System;
@@ -39,21 +39,13 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF13)]
     public sealed class ShadingResources : ResourceItems<Shading>
     {
-        #region dynamic
-        #region constructors
         public ShadingResources(Document context) : base(context)
         { }
 
         public ShadingResources(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override Shading WrapItem(PdfDirectObject baseObject)
         { return Shading.Wrap(baseObject); }
-        #endregion
-        #endregion
-        #endregion
     }
 }

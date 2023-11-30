@@ -39,32 +39,21 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>'Toggle the visibility of one or more annotations on the screen' action [PDF:1.6:8.5.3].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class ToggleVisibility
-      : Action
+    public sealed class ToggleVisibility : Action
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public ToggleVisibility(
-          Document context,
-          ICollection<PdfObjectWrapper> objects,
-          bool visible
-          ) : base(context, PdfName.Hide)
+        public ToggleVisibility(Document context, ICollection<PdfObjectWrapper> objects, bool visible)
+            : base(context, PdfName.Hide)
         {
             Objects = objects;
             Visible = visible;
         }
 
-        internal ToggleVisibility(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal ToggleVisibility(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the annotations (or associated form fields) to be affected.</summary>
         */
@@ -81,20 +70,16 @@ namespace PdfClown.Documents.Interaction.Actions
             }
             set
             {
-                PdfArray objectsDataObject = new PdfArray();
+                var objectsDataObject = new PdfArray();
                 foreach (PdfObjectWrapper item in value)
                 {
                     if (item is Annotation)
                     {
-                        objectsDataObject.Add(
-                          item.BaseObject
-                          );
+                        objectsDataObject.Add(item.BaseObject);
                     }
-                    else if (item is Field)
+                    else if (item is Field field)
                     {
-                        objectsDataObject.Add(
-                          new PdfTextString(((Field)item).FullName)
-                          );
+                        objectsDataObject.Add(new PdfTextString(field.FullName));
                     }
                     else
                     {
@@ -113,44 +98,27 @@ namespace PdfClown.Documents.Interaction.Actions
         */
         public bool Visible
         {
-            get
-            {
-                PdfBoolean hideObject = (PdfBoolean)BaseDataObject[PdfName.H];
-                return hideObject != null
-                  ? !hideObject.BooleanValue
-                  : false;
-            }
-            set => BaseDataObject[PdfName.H] = PdfBoolean.Get(!value);
+            get => !BaseDataObject.GetBool(PdfName.H);
+            set => BaseDataObject.SetBool(PdfName.H, !value);
         }
-        #endregion
 
-        #region private
-        private void FillObjects(
-          PdfDataObject objectObject,
-          ICollection<PdfObjectWrapper> objects
-          )
+        private void FillObjects(PdfDataObject objectObject, ICollection<PdfObjectWrapper> objects)
         {
             PdfDataObject objectDataObject = PdfObject.Resolve(objectObject);
-            if (objectDataObject is PdfArray) // Multiple objects.
+            if (objectDataObject is PdfArray pdfArray) // Multiple objects.
             {
-                foreach (PdfDirectObject itemObject in (PdfArray)objectDataObject)
+                foreach (PdfDirectObject itemObject in pdfArray)
                 { FillObjects(itemObject, objects); }
             }
             else // Single object.
             {
-                if (objectDataObject is PdfDictionary) // Annotation.
+                if (objectDataObject is PdfDictionary dictionary) // Annotation.
                 {
-                    objects.Add(
-                      Annotation.Wrap((PdfReference)objectObject)
-                      );
+                    objects.Add(Annotation.Wrap((PdfReference)objectObject));
                 }
-                else if (objectDataObject is PdfTextString) // Form field (associated to widget annotations).
+                else if (objectDataObject is PdfTextString pdfString) // Form field (associated to widget annotations).
                 {
-                    objects.Add(
-                      Document.Form.Fields[
-                        (string)((PdfTextString)objectDataObject).Value
-                        ]
-                      );
+                    objects.Add(Document.Form.Fields[pdfString.StringValue]);
                 }
                 else // Invalid object type.
                 {
@@ -161,8 +129,5 @@ namespace PdfClown.Documents.Interaction.Actions
                 }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

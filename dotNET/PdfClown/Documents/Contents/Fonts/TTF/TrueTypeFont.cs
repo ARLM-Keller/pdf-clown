@@ -21,6 +21,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using PdfClown.Documents.Contents.Fonts.TTF.Model;
 using System.Text;
+using PdfClown.Bytes;
+using System.Globalization;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
@@ -36,11 +38,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         //private static readonly Log LOG = LogFactory.getLog(TrueTypeFont.class);
 
         private float version;
-        private int numberOfGlyphs = -1;
-        private int unitsPerEm = -1;
+        private int? numberOfGlyphs;
+        private int? unitsPerEm;
         protected Dictionary<string, TTFTable> tables = new Dictionary<string, TTFTable>(StringComparer.Ordinal);
-        private readonly TTFDataStream data;
+        private readonly IInputStream data;
         private volatile Dictionary<string, int> postScriptNames;
+        private List<float> fontMatrix;
+        private SKRect? fonBBox;
+        private CmapTableLookup cmapTableLookup;
         private readonly object lockReadtable = new object();
         private readonly object lockPSNames = new object();
         private readonly List<string> enabledGsubFeatures = new List<string>();
@@ -50,7 +55,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * 
          * @param fontData The font data.
          */
-        public TrueTypeFont(TTFDataStream fontData)
+        public TrueTypeFont(IInputStream fontData)
         {
             data = fontData;
         }
@@ -104,16 +109,16 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param table the table to read.
          * @ if there was an error accessing the table.
          */
-        public byte[] GetTableBytes(TTFTable table)
+        public Memory<byte> GetTableBytes(TTFTable table)
         {
             lock (lockReadtable)
             {
                 // save current position
-                long currentPosition = data.CurrentPosition;
+                long currentPosition = data.Position;
                 data.Seek(table.Offset);
 
                 // read all data
-                byte[] bytes = data.Read((int)table.Length);
+                var bytes = data.ReadMemory((int)table.Length);
 
                 // restore current position
                 data.Seek(currentPosition);
@@ -130,19 +135,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         protected TTFTable GetTable(string tag)
         {
-            // after the initial parsing of the ttf there aren't any write operations
-            // to the HashMap anymore, so that we don't have to synchronize the read access
-            if (tables.TryGetValue(tag, out TTFTable ttfTable) && !ttfTable.Initialized)
+            if (tables.TryGetValue(tag, out TTFTable table) && !table.Initialized)
             {
-                lock (lockReadtable)
-                {
-                    if (!ttfTable.Initialized)
-                    {
-                        ReadTable(ttfTable);
-                    }
-                }
+                ReadTable(table);
             }
-            return ttfTable;
+            return table;
         }
 
         /**
@@ -319,9 +316,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * 
          * @ If there is an error getting the font data.
          */
-        public Bytes.Buffer OriginalData
+        public IInputStream GetOriginalData(out long pos)
         {
-            get => data.OriginalData;
+            pos = data.Position;
+            data.Seek(0);
+            return data;
         }
 
         /**
@@ -332,7 +331,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public long OriginalDataSize
         {
-            get => data.OriginalDataSize;
+            get => data.Length;
         }
 
         /**
@@ -349,7 +348,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             lock (data)
             {
                 // save current position
-                long currentPosition = data.CurrentPosition;
+                long currentPosition = data.Position;
                 data.Seek(table.Offset);
                 table.Read(this, data);
                 // restore current position
@@ -365,23 +364,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public int NumberOfGlyphs
         {
-            get
-            {
-                if (numberOfGlyphs == -1)
-                {
-                    MaximumProfileTable maximumProfile = MaximumProfile;
-                    if (maximumProfile != null)
-                    {
-                        numberOfGlyphs = maximumProfile.NumGlyphs;
-                    }
-                    else
-                    {
-                        // this should never happen
-                        numberOfGlyphs = 0;
-                    }
-                }
-                return numberOfGlyphs;
-            }
+            get => numberOfGlyphs ??= (MaximumProfile?.NumGlyphs ?? 0);
         }
 
         /**
@@ -392,23 +375,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public int UnitsPerEm
         {
-            get
-            {
-                if (unitsPerEm == -1)
-                {
-                    HeaderTable header = Header;
-                    if (header != null)
-                    {
-                        unitsPerEm = header.UnitsPerEm;
-                    }
-                    else
-                    {
-                        // this should never happen
-                        unitsPerEm = 0;
-                    }
-                }
-                return unitsPerEm;
-            }
+            get => unitsPerEm ??= (Header?.UnitsPerEm ?? 0);
         }
 
         /**
@@ -455,17 +422,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         public override string Name
         {
-            get
-            {
-                if (Naming != null)
-                {
-                    return Naming.PostScriptName;
-                }
-                else
-                {
-                    return null;
-                }
-            }
+            get => Naming?.PostScriptName;
         }
 
         private void ReadPostScriptNames()
@@ -533,6 +490,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 }
             }
             return cmap;
+        }
+
+        private ICmapLookup GetCmapTableLookup()
+        {
+            return cmapTableLookup ??= new CmapTableLookup(Cmap, Gsub, enabledGsubFeatures);
         }
 
         private CmapSubtable GetUnicodeCmapImpl(bool isStrict)
@@ -616,9 +578,17 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             int uni = ParseUniName(name);
             if (uni > -1)
             {
-                ICmapLookup cmap = GetUnicodeCmapLookup(false);
+                ICmapLookup cmap = GetCmapTableLookup();
                 return cmap.GetGlyphId(uni);
             }
+
+            // PDFBOX-5604: assume gnnnnn is a gid
+            //if (name.Length > 1
+            //    && int.TryParse(name.AsSpan().Slice(1), out var intValue))
+            //{
+            //    return intValue;
+            //}
+
 
             return 0;
         }
@@ -642,26 +612,21 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         private int ParseUniName(string name)
         {
-            if (name.StartsWith("uni", StringComparison.Ordinal) && name.Length == 7)
+            if (name.StartsWith("uni", StringComparison.Ordinal)
+                && (name.Length - 3) % 4 == 0)
             {
                 int nameLength = name.Length;
-                var uniStr = new StringBuilder();
                 try
                 {
                     for (int chPos = 3; chPos + 4 <= nameLength; chPos += 4)
                     {
-                        int codePoint = Convert.ToInt32(name.Substring(chPos, 4), 16);
-                        if (codePoint <= 0xD7FF || codePoint >= 0xE000) // disallowed code area
+                        if (int.TryParse(name.AsSpan(chPos, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var codePoint)
+                          && (codePoint <= 0xD7FF || codePoint >= 0xE000))// disallowed code area
                         {
-                            uniStr.Append((char)codePoint);
+                            return codePoint;
                         }
                     }
-                    string unicode = uniStr.ToString();
-                    if (unicode.Length == 0)
-                    {
-                        return -1;
-                    }
-                    return unicode[0];
+                    return -1;
                 }
                 catch (Exception e)
                 {
@@ -695,24 +660,29 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         public override SKRect FontBBox
         {
-            get
-            {
-                short xMin = Header.XMin;
-                short xMax = Header.XMax;
-                short yMin = Header.YMin;
-                short yMax = Header.YMax;
-                float scale = 1000f / UnitsPerEm;
-                return new SKRect(xMin * scale, yMin * scale, xMax * scale, yMax * scale);
-            }
+            get => fonBBox ??= GenerateBBox();
+        }
+
+        private SKRect GenerateBBox()
+        {
+            var header = Header;
+            short xMin = header.XMin;
+            short xMax = header.XMax;
+            short yMin = header.YMin;
+            short yMax = header.YMax;
+            float scale = 1000f / UnitsPerEm;
+            return new SKRect(xMin * scale, yMin * scale, xMax * scale, yMax * scale);
         }
 
         public override List<float> FontMatrix
         {
-            get
-            {
-                float scale = 1000f / UnitsPerEm;
-                return new List<float> { 0.001f * scale, 0, 0, 0.001f * scale, 0, 0 };
-            }
+            get => fontMatrix ??= GenerateFontMatrix();
+        }
+
+        private List<float> GenerateFontMatrix()
+        {
+            float scale = 1000f / UnitsPerEm;
+            return new List<float>(6) { 0.001f * scale, 0, 0, 0.001f * scale, 0, 0 };
         }
 
         /**
@@ -749,19 +719,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         {
             try
             {
-                if (Naming != null)
-                {
-                    return Naming.PostScriptName;
-                }
-                else
-                {
-                    return "(null)";
-                }
+                return Naming?.PostScriptName ?? "(null)";
             }
             catch (IOException e)
             {
-                Debug.WriteLine("debug: Error getting the NamingTable for the font", e);
-                return "(null - " + e.Message + ")";
+                Debug.WriteLine("debug: Error getting the NamingTable for the font " + e);
+                return $"(null - {e.Message})";
             }
         }
     }

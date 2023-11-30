@@ -40,7 +40,6 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF13)]
     public sealed class PageLabel : PdfObjectWrapper<PdfDictionary>
     {
-        #region types
         public enum NumberStyleEnum
         {
             /**
@@ -66,34 +65,20 @@ namespace PdfClown.Documents.Interaction.Navigation
             */
             LCaseLetter
         };
-        #endregion
 
-        #region static
-        #region fields
         private static readonly int DefaultNumberBase = 1;
-        #endregion
 
-        #region interface
         /**
           <summary>Gets an existing page label range.</summary>
           <param name="baseObject">Base object to wrap.</param>
         */
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public PageLabel(Document context, NumberStyleEnum numberStyle)
             : this(context, null, numberStyle, DefaultNumberBase)
         { }
 
-        public PageLabel(Document context, String prefix, NumberStyleEnum numberStyle, int numberBase) : base(
-            context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type },
-              new PdfDirectObject[] { PdfName.PageLabel }
-              )
-            )
+        public PageLabel(Document context, String prefix, NumberStyleEnum numberStyle, int numberBase)
+            : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.PageLabel } })
         {
             Prefix = prefix;
             NumberStyle = numberStyle;
@@ -102,18 +87,15 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         public PageLabel(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the value of the numeric suffix for the first page label in this range.
           Subsequent pages are numbered sequentially from this value.</summary>
         */
         public int NumberBase
         {
-            get => (int)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.St], DefaultNumberBase);
-            set => BaseDataObject[PdfName.St] = value <= DefaultNumberBase ? null : PdfInteger.Get(value);
+            get => BaseDataObject.GetInt(PdfName.St, DefaultNumberBase);
+            set => BaseDataObject.SetInt(PdfName.St, value <= DefaultNumberBase ? null : value);
         }
 
         /**
@@ -132,12 +114,9 @@ namespace PdfClown.Documents.Interaction.Navigation
         */
         public string Prefix
         {
-            get => (string)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.P]);
-            set => BaseDataObject[PdfName.P] = value != null ? new PdfTextString(value) : null;
+            get => BaseDataObject.GetString(PdfName.P);
+            set => BaseDataObject.SetText(PdfName.P, value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     internal static class NumberStyleEnumExtension

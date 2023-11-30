@@ -54,7 +54,7 @@ namespace PdfClown.Samples.CLI
                             Page widgetPage = widget.Page;
                             Console.WriteLine("      Page: " + (widgetPage == null ? "undefined" : widgetPage.Number + " (" + widgetPage.BaseObject + ")"));
 
-                            SKRect widgetBox = widget.Box;
+                            SKRect widgetBox = widget.GetBounds();
                             Console.WriteLine("      Coordinates: {x:" + Math.Round(widgetBox.Left) + "; y:" + Math.Round(widgetBox.Top) + "; width:" + Math.Round(widgetBox.Width) + "; height:" + Math.Round(widgetBox.Height) + "}");
                         }
 

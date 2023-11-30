@@ -63,6 +63,26 @@ namespace PdfClown.Util.IO
             hash.TransformBlock(bytes, offcet, count, null, 0);
         }
 
+        public static void Update(this IncrementalHash hash, byte oneByte)
+        {
+            Update(hash, new byte[] { oneByte });
+        }
+
+        public static void Update(this IncrementalHash hash, byte[] bytes)
+        {
+            Update(hash, bytes, 0, bytes.Length);
+        }
+
+        public static void Update(this IncrementalHash hash, byte[] bytes, int offcet, int count)
+        {
+            hash.AppendData(bytes, offcet, count);
+        }
+
+        public static void Update(this IncrementalHash hash, ReadOnlySpan<byte> bytes)
+        {
+            hash.AppendData(bytes);
+        }
+
         public static byte[] Digest(this HashAlgorithm hash)
         {
             return Digest(hash, Array.Empty<byte>());
@@ -77,6 +97,30 @@ namespace PdfClown.Util.IO
         {
             hash.TransformFinalBlock(bytes, offcet, count);
             var digest = hash.Hash;
+            return digest;
+        }
+
+        public static byte[] Digest(this IncrementalHash hash)
+        {
+            return Digest(hash, Array.Empty<byte>());
+        }
+
+        public static byte[] Digest(this IncrementalHash hash, byte[] bytes)
+        {
+            return Digest(hash, bytes, 0, bytes.Length);
+        }
+
+        public static byte[] Digest(this IncrementalHash hash, byte[] bytes, int offcet, int count)
+        {
+            hash.Update(bytes, offcet, count);
+            var digest = hash.GetHashAndReset();
+            return digest;
+        }
+
+        public static byte[] Digest(this IncrementalHash hash, ReadOnlySpan<byte> bytes)
+        {
+            hash.Update(bytes);
+            var digest = hash.GetHashAndReset();
             return digest;
         }
 

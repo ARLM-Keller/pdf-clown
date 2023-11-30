@@ -34,8 +34,6 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class ModifyClipPath : Operation
     {
-        #region static
-        #region fields
         public const string EvenOddOperatorKeyword = "W*";
         public const string NonZeroOperatorKeyword = "W";
 
@@ -51,23 +49,14 @@ namespace PdfClown.Documents.Contents.Objects
           the clipping path' operation.</summary>
         */
         public static readonly ModifyClipPath NonZero = new ModifyClipPath(NonZeroOperatorKeyword, WindModeEnum.NonZero);
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private WindModeEnum clipMode;
-        #endregion
 
-        #region constructors
         private ModifyClipPath(string @operator, WindModeEnum clipMode) : base(@operator)
         {
             this.clipMode = clipMode;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the clipping rule.</summary>
         */
@@ -83,8 +72,5 @@ namespace PdfClown.Documents.Contents.Objects
                 scanner.RenderContext.ClipPath(pathObject, SKClipOperation.Intersect, true);
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

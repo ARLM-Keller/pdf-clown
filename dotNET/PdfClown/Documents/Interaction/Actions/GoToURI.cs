@@ -37,33 +37,26 @@ namespace PdfClown.Documents.Interaction.Actions
     [PDF(VersionEnum.PDF11)]
     public sealed class GoToURI : Action, IGoToAction
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToURI(Document context, Uri uri) : base(context, PdfName.URI) { URI = uri; }
+        public GoToURI(Document context, Uri uri)
+            : base(context, PdfName.URI)
+        {
+            URI = uri;
+        }
 
         internal GoToURI(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the uniform resource identifier to resolve [RFC 2396].</summary>
         */
         public Uri URI
         {
-            get =>
-                /*
-NOTE: 'URI' entry MUST exist.
-*/
-                new Uri((string)((PdfString)BaseDataObject[PdfName.URI]).Value);
-            set => BaseDataObject[PdfName.URI] = new PdfString(value.ToString());
+            //NOTE: 'URI' entry MUST exist.
+            get => new Uri(BaseDataObject.GetString(PdfName.URI));
+            set => BaseDataObject.SetString(PdfName.URI, value.ToString());
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

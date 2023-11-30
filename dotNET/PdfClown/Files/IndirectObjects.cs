@@ -58,8 +58,6 @@ namespace PdfClown.Files
     */
     public sealed class IndirectObjects : IList<PdfIndirectObject>
     {
-        #region dynamic
-        #region fields
         /**
           <summary>Associated file.</summary>
         */
@@ -96,9 +94,7 @@ namespace PdfClown.Files
           persistent representation inside the associated file.</remarks>
         */
         private SortedDictionary<int, XRefEntry> xrefEntries;
-        #endregion
 
-        #region constructors
         internal IndirectObjects(File file, SortedDictionary<int, XRefEntry> xrefEntries)
         {
             this.file = file;
@@ -122,10 +118,7 @@ namespace PdfClown.Files
                 lastObjectNumber = xrefEntries.Keys.Last();
             }
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Registers an <i>internal</i> data object.</summary>
           <remarks>To register an external indirect object, use <see
@@ -205,7 +198,6 @@ namespace PdfClown.Files
             return true;
         }
 
-        #region IList
         public int IndexOf(PdfIndirectObject obj)
         {
             // Is this indirect object associated to this file?
@@ -233,9 +225,7 @@ namespace PdfClown.Files
                   new PdfIndirectObject(
                     file,
                     null,
-                    new XRefEntry(index, XRefEntry.GenerationUnreusable, 0, XRefEntry.UsageEnum.Free)
-                    )
-                  );
+                    new XRefEntry(index, XRefEntry.GenerationUnreusable, 0, XRefEntry.UsageEnum.Free)));
             }
         }
 
@@ -286,7 +276,6 @@ namespace PdfClown.Files
             set => throw new NotSupportedException();
         }
 
-        #region ICollection
         /**
           <summary>Registers an <i>external</i> indirect object.</summary>
           <remarks>
@@ -297,8 +286,7 @@ namespace PdfClown.Files
           </remarks>
           <returns>Whether the indirect object was successfully registered.</returns>
         */
-        public void Add(PdfIndirectObject obj)
-        { AddExternal(obj); }
+        public void Add(PdfIndirectObject obj) => AddExternal(obj);
 
         public void Clear()
         {
@@ -306,11 +294,9 @@ namespace PdfClown.Files
             { RemoveAt(index); }
         }
 
-        public bool Contains(PdfIndirectObject obj)
-        { return obj != null && this[obj.Reference.ObjectNumber] == obj; }
+        public bool Contains(PdfIndirectObject obj) => obj != null && this[obj.Reference.ObjectNumber] == obj;
 
-        public void CopyTo(PdfIndirectObject[] objs, int index)
-        { throw new NotSupportedException(); }
+        public void CopyTo(PdfIndirectObject[] objs, int index) => throw new NotSupportedException();
 
         /**
           <summary>Gets the number of entries available (both in-use and free) in the
@@ -330,23 +316,15 @@ namespace PdfClown.Files
             return true;
         }
 
-        #region IEnumerable<ContentStream>
         public IEnumerator<PdfIndirectObject> GetEnumerator()
         {
             for (int index = 0; index < this.Count; index++)
             { yield return this[index]; }
         }
 
-        #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
         { return this.GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
 
-        #region internal
         internal PdfIndirectObject AddVirtual(PdfIndirectObject obj)
         {
             // Update the reference of the object!
@@ -367,7 +345,7 @@ namespace PdfClown.Files
             // Get the old indirect object to be replaced!
             PdfIndirectObject old = this[index];
             if (old != obj)
-            { old.DropFile(); } // Disconnect the old indirect object.
+            { old?.DropFile(); } // Disconnect the old indirect object.
 
             // Insert the new indirect object into the modified objects collection!
             modifiedObjects[index] = obj;
@@ -378,8 +356,5 @@ namespace PdfClown.Files
 
             return old;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

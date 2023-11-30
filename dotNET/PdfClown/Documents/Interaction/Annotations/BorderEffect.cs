@@ -39,17 +39,11 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF15)]
     public sealed class BorderEffect : PdfObjectWrapper<PdfDictionary>, IEquatable<BorderEffect>
     {
-        #region static
-
-        #region fields
         private static readonly double DefaultIntensity = 0;
         private static readonly BorderEffectType DefaultType = BorderEffectType.None;
 
         private static readonly Dictionary<BorderEffectType, PdfName> TypeEnumCodes;
 
-        #endregion
-
-        #region constructors
         static BorderEffect()
         {
             TypeEnumCodes = new Dictionary<BorderEffectType, PdfName>
@@ -58,10 +52,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 [BorderEffectType.Cloudy] = PdfName.C
             };
         }
-        #endregion
 
-        #region interface
-        #region private
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
@@ -84,12 +75,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             return DefaultType;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a non-reusable instance.</summary>
         */
@@ -118,10 +104,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public BorderEffect(PdfDirectObject baseObject) : base(baseObject) { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the effect intensity.</summary>
           <returns>Value in the range 0-2.</returns>
@@ -191,10 +174,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             return Type == other.Type
                 && Intensity.Equals(other.Intensity);
         }
-
-        #endregion
-        #endregion
-        #endregion
     }
 
     /**

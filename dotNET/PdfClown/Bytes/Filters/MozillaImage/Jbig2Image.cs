@@ -13,12 +13,10 @@
  * limitations under the License.
  */
 using PdfClown.Bytes.Filters.CCITT;
-using PdfClown.Tokens;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Util;
+using PdfClown.Util.Collections;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 
 namespace PdfClown.Bytes.Filters.JBig
@@ -209,7 +207,7 @@ namespace PdfClown.Bytes.Filters.JBig
         };
 
         static readonly Dictionary<int, HuffmanTable> StandardTablesCache = new Dictionary<int, HuffmanTable>();
-        static readonly int RegionSegmentInformationFieldLength = 17;
+        public static readonly int RegionSegmentInformationFieldLength = 17;
         private int width;
         private int height;
 
@@ -232,20 +230,16 @@ namespace PdfClown.Bytes.Filters.JBig
         {
             private ContextCache cache;
             private ArithmeticDecoder decoder;
-            internal byte[] Data;
-            internal int Start;
-            internal int End;
+            internal Memory<byte> Data;
 
-            public DecodingContext(byte[] data, int start, int end)
+            public DecodingContext(Memory<byte> data)
             {
                 Data = data;
-                Start = start;
-                End = end;
             }
 
-            public ArithmeticDecoder Decoder => decoder ?? (decoder = new ArithmeticDecoder(Data, Start, End));
+            public ArithmeticDecoder Decoder => decoder ??= new ArithmeticDecoder(Data);
 
-            public ContextCache ContextCache => cache ?? (cache = new ContextCache());
+            public ContextCache ContextCache => cache ??= new ContextCache();
         }
 
         // Annex A. Arithmetic Integer Decoding Procedure
@@ -368,7 +362,7 @@ namespace PdfClown.Bytes.Filters.JBig
         {
             if (mmr)
             {
-                var input = new Bytes.Buffer(decodingContext.Data, decodingContext.Start, decodingContext.End);
+                var input = new ByteStream(decodingContext.Data);
                 return DecodeMMRBitmap(input, width, height, false);
             }
 
@@ -602,12 +596,7 @@ namespace PdfClown.Bytes.Filters.JBig
                     {
                         i0 = i + referenceTemplateY[k] - offsetY;
                         j0 = j + referenceTemplateX[k] - offsetX;
-                        if (
-                          i0 < 0 ||
-                          i0 >= referenceHeight ||
-                          j0 < 0 ||
-                          j0 >= referenceWidth
-                        )
+                        if (i0 < 0 || i0 >= referenceHeight || j0 < 0 || j0 >= referenceWidth)
                         {
                             contextLabel <<= 1; // out of bound pixel
                         }
@@ -627,7 +616,7 @@ namespace PdfClown.Bytes.Filters.JBig
         // 6.5.5 Decoding the symbol dictionary
         static List<Dictionary<int, byte[]>> DecodeSymbolDictionary(bool huffman, bool refinement, List<Dictionary<int, byte[]>> symbols, int numberOfNewSymbols,
            int numberOfExportedSymbols, HuffmanTables huffmanTables, int templateIndex, List<Point> at, int refinementTemplateIndex,
-           List<Point> refinementAt, DecodingContext decodingContext, Bytes.Buffer huffmanInput)
+           List<Point> refinementAt, DecodingContext decodingContext, ByteStream huffmanInput)
         {
             if (huffman && refinement)
             {
@@ -809,7 +798,7 @@ namespace PdfClown.Bytes.Filters.JBig
         static Dictionary<int, byte[]> DecodeTextRegion(bool huffman, bool refinement, int width, int height,
           byte defaultPixelValue, int? numberOfSymbolInstances, int stripSize, List<Dictionary<int, byte[]>> inputSymbols, int symbolCodeLength,
           bool transposed, int dsOffset, int referenceCorner, int combinationOperator, HuffmanTables huffmanTables,
-          int refinementTemplateIndex, List<Point> refinementAt, DecodingContext decodingContext, int logStripSize, Bytes.Buffer huffmanInput)
+          int refinementTemplateIndex, List<Point> refinementAt, DecodingContext decodingContext, int logStripSize, ByteStream huffmanInput)
         {
             if (huffman && refinement)
             {
@@ -825,10 +814,7 @@ namespace PdfClown.Bytes.Filters.JBig
                 row = new byte[width];
                 if (defaultPixelValue != 0)
                 {
-                    for (var j = 0; j < width; j++)
-                    {
-                        row[j] = defaultPixelValue;
-                    }
+                    Array.Fill(row, defaultPixelValue);
                 }
                 bitmap.Add(bitmap.Count, row);
             }
@@ -1063,13 +1049,13 @@ namespace PdfClown.Bytes.Filters.JBig
             }
             // Annex C. Gray-scale Image Decoding Procedure.
             var grayScaleBitPlanes = new Dictionary<int, Dictionary<int, byte[]>>();
-            Bytes.Buffer mmrInput = null;
+            ByteStream mmrInput = null;
             Dictionary<int, byte[]> bitmap;
             if (mmr)
             {
                 // MMR bit planes are in one continuous stream. Only EOFB codes indicate
                 // the end of each bitmap, so EOFBs must be decoded.
-                mmrInput = new Bytes.Buffer(decodingContext.Data, decodingContext.Start, decodingContext.End);
+                mmrInput = new ByteStream(decodingContext.Data);
             }
             for (i = bitsPerValue - 1; i >= 0; i--)
             {
@@ -1095,7 +1081,7 @@ namespace PdfClown.Bytes.Filters.JBig
                     patternIndex = 0;
                     for (j = bitsPerValue - 1; j >= 0; j--)
                     {
-                        bit = grayScaleBitPlanes[j][mg][ng] ^ bit; // Gray decoding
+                        bit ^= grayScaleBitPlanes[j][mg][ng]; // Gray decoding
                         patternIndex |= bit << j;
                     }
                     patternBitmap = patterns[patternIndex];
@@ -1144,11 +1130,11 @@ namespace PdfClown.Bytes.Filters.JBig
             return regionBitmap;
         }
 
-        static SegmentHeader ReadSegmentHeader(byte[] data, int start)
+        static SegmentHeader ReadSegmentHeader(IInputStream data)
         {
             var segmentHeader = new SegmentHeader();
-            segmentHeader.Number = (int)data.ReadUint32(start);
-            var flags = data[start + 4];
+            segmentHeader.Number = (int)data.ReadUInt32();
+            var flags = data.ReadUByte();
             var segmentType = flags & 0x3f;
             if (SegmentTypes[segmentType] == null)
             {
@@ -1159,19 +1145,19 @@ namespace PdfClown.Bytes.Filters.JBig
             segmentHeader.DeferredNonRetain = (flags & 0x80) != 0;
 
             var pageAssociationFieldSize = (flags & 0x40) != 0;
-            var referredFlags = data[start + 5];
+            var referredFlags = data.ReadUByte();
             long referredToCount = (referredFlags >> 5) & 7;
             var retainBits = new List<int> { referredFlags & 31 };
-            var position = start + 6;
+            //var position = start + 6;
             if (referredFlags == 7)
             {
-                referredToCount = data.ReadUint32(position - 1) & 0x1fffffff;
-                position += 3;
+                data.Skip(-1);
+                referredToCount = data.ReadUInt32() & 0x1fffffff;
                 var bytes = (referredToCount + 7) >> 3;
-                retainBits[0] = data[position++];
+                retainBits[0] = data.ReadUByte();
                 while (--bytes > 0)
                 {
-                    retainBits.Add(data[position++]);
+                    retainBits.Add(data.ReadUByte());
                 }
             }
             else if (referredFlags == 5 || referredFlags == 6)
@@ -1197,41 +1183,38 @@ namespace PdfClown.Bytes.Filters.JBig
                 int number;
                 if (referredToSegmentNumberSize == 1)
                 {
-                    number = data[position];
+                    number = data.ReadUByte();
                 }
                 else if (referredToSegmentNumberSize == 2)
                 {
-                    number = data.ReadUint16(position);
+                    number = data.ReadUInt16();
                 }
                 else
                 {
-                    number = (int)data.ReadUint32(position);
+                    number = (int)data.ReadUInt32();
                 }
-                referredTo.Add(number);
-                position += referredToSegmentNumberSize;
+                referredTo.Add(number);                
             }
             segmentHeader.ReferredTo = referredTo;
             if (!pageAssociationFieldSize)
             {
-                segmentHeader.PageAssociation = data[position++];
+                segmentHeader.PageAssociation = data.ReadUByte();
             }
             else
             {
-                segmentHeader.PageAssociation = (int)data.ReadUint32(position);
-                position += 4;
+                segmentHeader.PageAssociation = (int)data.ReadUInt32();
             }
-            segmentHeader.Length = data.ReadUint32(position);
-            position += 4;
+            segmentHeader.Length = data.ReadUInt32();
 
             if (segmentHeader.Length == 0xffffffff)
             {
                 // 7.2.7 Segment data Length, unknown segment Length
                 if (segmentType == 38)
                 {
+                    var position = (int)data.Position;
                     // ImmediateGenericRegion
-                    var genericRegionInfo = ReadRegionSegmentInformation(data, position);
-                    var genericRegionSegmentFlags =
-                      data[position + RegionSegmentInformationFieldLength];
+                    var genericRegionInfo = ReadRegionSegmentInformation(data);
+                    var genericRegionSegmentFlags = data.ReadUByte();
                     var genericRegionMmr = (genericRegionSegmentFlags & 1) != 0;
                     // searching for the segment end
                     var searchPatternLength = 6;
@@ -1245,16 +1228,16 @@ namespace PdfClown.Bytes.Filters.JBig
                     searchPattern[3] = FiltersExtension.ToByte((genericRegionInfo.Height >> 16) & 0xff);
                     searchPattern[4] = FiltersExtension.ToByte((genericRegionInfo.Height >> 8) & 0xff);
                     searchPattern[5] = FiltersExtension.ToByte(genericRegionInfo.Height & 0xff);
-                    for (i = position, ii = data.Length; i < ii; i++)
+                    for (i = 0, ii = (int)data.Length - position; i < ii; i++)
                     {
                         var j = 0;
-                        while (j < searchPatternLength && searchPattern[j] == data[i + j])
+                        while (j < searchPatternLength && searchPattern[j] == data.PeekUByte(i + j))
                         {
                             j++;
                         }
                         if (j == searchPatternLength)
                         {
-                            segmentHeader.Length = (uint)(i + searchPatternLength);
+                            segmentHeader.Length = (uint)(i + searchPatternLength + position);
                             break;
                         }
                     }
@@ -1262,30 +1245,26 @@ namespace PdfClown.Bytes.Filters.JBig
                     {
                         throw new Jbig2Error("segment end was not found");
                     }
+                    data.Position = position;
                 }
                 else
                 {
                     throw new Jbig2Error("invalid unknown segment Length");
                 }
             }
-            segmentHeader.HeaderEnd = position;
             return segmentHeader;
         }
 
-        static List<Segment> ReadSegments(SegmentHeader header, byte[] data, int start, int end)
+        static List<Segment> ReadSegments(SegmentHeader header, IInputStream data)
         {
             var segments = new List<Segment>();
-            var position = start;
-            while (position < end)
+            while (data.Position < data.Length)
             {
-                var segmentHeader = ReadSegmentHeader(data, position);
-                position = segmentHeader.HeaderEnd;
-                var segment = new Segment(header: segmentHeader, data);
+                var segmentHeader = ReadSegmentHeader(data);
+                var segment = new Segment(header: segmentHeader);
                 if (!header.RandomAccess)
                 {
-                    segment.Start = position;
-                    position += (int)segmentHeader.Length;
-                    segment.End = position;
+                    segment.Data = data.ReadMemory((int)segmentHeader.Length);
                 }
                 segments.Add(segment);
                 if (segmentHeader.Type == 51)
@@ -1297,32 +1276,30 @@ namespace PdfClown.Bytes.Filters.JBig
             {
                 for (int i = 0, ii = segments.Count; i < ii; i++)
                 {
-                    segments[i].Start = position;
-                    position += (int)segments[i].Header.Length;
-                    segments[i].End = position;
+                    var segment = segments[i];
+                    segment.Data = data.ReadMemory((int)segment.Header.Length);
                 }
             }
             return segments;
         }
 
         // 7.4.1 Region segment information field
-        static RegionSegmentInformation ReadRegionSegmentInformation(byte[] data, int start)
+        static RegionSegmentInformation ReadRegionSegmentInformation(IInputStream data)
         {
             return new RegionSegmentInformation(
-                width: data.ReadUint32(start),
-                height: data.ReadUint32(start + 4),
-                x: data.ReadUint32(start + 8),
-                y: data.ReadUint32(start + 12),
-                combinationOperator: data[start + 16] & 7
+                width: data.ReadUInt32(),
+                height: data.ReadUInt32(),
+                x: data.ReadUInt32(),
+                y: data.ReadUInt32(),
+                combinationOperator: data.ReadUByte() & 7
                 );
         }
 
         static void ProcessSegment(Segment segment, SimpleSegmentVisitor visitor)
         {
             var header = segment.Header;
-            var data = segment.Data;
-            var position = segment.Start;
-            var end = segment.End;
+            var data = new ByteStream(segment.Data);
+            var end = data.Length;
             List<Point> at;
             int i, atLength;
             switch (header.Type)
@@ -1330,7 +1307,7 @@ namespace PdfClown.Bytes.Filters.JBig
                 case 0: // SymbolDictionary
                         // 7.4.2 Symbol dictionary segment syntax
                     var dictionary = new SymbolDictionary();
-                    var dictionaryFlags = data.ReadUint16(position); // 7.4.2.1.1
+                    var dictionaryFlags = data.ReadUInt16(); // 7.4.2.1.1
                     dictionary.Huffman = (dictionaryFlags & 1) != 0;
                     dictionary.Refinement = (dictionaryFlags & 2) != 0;
                     dictionary.HuffmanDHSelector = (dictionaryFlags >> 2) & 3;
@@ -1341,15 +1318,13 @@ namespace PdfClown.Bytes.Filters.JBig
                     dictionary.BitmapCodingContextRetained = (dictionaryFlags & 512) != 0;
                     dictionary.Template = (dictionaryFlags >> 10) & 3;
                     dictionary.RefinementTemplate = (dictionaryFlags >> 12) & 1;
-                    position += 2;
                     if (!dictionary.Huffman)
                     {
                         atLength = dictionary.Template == 0 ? 4 : 1;
                         at = new List<Point>();
                         for (i = 0; i < atLength; i++)
                         {
-                            at.Add(new Point(x: data.ReadInt8(position), y: data.ReadInt8(position + 1)));
-                            position += 2;
+                            at.Add(new Point(x: data.ReadInt8(), y: data.ReadInt8()));
                         }
                         dictionary.At = at;
                     }
@@ -1358,24 +1333,19 @@ namespace PdfClown.Bytes.Filters.JBig
                         at = new List<Point>();
                         for (i = 0; i < 2; i++)
                         {
-                            at.Add(new Point(x: data.ReadInt8(position), y: data.ReadInt8(position + 1)));
-                            position += 2;
+                            at.Add(new Point(x: data.ReadInt8(), y: data.ReadInt8()));
                         }
                         dictionary.RefinementAt = at;
                     }
-                    dictionary.NumberOfExportedSymbols = (int)data.ReadUint32(position);
-                    position += 4;
-                    dictionary.NumberOfNewSymbols = (int)data.ReadUint32(position);
-                    position += 4;
-                    visitor.OnSymbolDictionary(dictionary, header.Number, header.ReferredTo, data, position, end);
+                    dictionary.NumberOfExportedSymbols = (int)data.ReadUInt32();
+                    dictionary.NumberOfNewSymbols = (int)data.ReadUInt32();
+                    visitor.OnSymbolDictionary(dictionary, header.Number, header.ReferredTo, segment.Data.Slice((int)data.Position));
                     break;
                 case 6: // ImmediateTextRegion
                 case 7: // ImmediateLosslessTextRegion
                     var textRegion = new TextRegion();
-                    textRegion.Info = ReadRegionSegmentInformation(data, position);
-                    position += RegionSegmentInformationFieldLength;
-                    var textRegionSegmentFlags = data.ReadUint16(position);
-                    position += 2;
+                    textRegion.Info = ReadRegionSegmentInformation(data);
+                    var textRegionSegmentFlags = data.ReadUInt16();
                     textRegion.Huffman = (textRegionSegmentFlags & 1) != 0;
                     textRegion.Refinement = (textRegionSegmentFlags & 2) != 0;
                     textRegion.LogStripSize = (textRegionSegmentFlags >> 2) & 3;
@@ -1388,8 +1358,7 @@ namespace PdfClown.Bytes.Filters.JBig
                     textRegion.RefinementTemplate = (textRegionSegmentFlags >> 15) & 1;
                     if (textRegion.Huffman)
                     {
-                        var textRegionHuffmanFlags = data.ReadUint16(position);
-                        position += 2;
+                        var textRegionHuffmanFlags = data.ReadUInt16();
                         textRegion.HuffmanFS = textRegionHuffmanFlags & 3;
                         textRegion.HuffmanDS = (textRegionHuffmanFlags >> 2) & 3;
                         textRegion.HuffmanDT = (textRegionHuffmanFlags >> 4) & 3;
@@ -1404,60 +1373,49 @@ namespace PdfClown.Bytes.Filters.JBig
                         at = new List<Point>();
                         for (i = 0; i < 2; i++)
                         {
-                            at.Add(new Point(x: data.ReadInt8(position), y: data.ReadInt8(position + 1)));
-                            position += 2;
+                            at.Add(new Point(x: data.ReadInt8(), y: data.ReadInt8()));
                         }
                         textRegion.refinementAt = at;
                     }
-                    textRegion.numberOfSymbolInstances = (int)data.ReadUint32(position);
-                    position += 4;
-                    visitor.OnImmediateTextRegion(textRegion, header.ReferredTo, data, position, end);
+                    textRegion.numberOfSymbolInstances = (int)data.ReadUInt32();
+                    visitor.OnImmediateTextRegion(textRegion, header.ReferredTo, segment.Data.Slice((int)data.Position));
 
                     break;
                 case 16: // PatternDictionary
                          // 7.4.4. Pattern dictionary segment syntax
                     var patternDictionary = new PatternDictionary();
-                    var patternDictionaryFlags = data[position++];
+                    var patternDictionaryFlags = data.ReadUByte();
                     patternDictionary.Mmr = (patternDictionaryFlags & 1) != 0;
                     patternDictionary.Template = (patternDictionaryFlags >> 1) & 3;
-                    patternDictionary.PatternWidth = data[position++];
-                    patternDictionary.PatternHeight = data[position++];
-                    patternDictionary.MaxPatternIndex = (int)data.ReadUint32(position);
-                    position += 4;
-                    visitor.OnPatternDictionary(patternDictionary, header.Number, data, position, end);
+                    patternDictionary.PatternWidth = data.ReadUByte();
+                    patternDictionary.PatternHeight = data.ReadUByte();
+                    patternDictionary.MaxPatternIndex = (int)data.ReadUInt32();
+                    visitor.OnPatternDictionary(patternDictionary, header.Number, segment.Data.Slice((int)data.Position));
                     break;
                 case 22: // ImmediateHalftoneRegion
                 case 23: // ImmediateLosslessHalftoneRegion
                          // 7.4.5 Halftone region segment syntax
                     var halftoneRegion = new HalftoneRegion();
-                    halftoneRegion.Info = ReadRegionSegmentInformation(data, position);
-                    position += RegionSegmentInformationFieldLength;
-                    var halftoneRegionFlags = data[position++];
+                    halftoneRegion.Info = ReadRegionSegmentInformation(data);
+                    var halftoneRegionFlags = data.ReadUByte();
                     halftoneRegion.Mmr = (halftoneRegionFlags & 1) != 0;
                     halftoneRegion.Template = (halftoneRegionFlags >> 1) & 3;
                     halftoneRegion.EnableSkip = (halftoneRegionFlags & 8) != 0;
                     halftoneRegion.CombinationOperator = (halftoneRegionFlags >> 4) & 7;
                     halftoneRegion.DefaultPixelValue = FiltersExtension.ToByte((halftoneRegionFlags >> 7) & 1);
-                    halftoneRegion.GridWidth = (int)data.ReadUint32(position);
-                    position += 4;
-                    halftoneRegion.GridHeight = (int)data.ReadUint32(position);
-                    position += 4;
-                    halftoneRegion.GridOffsetX = (int)(data.ReadUint32(position) & 0xffffffff);
-                    position += 4;
-                    halftoneRegion.GridOffsetY = (int)(data.ReadUint32(position) & 0xffffffff);
-                    position += 4;
-                    halftoneRegion.GridVectorX = (int)data.ReadUint16(position);
-                    position += 2;
-                    halftoneRegion.GridVectorY = (int)data.ReadUint16(position);
-                    position += 2;
-                    visitor.OnImmediateHalftoneRegion(halftoneRegion, header.ReferredTo, data, position, end);
+                    halftoneRegion.GridWidth = (int)data.ReadUInt32();
+                    halftoneRegion.GridHeight = (int)data.ReadUInt32();
+                    halftoneRegion.GridOffsetX = (int)(data.ReadUInt32() & 0xffffffff);
+                    halftoneRegion.GridOffsetY = (int)(data.ReadUInt32() & 0xffffffff);
+                    halftoneRegion.GridVectorX = (int)data.ReadUInt16();
+                    halftoneRegion.GridVectorY = (int)data.ReadUInt16();
+                    visitor.OnImmediateHalftoneRegion(halftoneRegion, header.ReferredTo, segment.Data.Slice((int)data.Position));
                     break;
                 case 38: // ImmediateGenericRegion
                 case 39: // ImmediateLosslessGenericRegion
                     var genericRegion = new GenericRegion();
-                    genericRegion.Info = ReadRegionSegmentInformation(data, position);
-                    position += RegionSegmentInformationFieldLength;
-                    var genericRegionSegmentFlags = data[position++];
+                    genericRegion.Info = ReadRegionSegmentInformation(data);
+                    var genericRegionSegmentFlags = data.ReadUByte();
                     genericRegion.Mmr = (genericRegionSegmentFlags & 1) != 0;
                     genericRegion.Template = (genericRegionSegmentFlags >> 1) & 3;
                     genericRegion.Prediction = (genericRegionSegmentFlags & 8) != 0;
@@ -1467,26 +1425,26 @@ namespace PdfClown.Bytes.Filters.JBig
                         at = new List<Point>();
                         for (i = 0; i < atLength; i++)
                         {
-                            at.Add(new Point(x: data.ReadInt8(position), y: data.ReadInt8(position + 1)));
-                            position += 2;
+                            at.Add(new Point(x: data.ReadInt8(), y: data.ReadInt8()));
                         }
                         genericRegion.At = at;
                     }
-                    visitor.OnImmediateGenericRegion(genericRegion, data, position, end);
+                    visitor.OnImmediateGenericRegion(genericRegion, segment.Data.Slice((int)data.Position));
                     break;
                 case 48: // PageInformation
+                    var pos = data.Position;
                     var pageInfo = new PageInformation(
-                        width: data.ReadUint32(position),
-                        height: data.ReadUint32(position + 4),
-                        resolutionX: data.ReadUint32(position + 8),
-                        resolutionY: data.ReadUint32(position + 12));
+                        width: data.ReadUInt32(),
+                        height: data.ReadUInt32(),
+                        resolutionX: data.ReadUInt32(),
+                        resolutionY: data.ReadUInt32());
                     if (pageInfo.Height == 0xffffffff)
                     {
                         pageInfo.Height = 0;
                         //????delete pageInfo.height;
                     }
-                    var pageSegmentFlags = data[position + 16];
-                    data.ReadUint16(position + 17); // pageStripingInformation
+                    var pageSegmentFlags = data.ReadUByte();
+                    data.ReadUInt16(); // pageStripingInformation
                     pageInfo.Lossless = (pageSegmentFlags & 1) != 0;
                     pageInfo.Refinement = (pageSegmentFlags & 2) != 0;
                     pageInfo.DefaultPixelValue = (pageSegmentFlags >> 2) & 1;
@@ -1502,7 +1460,7 @@ namespace PdfClown.Bytes.Filters.JBig
                 case 51: // EndOfFile
                     break;
                 case 53: // Tables
-                    visitor.OnTables(header.Number, data, position, end);
+                    visitor.OnTables(header.Number, segment.Data.Slice((int)data.Position));
                     break;
                 case 62: // 7.4.15 defines 2 extension types which
                          // are comments and can be ignored.
@@ -1526,42 +1484,39 @@ namespace PdfClown.Bytes.Filters.JBig
             for (int i = 0, ii = chunks.Count; i < ii; i++)
             {
                 var chunk = chunks[i];
-                var segments = ReadSegments(new SegmentHeader(), chunk.Data, chunk.Start, chunk.End);
+                var segments = ReadSegments(new SegmentHeader(), chunk.Data);
                 ProcessSegments(segments, visitor);
             }
             return visitor.Buffer;
         }
 
-        static ImageData ParseJbig2(byte[] data)
+        static ImageData ParseJbig2(IInputStream data)
         {
             var end = data.Length;
-            var position = 0;
 
             if (
-              data[position] != 0x97 ||
-              data[position + 1] != 0x4a ||
-              data[position + 2] != 0x42 ||
-              data[position + 3] != 0x32 ||
-              data[position + 4] != 0x0d ||
-              data[position + 5] != 0x0a ||
-              data[position + 6] != 0x1a ||
-              data[position + 7] != 0x0a
+              data.ReadUByte() != 0x97 ||
+              data.ReadUByte() != 0x4a ||
+              data.ReadUByte() != 0x42 ||
+              data.ReadUByte() != 0x32 ||
+              data.ReadUByte() != 0x0d ||
+              data.ReadUByte() != 0x0a ||
+              data.ReadUByte() != 0x1a ||
+              data.ReadUByte() != 0x0a
             )
             {
                 throw new Jbig2Error("parseJbig2 - invalid header.");
             }
 
             var header = new SegmentHeader();
-            position += 8;
-            var flags = data[position++];
+            var flags = data.ReadUByte();
             header.RandomAccess = (flags & 1) == 0;
             if ((flags & 2) == 0)
             {
-                header.NumberOfPages = (int)data.ReadUint32(position);
-                position += 4;
+                header.NumberOfPages = (int)data.ReadUInt32();
             }
 
-            var segments = ReadSegments(header, data, position, end);
+            var segments = ReadSegments(header, data);
             var visitor = new SimpleSegmentVisitor();
             ProcessSegments(segments, visitor);
 
@@ -1606,10 +1561,7 @@ namespace PdfClown.Bytes.Filters.JBig
                 // Fill the buffer with 0xFF only if info.defaultPixelValue is set
                 if (info.DefaultPixelValue != 0)
                 {
-                    for (int i = 0, ii = buffer.Length; i < ii; i++)
-                    {
-                        buffer[i] = 0xff;
-                    }
+                    Array.Fill(buffer, (byte)0xff);
                 }
                 Buffer = buffer;
             }
@@ -1680,10 +1632,10 @@ namespace PdfClown.Bytes.Filters.JBig
                 }
             }
 
-            public void OnImmediateGenericRegion(GenericRegion region, byte[] data, int start, int end)
+            public void OnImmediateGenericRegion(GenericRegion region, Memory<byte> data)
             {
                 var regionInfo = region.Info;
-                var decodingContext = new DecodingContext(data, start, end);
+                var decodingContext = new DecodingContext(data);
                 var bitmap = DecodeBitmap(
                   region.Mmr,
                   (int)regionInfo.Width,
@@ -1697,14 +1649,14 @@ namespace PdfClown.Bytes.Filters.JBig
                 DrawBitmap(regionInfo, bitmap);
             }
 
-            public void OnSymbolDictionary(SymbolDictionary dictionary, int currentSegment, List<int> referredSegments, byte[] data, int start, int end)
+            public void OnSymbolDictionary(SymbolDictionary dictionary, int currentSegment, List<int> referredSegments, Memory<byte> data)
             {
                 HuffmanTables huffmanTables = null;
-                Bytes.Buffer huffmanInput = null;
+                ByteStream huffmanInput = null;
                 if (dictionary.Huffman)
                 {
                     huffmanTables = GetSymbolDictionaryHuffmanTables(dictionary, referredSegments, CustomTables);
-                    huffmanInput = new Bytes.Buffer(data, start, end);
+                    huffmanInput = new ByteStream(data);
                 }
 
                 // Combines exported symbols from all referred segments
@@ -1715,17 +1667,17 @@ namespace PdfClown.Bytes.Filters.JBig
                 }
 
                 var inputSymbols = new List<Dictionary<int, byte[]>>();
-                for (int i = 0, ii = referredSegments.Count; i < ii; i++)
+                foreach (var referredSegment in referredSegments)
                 {
                     // referredSymbols is undefined when we have a reference to a Tables
                     // segment instead of a SymbolDictionary.
-                    if (symbols.TryGetValue(referredSegments[i], out var referredSymbols))
+                    if (symbols.TryGetValue(referredSegment, out var referredSymbols))
                     {
-                        inputSymbols = inputSymbols.Concat(referredSymbols).ToList();
+                        inputSymbols.AddRange(referredSymbols);
                     }
                 }
 
-                var decodingContext = new DecodingContext(data, start, end);
+                var decodingContext = new DecodingContext(data);
                 symbols[currentSegment] = DecodeSymbolDictionary(dictionary.Huffman, dictionary.Refinement, inputSymbols,
                   dictionary.NumberOfNewSymbols, dictionary.NumberOfExportedSymbols, huffmanTables, dictionary.Template,
                   dictionary.At, dictionary.RefinementTemplate, dictionary.RefinementAt, decodingContext,
@@ -1733,28 +1685,28 @@ namespace PdfClown.Bytes.Filters.JBig
                 );
             }
 
-            public void OnImmediateTextRegion(TextRegion region, List<int> referredSegments, byte[] data, int start, int end)
+            public void OnImmediateTextRegion(TextRegion region, List<int> referredSegments, Memory<byte> data)
             {
                 var regionInfo = region.Info;
                 HuffmanTables huffmanTables = null;
-                Bytes.Buffer huffmanInput = null;
+                ByteStream huffmanInput = null;
 
                 // Combines exported symbols from all referred segments
                 var symbols = this.symbols;
                 var inputSymbols = new List<Dictionary<int, byte[]>>();
-                for (int i = 0, ii = referredSegments.Count; i < ii; i++)
+                foreach (var referredSegment in referredSegments)
                 {
                     // referredSymbols is undefined when we have a reference to a Tables
                     // segment instead of a SymbolDictionary.
-                    if (symbols.TryGetValue(referredSegments[i], out var referredSymbols))
+                    if (symbols.TryGetValue(referredSegment, out var referredSymbols))
                     {
-                        inputSymbols = inputSymbols.Concat(referredSymbols).ToList();
+                        inputSymbols.AddRange(referredSymbols);
                     }
                 }
                 var symbolCodeLength = FiltersExtension.Log2(inputSymbols.Count);
                 if (region.Huffman)
                 {
-                    huffmanInput = new Bytes.Buffer(data, start, end);
+                    huffmanInput = new ByteStream(data);
                     huffmanTables = GetTextRegionHuffmanTables(
                       region,
                       referredSegments,
@@ -1764,7 +1716,7 @@ namespace PdfClown.Bytes.Filters.JBig
                     );
                 }
 
-                var decodingContext = new DecodingContext(data, start, end);
+                var decodingContext = new DecodingContext(data);
                 var bitmap = DecodeTextRegion(region.Huffman, region.Refinement, (int)regionInfo.Width,
                   (int)regionInfo.Height, region.DefaultPixelValue, region.numberOfSymbolInstances, region.StripSize,
                   inputSymbols, symbolCodeLength, region.Transposed, region.DsOffset,
@@ -1774,24 +1726,24 @@ namespace PdfClown.Bytes.Filters.JBig
                 DrawBitmap(regionInfo, bitmap);
             }
 
-            public void OnPatternDictionary(PatternDictionary dictionary, int currentSegment, byte[] data, int start, int end)
+            public void OnPatternDictionary(PatternDictionary dictionary, int currentSegment, Memory<byte> data)
             {
                 var patterns = this.patterns;
                 if (patterns == null)
                 {
                     this.patterns = patterns = new Dictionary<int, List<Dictionary<int, byte[]>>>();
                 }
-                var decodingContext = new DecodingContext(data, start, end);
+                var decodingContext = new DecodingContext(data);
                 patterns[currentSegment] = DecodePatternDictionary(dictionary.Mmr, dictionary.PatternWidth, dictionary.PatternHeight,
                     dictionary.MaxPatternIndex, dictionary.Template, decodingContext);
             }
 
-            public void OnImmediateHalftoneRegion(HalftoneRegion region, List<int> referredSegments, byte[] data, int start, int end)
+            public void OnImmediateHalftoneRegion(HalftoneRegion region, List<int> referredSegments, Memory<byte> data)
             {
                 // HalftoneRegion refers to exactly one PatternDictionary.
                 var patterns = this.patterns[referredSegments[0]];
                 var regionInfo = region.Info;
-                var decodingContext = new DecodingContext(data, start, end);
+                var decodingContext = new DecodingContext(data);
                 var bitmap = DecodeHalftoneRegion(
                   region.Mmr,
                   patterns,
@@ -1812,14 +1764,14 @@ namespace PdfClown.Bytes.Filters.JBig
                 DrawBitmap(regionInfo, bitmap);
             }
 
-            public void OnTables(int currentSegment, byte[] data, int start, int end)
+            public void OnTables(int currentSegment, Memory<byte> data)
             {
                 var customTables = CustomTables;
                 if (customTables == null)
                 {
                     CustomTables = customTables = new Dictionary<int, HuffmanTable> { };
                 }
-                customTables[currentSegment] = DecodeTablesSegment(data, start, end);
+                customTables[currentSegment] = DecodeTablesSegment(data);
             }
         }
 
@@ -1903,7 +1855,7 @@ namespace PdfClown.Bytes.Filters.JBig
                 }
             }
 
-            public int? DecodeNode(Bytes.Buffer reader)
+            public int? DecodeNode(ByteStream reader)
             {
                 if (IsLeaf)
                 {
@@ -1945,7 +1897,7 @@ namespace PdfClown.Bytes.Filters.JBig
                 }
             }
 
-            public int? Decode(Bytes.Buffer reader)
+            public int? Decode(ByteStream reader)
             {
                 return rootNode.DecodeNode(reader);
             }
@@ -1992,14 +1944,15 @@ namespace PdfClown.Bytes.Filters.JBig
             }
         }
 
-        static HuffmanTable DecodeTablesSegment(byte[] data, int start, int end)
+        static HuffmanTable DecodeTablesSegment(Memory<byte> data)
         {
             // Decodes a Tables segment, i.e., a custom Huffman table.
             // Annex B.2 Code table structure.
-            var flags = data[start];
-            var lowestValue = data.ReadUint32(start + 1) & 0xffffffff;
-            var highestValue = data.ReadUint32(start + 5) & 0xffffffff;
-            var reader = new Bytes.Buffer(data, start + 9, end);
+            var reader = new ByteStream(data);
+            var flags = reader.ReadUByte();
+            var lowestValue = reader.ReadUInt32() & 0xffffffff;
+            var highestValue = reader.ReadUInt32() & 0xffffffff;
+
 
             var prefixSizeBits = ((flags >> 1) & 7) + 1;
             var rangeSizeBits = ((flags >> 4) & 7) + 1;
@@ -2317,7 +2270,7 @@ namespace PdfClown.Bytes.Filters.JBig
             throw new Jbig2Error("can't find custom Huffman table");
         }
 
-        static HuffmanTables GetTextRegionHuffmanTables(TextRegion textRegion, List<int> referredTo, Dictionary<int, HuffmanTable> customTables, int numberOfSymbols, Bytes.Buffer reader)
+        static HuffmanTables GetTextRegionHuffmanTables(TextRegion textRegion, List<int> referredTo, Dictionary<int, HuffmanTable> customTables, int numberOfSymbols, ByteStream reader)
         {
             // 7.4.3.1.7 Symbol ID Huffman table decoding
 
@@ -2491,7 +2444,7 @@ namespace PdfClown.Bytes.Filters.JBig
             return HuffmanTables.CreateDelta(tableDeltaHeight, tableDeltaWidth, tableBitmapSize, tableAggregateInstances);
         }
 
-        static Dictionary<int, byte[]> ReadUncompressedBitmap(Bytes.Buffer reader, int width, int height)
+        static Dictionary<int, byte[]> ReadUncompressedBitmap(ByteStream reader, int width, int height)
         {
             var bitmap = new Dictionary<int, byte[]>();
             for (var y = 0; y < height; y++)
@@ -2507,7 +2460,7 @@ namespace PdfClown.Bytes.Filters.JBig
             return bitmap;
         }
 
-        static Dictionary<int, byte[]> DecodeMMRBitmap(Bytes.Buffer input, int width, int height, bool endOfBlock)
+        static Dictionary<int, byte[]> DecodeMMRBitmap(ByteStream input, int width, int height, bool endOfBlock)
         {
             // MMR is the same compression algorithm as the PDF filter
             // CCITTFaxDecode with /K -1.
@@ -2563,7 +2516,7 @@ namespace PdfClown.Bytes.Filters.JBig
             return ParseJbig2Chunks(chunks);
         }
 
-        public ImageData Parse(byte[] data)
+        public ImageData Parse(IInputStream data)
         {
             var imgData = ParseJbig2(data);
             width = imgData.Width;
@@ -2705,15 +2658,12 @@ namespace PdfClown.Bytes.Filters.JBig
 
     internal class Segment
     {
-        internal int Start;
         internal SegmentHeader Header;
-        internal byte[] Data;
-        internal int End;
+        internal Memory<byte> Data;
 
-        public Segment(SegmentHeader header, byte[] data)
+        public Segment(SegmentHeader header)
         {
             Header = header;
-            Data = data;
         }
     }
 
@@ -2767,7 +2717,6 @@ namespace PdfClown.Bytes.Filters.JBig
         internal int PageAssociation;
         internal uint Length;
         internal List<int> RetainBits;
-        internal int HeaderEnd;
         internal bool RandomAccess;
         internal int NumberOfPages;
 

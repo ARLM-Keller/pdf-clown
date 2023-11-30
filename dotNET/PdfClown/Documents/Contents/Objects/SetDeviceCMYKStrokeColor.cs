@@ -38,14 +38,8 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetDeviceCMYKStrokeColor : SetStrokeColor
     {
-        #region static
-        #region fields
         public static readonly new string OperatorKeyword = "K";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetDeviceCMYKStrokeColor(DeviceCMYKColor value)
             : base(OperatorKeyword, value)
         { }
@@ -53,17 +47,11 @@ namespace PdfClown.Documents.Contents.Objects
         public SetDeviceCMYKStrokeColor(IList<PdfDirectObject> operands)
             : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         {
             state.StrokeColorSpace = DeviceCMYKColorSpace.Default;
             base.Scan(state);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

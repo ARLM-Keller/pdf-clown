@@ -38,9 +38,6 @@ namespace PdfClown.Objects
     public abstract class PdfObject : IVisitable
     {
         private IPdfObjectWrapper wrapper;
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Gets the clone of the specified object, registered inside the specified file context.</summary>
           <param name="object">Object to clone into the specified file context.</param>
@@ -70,18 +67,10 @@ namespace PdfClown.Objects
         {
             return @object?.Unresolve();
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         protected PdfObject()
         { }
-        #endregion
 
-        #region interface
-        #region public
         public virtual PdfIndirectObject Container => Parent?.Container;
 
         /**
@@ -118,6 +107,7 @@ namespace PdfClown.Objects
         public virtual PdfReference Reference => IndirectObject?.Reference;
 
         public ContentWrapper ContentsWrapper { get; internal set; }
+
         public IPdfObjectWrapper AlternateWrapper { get; internal set; }
 
         public virtual IPdfObjectWrapper Wrapper
@@ -153,18 +143,12 @@ namespace PdfClown.Objects
           <summary>Creates a deep copy of this object using the default cloner of the specified file
           context.</summary>
         */
-        public virtual PdfObject Clone(File context)
-        { 
-            return Clone(context.Cloner); 
-        }
+        public virtual PdfObject Clone(File context) => Clone(context.Cloner);
 
         /**
           <summary>Creates a deep copy of this object using the specified cloner.</summary>
         */
-        public virtual PdfObject Clone(Cloner cloner)
-        { 
-            return Accept(cloner, null); 
-        }
+        public virtual PdfObject Clone(Cloner cloner) => Accept(cloner, null);
 
         /**
           <summary>Gets the indirect object containing this object.</summary>
@@ -190,10 +174,7 @@ namespace PdfClown.Objects
           <summary>Ensures this object to be resolved into its corresponding data object.</summary>
           <seealso cref="Unresolve()"/>
         */
-        public virtual PdfDataObject Resolve()
-        {
-            return (PdfDataObject)this;
-        }
+        public virtual PdfDataObject Resolve() => (PdfDataObject)this;
 
         /**
           <summary>Swaps contents between this object and the other one.</summary>
@@ -239,12 +220,8 @@ namespace PdfClown.Objects
         */
         public abstract void WriteTo(IOutputStream stream, File context);
 
-        #region IVisitable
         public abstract PdfObject Accept(IVisitor visitor, object data);
-        #endregion
-        #endregion
 
-        #region protected
         /**
           <summary>Updates the state of this object.</summary>
         */
@@ -269,9 +246,7 @@ namespace PdfClown.Objects
             get;
             set;
         }
-        #endregion
 
-        #region internal
         /**
           <summary>Ensures that the specified object is decontextualized from this object.</summary>
           <param name="obj">Object to decontextualize from this object.</param>
@@ -300,8 +275,5 @@ namespace PdfClown.Objects
             }
             return obj;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

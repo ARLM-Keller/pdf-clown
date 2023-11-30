@@ -24,6 +24,7 @@
 */
 
 using System;
+using System.Buffers.Binary;
 using System.IO;
 
 namespace PdfClown.Util.IO
@@ -68,28 +69,44 @@ namespace PdfClown.Util.IO
           of the stream by two bytes.</summary>
         */
         public short ReadInt16()
-        { return (short)(stream.ReadByte() << 8 | stream.ReadByte()); }
-
-        /**
-          <summary>Reads a 4-byte signed integer from the current stream and advances the current position
-          of the stream by four bytes.</summary>
-        */
-        public int ReadInt32()
-        { return (stream.ReadByte() << 24 | stream.ReadByte() << 16 | stream.ReadByte() << 8 | stream.ReadByte()); }
+        {
+            Span<byte> buffer = stackalloc byte[2];
+            stream.Read(buffer);
+            return BinaryPrimitives.ReadInt16BigEndian(buffer);
+        }
 
         /**
           <summary>Reads a 2-byte unsigned integer from the current stream and advances the position of the
           stream by two bytes.</summary>
         */
         public ushort ReadUInt16()
-        { return (ushort)(stream.ReadByte() << 8 | stream.ReadByte()); }
+        { 
+            Span<byte> buffer = stackalloc byte[2];
+            stream.Read(buffer);
+            return BinaryPrimitives.ReadUInt16BigEndian(buffer); 
+        }
+
+        /**
+          <summary>Reads a 4-byte signed integer from the current stream and advances the current position
+          of the stream by four bytes.</summary>
+        */
+        public int ReadInt32()
+        {
+            Span<byte> buffer = stackalloc byte[4];
+            stream.Read(buffer);
+            return BinaryPrimitives.ReadInt32BigEndian(buffer);
+        }
 
         /**
           <summary>Reads a 4-byte unsigned integer from the current stream and advances the position of the
           stream by four bytes.</summary>
         */
         public uint ReadUInt32()
-        { return (uint)(stream.ReadByte() << 24 | stream.ReadByte() << 16 | stream.ReadByte() << 8 | stream.ReadByte()); }
+        {
+            Span<byte> buffer = stackalloc byte[4];
+            stream.Read(buffer);
+            return BinaryPrimitives.ReadUInt32BigEndian(buffer);
+        }
 
         #region IDisposable
         public void Dispose()

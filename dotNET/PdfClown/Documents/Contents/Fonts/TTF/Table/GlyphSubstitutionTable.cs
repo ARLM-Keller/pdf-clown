@@ -23,6 +23,8 @@ using PdfClown.Documents.Contents.Fonts.TTF.GSUB;
 using System;
 using PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB;
 using System.Linq;
+using PdfClown.Bytes;
+using System.Text.RegularExpressions;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
@@ -49,9 +51,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private GsubData gsubData;
 
-        public GlyphSubstitutionTable(TrueTypeFont font) : base(font)
-        {
-        }
+        public GlyphSubstitutionTable()
+        { }
 
         public GsubData GsubData
         {
@@ -59,22 +60,17 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         }
 
         //@SuppressWarnings({"squid:S1854"})
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
-            long start = data.CurrentPosition;
+            long start = data.Position;
             //@SuppressWarnings({"unused"})
-            int majorVersion = data.ReadUnsignedShort();
-            int minorVersion = data.ReadUnsignedShort();
-            int scriptListOffset = data.ReadUnsignedShort();
-            int featureListOffset = data.ReadUnsignedShort();
-            int lookupListOffset = data.ReadUnsignedShort();
+            int majorVersion = data.ReadUInt16();
+            int minorVersion = data.ReadUInt16();
+            int scriptListOffset = data.ReadUInt16();
+            int featureListOffset = data.ReadUInt16();
+            int lookupListOffset = data.ReadUInt16();
             //@SuppressWarnings({"unused"})
-            long featureVariationsOffset = -1L;
-            if (minorVersion == 1L)
-            {
-                featureVariationsOffset = data.ReadUnsignedInt();
-            }
-
+            long featureVariationsOffset = minorVersion == 1L ? data.ReadUInt32() : -1L;
             scriptList = ReadScriptList(data, start + scriptListOffset);
             featureListTable = ReadFeatureList(data, start + featureListOffset);
             lookupListTable = ReadLookupList(data, start + lookupListOffset);
@@ -82,41 +78,36 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             var glyphSubstitutionDataExtractor = new GlyphSubstitutionDataExtractor();
 
             gsubData = glyphSubstitutionDataExtractor.GetGsubData(scriptList, featureListTable, lookupListTable);
+            initialized = true;
         }
 
-        private Dictionary<string, ScriptTable> ReadScriptList(TTFDataStream data, long offset)
+        private Dictionary<string, ScriptTable> ReadScriptList(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int scriptCount = data.ReadUnsignedShort();
-            ScriptTable[] scriptTables = new ScriptTable[scriptCount];
-            int[] scriptOffsets = new int[scriptCount];
-            string[] scriptTags = new string[scriptCount];
-            for (int i = 0; i < scriptCount; i++)
-            {
-                scriptTags[i] = data.ReadString(4);
-                scriptOffsets[i] = data.ReadUnsignedShort();
-            }
-            for (int i = 0; i < scriptCount; i++)
-            {
-                scriptTables[i] = ReadScriptTable(data, offset + scriptOffsets[i]);
-            }
+            int scriptCount = data.ReadUInt16();
+            var scriptOffsets = new ushort[scriptCount];
+            var scriptTags = new string[scriptCount];
             var resultScriptList = new Dictionary<string, ScriptTable>(scriptCount, StringComparer.Ordinal);
             for (int i = 0; i < scriptCount; i++)
             {
-                ScriptRecord scriptRecord = new ScriptRecord(scriptTags[i], scriptTables[i]);
-                resultScriptList[scriptRecord.ScriptTag] = scriptRecord.ScriptTable;
+                scriptTags[i] = data.ReadString(4);
+                scriptOffsets[i] = data.ReadUInt16();
+            }
+            for (int i = 0; i < scriptCount; i++)
+            {
+                var scriptTable = ReadScriptTable(data, offset + scriptOffsets[i]);
+                resultScriptList[scriptTags[i]] = scriptTable;
             }
             return resultScriptList;
         }
 
-        private ScriptTable ReadScriptTable(TTFDataStream data, long offset)
+        private ScriptTable ReadScriptTable(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int defaultLangSys = data.ReadUnsignedShort();
-            int langSysCount = data.ReadUnsignedShort();
-            LangSysRecord[] langSysRecords = new LangSysRecord[langSysCount];
-            string[] langSysTags = new string[langSysCount];
-            int[] langSysOffsets = new int[langSysCount];
+            int defaultLangSys = data.ReadUInt16();
+            int langSysCount = data.ReadUInt16();
+            var langSysTags = new string[langSysCount];
+            var langSysOffsets = new ushort[langSysCount];
             for (int i = 0; i < langSysCount; i++)
             {
                 langSysTags[i] = data.ReadString(4);
@@ -124,11 +115,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 {
                     // PDFBOX-4489: catch corrupt file
                     // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#slTbl_sRec
-                    Debug.WriteLine("error: LangSysRecords not alphabetically sorted by LangSys tag: " +
-                              langSysTags[i] + " <= " + langSysTags[i - 1]);
+                    Debug.WriteLine($"error: LangSysRecords not alphabetically sorted by LangSys tag: {langSysTags[i]} <= {langSysTags[i - 1]}");
                     return new ScriptTable(null, new Dictionary<string, LangSysTable>(StringComparer.Ordinal));
                 }
-                langSysOffsets[i] = data.ReadUnsignedShort();
+                langSysOffsets[i] = data.ReadUInt16();
             }
 
             LangSysTable defaultLangSysTable = null;
@@ -137,38 +127,33 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             {
                 defaultLangSysTable = ReadLangSysTable(data, offset + defaultLangSys);
             }
+            var langSysTables = new Dictionary<string, LangSysTable>(langSysCount, StringComparer.Ordinal);
             for (int i = 0; i < langSysCount; i++)
             {
-                LangSysTable langSysTable = ReadLangSysTable(data, offset + langSysOffsets[i]);
-                langSysRecords[i] = new LangSysRecord(langSysTags[i], langSysTable);
-            }
-            Dictionary<string, LangSysTable> langSysTables = new Dictionary<string, LangSysTable>(langSysCount, StringComparer.Ordinal);
-            foreach (LangSysRecord langSysRecord in langSysRecords)
-            {
-                langSysTables[langSysRecord.LangSysTag] = langSysRecord.LangSysTable;
+                var langSysTable = ReadLangSysTable(data, offset + langSysOffsets[i]);
+                langSysTables[langSysTags[i]] = langSysTable;
             }
             return new ScriptTable(defaultLangSysTable, langSysTables);
         }
 
-        private LangSysTable ReadLangSysTable(TTFDataStream data, long offset)
+        private LangSysTable ReadLangSysTable(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int lookupOrder = data.ReadUnsignedShort();
-            int requiredFeatureIndex = data.ReadUnsignedShort();
-            int featureIndexCount = data.ReadUnsignedShort();
-            int[] featureIndices = new int[featureIndexCount];
+            int lookupOrder = data.ReadUInt16();
+            int requiredFeatureIndex = data.ReadUInt16();
+            int featureIndexCount = data.ReadUInt16();
+            var featureIndices = new int[featureIndexCount];
             for (int i = 0; i < featureIndexCount; i++)
             {
-                featureIndices[i] = data.ReadUnsignedShort();
+                featureIndices[i] = data.ReadUInt16();
             }
-            return new LangSysTable(lookupOrder, requiredFeatureIndex, featureIndexCount,
-                    featureIndices);
+            return new LangSysTable(lookupOrder, requiredFeatureIndex, featureIndexCount, featureIndices);
         }
 
-        private FeatureListTable ReadFeatureList(TTFDataStream data, long offset)
+        private FeatureListTable ReadFeatureList(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int featureCount = data.ReadUnsignedShort();
+            int featureCount = data.ReadUInt16();
             FeatureRecord[] featureRecords = new FeatureRecord[featureCount];
             int[] featureOffsets = new int[featureCount];
             string[] featureTags = new string[featureCount];
@@ -179,11 +164,19 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 {
                     // catch corrupt file
                     // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#flTbl
-                    Debug.WriteLine("warn: FeatureRecord array not alphabetically sorted by FeatureTag: " +
-                              featureTags[i] + " < " + featureTags[i - 1]);
-                    return new FeatureListTable(0, new FeatureRecord[0]);
+                    //if (Regex.IsMatch(featureTags[i], "\\w{4}") && Regex.IsMatch(featureTags[i - 1], "\\w{4}"))
+                    //{
+                    //    // ArialUni.ttf has many warnings but isn't corrupt, so we assume that only
+                    //    // strings with trash characters indicate real corruption
+                    //    Debug.WriteLine($"debug: FeatureRecord array not alphabetically sorted by FeatureTag: {featureTags[i]} < {featureTags[i - 1]}");
+                    //}
+                    //else
+                    //{
+                    //    Debug.WriteLine($"warn: FeatureRecord array not alphabetically sorted by FeatureTag: {featureTags[i]} < {featureTags[i - 1]}");
+                    //    return new FeatureListTable(0, new FeatureRecord[0]);
+                    //}
                 }
-                featureOffsets[i] = data.ReadUnsignedShort();
+                featureOffsets[i] = data.ReadUInt16();
             }
             for (int i = 0; i < featureCount; i++)
             {
@@ -193,27 +186,27 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return new FeatureListTable(featureCount, featureRecords);
         }
 
-        private FeatureTable ReadFeatureTable(TTFDataStream data, long offset)
+        private FeatureTable ReadFeatureTable(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int featureParams = data.ReadUnsignedShort();
-            int lookupIndexCount = data.ReadUnsignedShort();
+            int featureParams = data.ReadUInt16();
+            int lookupIndexCount = data.ReadUInt16();
             int[] lookupListIndices = new int[lookupIndexCount];
             for (int i = 0; i < lookupIndexCount; i++)
             {
-                lookupListIndices[i] = data.ReadUnsignedShort();
+                lookupListIndices[i] = data.ReadUInt16();
             }
             return new FeatureTable(featureParams, lookupIndexCount, lookupListIndices);
         }
 
-        private LookupListTable ReadLookupList(TTFDataStream data, long offset)
+        private LookupListTable ReadLookupList(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int lookupCount = data.ReadUnsignedShort();
+            int lookupCount = data.ReadUInt16();
             int[] lookups = new int[lookupCount];
             for (int i = 0; i < lookupCount; i++)
             {
-                lookups[i] = data.ReadUnsignedShort();
+                lookups[i] = data.ReadUInt16();
             }
             LookupTable[] lookupTables = new LookupTable[lookupCount];
             for (int i = 0; i < lookupCount; i++)
@@ -223,22 +216,22 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return new LookupListTable(lookupCount, lookupTables);
         }
 
-        private LookupTable ReadLookupTable(TTFDataStream data, long offset)
+        private LookupTable ReadLookupTable(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int lookupType = data.ReadUnsignedShort();
-            int lookupFlag = data.ReadUnsignedShort();
-            int subTableCount = data.ReadUnsignedShort();
-            int[] subTableOffets = new int[subTableCount];
+            int lookupType = data.ReadUInt16();
+            int lookupFlag = data.ReadUInt16();
+            int subTableCount = data.ReadUInt16();
+            var subTableOffsets = new int[subTableCount];
             for (int i = 0; i < subTableCount; i++)
             {
-                subTableOffets[i] = data.ReadUnsignedShort();
+                subTableOffsets[i] = data.ReadUInt16();
             }
 
             int markFilteringSet;
             if ((lookupFlag & 0x0010) != 0)
             {
-                markFilteringSet = data.ReadUnsignedShort();
+                markFilteringSet = data.ReadUInt16();
             }
             else
             {
@@ -248,19 +241,28 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             switch (lookupType)
             {
                 case 1:
-                    // Single
-                    // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#SS
+                case 2:
+                case 4:
                     for (int i = 0; i < subTableCount; i++)
                     {
-                        subTables[i] = ReadLookupSubTable(data, offset + subTableOffets[i]);
+                        subTables[i] = ReadLookupSubtable(data, offset + subTableOffsets[i], lookupType);
                     }
                     break;
-                case 4:
-                    // Ligature Substitution Subtable
-                    // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#LS
+                case 7:
+                    // Extension Substitution
+                    // https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#ES
                     for (int i = 0; i < subTableCount; i++)
                     {
-                        subTables[i] = ReadLigatureSubstitutionSubtable(data, offset + subTableOffets[i]);
+                        long baseOffset = data.Position;
+                        int substFormat = data.ReadUInt16(); // always 1
+                        if (substFormat != 1)
+                        {
+                            Debug.WriteLine($"error: The expected SubstFormat for ExtensionSubstFormat1 subtable is {substFormat} but should be 1");
+                            continue;
+                        }
+                        int extensionLookupType = data.ReadUInt16();
+                        long extensionOffset = data.ReadUInt32();
+                        subTables[i] = ReadLookupSubtable(data, baseOffset + extensionOffset, extensionLookupType);
                     }
                     break;
                 default:
@@ -271,18 +273,49 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return new LookupTable(lookupType, lookupFlag, markFilteringSet, subTables);
         }
 
-        private LookupSubTable ReadLookupSubTable(TTFDataStream data, long offset)
+        private LookupSubTable ReadLookupSubtable(IInputStream data, long offset, int lookupType)
+        {
+            switch (lookupType)
+            {
+                case 1:
+                    // Single Substitution Subtable
+                    // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#SS
+                    return ReadSingleLookupSubTable(data, offset);
+                case 2:
+                    // Multiple Substitution Subtable
+                    // https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#lookuptype-2-multiple-substitution-subtable
+                    return ReadMultipleSubstitutionSubtable(data, offset);
+                case 4:
+                    // Ligature Substitution Subtable
+                    // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#LS
+                    return ReadLigatureSubstitutionSubtable(data, offset);
+
+                // when creating a new LookupSubTable derived type, don't forget to add a "switch"
+                // in readLookupTable() and add the type in GlyphSubstitutionDataExtractor.extractData()
+
+                default:
+                    // Other lookup types are not supported
+                    Debug.WriteLine($"debug: Type {lookupType} GSUB lookup table is not supported and will be ignored");
+                    return null;
+                    //TODO next: implement type 6
+                    // https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#lookuptype-6-chained-contexts-substitution-subtable
+                    // see e.g. readChainedContextualSubTable in Apache FOP
+                    // https://github.com/apache/xmlgraphics-fop/blob/1323c2e3511eb23c7dd9b8fb74463af707fa972d/fop-core/src/main/java/org/apache/fop/complexscripts/fonts/OTFAdvancedTypographicTableReader.java#L898
+            }
+        }
+
+        private LookupSubTable ReadSingleLookupSubTable(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int substFormat = data.ReadUnsignedShort();
+            int substFormat = data.ReadUInt16();
             switch (substFormat)
             {
                 case 1:
                     {
                         // LookupType 1: Single Substitution Subtable
                         // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#11-single-substitution-format-1
-                        int coverageOffset = data.ReadUnsignedShort();
-                        short deltaGlyphID = data.ReadSignedShort();
+                        int coverageOffset = data.ReadUInt16();
+                        short deltaGlyphID = data.ReadInt16();
                         CoverageTable coverageTable = ReadCoverageTable(data, offset + coverageOffset);
                         return new LookupTypeSingleSubstFormat1(substFormat, coverageTable, deltaGlyphID);
                     }
@@ -290,40 +323,81 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     {
                         // Single Substitution Format 2
                         // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#12-single-substitution-format-2
-                        int coverageOffset = data.ReadUnsignedShort();
-                        int glyphCount = data.ReadUnsignedShort();
+                        int coverageOffset = data.ReadUInt16();
+                        int glyphCount = data.ReadUInt16();
                         int[] substituteGlyphIDs = new int[glyphCount];
                         for (int i = 0; i < glyphCount; i++)
                         {
-                            substituteGlyphIDs[i] = data.ReadUnsignedShort();
+                            substituteGlyphIDs[i] = data.ReadUInt16();
                         }
                         CoverageTable coverageTable = ReadCoverageTable(data, offset + coverageOffset);
                         return new LookupTypeSingleSubstFormat2(substFormat, coverageTable, substituteGlyphIDs);
                     }
                 default:
-                    throw new IOException("Unknown substFormat: " + substFormat);
+                    Debug.WriteLine($"warn: Unknown substFormat: {substFormat}");
+                    return null;
             }
         }
 
-        private LookupSubTable ReadLigatureSubstitutionSubtable(TTFDataStream data, long offset)
+        private LookupSubTable ReadMultipleSubstitutionSubtable(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int substFormat = data.ReadUnsignedShort();
+            var substFormat = data.ReadUInt16();
 
             if (substFormat != 1)
             {
-                throw new IOException(
-                        "The expected SubstFormat for LigatureSubstitutionTable is 1");
+                throw new IOException("The expected SubstFormat for LigatureSubstitutionTable is 1");
             }
 
-            int coverage = data.ReadUnsignedShort();
-            int ligSetCount = data.ReadUnsignedShort();
+            var coverage = data.ReadUInt16();
+            var sequenceCount = data.ReadUInt16();
+            var sequenceOffsets = new int[sequenceCount];
+            for (int i = 0; i < sequenceCount; i++)
+            {
+                sequenceOffsets[i] = data.ReadUInt16();
+            }
+
+            var coverageTable = ReadCoverageTable(data, offset + coverage);
+
+            if (sequenceCount != coverageTable.Size)
+            {
+                throw new IOException(
+                        "According to the OpenTypeFont specifications, the coverage count should be equal to the no. of SequenceTables");
+            }
+
+            var sequenceTables = new SequenceTable[sequenceCount];
+            for (int i = 0; i < sequenceCount; i++)
+            {
+                data.Seek(offset + sequenceOffsets[i]);
+                var glyphCount = data.ReadUInt16();
+                for (int j = 0; j < glyphCount; ++j)
+                {
+                    var substituteGlyphIDs = data.ReadUShortArray(glyphCount);
+                    sequenceTables[i] = new SequenceTable(glyphCount, substituteGlyphIDs);
+                }
+            }
+
+            return new LookupTypeMultipleSubstitutionFormat1(substFormat, coverageTable, sequenceTables);
+        }
+
+        private LookupSubTable ReadLigatureSubstitutionSubtable(IInputStream data, long offset)
+        {
+            data.Seek(offset);
+            int substFormat = data.ReadUInt16();
+
+            if (substFormat != 1)
+            {
+                throw new IOException("The expected SubstFormat for LigatureSubstitutionTable is 1");
+            }
+
+            int coverage = data.ReadUInt16();
+            int ligSetCount = data.ReadUInt16();
 
             int[] ligatureOffsets = new int[ligSetCount];
 
             for (int i = 0; i < ligSetCount; i++)
             {
-                ligatureOffsets[i] = data.ReadUnsignedShort();
+                ligatureOffsets[i] = data.ReadUInt16();
             }
 
             CoverageTable coverageTable = ReadCoverageTable(data, offset + coverage);
@@ -349,20 +423,19 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     ligatureSetTables);
         }
 
-        private LigatureSetTable ReadLigatureSetTable(TTFDataStream data, long ligatureSetTableLocation,
+        private LigatureSetTable ReadLigatureSetTable(IInputStream data, long ligatureSetTableLocation,
                 int coverageGlyphId)
         {
             data.Seek(ligatureSetTableLocation);
 
-            int ligatureCount = data.ReadUnsignedShort();
-            Debug.WriteLine("debug: ligatureCount=" + ligatureCount);
+            int ligatureCount = data.ReadUInt16();
 
             int[] ligatureOffsets = new int[ligatureCount];
             LigatureTable[] ligatureTables = new LigatureTable[ligatureCount];
 
             for (int i = 0; i < ligatureOffsets.Length; i++)
             {
-                ligatureOffsets[i] = data.ReadUnsignedShort();
+                ligatureOffsets[i] = data.ReadUInt16();
             }
 
             for (int i = 0; i < ligatureOffsets.Length; i++)
@@ -375,14 +448,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return new LigatureSetTable(ligatureCount, ligatureTables);
         }
 
-        private LigatureTable ReadLigatureTable(TTFDataStream data, long ligatureTableLocation,
+        private LigatureTable ReadLigatureTable(IInputStream data, long ligatureTableLocation,
                 int coverageGlyphId)
         {
             data.Seek(ligatureTableLocation);
 
-            int ligatureGlyph = data.ReadUnsignedShort();
+            int ligatureGlyph = data.ReadUInt16();
 
-            int componentCount = data.ReadUnsignedShort();
+            int componentCount = data.ReadUInt16();
 
             int[] componentGlyphIDs = new int[componentCount];
 
@@ -393,32 +466,32 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
             for (int i = 1; i <= componentCount - 1; i++)
             {
-                componentGlyphIDs[i] = data.ReadUnsignedShort();
+                componentGlyphIDs[i] = data.ReadUInt16();
             }
 
             return new LigatureTable(ligatureGlyph, componentCount, componentGlyphIDs);
 
         }
 
-        private CoverageTable ReadCoverageTable(TTFDataStream data, long offset)
+        private CoverageTable ReadCoverageTable(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int coverageFormat = data.ReadUnsignedShort();
+            int coverageFormat = data.ReadUInt16();
             switch (coverageFormat)
             {
                 case 1:
                     {
-                        int glyphCount = data.ReadUnsignedShort();
+                        int glyphCount = data.ReadUInt16();
                         int[] glyphArray = new int[glyphCount];
                         for (int i = 0; i < glyphCount; i++)
                         {
-                            glyphArray[i] = data.ReadUnsignedShort();
+                            glyphArray[i] = data.ReadUInt16();
                         }
                         return new CoverageTableFormat1(coverageFormat, glyphArray);
                     }
                 case 2:
                     {
-                        int rangeCount = data.ReadUnsignedShort();
+                        int rangeCount = data.ReadUInt16();
                         RangeRecord[] rangeRecords = new RangeRecord[rangeCount];
 
 
@@ -431,7 +504,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     }
                 default:
                     // Should not happen (the spec indicates only format 1 and format 2)
-                    throw new IOException("Unknown coverage format: " + coverageFormat);
+                    throw new IOException($"Unknown coverage format: {coverageFormat}");
             }
         }
 
@@ -517,16 +590,18 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             foreach (var langSysTable in langSysTables)
             {
                 int required = langSysTable.RequiredFeatureIndex;
-                if (required != 0xffff) // if no required features = 0xFFFF
+                FeatureRecord[] featureRecords = featureListTable.FeatureRecords;
+                if (required != 0xffff && required < featureRecords.Length) // if no required features = 0xFFFF
                 {
-                    result.Add(featureListTable.FeatureRecords[required]);
+                    result.Add(featureRecords[required]);
                 }
                 foreach (int featureIndex in langSysTable.FeatureIndices)
                 {
-                    if (enabledFeatures == null
-                        || enabledFeatures.Contains(featureListTable.FeatureRecords[featureIndex].FeatureTag))
+                    if (featureIndex < featureRecords.Length
+                        && (enabledFeatures == null
+                        || enabledFeatures.Contains(featureRecords[featureIndex].FeatureTag)))
                     {
-                        result.Add(featureListTable.FeatureRecords[featureIndex]);
+                        result.Add(featureRecords[featureIndex]);
                     }
                 }
             }
@@ -575,9 +650,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 LookupTable lookupTable = lookupListTable.Lookups[lookupListIndex];
                 if (lookupTable.LookupType != 1)
                 {
-                    Debug.WriteLine("debug: Skipping GSUB feature '" + featureRecord.FeatureTag
-                            + "' because it requires unsupported lookup table type "
-                            + lookupTable.LookupType);
+                    Debug.WriteLine($"warn: Skipping GSUB feature '{featureRecord.FeatureTag}' because it requires unsupported lookup table type {lookupTable.LookupType}");
                     continue;
                 }
                 lookupResult = DoLookup(lookupTable, lookupResult);
@@ -656,11 +729,43 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return gid;
         }
 
-        private RangeRecord ReadRangeRecord(TTFDataStream data)
+        /**
+    * Builds a new {@link GsubData} instance for given script tag. In contrast to neighbour {@link #getGsubData()}
+    * method, this one does not try to find the first supported language and load GSUB data for it. Instead, it fetches
+    * the data for the given {@code scriptTag} (if it's supported by the font) leaving the language unspecified. It
+    * means that even after successful reading of GSUB data, the actual glyph substitution may not work if there is no
+    * corresponding {@link GsubWorker} implementation for it.
+    *
+    * @implNote This method performs searching on every invocation (no results are cached)
+    * @param scriptTag a <a href="https://learn.microsoft.com/en-us/typography/opentype/spec/scripttags">script tag</a>
+    * for which the data is needed
+    * @return GSUB data for the given script or {@code null} if no such script in the font
+    */
+        public GsubData GetGsubData(string scriptTag)
         {
-            int startGlyphID = data.ReadUnsignedShort();
-            int endGlyphID = data.ReadUnsignedShort();
-            int startCoverageIndex = data.ReadUnsignedShort();
+            if (!scriptList.TryGetValue(scriptTag, out ScriptTable scriptTable))
+            {
+                return null;
+            }
+            return new GlyphSubstitutionDataExtractor().GetGsubData(scriptTag, scriptTable,
+                    featureListTable, lookupListTable);
+        }
+
+        /**
+         * @return a read-only view of the
+         * <a href="https://learn.microsoft.com/en-us/typography/opentype/spec/scripttags">script tags</a> for which this
+         * GSUB table has records
+         */
+        public IReadOnlyCollection<string> SupportedScriptTags
+        {
+            get => scriptList.Keys;
+        }
+
+        private RangeRecord ReadRangeRecord(IInputStream data)
+        {
+            int startGlyphID = data.ReadUInt16();
+            int endGlyphID = data.ReadUInt16();
+            int startCoverageIndex = data.ReadUInt16();
             return new RangeRecord(startGlyphID, endGlyphID, startCoverageIndex);
         }
 

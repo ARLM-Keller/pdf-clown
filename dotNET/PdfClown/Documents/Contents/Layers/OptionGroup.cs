@@ -34,16 +34,12 @@ namespace PdfClown.Documents.Contents.Layers
     */
     [PDF(VersionEnum.PDF15)]
     public sealed class OptionGroup : Array<Layer>
-    {        
-        #region dynamic
-        #region constructors
+    {
         public OptionGroup(Document context) : base(context)
         { }
 
         public OptionGroup(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
-        #endregion
     }
 }
 

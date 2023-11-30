@@ -14,19 +14,17 @@
  */
 
 /* eslint no-var: error */
+using System;
+
 namespace PdfClown.Bytes.Filters
 {
     internal class ImageChunk
     {
-        internal byte[] Data;
-        internal int Start;
-        internal int End;
+        internal IByteStream Data;
 
-        public ImageChunk(byte[] data, int start, int end)
+        public ImageChunk(IByteStream data)
         {
             this.Data = data;
-            this.Start = start;
-            this.End = end;
         }
     }
 }

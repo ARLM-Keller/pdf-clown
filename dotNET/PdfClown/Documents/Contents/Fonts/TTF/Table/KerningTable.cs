@@ -16,6 +16,7 @@
  */
 using System.IO;
 using System.Diagnostics;
+using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
@@ -37,9 +38,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private KerningSubtable[] subtables;
 
-        public KerningTable(TrueTypeFont font) : base(font)
-        {
-        }
+        public KerningTable()
+        { }
 
         /**
          * This will read the required data from the stream.
@@ -48,32 +48,32 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
-            int version = data.ReadUnsignedShort();
+            int version = data.ReadUInt16();
             if (version != 0)
             {
-                version = (version << 16) | data.ReadUnsignedShort();
+                version = (version << 16) | data.ReadUInt16();
             }
             int numSubtables = 0;
-            if (version == 0)
+            switch (version)
             {
-                numSubtables = data.ReadUnsignedShort();
-            }
-            else if (version == 1)
-            {
-                numSubtables = (int)data.ReadUnsignedInt();
-            }
-            else
-            {
-                Debug.WriteLine($"debug: Skipped kerning table due to an unsupported kerning table version: {version}");
+                case 0:
+                    numSubtables = data.ReadUInt16();
+                    break;
+                case 1:
+                    numSubtables = (int)data.ReadUInt32();
+                    break;
+                default:
+                    Debug.WriteLine($"debug: Skipped kerning table due to an unsupported kerning table version: {version}");
+                    break;
             }
             if (numSubtables > 0)
             {
                 subtables = new KerningSubtable[numSubtables];
                 for (int i = 0; i < numSubtables; ++i)
                 {
-                    KerningSubtable subtable = new KerningSubtable();
+                    var subtable = new KerningSubtable();
                     subtable.Read(data, version);
                     subtables[i] = subtable;
                 }

@@ -31,81 +31,49 @@ namespace PdfClown.Util.Parsers
       <summary>Exception thrown in case of unexpected condition while parsing PostScript-based data.
       </summary>
     */
-    public class PostScriptParseException
-      : ParseException
+    public class PostScriptParseException : ParseException
     {
-        #region dynamic
-        #region fields
         private readonly object token;
         private readonly PostScriptParser.TokenTypeEnum? tokenType;
-        #endregion
 
-        #region constructors
-        public PostScriptParseException(
-          string message
-          ) : this(message, -1)
+        public PostScriptParseException(string message) : this(message, -1)
         { }
 
-        public PostScriptParseException(
-          string message,
-          PostScriptParser parser
-          ) : this(message, null, parser)
+        public PostScriptParseException(string message, PostScriptParser parser)
+            : this(message, null, parser)
         { }
 
-        public PostScriptParseException(
-          string message,
-          long position
-          ) : this(message, position, null, null)
+        public PostScriptParseException(string message, long position)
+            : this(message, position, null, null)
         { }
 
-        public PostScriptParseException(
-          string message,
-          long position,
-          object token,
-          PostScriptParser.TokenTypeEnum? tokenType
-          ) : this(message, null, position, token, tokenType)
+        public PostScriptParseException(string message, long position, object token, PostScriptParser.TokenTypeEnum? tokenType)
+            : this(message, null, position, token, tokenType)
         { }
 
-        public PostScriptParseException(
-          Exception cause
-          ) : this(null, cause)
+        public PostScriptParseException(Exception cause)
+            : this(null, cause)
         { }
 
-        public PostScriptParseException(
-          string message,
-          Exception cause
-          ) : this(message, cause, -1)
+        public PostScriptParseException(string message, Exception cause)
+            : this(message, cause, -1)
         { }
 
-        public PostScriptParseException(
-          string message,
-          Exception cause,
-          PostScriptParser parser
-          ) : this(message, cause, parser.Position, parser.Token, parser.TokenType)
+        public PostScriptParseException(string message, Exception cause, PostScriptParser parser)
+            : this(message, cause, parser.Position, parser.Token, parser.TokenType)
         { }
 
-        public PostScriptParseException(
-          string message,
-          Exception cause,
-          long position
-          ) : this(message, cause, position, null, null)
+        public PostScriptParseException(string message, Exception cause, long position)
+            : this(message, cause, position, null, null)
         { }
 
-        public PostScriptParseException(
-          string message,
-          Exception cause,
-          long position,
-          object token,
-          PostScriptParser.TokenTypeEnum? tokenType
-          ) : base(message, cause, position)
+        public PostScriptParseException(string message, Exception cause, long position, object token, PostScriptParser.TokenTypeEnum? tokenType)
+            : base(message, cause, position)
         {
             this.token = token;
             this.tokenType = tokenType;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the token on which the exception happened.</summary>
         */
@@ -115,8 +83,5 @@ namespace PdfClown.Util.Parsers
           <summary>Gets the type of the token on which the exception happened.</summary>
         */
         public PostScriptParser.TokenTypeEnum? TokenType => tokenType;
-        #endregion
-        #endregion
-        #endregion
     }
 }

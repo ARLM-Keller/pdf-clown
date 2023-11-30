@@ -22,18 +22,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 {
 
 	public abstract class FDSelect
-	{
-		protected readonly CFFCIDFont owner;
-
-		/**
-         * Constructor.
-         *
-         * @param owner the owner of the FDSelect data.
-         */
-		public FDSelect(CFFCIDFont owner)
-		{
-			this.owner = owner;
-		}
+	{	
 
 		/**
          * Returns the Font DICT index for the given GID.

@@ -45,15 +45,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private ICCProfile iccProfile;
         private SKColorSpaceTransferFn transfer;
         private ColorSpace alternate;
-        #region dynamic
-        #region constructors
         //TODO:IMPL new element constructor!
 
         internal ICCBasedColorSpace(PdfDirectObject baseObject) : base(baseObject) { }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         {
             throw new NotImplementedException();
@@ -61,26 +56,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override int ComponentCount => N;
 
-        public override Color DefaultColor => DeviceGrayColor.Default;
+        public override Color DefaultColor => AlternateColorSpace.DefaultColor;
 
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
         {
             return AlternateColorSpace.GetColor(components, context);
-
         }
 
-        public override bool IsSpaceColor(Color color)
-        { return AlternateColorSpace.IsSpaceColor(color); }
+        public override bool IsSpaceColor(Color color) => AlternateColorSpace.IsSpaceColor(color);
 
-        public override SKColor GetSKColor(Color color, float? alpha = null)
-        {
-            return AlternateColorSpace.GetSKColor(color, alpha);
-        }
+        public override SKColor GetSKColor(Color color, float? alpha = null) => AlternateColorSpace.GetSKColor(color, alpha);
 
-        public override SKColor GetSKColor(float[] components, float? alpha = null)
-        {
-            return AlternateColorSpace.GetSKColor(components, alpha);
-        }
+        public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null) => AlternateColorSpace.GetSKColor(components, alpha);
 
         public PdfStream Profile => (PdfStream)((PdfArray)BaseDataObject).Resolve(1);
 
@@ -108,14 +95,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 return alternate;
             }
         }
-        public int N => ((PdfInteger)Profile?.Header.Resolve(PdfName.N))?.RawValue ?? 0;
+        public int N => Profile?.Header.GetInt(PdfName.N) ?? 0;
 
 
         public SKColorSpace GetSKColorSpace()
         {
             if (skColorSpace == null)
             {
-                skColorSpace = SKColorSpace.CreateIcc(Profile.GetBody(true).GetBuffer());
+                skColorSpace = SKColorSpace.CreateIcc(Profile.GetBody(true).AsSpan());
                 if (skColorSpace != null)
                 {
                     skColorSpace.GetNumericalTransferFunction(out var spaceTransfer);
@@ -129,7 +116,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             if (iccProfile == null)
             {
-                iccProfile = ICCProfile.Load(Profile.GetBody(true).GetBuffer());
+                iccProfile = ICCProfile.Load(Profile.GetBody(true).AsMemory());
 
             }
         }
@@ -145,14 +132,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
             //return new SKPoint3(r, g, b);
         }
-
-
-
-        #endregion
-        #endregion
-        #endregion
     }
-
-
-
 }

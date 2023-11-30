@@ -27,7 +27,6 @@ using PdfClown.Objects;
 using PdfClown.Util.Math;
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Functions
@@ -43,9 +42,8 @@ namespace PdfClown.Documents.Functions
     {
         private IList<Interval<float>> decodes;
         private IList<Interval<int>> encodes;
-        private List<int> sampleCounts;
-        private float[] samples;
-        #region types
+        private int[] sizes;
+        private int[,] samples;
         public enum InterpolationOrderEnum
         {
             /**
@@ -57,94 +55,50 @@ namespace PdfClown.Documents.Functions
             */
             Cubic = 3
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         //TODO:implement function creation!
 
         internal Type0Function(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override float[] Calculate(float[] inputs)
+        public override ReadOnlySpan<float> Calculate(ReadOnlySpan<float> inputs)
         {
             //Mozilla Pdf.js
             var domains = Domains;
             var ranges = Ranges;
-            var decodes = Decodes ?? ranges;
+            var decodes = Decodes;
             var encodes = Encodes;
-            var sampleCount = SampleCounts;
+            var sizes = Sizes;
             var samples = GetSamples();
-            var sampleMax = (int)Math.Pow(2, BitsPerSample) - 1;
+            var sampleMax = (int)Math.Pow(2, BitsPerSample) - 1.0F;
             var n = ranges.Count;
             var m = domains.Count;
-            var k = n;
-            var pos = 1;
-            var cubeVertices = 1 << m;
-            var cubeN = new float[cubeVertices];
-            var cubeVertex = new int[cubeVertices];
 
-            // Building the cube vertices: its part and sample index
-            // http://rjwagner49.com/Mathematics/Interpolation.pdf
-            for (var j = 0; j < cubeVertices; j++)
-            {
-                cubeN[j] = 1;
-            }
+            var input = inputs.ToArray();
+            Span<int> inputPrev = stackalloc int[m];
+            Span<int> inputNext = stackalloc int[m];
 
             for (int i = 0; i < m; i++)
             {
                 var domain = domains[i];
                 var encode = encodes[i];
-                var size = sampleCount[i];
-                var x = inputs[i];
-                x = Math.Min(Math.Max(x, domain.Low), domain.High);
-                var e = Linear(x, domain.Low, domain.High, encode.Low, encode.High);
-                e = Math.Min(Math.Max(e, 0), size - 1);
-                var eiMax = (int)Math.Floor(e);
-                var eiMin = (int)Math.Ceiling(e);
-
-
-                // Adjusting the cube: N and vertex sample index
-                var e0 = e < size - 1 ? eiMax : e - 1; // e1 = e0 + 1;
-                var n0 = e0 + 1 - e; // (e1 - e) / (e1 - e0);
-                var n1 = e - e0; // (e - e0) / (e1 - e0);
-                var offset0 = e0 * k;
-                var offset1 = offset0 + k; // e1 * k
-                for (var j = 0; j < cubeVertices; j++)
-                {
-                    if ((j & pos) != 0)
-                    {
-                        cubeN[j] *= n1;
-                        cubeVertex[j] += (int)offset1;
-                    }
-                    else
-                    {
-                        cubeN[j] *= n0;
-                        cubeVertex[j] += (int)offset0;
-                    }
-                }
-                k *= size;
-                pos <<= 1;
+                var size = sizes[i];
+                var e = ClipToRange(inputs[i], domain.Low, domain.High);
+                e = Linear(e, domain.Low, domain.High, encode.Low, encode.High);
+                input[i] = ClipToRange(e, 0, size - 1);
+                inputPrev[i] = (int)Math.Floor(e);
+                inputNext[i] = (int)Math.Ceiling(e);
             }
 
-            var result = new float[n];
+            var rinterpol = new Rinterpol(input, inputPrev, inputNext, stackalloc int[m]);
+            var result = Rinterpolate(rinterpol);
             for (int j = 0; j < n; j++)
             {
                 var range = ranges[j];
                 var decode = decodes[j];
 
-                var r = 0F;
-
-                for (int i = 0; i < cubeVertices; i++)
-                {
-                    r += samples[cubeVertex[i] + j] * cubeN[i];
-                }
-
-                r = Linear(r, 0, 1, decode.Low, decode.High);
-                result[j] = Math.Min(Math.Max(r, range.Low), range.High);
+                var r = Linear(result[j], 0, sampleMax, decode.Low, decode.High);
+                result[j] = ClipToRange(r, range.Low, range.High);
             }
 
             return result;
@@ -153,105 +107,184 @@ namespace PdfClown.Documents.Functions
         /**
           <summary>Gets the linear mapping of input values into the domain of the function's sample table.</summary>
         */
-        public IList<Interval<int>> Encodes => encodes ?? (encodes = GetIntervals<int>(
+        public IList<Interval<int>> Encodes => encodes ??= GetIntervals<int>(
                   PdfName.Encode,
                   delegate (IList<Interval<int>> intervals)
                   {
-                      foreach (int sampleCount in SampleCounts)
+                      foreach (int sampleCount in Sizes)
                       { intervals.Add(new Interval<int>(0, sampleCount - 1)); }
                       return intervals;
-                  }));
+                  });
 
         /**
           <summary>Gets the order of interpolation between samples.</summary>
         */
-        public InterpolationOrderEnum Order
-        {
-            get
-            {
-                PdfInteger interpolationOrderObject = (PdfInteger)Dictionary[PdfName.Order];
-                return (interpolationOrderObject == null
-                  ? InterpolationOrderEnum.Linear
-                  : (InterpolationOrderEnum)interpolationOrderObject.RawValue);
-            }
-        }
+        public InterpolationOrderEnum Order => (InterpolationOrderEnum)Dictionary.GetInt(PdfName.Order, 1);
 
         /**
           <summary>Gets the linear mapping of sample values into the ranges of the function's output values.</summary>
         */
-        public IList<Interval<float>> Decodes => decodes ?? (decodes = GetIntervals<float>(PdfName.Decode, null));
+        public IList<Interval<float>> Decodes => decodes ??= GetIntervals<float>(PdfName.Decode, (n) => Ranges);
 
         /**
           <summary>Gets the number of bits used to represent each sample.</summary>
         */
-        public int BitsPerSample => ((PdfInteger)Dictionary[PdfName.BitsPerSample]).RawValue;
+        public int BitsPerSample => Dictionary.GetInt(PdfName.BitsPerSample);
 
         /**
           <summary>Gets the number of samples in each input dimension of the sample table.</summary>
         */
-        public IList<int> SampleCounts
+        public int[] Sizes
         {
-            get
-            {
-                if (sampleCounts == null)
-                {
-                    sampleCounts = new List<int>();
-                    PdfArray sampleCountsObject = (PdfArray)Dictionary[PdfName.Size];
-                    foreach (PdfDirectObject sampleCountObject in sampleCountsObject)
-                    { sampleCounts.Add(((PdfInteger)sampleCountObject).RawValue); }
-                }
-                return sampleCounts;
-            }
+            get => sizes ??= Dictionary.GetArray(PdfName.Size).ToIntArray();
         }
-        public float[] GetSamples()
+
+        public int[,] GetSamples()
         {
             if (samples == null)
             {
-                var ranges = Ranges;
-                var domains = Domains;
-                var size = SampleCounts;
-                var outputSize = ranges.Count;
-                var bps = BitsPerSample;
-                var bytes = bps / 8;
-                var stream = BaseDataObject as PdfStream;
-                using (var buffer = stream.ExtractBody(true) as Bytes.Buffer)
+                var size = Sizes;
+                var arraySize = 1;
+                var inputCount = InputCount;
+                var outputCount = OutputCount;
+                for (int i = 0; i < inputCount; i++)
                 {
-                    var length = 1;
-                    for (int i = 0, ii = size.Count; i < ii; i++)
+                    arraySize *= size[i];
+                }
+                samples = new int[arraySize, outputCount];
+                var bps = BitsPerSample;
+                int index = 0;
+                var stream = BaseDataObject as PdfStream;
+                using (var buffer = stream.ExtractBody(true) as Bytes.ByteStream)
+                {
+                    for (int i = 0; i < arraySize; i++)
                     {
-                        length *= size[i];
-                    }
-                    length *= outputSize;
-
-                    var array = new float[length];
-                    var codeSize = 0;
-                    var codeBuf = 0;
-                    // 32 is a valid bps so shifting won't work
-                    var sampleMul = 1.0 / (Math.Pow(2.0, bps) - 1);
-
-                    var strBytes = buffer.ReadBytes((length * bps + 7) / 8);
-                    var strIdx = 0;
-                    for (int i = 0; i < length; i++)
-                    {
-                        while (codeSize < bps)
+                        for (int k = 0; k < outputCount; k++)
                         {
-                            codeBuf <<= 8;
-                            codeBuf |= strBytes[strIdx++];
-                            codeSize += 8;
+                            samples[index, k] = (int)buffer.ReadBits(bps);
                         }
-                        codeSize -= bps;
-                        array[i] = (float)((codeBuf >> codeSize) * sampleMul);
-                        codeBuf &= (1 << codeSize) - 1;
+                        index++;
                     }
-                    samples = array;
                 }
             }
             return samples;
         }
 
 
-        #endregion
-        #endregion
-        #endregion
+
+        /**
+         * Calculate the interpolation.
+         *
+         * @return interpolated result sample
+         */
+        float[] Rinterpolate(Rinterpol rinterpol)
+        {
+            return Rinterpolate(rinterpol, 0);
+        }
+
+        /**
+         * Do a linear interpolation if the two coordinates can be known, or
+         * call itself recursively twice.
+         *
+         * @param coord coord partially set coordinate (not set from step
+         * upwards); gets fully filled in the last call ("leaf"), where it is
+         * used to get the correct sample
+         * @param step between 0 (first call) and dimension - 1
+         * @return interpolated result sample
+         */
+        private float[] Rinterpolate(Rinterpol rinterpol, int step)
+        {
+            var coord = rinterpol.Coord;
+            var input = rinterpol.Input;
+            var inPrev = rinterpol.Prev;
+            var inNext = rinterpol.Next;
+            float[] resultSample = new float[OutputCount];
+            if (step == coord.Length - 1)
+            {
+                // leaf
+                if (inPrev[step] == inNext[step])
+                {
+                    coord[step] = inPrev[step];
+                    var tmpSample = CalcSampleIndex(coord);
+                    for (int i = 0; i < resultSample.Length; ++i)
+                    {
+                        resultSample[i] = samples[tmpSample, i];
+                    }
+                    return resultSample;
+                }
+                coord[step] = inPrev[step];
+                var sample1 = CalcSampleIndex(coord);
+                coord[step] = inNext[step];
+                var sample2 = CalcSampleIndex(coord);
+                for (int i = 0; i < resultSample.Length; ++i)
+                {
+                    resultSample[i] = Linear(input[step], inPrev[step], inNext[step], samples[sample1, i], samples[sample2, i]);
+                }
+                return resultSample;
+            }
+            else
+            {
+                // branch
+                if (inPrev[step] == inNext[step])
+                {
+                    coord[step] = inPrev[step];
+                    return Rinterpolate(rinterpol, step + 1);
+                }
+                coord[step] = inPrev[step];
+                float[] sample1 = Rinterpolate(rinterpol, step + 1);
+                coord[step] = inNext[step];
+                float[] sample2 = Rinterpolate(rinterpol, step + 1);
+                for (int i = 0; i < resultSample.Length; ++i)
+                {
+                    resultSample[i] = Linear(input[step], inPrev[step], inNext[step], sample1[i], sample2[i]);
+                }
+                return resultSample;
+            }
+        }
+
+        /**
+         * calculate array index (structure described in p.171 PDF spec 1.7) in multiple dimensions.
+         *
+         * @param vector with coordinates
+         * @return index in flat array
+         */
+        private int CalcSampleIndex(Span<int> vector)
+        {
+            // inspiration: http://stackoverflow.com/a/12113479/535646
+            // but used in reverse
+            var sizeValues = Sizes;
+            int index = 0;
+            int sizeProduct = 1;
+            int dimension = vector.Length;
+            for (int i = dimension - 2; i >= 0; --i)
+            {
+                sizeProduct *= sizeValues[i];
+            }
+            for (int i = dimension - 1; i >= 0; --i)
+            {
+                index += sizeProduct * vector[i];
+                if (i - 1 >= 0)
+                {
+                    sizeProduct /= sizeValues[i - 1];
+                }
+            }
+            return index;
+        }
+
+        private ref struct Rinterpol
+        {
+            public Span<float> Input;
+            public Span<int> Prev;
+            public Span<int> Next;
+            public Span<int> Coord;
+
+            public Rinterpol(Span<float> input, Span<int> prev, Span<int> next, Span<int> coord)
+            {
+                Input = input;
+                Prev = prev;
+                Next = next;
+                Coord = coord;
+            }
+        }
     }
 }

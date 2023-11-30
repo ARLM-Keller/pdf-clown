@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public class ICCLut8Type : ICCTag
@@ -50,11 +52,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public byte[] CLUTValues;
         public byte[] OutputTables;
 
-        public override void Load(PdfClown.Bytes.Buffer buffer)
+        public override void Load(PdfClown.Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
             NumberOfInputChannels = (byte)buffer.ReadByte();
             NumberOfOutputChannels = (byte)buffer.ReadByte();
             NumberOfCLUTGridPoints = (byte)buffer.ReadByte();

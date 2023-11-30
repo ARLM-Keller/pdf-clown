@@ -41,8 +41,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF12)]
     public abstract class SpecialDeviceColorSpace : SpecialColorSpace
     {
-        #region static
-        #region fields
         /**
           <summary>Special colorant name never producing any visible output.</summary>
           <remarks>When a color space with this component name is the current color space, painting
@@ -51,24 +49,17 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public static readonly string NoneComponentName = (string)PdfName.None.Value;
         private ColorSpace alternate;
         private Function function;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         //TODO:IMPL new element constructor!
 
         internal SpecialDeviceColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the alternate color space used in case any of the <see cref="ComponentNames">component names</see>
           in the color space do not correspond to a component available on the device.</summary>
         */
-        public ColorSpace AlternateSpace => alternate ?? (alternate = ColorSpace.Wrap(((PdfArray)BaseDataObject)[2]));
+        public ColorSpace AlternateSpace => alternate ??= ColorSpace.Wrap(((PdfArray)BaseDataObject)[2]);
 
         /**
           <summary>Gets the names of the color components.</summary>
@@ -79,21 +70,19 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets the function to transform a tint value into color component values
           in the <see cref="AlternateSpace">alternate color space</see>.</summary>
         */
-        public Function TintFunction => function ?? (function = Function.Wrap(((PdfArray)BaseDataObject)[3]));
+        public Function TintFunction => function ??= Function.Wrap(((PdfArray)BaseDataObject)[3]);
 
         public override SKColor GetSKColor(Color color, float? alpha)
         {
-            return GetSKColor(color.Components.Select(p => ((IPdfNumber)p).FloatValue).ToArray(), alpha);
+            Span<float> components = stackalloc float[color.Components.Count];
+            color.CopyTo(components);
+            return GetSKColor(components, alpha);
         }
 
-        public override SKColor GetSKColor(float[] components, float? alpha = null)
+        public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null)
         {
             var alternateComponents = TintFunction.Calculate(components);
-            ColorSpace alternateSpace = AlternateSpace;
-            return alternateSpace.GetSKColor(alternateComponents, alpha);
+            return AlternateSpace.GetSKColor(alternateComponents, alpha);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

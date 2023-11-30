@@ -35,13 +35,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint Reserved = 0x00000000;
         public byte[] Value;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
             var count = (int)Table.ElementSize - 8;
-            Value = buffer.ReadBytes(count);
+            Value = buffer.ReadMemory(count).ToArray();
         }
     }
 }

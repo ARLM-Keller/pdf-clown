@@ -43,14 +43,10 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class FileAttachment : Markup, IFileResource
     {
-        #region static
-        #region fields
         private static readonly Dictionary<FileAttachmentImageType, PdfName> IconTypeEnumCodes;
 
         private static readonly FileAttachmentImageType DefaultIconType = FileAttachmentImageType.PushPin;
-        #endregion
 
-        #region constructors
         static FileAttachment()
         {
             IconTypeEnumCodes = new Dictionary<FileAttachmentImageType, PdfName>
@@ -61,10 +57,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 [FileAttachmentImageType.Tag] = PdfName.Tag
             };
         }
-        #endregion
 
-        #region interface
-        #region private
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
@@ -87,12 +80,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             return DefaultIconType;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public FileAttachment(Page page, SKRect box, string text, FileSpecification dataFile)
             : base(page, PdfName.FileAttachment, box, text)
         {
@@ -102,10 +90,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public FileAttachment(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
         */
@@ -123,7 +108,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        #region IFileResource
         public FileSpecification DataFile
         {
             get => FileSpecification.Wrap(BaseDataObject[PdfName.FS]);
@@ -145,10 +129,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             SvgImage.DrawImage(canvas, AttachmentName.ToString(), color, bounds, 1);
         }
 
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 
     /**

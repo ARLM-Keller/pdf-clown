@@ -58,7 +58,7 @@ namespace PdfClown.Documents.Encryption
         private static readonly int ASSEMBLE_DOCUMENT_BIT = 11;
         private static readonly int DEGRADED_PRINT_BIT = 12;
 
-        private int bytes = DEFAULT_PERMISSIONS;
+        private int bytes;
 
         private bool readOnly = false;
 
@@ -146,18 +146,19 @@ namespace PdfClown.Documents.Encryption
 		 * @return A standard owner access permission set.
 		 */
 
-        public static AccessPermission getOwnerAccessPermission()
+        public static AccessPermission GetOwnerAccessPermission()
         {
-            AccessPermission ret = new AccessPermission();
-            ret.CanAssembleDocument = true;
-            ret.CanExtractContent = true;
-            ret.CanExtractForAccessibility = true;
-            ret.CanFillInForm = true;
-            ret.CanModify = true;
-            ret.CanModifyAnnotations = true;
-            ret.CanPrint = true;
-            ret.CanPrintDegraded = true;
-            return ret;
+            return new AccessPermission
+            {
+                CanAssembleDocument = true,
+                CanExtractContent = true,
+                CanExtractForAccessibility = true,
+                CanFillInForm = true,
+                CanModify = true,
+                CanModifyAnnotations = true,
+                CanPrint = true,
+                CanPrintDegraded = true
+            };
         }
 
         /**

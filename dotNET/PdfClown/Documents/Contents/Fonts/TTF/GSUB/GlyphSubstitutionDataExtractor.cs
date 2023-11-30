@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 
         public GsubData GetGsubData(Dictionary<string, ScriptTable> scriptList, FeatureListTable featureListTable, LookupListTable lookupListTable)
         {
-            ScriptTableDetails scriptTableDetails = GetSupportedLanguage(scriptList);
+            var scriptTableDetails = GetSupportedLanguage(scriptList);
 
             if (scriptTableDetails == null)
             {
@@ -60,18 +60,56 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
             {
                 PopulateGsubData(gsubData, langSysTable, featureListTable, lookupListTable);
             }
+            return BuildMapBackedGsubData(featureListTable, lookupListTable, scriptTableDetails);
+        }
 
-            return new MapBackedGsubData(scriptTableDetails.Language, scriptTableDetails.FeatureName, gsubData);
+        /**
+         * Unlike {@link #getGsubData(Map, FeatureListTable, LookupListTable)}, this method doesn't iterate over supported
+         * {@link Language}'s searching for the first match with the scripts of the font. Instead, it unconditionally
+         * creates {@link ScriptTableDetails} instance with language left {@linkplain Language#UNSPECIFIED unspecified}.
+         * 
+         * @return {@link GsubData} instance built especially for the given {@code scriptName}
+         */
+        public GsubData GetGsubData(string scriptName, ScriptTable scriptTable,
+                FeatureListTable featureListTable, LookupListTable lookupListTable)
+        {
+            ScriptTableDetails scriptTableDetails = new ScriptTableDetails(Language.UNSPECIFIED,
+                    scriptName, scriptTable);
+
+            return BuildMapBackedGsubData(featureListTable, lookupListTable, scriptTableDetails);
+        }
+
+        private MapBackedGsubData BuildMapBackedGsubData(FeatureListTable featureListTable,
+                LookupListTable lookupListTable, ScriptTableDetails scriptTableDetails)
+        {
+            ScriptTable scriptTable = scriptTableDetails.ScriptTable;
+
+            var gsubData = new Dictionary<string, Dictionary<List<int>, int>>();
+            // the starting point is really the scriptTags
+            if (scriptTable.DefaultLangSysTable != null)
+            {
+                PopulateGsubData(gsubData, scriptTable.DefaultLangSysTable, featureListTable,
+                        lookupListTable);
+            }
+            foreach (LangSysTable langSysTable in scriptTable.LangSysTables.Values)
+            {
+                PopulateGsubData(gsubData, langSysTable, featureListTable, lookupListTable);
+            }
+
+            return new MapBackedGsubData(scriptTableDetails.Language,
+                    scriptTableDetails.FeatureName, gsubData);
         }
 
         private ScriptTableDetails GetSupportedLanguage(Dictionary<string, ScriptTable> scriptList)
         {
             foreach (Language lang in Enum.GetValues(typeof(Language)))
             {
-                string scriptName = lang.ToString();
-                if (scriptList.TryGetValue(scriptName, out var scriptTable))
+                foreach (var scriptName in lang.GetScriptNames())
                 {
-                    return new ScriptTableDetails(lang, scriptName, scriptTable);
+                    if (scriptList.TryGetValue(scriptName, out var scriptTable))
+                    {
+                        return new ScriptTableDetails(lang, scriptName, scriptTable);
+                    }
                 }
             }
             return null;
@@ -104,10 +142,6 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
                 }
             }
 
-            Debug.WriteLine("debug: *********** extracting GSUB data for the feature: "
-                    + featureRecord.FeatureTag + ", glyphSubstitutionMap: "
-                    + glyphSubstitutionMap);
-
             gsubData[featureRecord.FeatureTag] = glyphSubstitutionMap;
         }
 
@@ -127,10 +161,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
                 {
                     ExtractDataFromSingleSubstTableFormat2Table(glyphSubstitutionMap, substFormat2);
                 }
+                else if (lookupSubTable is LookupTypeMultipleSubstitutionFormat1 msubstFormat1)
+                {
+                    ExtractDataFromMultipleSubstitutionFormat1Table(glyphSubstitutionMap, msubstFormat1);
+                }
                 else
                 {
                     // usually null, due to being skipped in GlyphSubstitutionTable.readLookupTable()
-                    Debug.WriteLine("debug: The type " + lookupSubTable + " is not yet supported, will be ignored");
+                    //Debug.WriteLine($"debug: The type {lookupSubTable} is not yet supported, will be ignored");
                 }
             }
 
@@ -158,8 +196,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 
             if (coverageTable.Size != singleSubstTableFormat2.SubstituteGlyphIDs.Length)
             {
-                throw new ArgumentException(
-                        "The no. coverage table entries should be the same as the size of the substituteGlyphIDs");
+                Debug.WriteLine("warn: The no. coverage table entries should be the same as the size of the substituteGlyphIDs");
+                return;
             }
 
             for (int i = 0; i < coverageTable.Size; i++)
@@ -172,11 +210,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
             }
         }
 
-        private void ExtractDataFromLigatureSubstitutionSubstFormat1Table(
-                Dictionary<List<int>, int> glyphSubstitutionMap,
+        private void ExtractDataFromLigatureSubstitutionSubstFormat1Table(Dictionary<List<int>, int> glyphSubstitutionMap,
                 LookupTypeLigatureSubstitutionSubstFormat1 ligatureSubstitutionTable)
         {
-
             foreach (LigatureSetTable ligatureSetTable in ligatureSubstitutionTable.LigatureSetTables)
             {
                 foreach (LigatureTable ligatureTable in ligatureSetTable.getLigatureTables())
@@ -185,25 +221,37 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
                 }
 
             }
+        }
+
+        private void ExtractDataFromMultipleSubstitutionFormat1Table(Dictionary<List<int>, int> glyphSubstitutionMap,
+            LookupTypeMultipleSubstitutionFormat1 multipleSubstFormat1Subtable)
+        {
+            var coverageTable = multipleSubstFormat1Subtable.CoverageTable;
+
+            if (coverageTable.Size != multipleSubstFormat1Subtable.SequenceTables.Length)
+            {
+                Debug.WriteLine("warn: The no. coverage table entries should be the same as the size of the sequencce tables");
+                return;
+            }
+
+            for (int i = 0; i < coverageTable.Size; i++)
+            {
+                int coverageGlyphId = coverageTable.GetGlyphId(i);
+                SequenceTable sequenceTable = multipleSubstFormat1Subtable.SequenceTables[i];
+
+                //TODO implement storing this data
+                // (not possible at this time because the map value isn't a list)
+            }
 
         }
 
         private void ExtractDataFromLigatureTable(Dictionary<List<int>, int> glyphSubstitutionMap,
                 LigatureTable ligatureTable)
         {
+            var glyphsToBeSubstituted = new List<int>(ligatureTable.ComponentGlyphIDs);
 
-            List<int> glyphsToBeSubstituted = new List<int>();
 
-            foreach (int componentGlyphID in ligatureTable.ComponentGlyphIDs)
-            {
-                glyphsToBeSubstituted.Add(componentGlyphID);
-            }
-
-            Debug.WriteLine($"debug: glyphsToBeSubstituted: {glyphsToBeSubstituted}");
-
-            PutNewSubstitutionEntry(glyphSubstitutionMap, ligatureTable.LigatureGlyph,
-                    glyphsToBeSubstituted);
-
+            PutNewSubstitutionEntry(glyphSubstitutionMap, ligatureTable.LigatureGlyph, glyphsToBeSubstituted);
         }
 
         private void PutNewSubstitutionEntry(Dictionary<List<int>, int> glyphSubstitutionMap,

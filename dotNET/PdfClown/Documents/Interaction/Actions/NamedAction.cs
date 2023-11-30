@@ -35,28 +35,17 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>Named action [PDF:1.6:8.5.3].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public class NamedAction
-      : Action
+    public class NamedAction : Action
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public NamedAction(
-          Document context,
-          PdfName actionName
-          ) : base(context, PdfName.Named)
+        public NamedAction(Document context, PdfName actionName)
+            : base(context, PdfName.Named)
         { BaseDataObject[PdfName.N] = actionName; }
 
-        internal NamedAction(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal NamedAction(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
-
-        #region interface
-        #endregion
-        #endregion
     }
 }

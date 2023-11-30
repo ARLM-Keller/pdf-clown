@@ -38,8 +38,6 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class PushButton : ButtonField
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new pushbutton within the given document context.</summary>
         */
@@ -51,17 +49,11 @@ namespace PdfClown.Documents.Interaction.Forms
 
         internal PushButton(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override object Value
         {
             set
             {/* NOOP: This type of button retains no permanent value. */}
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

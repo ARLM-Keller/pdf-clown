@@ -41,14 +41,9 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
     */
     public sealed class DefaultStyle : FieldStyle
     {
-        #region dynamic
-        #region constructors
         public DefaultStyle()
         { BackColor = new DeviceRGBColor(.9, .9, .9); }
-        #endregion
 
-        #region interface
-        #region public
         public override void Apply(Field field)
         {
             switch (field)
@@ -78,19 +73,17 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 {
                     PdfDictionary widgetDataObject = widget.BaseDataObject;
                     widgetDataObject[PdfName.DA] = new PdfString("/ZaDb 0 Tf 0 0 0 rg");
-                    widgetDataObject[PdfName.MK] = new PdfDictionary(
-                      new PdfName[] { PdfName.BG, PdfName.BC, PdfName.CA },
-                      new PdfDirectObject[]
-                      {
-              new PdfArray(new PdfDirectObject[]{PdfReal.Get(0.9412), PdfReal.Get(0.9412), PdfReal.Get(0.9412)}),
-              new PdfArray(new PdfDirectObject[]{PdfInteger.Default, PdfInteger.Default, PdfInteger.Default}),
-              new PdfString("4")
-                      }
-                      );
-                    widgetDataObject[PdfName.BS] = new PdfDictionary(
-                      new PdfName[] { PdfName.W, PdfName.S },
-                      new PdfDirectObject[] { PdfReal.Get(0.8), PdfName.S }
-                      );
+                    widgetDataObject[PdfName.MK] = new PdfDictionary(3)
+                    {
+                        { PdfName.BG, new PdfArray(3) { PdfReal.Get(0.9412), PdfReal.Get(0.9412), PdfReal.Get(0.9412) } },
+                        { PdfName.BC, new PdfArray(3) { PdfInteger.Default, PdfInteger.Default, PdfInteger.Default } },
+                        { PdfName.CA, new PdfString("4") },
+                    };
+                    widgetDataObject[PdfName.BS] = new PdfDictionary(2)
+                    {
+                        { PdfName.W, PdfReal.Get(0.8) },
+                        { PdfName.S, PdfName.S },
+                    };
                     widgetDataObject[PdfName.H] = PdfName.P;
                 }
 
@@ -122,13 +115,10 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                         composer.End();
                     }
 
-                    BlockComposer blockComposer = new BlockComposer(composer);
+                    var blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
-                    composer.SetFont(
-                      PdfType1Font.Load(document, PdfType1Font.FamilyEnum.ZapfDingbats, true, false),
-                      size.Height * 0.8
-                      );
+                    composer.SetFont(FontType1.Load(document, FontName.ZapfDingbats), size.Height * 0.8);
                     blockComposer.ShowText(new String(new char[] { CheckSymbol }));
                     blockComposer.End();
 
@@ -164,20 +154,18 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 {
                     PdfDictionary widgetDataObject = widget.BaseDataObject;
                     widgetDataObject[PdfName.DA] = new PdfString("/ZaDb 0 Tf 0 0 0 rg");
-                    widgetDataObject[PdfName.MK] = new PdfDictionary(
-                      new PdfName[] { PdfName.BG, PdfName.BC, PdfName.CA },
-                      new PdfDirectObject[]
-                      {
-                          new PdfArray(new PdfDirectObject[]{PdfReal.Get(0.9412), PdfReal.Get(0.9412), PdfReal.Get(0.9412)}),
-                          new PdfArray(new PdfDirectObject[]{PdfInteger.Default, PdfInteger.Default, PdfInteger.Default}),
-                          new PdfString("l")
-                      }
-                      );
-                    widgetDataObject[PdfName.BS] = new PdfDictionary(
-                      new PdfName[] { PdfName.W, PdfName.S },
-                      new PdfDirectObject[] { PdfReal.Get(0.8), PdfName.S }
-                      );
-                    widgetDataObject[PdfName.H] = PdfName.P;
+                    widgetDataObject[PdfName.MK] = new PdfDictionary(3)
+                    {
+                        { PdfName.BG, new PdfArray(3) { PdfReal.Get(0.9412), PdfReal.Get(0.9412), PdfReal.Get(0.9412) } },
+                        { PdfName.BC, new PdfArray(3) { PdfInteger.Default, PdfInteger.Default, PdfInteger.Default} },
+                        { PdfName.CA, new PdfString("l") },
+                    };
+                    widgetDataObject[PdfName.BS] = new PdfDictionary(2)
+                    {
+                        { PdfName.W, PdfReal.Get(0.8) },
+                        { PdfName.S, PdfName.S },
+                        { PdfName.H, PdfName.P }
+                    };
                 }
 
                 Appearance appearance = widget.Appearance;
@@ -194,7 +182,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 float lineWidth = 1;
                 SKRect frame = SKRect.Create(lineWidth / 2, lineWidth / 2, size.Width - lineWidth, size.Height - lineWidth);
                 {
-                    PrimitiveComposer composer = new PrimitiveComposer(onState);
+                    var composer = new PrimitiveComposer(onState);
 
                     if (GraphicsVisibile)
                     {
@@ -207,22 +195,22 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                         composer.End();
                     }
 
-                    BlockComposer blockComposer = new BlockComposer(composer);
+                    var blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
-                    composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.ZapfDingbats, true, false), size.Height * 0.8);
+                    composer.SetFont(FontType1.Load(document, FontName.ZapfDingbats), size.Height * 0.8);
                     blockComposer.ShowText(new String(new char[] { RadioSymbol }));
                     blockComposer.End();
 
                     composer.Flush();
                 }
 
-                FormXObject offState = new FormXObject(document, size);
+                var offState = new FormXObject(document, size);
                 normalAppearance[PdfName.Off] = offState;
                 {
                     if (GraphicsVisibile)
                     {
-                        PrimitiveComposer composer = new PrimitiveComposer(offState);
+                        var composer = new PrimitiveComposer(offState);
 
                         composer.BeginLocalState();
                         composer.SetLineWidth(lineWidth);
@@ -266,10 +254,10 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 string title = (string)field.Value;
                 if (title != null)
                 {
-                    BlockComposer blockComposer = new BlockComposer(composer);
+                    var blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
-                    composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Helvetica, true, false), size.Height * 0.5);
+                    composer.SetFont(FontType1.Load(document, FontName.HelveticaBold), size.Height * 0.5);
                     blockComposer.ShowText(title);
                     blockComposer.End();
                 }
@@ -306,14 +294,13 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
 
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Courier, true, false), 20);
+                composer.SetFont(FontType1.Load(document, FontName.CourierBold), 20);
                 composer.ShowText(
                   (string)signatureName,
                   new SKPoint(0, size.Height / 2),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Middle,
-                  0
-                  );
+                  0);
                 composer.End();
 
                 composer.Flush();
@@ -333,7 +320,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             {
                 SKSize size = widget.Box.Size;
                 normalAppearanceState = new FormXObject(document, size);
-                PrimitiveComposer composer = new PrimitiveComposer(normalAppearanceState);
+                var composer = new PrimitiveComposer(normalAppearanceState);
 
                 float lineWidth = 1;
                 SKRect frame = SKRect.Create(lineWidth / 2, lineWidth / 2, size.Width - lineWidth, size.Height - lineWidth);
@@ -349,14 +336,13 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
 
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Helvetica, false, false), FontSize);
+                composer.SetFont(FontType1.Load(document, FontName.Helvetica), FontSize);
                 composer.ShowText(
                   (string)field.Value,
                   new SKPoint(0, size.Height / 2),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Middle,
-                  0
-                  );
+                  0);
                 composer.End();
 
                 composer.Flush();
@@ -392,14 +378,13 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
 
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Helvetica, false, false), FontSize);
+                composer.SetFont(FontType1.Load(document, FontName.Helvetica), FontSize);
                 composer.ShowText(
                   (string)field.Value,
                   new SKPoint(0, size.Height / 2),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Middle,
-                  0
-                  );
+                  0);
                 composer.End();
 
                 composer.Flush();
@@ -416,14 +401,11 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             {
                 PdfDictionary widgetDataObject = widget.BaseDataObject;
                 widgetDataObject[PdfName.DA] = new PdfString("/Helv " + FontSize + " Tf 0 0 0 rg");
-                widgetDataObject[PdfName.MK] = new PdfDictionary(
-                  new PdfName[] { PdfName.BG, PdfName.BC },
-                  new PdfDirectObject[]
-                  {
-                      new PdfArray(new PdfDirectObject[]{PdfReal.Get(.9), PdfReal.Get(.9), PdfReal.Get(.9)}),
-                      new PdfArray(new PdfDirectObject[]{PdfInteger.Default, PdfInteger.Default, PdfInteger.Default})
-                  }
-                  );
+                widgetDataObject[PdfName.MK] = new PdfDictionary()
+                {
+                    { PdfName.BG,new PdfArray(3) { PdfReal.Get(.9), PdfReal.Get(.9), PdfReal.Get(.9) } },
+                    { PdfName.BC,new PdfArray(3) { PdfInteger.Default, PdfInteger.Default, PdfInteger.Default } }
+                };
             }
 
             FormXObject normalAppearanceState;
@@ -452,7 +434,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                     composer.Clip(); // Ensures that the visible content is clipped within the rounded frame.
                 }
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Helvetica, false, false), FontSize);
+                composer.SetFont(FontType1.Load(document, FontName.Helvetica), FontSize);
                 double y = 3;
                 foreach (ChoiceItem item in field.Items)
                 {
@@ -468,8 +450,5 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             }
             appearance.Normal[null] = normalAppearanceState;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

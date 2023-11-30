@@ -14,6 +14,9 @@
  */
 
 /* eslint no-var: error */
+using System;
+using System.Runtime.CompilerServices;
+
 namespace PdfClown.Bytes.Filters
 {
     /**
@@ -27,7 +30,7 @@ namespace PdfClown.Bytes.Filters
      */
     internal class ArithmeticDecoder
     {
-        public struct Qe
+        public readonly struct Qe
         {
             public Qe(int qe, byte nmps, byte nlps, int switchFlag)
             {
@@ -37,10 +40,10 @@ namespace PdfClown.Bytes.Filters
                 this.switchFlag = switchFlag;
             }
 
-            public int qe { get; }
-            public byte nmps { get; }
-            public byte nlps { get; }
-            public int switchFlag { get; }
+            public readonly int qe;
+            public readonly byte nmps;
+            public readonly byte nlps;
+            public readonly int switchFlag;
         }
         // Table C-2
         public static readonly Qe[] QeTable = new Qe[]
@@ -93,23 +96,19 @@ namespace PdfClown.Bytes.Filters
             new Qe(qe:0x0001, nmps: 45, nlps: 43, switchFlag: 0 ),
             new Qe(qe:0x5601, nmps: 46, nlps: 46, switchFlag: 0 )
         };
-        private byte[] data;
-        private int bp;
-        private int dataEnd;
+        private ArraySegment<byte> data;
         private int chigh;
         private int clow;
         private int ct;
         private int a;
+        private int bp;
 
 
         // C.3.5 Initialisation of the decoder (INITDEC)
-        public ArithmeticDecoder(byte[] data, int start, int end)
+        public ArithmeticDecoder(Memory<byte> data)
         {
-            this.data = data;
-            this.bp = start;
-            this.dataEnd = end;
-
-            this.chigh = data[start];
+            this.data = Unsafe.As<Memory<byte>, ArraySegment<byte>>(ref data);
+            this.chigh = this.data[0];
             this.clow = 0;
 
             this.ByteIn();
@@ -123,10 +122,9 @@ namespace PdfClown.Bytes.Filters
         // C.3.4 Compressed data input (BYTEIN)
         void ByteIn()
         {
-            var data = this.data;
             var bp = this.bp;
 
-            if (bp + 1 < dataEnd && data[bp] == 0xff)
+            if (bp + 1 < data.Count && data[bp] == 0xff)
             {
                 if (data[bp + 1] > 0x8f)
                 {
@@ -144,7 +142,7 @@ namespace PdfClown.Bytes.Filters
             else
             {
                 bp++;
-                this.clow += bp < this.dataEnd ? data[bp] << 8 : 0xff00;
+                this.clow += bp < data.Count ? data[bp] << 8 : 0xff00;
                 this.ct = 8;
                 this.bp = bp;
             }
@@ -226,12 +224,14 @@ namespace PdfClown.Bytes.Filters
             } while ((a & 0x8000) == 0);
             this.a = a;
 
-            contexts[pos] = ToSByte((cx_index << 1) | cx_mps);
+            contexts[pos] = (sbyte)((cx_index << 1) | cx_mps);
             return d;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         sbyte ToSByte(int v)
         {
-            return (sbyte)v;
+            return unchecked((sbyte)v);
         }
     }
 }

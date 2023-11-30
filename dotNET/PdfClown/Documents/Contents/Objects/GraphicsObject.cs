@@ -35,8 +35,6 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public abstract class GraphicsObject : CompositeObject
     {
-        #region dynamic
-        #region constructors
         protected GraphicsObject()
         { }
 
@@ -45,7 +43,5 @@ namespace PdfClown.Documents.Contents.Objects
 
         protected GraphicsObject(IList<ContentObject> objects) : base(objects)
         { }
-        #endregion
-        #endregion
     }
 }

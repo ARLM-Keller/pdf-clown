@@ -37,8 +37,6 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class Path : GraphicsObject
     {
-        #region static
-        #region fields
         public static readonly string[] BeginOperatorKeywords = new string[]
           {
               BeginSubpath.OperatorKeyword,
@@ -57,24 +55,14 @@ namespace PdfClown.Documents.Contents.Objects
               PaintPath.FillStrokeOperatorKeyword,
               PaintPath.StrokeOperatorKeyword
           };
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public Path()
         { }
 
         public Path(IList<ContentObject> operations) : base(operations)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override SKPath CreateRenderObject()
         { return new SKPath(); }
-        #endregion
-        #endregion
-        #endregion
     }
 }

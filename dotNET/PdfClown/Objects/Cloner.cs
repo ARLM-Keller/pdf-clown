@@ -40,7 +40,6 @@ namespace PdfClown.Objects
     */
     public class Cloner : Visitor
     {
-        #region types
         public class Filter
         {
             private readonly String name;
@@ -262,16 +261,11 @@ namespace PdfClown.Objects
                   && PdfName.Page.Equals(dictionary[PdfName.Type]);
             }
         }
-        #endregion
 
-        #region static
-        #region fields
         private static readonly Filter NullFilter = new Filter("Default");
 
         private static IList<Filter> commonFilters = new List<Filter>();
-        #endregion
 
-        #region constructors
         static Cloner()
         {
             // Page object.
@@ -283,24 +277,15 @@ namespace PdfClown.Objects
             // Annotations.
             commonFilters.Add(new AnnotationsFilter());
         }
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private File context;
         private readonly IList<Filter> filters = new List<Filter>(commonFilters);
-        #endregion
 
-        #region constructors
         public Cloner(File context)
         {
             Context = context;
         }
-        #endregion
 
-        #region interface
-        #region public
         public File Context
         {
             get => context;
@@ -389,9 +374,7 @@ namespace PdfClown.Objects
         {
             throw new NotSupportedException();
         }
-        #endregion
 
-        #region private
         private Filter MatchFilter(PdfObject obj)
         {
             Filter cloneFilter = NullFilter;
@@ -405,8 +388,5 @@ namespace PdfClown.Objects
             }
             return cloneFilter;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

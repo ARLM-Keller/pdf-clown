@@ -41,16 +41,10 @@ namespace PdfClown.Objects
     */
     public class PdfStream : PdfDataObject, IFileResource
     {
-        #region static
-        #region fields
         private static readonly byte[] BeginStreamBodyChunk = Encoding.Pdf.Encode(Symbol.LineFeed + Keyword.BeginStream + Symbol.LineFeed);
         private static readonly byte[] EndStreamBodyChunk = Encoding.Pdf.Encode(Symbol.LineFeed + Keyword.EndStream);
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
-        internal IBuffer body;
+        internal IByteStream body;
         internal PdfDictionary header;
 
         private PdfObject parent;
@@ -64,19 +58,17 @@ namespace PdfClown.Objects
         */
         private bool bodyResolved;
         internal EncodeState encoded = EncodeState.None;
-        #endregion
 
-        #region constructors
-        public PdfStream() : this(new PdfDictionary(), new Bytes.Buffer())
+        public PdfStream() : this(new PdfDictionary(), new ByteStream())
         { }
 
-        public PdfStream(PdfDictionary header) : this(header, new Bytes.Buffer())
+        public PdfStream(PdfDictionary header) : this(header, new ByteStream())
         { }
 
-        public PdfStream(IBuffer body) : this(new PdfDictionary(), body)
+        public PdfStream(IByteStream body) : this(new PdfDictionary(), body)
         { }
 
-        public PdfStream(PdfDictionary header, IBuffer body)
+        public PdfStream(PdfDictionary header, IByteStream body)
         {
             this.header = (PdfDictionary)Include(header);
 
@@ -85,23 +77,14 @@ namespace PdfClown.Objects
             body.OnChange += delegate (object sender, EventArgs args)
             { Update(); };
         }
-        #endregion
 
-        #region interface
-        #region public
-        public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
+        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 
-        /**
-          <summary>Gets the decoded stream body.</summary>
-        */
-        public IBuffer Body =>
-                /*
-NOTE: Encoding filters are removed by default because they belong to a lower layer (token
-layer), so that it's appropriate and consistent to transparently keep the object layer
-unaware of such a facility.
-*/
-                GetBody(true);
+        ///<summary>Gets the decoded stream body.</summary>
+        ///<remarks>NOTE: Encoding filters are removed by default because they belong to a lower layer (token
+        ///layer), so that it's appropriate and consistent to transparently keep the object layer
+        ///unaware of such a facility.</remarks>
+        public IByteStream Body => GetBody(true);
 
         public PdfDirectObject Filter
         {
@@ -119,7 +102,7 @@ unaware of such a facility.
           <summary>Gets the stream body.</summary>
           <param name="decode">Defines whether the body has to be decoded.</param>
         */
-        public IBuffer GetBody(bool decode)
+        public IByteStream GetBody(bool decode)
         {
             if (!bodyResolved)
             {
@@ -130,7 +113,7 @@ unaware of such a facility.
                 if (dataFile != null)
                 {
                     Updateable = false;
-                    body.Clear();
+                    body.SetLength(0);
                     body.Write(dataFile.GetInputStream());
                     body.Dirty = false;
                     Updateable = true;
@@ -143,17 +126,18 @@ unaware of such a facility.
                 if (filter != null) // Stream encoded.
                 {
                     header.Updateable = false;
-                    Bytes.Buffer.Decode(body, filter, Parameters, Header);
+                    body.Decode(filter, Parameters, Header);
                     // The stream is free from encodings.
                     Filter = null;
                     Parameters = null;
                     header.Updateable = true;
                 }
             }
+            body.Seek(0);
             return body;
         }
 
-        public IBuffer ExtractBody(bool decode)
+        public IByteStream ExtractBody(bool decode)
         {
             var buffer = GetBody(false);
             if (decode)
@@ -161,7 +145,7 @@ unaware of such a facility.
                 PdfDataObject filter = Filter;
                 if (filter != null) // Stream encoded.
                 {
-                    buffer = Bytes.Buffer.Extract(buffer, filter, Parameters, Header);
+                    buffer = buffer.Extract(filter, Parameters, Header);
                 }
             }
             return buffer;
@@ -242,7 +226,7 @@ unaware of such a facility.
                 else // Case A/C (substitute local/old file with new file).
                 {
                     // Dismiss local/old file data!
-                    body.Clear();
+                    body.SetLength(0);
                     // Dismiss local/old file settings!
                     Filter = null;
                     Parameters = null;
@@ -259,13 +243,15 @@ unaware of such a facility.
                         // Transfer old file data to local!
                         GetBody(false); // Ensures that external data is loaded as-is into the local buffer.
                                         // Transfer old file settings to local!
-                        header[PdfName.Filter] = header[PdfName.FFilter]; header.Remove(PdfName.FFilter);
-                        header[PdfName.DecodeParms] = header[PdfName.FDecodeParms]; header.Remove(PdfName.FDecodeParms);
+                        header[PdfName.Filter] = header[PdfName.FFilter];
+                        header.Remove(PdfName.FFilter);
+                        header[PdfName.DecodeParms] = header[PdfName.FDecodeParms];
+                        header.Remove(PdfName.FDecodeParms);
                     }
                     else // Case F (empty local).
                     {
                         // Dismiss old file data!
-                        body.Clear();
+                        body.SetLength(0);
                         // Dismiss old file settings!
                         Filter = null;
                         Parameters = null;
@@ -283,7 +269,7 @@ unaware of such a facility.
         {
             PdfStream otherStream = (PdfStream)other;
             PdfDictionary otherHeader = otherStream.header;
-            IBuffer otherBody = otherStream.body;
+            IByteStream otherBody = otherStream.body;
             // Update the other!
             otherStream.header = this.header;
             otherStream.body = this.body;
@@ -314,7 +300,7 @@ unaware of such a facility.
             */
             header.Updateable = false;
 
-            byte[] bodyData = null;
+            Memory<byte> bodyData = null;
             {
                 bool filterApplied = false;
                 {
@@ -338,14 +324,14 @@ unaware of such a facility.
                             filterApplied = true;
                         }
                         else // No filter needed.
-                        { bodyData = body.ToByteArray(); }
+                        { bodyData = body.AsMemory(); }
 
                         if (dataFile != null)
                         {
                             try
                             {
                                 using (var dataFileOutputStream = dataFile.GetOutputStream())
-                                { dataFileOutputStream.Write(bodyData); }
+                                { dataFileOutputStream.Write(bodyData.Span); }
                             }
                             catch (Exception e)
                             { throw new Exception("Data writing into " + dataFile.Path + " failed.", e); }
@@ -371,31 +357,24 @@ unaware of such a facility.
 
             // 2. Body.
             stream.Write(BeginStreamBodyChunk);
-            stream.Write(bodyData);
+            stream.Write(bodyData.Span);
             stream.Write(EndStreamBodyChunk);
 
             header.Updateable = true;
         }
 
-        #region IFileResource
         [PDF(VersionEnum.PDF12)]
         public FileSpecification DataFile
         {
             get => FileSpecification.Wrap(header[PdfName.F]);
             set => SetDataFile(value, false);
         }
-        #endregion
-        #endregion
 
-        #region protected
         protected internal override bool Virtual
         {
             get => virtual_;
             set => virtual_ = value;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     public enum EncodeState
@@ -403,6 +382,7 @@ unaware of such a facility.
         None,
         Encoded,
         Decoded,
+        Decoding,
         Identity,
         SkipXRef,
         SkipMetadata,

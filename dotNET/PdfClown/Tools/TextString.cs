@@ -55,11 +55,11 @@ namespace PdfClown.Tools
             return textString;
         }
 
-        private List<TextChar> textChars = new List<TextChar>();
-        private Quad? quad = null;
-        private string text = null;
+        private List<TextChar> textChars = new();
+        private Quad? quad;
+        private string text;
 
-        public Quad? Quad
+        public Quad Quad
         {
             get
             {
@@ -70,10 +70,10 @@ namespace PdfClown.Tools
                         if (!quad.HasValue)
                         { quad = textChar.Quad; }
                         else
-                        { quad = Util.Math.Geom.Quad.Union(quad.Value, textChar.Quad); }
+                        { quad = Quad.Union(quad.Value, textChar.Quad); }
                     }
                 }
-                return quad;
+                return quad.Value;
             }
         }
 
@@ -83,9 +83,11 @@ namespace PdfClown.Tools
             {
                 if (text == null)
                 {
-                    StringBuilder textBuilder = new StringBuilder();
-                    foreach (TextChar textChar in textChars)
-                    { textBuilder.Append(textChar); }
+                    var textBuilder = new StringBuilder();
+                    foreach (var textChar in textChars)
+                    {
+                        textBuilder.Append(textChar.Value);
+                    }
                     text = textBuilder.ToString();
                 }
                 return text;

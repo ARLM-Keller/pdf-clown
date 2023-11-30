@@ -36,27 +36,18 @@ namespace PdfClown.Documents.Interaction.Actions
       to a specified URL (Uniform Resource Locator)' action [PDF:1.6:8.6.4].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class SubmitForm
-      : Action
+    public sealed class SubmitForm : Action
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public SubmitForm(
-          Document context
-          ) : base(context, PdfName.SubmitForm)
+        public SubmitForm(Document context)
+            : base(context, PdfName.SubmitForm)
         { }
 
-        internal SubmitForm(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal SubmitForm(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #endregion
-        #endregion
     }
 }

@@ -32,15 +32,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
         {
             switch (gsubData.Language)
             {
-                case Language.beng:
-                case Language.bng2:
+                case Language.BENGALI:
                     return new GsubWorkerForBengali(cmapLookup, gsubData);
+                case Language.LATIN:
+                    return new GsubWorkerForLatin(cmapLookup, gsubData);
                 default:
-                    throw new NotSupportedException(
-                            "The language " + gsubData.Language + " is not yet supported");
+                    return new DefaultGsubWorker();
+
             }
-
         }
-
     }
 }

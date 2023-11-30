@@ -62,9 +62,7 @@ namespace PdfClown.Documents.Contents.Layers
             codes[IntentEnum.All] = PdfName.All;
         }
 
-        public static IntentEnum Get(
-          PdfName name
-          )
+        public static IntentEnum Get(PdfName name)
         {
             if (name == null)
                 return IntentEnum.View;
@@ -76,9 +74,6 @@ namespace PdfClown.Documents.Contents.Layers
             return intent.Value;
         }
 
-        public static PdfName Name(
-          this IntentEnum intent
-          )
-        { return codes[intent]; }
+        public static PdfName Name(this IntentEnum intent) => codes[intent];
     }
 }

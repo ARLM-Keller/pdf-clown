@@ -43,11 +43,11 @@ namespace PdfClown.Bytes.Filters
         /// <summary>
         /// Encodes the specified data.
         /// </summary>
-        public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (data == null)
                 throw new ArgumentNullException("data");
-            var dataBuffer = data.GetBuffer();
+            var dataBuffer = data.AsMemory().Span;
             var length = dataBuffer.Length;
             byte[] bytes = new byte[2 * length];
             for (int i = 0, j = 0; i < length; i++)
@@ -62,11 +62,11 @@ namespace PdfClown.Bytes.Filters
         /// <summary>
         /// Decodes the specified data.
         /// </summary>
-        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (data == null)
                 throw new ArgumentNullException("data");
-            var dataBuffer = data.GetBuffer();
+            var dataBuffer = data.AsMemory().Span;
             var length = dataBuffer.Length;
             dataBuffer = RemoveWhiteSpace(dataBuffer, 0, length);
             int count = dataBuffer.Length;
@@ -76,10 +76,11 @@ namespace PdfClown.Bytes.Filters
                 --count;
             if (count % 2 == 1)
             {
-                count++;
-                byte[] temp = dataBuffer;
-                dataBuffer = new byte[count];
-                temp.CopyTo(dataBuffer, 0);
+                --count;
+                //count++;
+                //var temp = dataBuffer;
+                //dataBuffer = new byte[count];
+                //temp.CopyTo(dataBuffer);
             }
             count >>= 1;
             byte[] bytes = new byte[count];
@@ -101,7 +102,7 @@ namespace PdfClown.Bytes.Filters
         /// <summary>
         /// Removes all white spaces from the data. The function assumes that the bytes are characters.
         /// </summary>
-        protected byte[] RemoveWhiteSpace(byte[] data, int offset, int length)
+        protected Span<byte> RemoveWhiteSpace(Span<byte> data, int offset, int length)
         {
             int j = 0;
             for (int i = offset; i < length; i++, j++)
@@ -125,10 +126,7 @@ namespace PdfClown.Bytes.Filters
             }
             if (j < length)
             {
-                byte[] temp = data;
-                data = new byte[j];
-                for (int idx = 0; idx < j; idx++)
-                    data[idx] = temp[idx];
+                return data.Slice(0, j + 1);
             }
             return data;
         }

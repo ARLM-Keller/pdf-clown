@@ -37,20 +37,12 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF12)]
     public sealed class MarkedContent : ContainerObject
     {
-        #region static
-        #region fields
         public static readonly string EndOperatorKeyword = EndMarkedContent.OperatorKeyword;
 
         private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private BeginMarkedContent header;
-        #endregion
 
-        #region constructors
         public MarkedContent(BeginMarkedContent header)
             : this(header, new List<ContentObject>())
         { }
@@ -58,10 +50,7 @@ namespace PdfClown.Documents.Contents.Objects
         public MarkedContent(BeginMarkedContent header, IList<ContentObject> objects)
             : base(objects)
         { this.header = header; }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets information about this marked-content sequence.</summary>
         */
@@ -84,8 +73,5 @@ namespace PdfClown.Documents.Contents.Objects
         {
             base.Scan(state);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

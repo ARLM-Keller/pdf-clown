@@ -37,23 +37,14 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetLineDash : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "d";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetLineDash(LineDash lineDash) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
         { Value = lineDash; }
 
         public SetLineDash(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         { state.LineDash = Value; }
 
@@ -65,7 +56,7 @@ namespace PdfClown.Documents.Contents.Objects
                 operands.Clear();
                 // 1. Dash array.
                 var dashArray = value.DashArray;
-                PdfArray baseDashArray = new PdfArray(dashArray.Length);
+                var baseDashArray = new PdfArray(dashArray.Length);
                 foreach (double dashItem in dashArray)
                 { baseDashArray.Add(PdfReal.Get(dashItem)); }
                 operands.Add(baseDashArray);
@@ -73,8 +64,5 @@ namespace PdfClown.Documents.Contents.Objects
                 operands.Add(PdfReal.Get(value.DashPhase));
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

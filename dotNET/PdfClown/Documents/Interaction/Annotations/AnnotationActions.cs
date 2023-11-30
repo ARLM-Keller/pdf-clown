@@ -39,21 +39,14 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF12)]
     public abstract class AnnotationActions : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, Action>
     {
-        #region dynamic
-        #region fields
         private Annotation parent;
-        #endregion
 
-        #region constructors
         public AnnotationActions(Annotation parent) : base(parent.Document, new PdfDictionary())
         { this.parent = parent; }
 
         public AnnotationActions(Annotation parent, PdfDirectObject baseObject) : base(baseObject)
         { this.parent = parent; }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new system::NotImplementedException(); } // TODO: verify parent reference.
 
@@ -142,9 +135,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => this[PdfName.PV] = value;
         }
 
-        #region IDictionary
-        public void Add(PdfName key, Action value)
-        { BaseDataObject.Add(key, value.BaseObject); }
+        public void Add(PdfName key, Action value) => BaseDataObject.Add(key, value.BaseObject);
 
         public bool ContainsKey(PdfName key)
         {
@@ -198,9 +189,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        #region ICollection
-        void ICollection<KeyValuePair<PdfName, Action>>.Add(KeyValuePair<PdfName, Action> entry)
-        { Add(entry.Key, entry.Value); }
+        void ICollection<KeyValuePair<PdfName, Action>>.Add(KeyValuePair<PdfName, Action> entry) => Add(entry.Key, entry.Value);
 
         public void Clear()
         {
@@ -209,7 +198,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         bool ICollection<KeyValuePair<PdfName, Action>>.Contains(KeyValuePair<PdfName, Action> entry)
-        { return entry.Value.BaseObject.Equals(BaseDataObject[entry.Key]); }
+            => entry.Value.BaseObject.Equals(BaseDataObject[entry.Key]);
 
         public void CopyTo(KeyValuePair<PdfName, Action>[] entries, int index)
         { throw new system::NotImplementedException(); }
@@ -221,31 +210,14 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Annotation Parent { get => parent; set => parent = value; }
 
         public bool Remove(KeyValuePair<PdfName, Action> entry)
-        {
-            return BaseDataObject.Remove(
-              new KeyValuePair<PdfName, PdfDirectObject>(
-                entry.Key,
-                entry.Value.BaseObject
-                )
-              );
-        }
+            => BaseDataObject.Remove(new KeyValuePair<PdfName, PdfDirectObject>(entry.Key, entry.Value.BaseObject));
 
-        #region IEnumerable<KeyValuePair<PdfName,Action>>
         IEnumerator<KeyValuePair<PdfName, Action>> IEnumerable<KeyValuePair<PdfName, Action>>.GetEnumerator()
         {
             foreach (PdfName key in Keys)
             { yield return new KeyValuePair<PdfName, Action>(key, this[key]); }
         }
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<KeyValuePair<PdfName, Action>>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<PdfName, Action>>)this).GetEnumerator();
     }
 }

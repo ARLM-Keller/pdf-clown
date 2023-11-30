@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
@@ -36,18 +37,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         protected bool initialized;
 
         /**
-         * The font which contains this table.
-         */
-        protected readonly TrueTypeFont font;
-
-        /**
          * Constructor.
-         * 
-         * @param font The font which contains this table.
          */
-        public TTFTable(TrueTypeFont font)
+        public TTFTable()
         {
-            this.font = font;
         }
 
         /**
@@ -103,7 +96,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public virtual void Read(TrueTypeFont ttf, TTFDataStream data)
+        public virtual void Read(TrueTypeFont ttf, IInputStream data)
         {
         }
     }

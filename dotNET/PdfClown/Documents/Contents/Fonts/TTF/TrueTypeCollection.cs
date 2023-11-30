@@ -17,6 +17,7 @@
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
+    using PdfClown.Bytes;
     using PdfClown.Documents.Interaction.Annotations;
     using System;
     using System.Collections.Generic;
@@ -32,7 +33,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
     public class TrueTypeCollection : IDisposable
     {
         public static readonly string TAG = "ttcf";
-        private readonly TTFDataStream stream;
+        private readonly IInputStream stream;
         private int numFonts;
         private long[] fontOffsets;
         private readonly Dictionary<int, TrueTypeFont> fontCache = new Dictionary<int, TrueTypeFont>();
@@ -44,22 +45,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @ If the font could not be parsed.
          */
         public TrueTypeCollection(FileInfo file)
-        {
-            using (var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                this.stream = new MemoryTTFDataStream(stream);
-            }
-            Initialize();
-        }
-
-        /**
-         * Creates a new TrueTypeCollection from a .ttc input stream.
-         *
-         * @param stream A TTC input stream.
-         * @ If the font could not be parsed.
-         */
-        public TrueTypeCollection(Bytes.Buffer stream)
-            : this(new MemoryTTFDataStream(stream))
+            : this(new ByteStream(new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
         {
         }
 
@@ -69,7 +55,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param stream The TTF file.
          * @ If the font could not be parsed.
          */
-        public TrueTypeCollection(TTFDataStream stream)
+        public TrueTypeCollection(IInputStream stream)
         {
             this.stream = stream;
             Initialize();
@@ -84,18 +70,22 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 throw new IOException("Missing TTC header");
             }
             float version = stream.Read32Fixed();
-            numFonts = (int)stream.ReadUnsignedInt();
+            numFonts = (int)stream.ReadUInt32();
+            if (numFonts <= 0 || numFonts > 1024)
+            {
+                throw new IOException($"Invalid number of fonts {numFonts}");
+            }
             fontOffsets = new long[numFonts];
             for (int i = 0; i < numFonts; i++)
             {
-                fontOffsets[i] = stream.ReadUnsignedInt();
+                fontOffsets[i] = stream.ReadUInt32();
             }
             if (version >= 2)
             {
                 // not used at this time
-                int ulDsigTag = stream.ReadUnsignedShort();
-                int ulDsigLength = stream.ReadUnsignedShort();
-                int ulDsigOffset = stream.ReadUnsignedShort();
+                int ulDsigTag = stream.ReadUInt16();
+                int ulDsigLength = stream.ReadUInt16();
+                int ulDsigOffset = stream.ReadUInt16();
             }
         }
 
@@ -122,14 +112,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 TTFParser parser;
                 if (stream.ReadTag().Equals("OTTO", StringComparison.Ordinal))
                 {
-                    parser = new OTFParser(false, true);
+                    parser = new OTFParser(false);
                 }
                 else
                 {
-                    parser = new TTFParser(false, true);
+                    parser = new TTFParser(false);
                 }
                 stream.Seek(fontOffsets[idx]);
-                font = parser.Parse(new TTCDataStream(stream));
+                font = parser.Parse(stream);
             }
             return font;
         }
@@ -152,7 +142,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 }
             }
             return null;
-        }        
+        }
 
         /**
          * Implement the callback method to call {@link TrueTypeCollection#processAllFonts(TrueTypeFontProcessor)}.

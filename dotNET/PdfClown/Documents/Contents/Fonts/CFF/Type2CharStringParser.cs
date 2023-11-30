@@ -16,8 +16,9 @@
  * limitations under the License.
  */
 
+using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.Type1;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Util.Collections;
 using System;
 using System.Collections.Generic;
 
@@ -28,130 +29,71 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
      * This class represents a converter for a mapping into a Type2-sequence.
      * @author Villu Ruusmann
      */
-    public static class Type2CharStringParser
+    public class Type2CharStringParser
     {
-        public static List<object> Parse(string fontName, int cid, byte[] bytes, byte[][] globalSubrIndex, byte[][] localSubrIndex)
-        {
-            return Parse(fontName, cid.ToString("x4"), bytes, globalSubrIndex, localSubrIndex); // for debugging only
-        }
+        // 1-byte commands
+        private static readonly int CALLSUBR = 10;
+        private static readonly int CALLGSUBR = 29;
 
-        public static List<object> Parse(string fontName, string glyphName, byte[] bytes, byte[][] globalSubrIndex, byte[][] localSubrIndex)
+        private int hstemCount;
+        private int vstemCount;
+        private readonly List<Object> sequence = new List<object>();
+        private readonly string fontName;
+        private string currentGlyph;
+
+        /**
+         * Constructs a new Type1CharStringParser object for a Type 1-equivalent font.
+         *
+         * @param fontName font name
+         */
+        public Type2CharStringParser(string fontName)
         {
-            return Parse(bytes, globalSubrIndex, localSubrIndex);
+            this.fontName = fontName;
         }
 
         /**
-		 * The given byte array will be parsed and converted to a Type2 sequence.
-		 * @param bytes the given mapping as byte array
-		 * @param globalSubrIndex array containing all global subroutines
-		 * @param localSubrIndex array containing all local subroutines
-		 * 
-		 * @return the Type2 sequence
-		 * @throws IOException if an error occurs during reading
-		 */
-        public static List<object> Parse(byte[] bytes, byte[][] globalSubrIndex, byte[][] localSubrIndex)
+         * The given byte array will be parsed and converted to a Type2 sequence.
+         * 
+         * @param bytes the given mapping as byte array
+         * @param globalSubrIndex array containing all global subroutines
+         * @param localSubrIndex array containing all local subroutines
+         * 
+         * @return the Type2 sequence
+         * @throws IOException if an error occurs during reading
+         */
+        public List<Object> Parse(Memory<byte> bytes, Memory<byte>[] globalSubrIndex, Memory<byte>[] localSubrIndex, string glyphName)
         {
-            int hstemCount = 0;
-            int vstemCount = 0;
-            List<object> sequence = null;
-            return Parse(bytes, globalSubrIndex, localSubrIndex, true, ref hstemCount, ref vstemCount, ref sequence);
+            // reset values if the parser is used multiple times
+            hstemCount = 0;
+            vstemCount = 0;
+            // create a new list as it is used as return value
+            sequence.Clear();
+            currentGlyph = glyphName;
+            return ParseSequence(bytes, globalSubrIndex, localSubrIndex);
         }
 
-        private static List<object> Parse(byte[] bytes, byte[][] globalSubrIndex, byte[][] localSubrIndex, bool init, ref int hstemCount, ref int vstemCount, ref List<object> sequence)
+        private List<Object> ParseSequence(Memory<byte> bytes, Memory<byte>[] globalSubrIndex, Memory<byte>[] localSubrIndex)
         {
-            if (init)
-            {
-                hstemCount = 0;
-                vstemCount = 0;
-                sequence = new List<object>();
-            }
-            DataInput input = new DataInput(bytes);
+            var input = new ByteStream(bytes);
             bool localSubroutineIndexProvided = localSubrIndex != null && localSubrIndex.Length > 0;
             bool globalSubroutineIndexProvided = globalSubrIndex != null && globalSubrIndex.Length > 0;
 
             while (input.HasRemaining())
             {
-                var b0 = input.ReadUnsignedByte();
-                if (b0 == 10 && localSubroutineIndexProvided)
-                { // process subr command
-                    var removed = sequence.RemoveAtValue(sequence.Count - 1);
-                    int operand = Convert.ToInt32(removed);
-                    //get subrbias
-                    int bias = 0;
-                    int nSubrs = localSubrIndex.Length;
-
-                    if (nSubrs < 1240)
-                    {
-                        bias = 107;
-                    }
-                    else if (nSubrs < 33900)
-                    {
-                        bias = 1131;
-                    }
-                    else
-                    {
-                        bias = 32768;
-                    }
-                    int subrNumber = bias + operand;
-                    if (subrNumber < localSubrIndex.Length)
-                    {
-                        byte[] subrBytes = localSubrIndex[subrNumber];
-                        Parse(subrBytes, globalSubrIndex, localSubrIndex, false, ref hstemCount, ref vstemCount, ref sequence);
-                        object lastItem = sequence[sequence.Count - 1];
-                        if (lastItem is CharStringCommand && ((CharStringCommand)lastItem).Key.Data[0] == 11)
-                        {
-                            sequence.RemoveAt(sequence.Count - 1); // remove "return" command
-                        }
-                    }
-
-                }
-                else if (b0 == 29 && globalSubroutineIndexProvided)
-                { // process globalsubr command
-                    var removed = sequence.RemoveAtValue(sequence.Count - 1);
-                    int operand = Convert.ToInt32(removed);
-                    //get subrbias
-                    int bias;
-                    int nSubrs = globalSubrIndex.Length;
-
-                    if (nSubrs < 1240)
-                    {
-                        bias = 107;
-                    }
-                    else if (nSubrs < 33900)
-                    {
-                        bias = 1131;
-                    }
-                    else
-                    {
-                        bias = 32768;
-                    }
-
-                    int subrNumber = bias + operand;
-                    if (subrNumber < globalSubrIndex.Length)
-                    {
-                        byte[] subrBytes = globalSubrIndex[subrNumber];
-                        Parse(subrBytes, globalSubrIndex, localSubrIndex, false, ref hstemCount, ref vstemCount, ref sequence);
-                        object lastItem = sequence[sequence.Count - 1];
-                        if (lastItem is CharStringCommand && ((CharStringCommand)lastItem).Key.Data[0] == 11)
-                        {
-                            sequence.RemoveAt(sequence.Count - 1); // remove "return" command
-                        }
-                    }
-
-                }
-                else if (b0 >= 0 && b0 <= 27)
+                var b0 = input.ReadUByte();
+                if (b0 == CALLSUBR && localSubroutineIndexProvided)
                 {
-                    sequence.Add(ReadCommand(b0, input, ref hstemCount, ref vstemCount, sequence));
+                    ProcessCallSubr(globalSubrIndex, localSubrIndex);
                 }
-                else if (b0 == 28)
+                else if (b0 == CALLGSUBR && globalSubroutineIndexProvided)
                 {
-                    sequence.Add(ReadNumber(b0, input));
+                    ProcessCallGSubr(globalSubrIndex, localSubrIndex);
                 }
-                else if (b0 >= 29 && b0 <= 31)
+                else if ((b0 >= 0 && b0 <= 27) || (b0 >= 29 && b0 <= 31))
                 {
-                    sequence.Add(ReadCommand(b0, input, ref hstemCount, ref vstemCount, sequence));
+                    sequence.Add(ReadCommand(b0, input));
                 }
-                else if (b0 >= 32 && b0 <= 255)
+                else if (b0 == 28 || (b0 >= 32 && b0 <= 255))
                 {
                     sequence.Add(ReadNumber(b0, input));
                 }
@@ -163,43 +105,94 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return sequence;
         }
 
-        private static CharStringCommand ReadCommand(byte b0, DataInput input, ref int hstemCount, ref int vstemCount, List<object> sequence)
+        private void ProcessCallSubr(Memory<byte>[] globalSubrIndex, Memory<byte>[] localSubrIndex)
         {
+            int subrNumber = CalculateSubrNumber((int)(float)sequence.RemoveAtValue(sequence.Count - 1),
+                    localSubrIndex.Length);
+            if (subrNumber < localSubrIndex.Length)
+            {
+                var subrBytes = localSubrIndex[subrNumber];
+                ParseSequence(subrBytes, globalSubrIndex, localSubrIndex);
+                var lastItem = sequence[sequence.Count - 1];
+                if (lastItem is CharStringCommand
+                            && Type2KeyWord.RET == ((CharStringCommand)lastItem).Type2KeyWord)
+                {
+                    // RemoveAt "return" command
+                    sequence.RemoveAt(sequence.Count - 1);
+                }
+            }
+        }
+
+        private void ProcessCallGSubr(Memory<byte>[] globalSubrIndex, Memory<byte>[] localSubrIndex)
+        {
+            int subrNumber = CalculateSubrNumber((int)(float)sequence.RemoveAtValue(sequence.Count - 1),
+                    globalSubrIndex.Length);
+            if (subrNumber < globalSubrIndex.Length)
+            {
+                var subrBytes = globalSubrIndex[subrNumber];
+                ParseSequence(subrBytes, globalSubrIndex, localSubrIndex);
+                var lastItem = sequence[sequence.Count - 1];
+                if (lastItem is CharStringCommand
+                            && Type2KeyWord.RET == ((CharStringCommand)lastItem).Type2KeyWord)
+                {
+                    // RemoveAt "return" command
+                    sequence.RemoveAt(sequence.Count - 1);
+                }
+            }
+        }
+
+        private int CalculateSubrNumber(int operand, int subrIndexlength)
+        {
+            if (subrIndexlength < 1240)
+            {
+                return 107 + operand;
+            }
+            if (subrIndexlength < 33900)
+            {
+                return 1131 + operand;
+            }
+            return 32768 + operand;
+        }
+
+        private CharStringCommand ReadCommand(byte b0, IInputStream input)
+        {
+
             if (b0 == 1 || b0 == 18)
             {
-                hstemCount += PeekNumbers(sequence).Count / 2;
+                hstemCount += CountNumbers() / 2;
             }
             else if (b0 == 3 || b0 == 19 || b0 == 20 || b0 == 23)
             {
-                vstemCount += PeekNumbers(sequence).Count / 2;
+                vstemCount += CountNumbers() / 2;
             } // End if
 
             if (b0 == 12)
             {
-                var b1 = input.ReadUnsignedByte();
+                var b1 = input.ReadUByte();
 
-                return new CharStringCommand(b0, b1);
+                return CharStringCommand.GetInstance(b0, b1);
             }
             else if (b0 == 19 || b0 == 20)
             {
-                byte[] value = new byte[1 + GetMaskLength(hstemCount, vstemCount)];
+                byte[] value = new byte[1 + GetMaskLength()];
                 value[0] = b0;
 
                 for (int i = 1; i < value.Length; i++)
                 {
-                    value[i] = input.ReadUnsignedByte();
+                    value[i] = input.ReadUByte();
                 }
-                return new CharStringCommand(value);
+
+                return CharStringCommand.GetInstance(value);
             }
 
-            return new CharStringCommand(b0);
+            return CharStringCommand.GetInstance(b0);
         }
 
-        private static float ReadNumber(int b0, DataInput input)
+        private float ReadNumber(int b0, IInputStream input)
         {
             if (b0 == 28)
             {
-                return (int)input.ReadShort();
+                return (int)input.ReadInt16();
             }
             else if (b0 >= 32 && b0 <= 246)
             {
@@ -207,22 +200,22 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
             else if (b0 >= 247 && b0 <= 250)
             {
-                int b1 = input.ReadUnsignedByte();
+                int b1 = input.ReadUByte();
 
                 return (b0 - 247) * 256 + b1 + 108;
             }
             else if (b0 >= 251 && b0 <= 254)
             {
-                int b1 = input.ReadUnsignedByte();
+                int b1 = input.ReadUByte();
 
                 return -(b0 - 251) * 256 - b1 - 108;
             }
             else if (b0 == 255)
             {
-                short value = input.ReadShort();
+                short value = input.ReadInt16();
                 // The lower bytes are representing the digits after the decimal point
-                double fraction = input.ReadUnsignedShort() / 65535d;
-                return value + (float)fraction;
+                float fraction = input.ReadUInt16() / 65535f;
+                return value + fraction;
             }
             else
             {
@@ -230,7 +223,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        private static int GetMaskLength(int hstemCount, int vstemCount)
+        private int GetMaskLength()
         {
             int hintCount = hstemCount + vstemCount;
             int Length = hintCount / 8;
@@ -241,20 +234,23 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return Length;
         }
 
-        private static List<float> PeekNumbers(List<object> sequence)
+        private int CountNumbers()
         {
-            List<float> numbers = new List<float>();
+            int count = 0;
             for (int i = sequence.Count - 1; i > -1; i--)
             {
-                object obj = sequence[i];
-
-                if (!(obj is float))
+                if (!(sequence[i] is float))
                 {
-                    return numbers;
+                    return count;
                 }
-                numbers.Insert(0, (float)obj);
+                count++;
             }
-            return numbers;
+            return count;
+        }
+
+        public override string ToString()
+        {
+            return fontName + ", current glpyh " + currentGlyph;
         }
     }
 }

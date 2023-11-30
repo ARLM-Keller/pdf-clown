@@ -53,7 +53,6 @@ namespace PdfClown.Documents.Contents.Composition
     */
     public sealed class BlockComposer
     {
-        #region types
         private sealed class Row
         {
             /**
@@ -116,8 +115,7 @@ namespace PdfClown.Documents.Contents.Composition
               object lineAlignment,
               double baseLine,
               double fontSize,
-              double scale
-              )
+              double scale)
             {
                 Type = type;
                 Container = container;
@@ -130,9 +128,7 @@ namespace PdfClown.Documents.Contents.Composition
                 Scale = scale;
             }
         }
-        #endregion
 
-        #region dynamic
         /*
           NOTE: In order to provide fine-grained alignment,
           there are 2 postproduction state levels:
@@ -153,7 +149,6 @@ namespace PdfClown.Documents.Contents.Composition
           i.e. they can't be represented inside row's or row object's local state, in order to
           facilitate parameter reuse within the same block.
         */
-        #region fields
         private readonly PrimitiveComposer baseComposer;
         private readonly ContentScanner scanner;
 
@@ -175,18 +170,13 @@ namespace PdfClown.Documents.Contents.Composition
         private LocalGraphicsState container;
 
         private double lastFontSize;
-        #endregion
 
-        #region constructors
         public BlockComposer(PrimitiveComposer baseComposer)
         {
             this.baseComposer = baseComposer;
             this.scanner = baseComposer.Scanner;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the base composer.</summary>
         */
@@ -298,8 +288,7 @@ namespace PdfClown.Documents.Contents.Composition
         /**
           <summary>Ends current paragraph.</summary>
         */
-        public bool ShowBreak()
-        { return ShowBreak(null, null); }
+        public bool ShowBreak() => ShowBreak(null, null);
 
         /**
           <summary>Ends current paragraph, specifying the offset of the next one.</summary>
@@ -307,16 +296,14 @@ namespace PdfClown.Documents.Contents.Composition
           and margin.</remarks>
           <param name="offset">Relative location of the next paragraph.</param>
         */
-        public bool ShowBreak(SKSize offset)
-        { return ShowBreak(offset, null); }
+        public bool ShowBreak(SKSize offset) => ShowBreak(offset, null);
 
         /**
           <summary>Ends current paragraph, specifying the alignment of the next one.</summary>
           <remarks>This functionality allows higher-level features such as paragraph indentation and margin.</remarks>
           <param name="xAlignment">Horizontal alignment.</param>
         */
-        public bool ShowBreak(XAlignmentEnum xAlignment)
-        { return ShowBreak(null, xAlignment); }
+        public bool ShowBreak(XAlignmentEnum xAlignment) => ShowBreak(null, xAlignment);
 
         /**
           <summary>Ends current paragraph, specifying the offset and alignment of the next one.</summary>
@@ -349,10 +336,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="text">Text to show.</param>
           <returns>Last shown character index.</returns>
         */
-        public int ShowText(string text)
-        {
-            return ShowText(text, lineAlignment);
-        }
+        public int ShowText(string text) => ShowText(text, lineAlignment);
 
         /**
           <summary>Shows text.</summary>
@@ -553,9 +537,7 @@ namespace PdfClown.Documents.Contents.Composition
           <summary>Gets the vertical alignment applied to the current content block.</summary>
         */
         public YAlignmentEnum YAlignment => yAlignment;
-        #endregion
 
-        #region private
         /**
           <summary>Adds an object to the current row.</summary>
           <param name="obj">Object to add.</param>
@@ -742,7 +724,7 @@ namespace PdfClown.Documents.Contents.Composition
                       will be declared as styles and their composition will occur as a single pass without such
                       ugly tweakings.
                     */
-                    ShowText showTextOperation = (ShowText)((Text)((LocalGraphicsState)containedGraphics[1]).Objects[1]).Objects[1];
+                    var showTextOperation = (ShowText)((Text)((LocalGraphicsState)containedGraphics[1]).Objects[1]).Objects[1];
                     if (showTextOperation is ShowAdjustedText)
                     {
                         PdfInteger wordSpaceObject = PdfInteger.Get((int)Math.Round(-wordSpace * 1000 * obj.Scale / obj.FontSize));
@@ -812,8 +794,5 @@ namespace PdfClown.Documents.Contents.Composition
 
             return lineAlignment;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

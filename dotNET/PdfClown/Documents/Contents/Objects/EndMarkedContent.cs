@@ -33,16 +33,10 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF12)]
     public sealed class EndMarkedContent : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "EMC";
 
         public static readonly EndMarkedContent Value = new EndMarkedContent();
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         private EndMarkedContent() : base(OperatorKeyword)
         { }
 
@@ -50,7 +44,5 @@ namespace PdfClown.Documents.Contents.Objects
         {
             base.Scan(state);
         }
-        #endregion
-        #endregion
     }
 }

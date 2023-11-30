@@ -38,8 +38,6 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class PaintPath : Operation
     {
-        #region static
-        #region fields
         public const string CloseFillStrokeEvenOddOperatorKeyword = "b*";
         public const string CloseFillStrokeOperatorKeyword = "b";
         public const string CloseStrokeOperatorKeyword = "s";
@@ -90,24 +88,12 @@ namespace PdfClown.Documents.Contents.Objects
           <summary>'Stroke the path' operation.</summary>
         */
         public static readonly PaintPath Stroke = new PaintPath(StrokeOperatorKeyword, false, true, false, null);
-        #endregion
 
-        #region interface
-        #region private
-
-        #endregion
-        #endregion
-        #endregion
-
-        #region dynamic
-        #region fields
         private readonly bool closed;
         private readonly bool filled;
         private readonly WindModeEnum fillMode;
         private readonly bool stroked;
-        #endregion
 
-        #region constructors
         private PaintPath(string @operator, bool closed, bool stroked, bool filled, WindModeEnum? fillMode) : base(@operator)
         {
             this.closed = closed;
@@ -115,10 +101,7 @@ namespace PdfClown.Documents.Contents.Objects
             this.filled = filled;
             this.fillMode = (fillMode.HasValue ? fillMode.Value : WindModeEnum.EvenOdd);
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the filling rule.</summary>
         */
@@ -164,16 +147,12 @@ namespace PdfClown.Documents.Contents.Objects
                     if (stroked)
                     {
                         using (var paint = state.CreateStrokePaint())
-                        { 
+                        {
                             context.DrawPath(pathObject, paint);
                         }
                     }
                 }
             }
         }
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

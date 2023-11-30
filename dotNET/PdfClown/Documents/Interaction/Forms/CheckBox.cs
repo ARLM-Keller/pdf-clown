@@ -36,29 +36,19 @@ namespace PdfClown.Documents.Interaction.Forms
       <summary>Check box field [PDF:1.6:8.6.3].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class CheckBox
-      : ButtonField
+    public sealed class CheckBox : ButtonField
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new checkbox within the given document context.</summary>
         */
-        public CheckBox(
-          string name,
-          Widget widget,
-          bool checked_
-          ) : base(name, widget)
+        public CheckBox(string name, Widget widget, bool checked_)
+            : base(name, widget)
         { Checked = checked_; }
 
-        internal CheckBox(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal CheckBox(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public bool Checked
         {
             get
@@ -104,8 +94,5 @@ namespace PdfClown.Documents.Interaction.Forms
             get => base.Value;
             set => Checked = !(value == null || value.Equals(String.Empty) || value.Equals(PdfName.Off.Value));
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

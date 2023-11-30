@@ -31,7 +31,6 @@ namespace PdfClown.Documents.Contents.Scanner
 
     public abstract class GraphicsObjectWrapper
     {
-        #region static
         internal static GraphicsObjectWrapper Get(ContentScanner scanner)
         {
             var obj = scanner.Current;
@@ -50,21 +49,12 @@ namespace PdfClown.Documents.Contents.Scanner
             else
                 return null;
         }
-        #endregion
 
-        #region dynamic
-        #region fields
         protected SKRect? box;
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the object's bounding box.</summary>
         */
         public virtual SKRect? Box => box;
-        #endregion
-        #endregion
-        #endregion
     }
 }

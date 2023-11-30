@@ -17,6 +17,7 @@
 
 using PdfClown.Files;
 using PdfClown.Objects;
+using System;
 
 namespace PdfClown.Documents.Encryption
 {
@@ -40,7 +41,7 @@ namespace PdfClown.Documents.Encryption
 		 * creates a new crypt filter dictionary from the low level dictionary provided.
 		 * @param d the low level dictionary that will be managed by the newly created object
 		 */
-        internal PdfCryptFilterDictionary(PdfDirectObject baseObject)// Catalog.
+        public PdfCryptFilterDictionary(PdfDirectObject baseObject)// Catalog.
             : base(baseObject)
         { }
 
@@ -57,7 +58,7 @@ namespace PdfClown.Documents.Encryption
          */
         public int Length
         {
-            get => BaseDataObject.GetInt(PdfName.Length, 40);
+            get => BaseDataObject.GetInt(PdfName.Length, 0);
             set => BaseDataObject.SetInt(PdfName.Length, value);
         }
 
@@ -77,8 +78,24 @@ namespace PdfClown.Documents.Encryption
 		*/
         public PdfName CryptFilterMethod
         {
-            get => (PdfName)BaseDataObject.Resolve(PdfName.CFM);
+            get => BaseDataObject.GetName(PdfName.CFM);
             set => BaseDataObject[PdfName.CFM] = value;
+        }
+
+        /**
+        * Will get the EncryptMetaData dictionary info.
+        *
+        * @return true if EncryptMetaData is explicitly set (the default is true)
+        */
+        /**
+         * Set the EncryptMetaData dictionary info.
+         *
+         * @param encryptMetaData true if EncryptMetaData shall be set.
+         */
+        public bool IsEncryptMetaData
+        {
+            get => BaseDataObject.GetBool(PdfName.EncryptMetadata, true);
+            set => BaseDataObject.SetBool(PdfName.EncryptMetadata, value);
         }
 
     }

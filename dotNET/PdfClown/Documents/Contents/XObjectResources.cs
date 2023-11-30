@@ -40,21 +40,12 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF10)]
     public sealed class XObjectResources : ResourceItems<XObject>
     {
-        #region dynamic
-        #region constructors
         public XObjectResources(Document context) : base(context)
         { }
 
         public XObjectResources(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
-        protected override XObject WrapItem(PdfDirectObject baseObject)
-        { return XObject.Wrap(baseObject); }
-        #endregion
-        #endregion
-        #endregion
+        protected override XObject WrapItem(PdfDirectObject baseObject) => XObject.Wrap(baseObject);
     }
 }

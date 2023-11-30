@@ -32,23 +32,16 @@ namespace PdfClown.Tokens
     */
     public class DecodeException : Exception
     {
-        #region dynamic
-        #region fields
         private byte[] bytes;
         private int index;
-        #endregion
 
-        #region constructors
         public DecodeException(byte[] bytes, int index)
             : base(String.Format("Missing character mapping for byte sequence starting with {0:X2} at position {1}", bytes[index], index))
         {
             this.bytes = bytes;
             this.index = index;
         }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the byte array to decode.</summary>
         */
@@ -58,8 +51,5 @@ namespace PdfClown.Tokens
           <summary>Gets the position of the missing sequence in the byte array to decode.</summary>
         */
         public int Index => index;
-        #endregion
-        #endregion
-        #endregion
     }
 }

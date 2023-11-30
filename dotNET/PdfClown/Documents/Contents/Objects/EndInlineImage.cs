@@ -33,19 +33,11 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class EndInlineImage : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "EI";
 
         public static readonly EndInlineImage Value = new EndInlineImage();
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         private EndInlineImage() : base(OperatorKeyword)
         { }
-        #endregion
-        #endregion
     }
 }

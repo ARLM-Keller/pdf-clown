@@ -15,7 +15,6 @@
 
 using PdfClown.Bytes.Filters.Jpx;
 using PdfClown.Objects;
-using PdfClown.Util.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,15 +23,10 @@ namespace PdfClown.Bytes.Filters
 {
     public sealed class JPXFilter : Filter
     {
-        #region dynamic
-        #region constructors
         internal JPXFilter()
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override byte[] Decode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             var imageParams = header;
             //var width = imageParams.Resolve(PdfName.Width) as PdfInteger;
@@ -40,7 +34,7 @@ namespace PdfClown.Bytes.Filters
             var bpp = imageParams[PdfName.BitsPerComponent] as PdfInteger;
             var flag = imageParams[PdfName.ImageMask] as PdfBoolean;
             var jpxImage = new JpxImage();
-            jpxImage.Parse(data.GetBuffer());
+            jpxImage.Parse(data);
 
             var width = jpxImage.width;
             var height = jpxImage.height;
@@ -63,7 +57,7 @@ namespace PdfClown.Bytes.Filters
                     var tileLeft = tileComponents.Left;
                     var tileTop = tileComponents.Top;
 
-                    var src = tileComponents.items;
+                    var src = tileComponents.items.AsSpan();
                     var srcPosition = 0;
                     var dataPosition = (width * tileTop + tileLeft) * componentsCount;
                     var imgRowSize = width * componentsCount;
@@ -71,8 +65,8 @@ namespace PdfClown.Bytes.Filters
 
                     for (var j = 0; j < tileHeight; j++)
                     {
-                        var rowBytes = src.SubArray(srcPosition, srcPosition + tileRowSize);
-                        buffer.Set(rowBytes, dataPosition);
+                        var rowBytes = src.Slice(srcPosition, tileRowSize);
+                        rowBytes.CopyTo(buffer.AsSpan(dataPosition));
                         srcPosition += tileRowSize;
                         dataPosition += imgRowSize;
                     }
@@ -81,15 +75,9 @@ namespace PdfClown.Bytes.Filters
             return buffer;
         }
 
-        public override byte[] Encode(Bytes.Buffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(Bytes.ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             throw new NotSupportedException();
         }
-        #endregion
-
-        #region private
-        #endregion
-        #endregion
-        #endregion
     }
 }

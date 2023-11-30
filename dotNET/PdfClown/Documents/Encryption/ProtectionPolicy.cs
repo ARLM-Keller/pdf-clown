@@ -33,10 +33,11 @@ namespace PdfClown.Documents.Encryption
     public abstract class ProtectionPolicy
     {
 
-        private static readonly int DEFAULT_KEY_LENGTH = 40;
+        private static readonly short DEFAULT_KEY_LENGTH = 40;
 
-        private int encryptionKeyLength = DEFAULT_KEY_LENGTH;
+        private short encryptionKeyLength = DEFAULT_KEY_LENGTH;
 
+        private bool preferAES = false;
         /**
         * Get the length of the secrete key that will be used to encrypt
         * document data.
@@ -51,7 +52,7 @@ namespace PdfClown.Documents.Encryption
          *
          * @param l the length in bits (must be 40, 128 or 256)
          */
-        public int EncryptionKeyLength
+        public short EncryptionKeyLength
         {
             get => encryptionKeyLength;
             set
@@ -64,6 +65,25 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
+        /**
+        * Tell whether AES encryption is preferred when several encryption methods are available for
+        * the chosen key length. The default is false. This setting is only relevant if the key length
+        * is 128 bits.
+        *
+        * @return true if AES encryption is preferred
+        */
+        /**
+         * Set whether AES encryption is preferred when several encryption methods are available for the
+         * chosen key length. The default is false. This setting is only relevant if the key length is
+         * 128 bits.
+         *
+         * @param preferAES
+         */
+        public bool IsPreferAES
+        {
+            get => preferAES;
+            set => preferAES = value;
+        }
 
     }
 }

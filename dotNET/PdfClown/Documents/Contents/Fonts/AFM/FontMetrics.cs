@@ -41,13 +41,13 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
         private string fontVersion;
         private string notice;
         private string encodingScheme;
-        private int mappingScheme;
+        private int mappingScheme = 6;
         private int escChar;
         private string characterSet;
         private int characters;
-        private bool isBaseFont;
+        private bool isBaseFont = true;
         private float[] vVector;
-        private bool isFixedV;
+        private bool? isFixedV;
         private float capHeight;
         private float xHeight;
         private float ascender;
@@ -340,7 +340,7 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
          */
         public bool IsFixedV
         {
-            get => isFixedV;
+            get => isFixedV ?? vVector != null;
             set => isFixedV = value;
         }
 

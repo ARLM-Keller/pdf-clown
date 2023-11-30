@@ -36,8 +36,6 @@ namespace PdfClown.Documents.Files
     [PDF(VersionEnum.PDF11)]
     public sealed class SimpleFileSpecification : FileSpecification
     {
-        #region dynamic
-        #region constructors
         internal SimpleFileSpecification(Document context, string path)
             : base(context, new PdfString(path))
         { }
@@ -45,18 +43,12 @@ namespace PdfClown.Documents.Files
         internal SimpleFileSpecification(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override string Path
         {
             get => (string)((PdfString)BaseDataObject).Value;
             set { }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }
 

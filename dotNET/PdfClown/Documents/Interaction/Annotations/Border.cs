@@ -39,17 +39,12 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF11)]
     public sealed class Border : PdfObjectWrapper<PdfDictionary>, IEquatable<Border>
     {
-
-        #region static
-        #region fields
         private static readonly LineDash DefaultLineDash = new LineDash(new float[] { 3, 1 });
         private static readonly BorderStyleType DefaultStyle = BorderStyleType.Solid;
         private static readonly double DefaultWidth = 1;
 
         private static readonly Dictionary<BorderStyleType, PdfName> StyleEnumCodes;
-        #endregion
 
-        #region constructors
         static Border()
         {
             StyleEnumCodes = new Dictionary<BorderStyleType, PdfName>
@@ -66,10 +61,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         //{
         //    return baseObject?.Wrapper as Border ?? new Border(baseObject);
         //}
-        #endregion
 
-        #region interface
-        #region private
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
@@ -92,12 +84,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             return DefaultStyle;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a non-reusable instance.</summary>
         */
@@ -135,7 +122,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         { }
 
         private Border(Document context, double width, BorderStyleType style, LineDash pattern)
-            : base(context, new PdfDictionary(new PdfName[] { PdfName.Type }, new PdfDirectObject[] { PdfName.Border }))
+            : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Border } })
         {
             Width = width;
             Style = style;
@@ -144,10 +131,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public Border(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the dash pattern used in case of dashed border.</summary>
         */
@@ -185,12 +169,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public double Width
         {
-            get
-            {
-                IPdfNumber widthObject = (IPdfNumber)BaseDataObject[PdfName.W];
-                return widthObject != null ? widthObject.RawValue : DefaultWidth;
-            }
-            set => BaseDataObject[PdfName.W] = PdfReal.Get(value);
+            get => BaseDataObject.GetDouble(PdfName.W, DefaultWidth);
+            set => BaseDataObject.SetDouble(PdfName.W, value);
         }
 
         public void Apply(SKPaint paint, BorderEffect borderEffect)
@@ -213,9 +193,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                 && Style == other.Style
                 && Pattern.Equals(other.Pattern);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     /**

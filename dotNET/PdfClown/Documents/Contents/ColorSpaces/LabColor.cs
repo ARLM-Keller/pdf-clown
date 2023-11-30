@@ -36,35 +36,30 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class LabColor : LeveledColor
     {
-        #region dynamic
-        #region constructors
         /*
           TODO:colors MUST be instantiated only indirectly by the ColorSpace.getColor method!
           This method MUST be made internal and its color space MUST be passed as argument!
         */
         public LabColor(double l, double a, double b) : this(
-            new PdfArray(
+            new PdfArray(3)
+            {
                   PdfReal.Get(NormalizeComponent(l)),//TODO:normalize using the actual color space ranges!!!
                   PdfReal.Get(NormalizeComponent(a)),
                   PdfReal.Get(NormalizeComponent(b))
-            )
-          )
+            })
         { }
 
         internal LabColor(IList<PdfDirectObject> components)//TODO:colorspace?
             : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the first component (L*).</summary>
         */
         public float L
         {
-            get => GetComponentValue(0);
-            set => SetComponentValue(0, value);
+            get => this[0];
+            set => this[0] = value;
         }
 
         /**
@@ -72,8 +67,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public float A
         {
-            get => GetComponentValue(1);
-            set => SetComponentValue(1, value);
+            get => this[1];
+            set => this[1] = value;
         }
 
         /**
@@ -81,8 +76,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public float B
         {
-            get => GetComponentValue(2);
-            set => SetComponentValue(2, value);
+            get => this[2];
+            set => this[2] = value;
         }
 
         public override object Clone(Document context)
@@ -90,8 +85,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             throw new NotImplementedException();
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

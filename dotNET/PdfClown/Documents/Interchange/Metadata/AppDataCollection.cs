@@ -37,22 +37,14 @@ namespace PdfClown.Documents.Interchange.Metadata
     [PDF(VersionEnum.PDF13)]
     public sealed class AppDataCollection : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, AppData>
     {
-        #region static
-        #region interface
         public static AppDataCollection Wrap(PdfDirectObject baseObject, IAppDataHolder holder)
         { return baseObject != null ? (baseObject.Wrapper as AppDataCollection ?? new AppDataCollection(baseObject, holder)) : null; }
-        #endregion
-        #endregion
 
-        #region dynamic
         private IAppDataHolder holder;
 
-        #region constructors
         internal AppDataCollection(PdfDirectObject baseObject, IAppDataHolder holder) : base(baseObject)
         { this.holder = holder; }
-        #endregion
 
-        #region interface
         public AppData Ensure(PdfName key)
         {
             AppData appData = this[key];
@@ -64,20 +56,16 @@ namespace PdfClown.Documents.Interchange.Metadata
             return appData;
         }
 
-        #region IDictionary
         public void Add(PdfName key, AppData value)
         { throw new NotSupportedException(); }
 
-        public void Clear()
-        { BaseDataObject.Clear(); }
+        public void Clear() => BaseDataObject.Clear();
 
-        public bool ContainsKey(PdfName key)
-        { return BaseDataObject.ContainsKey(key); }
+        public bool ContainsKey(PdfName key) => BaseDataObject.ContainsKey(key);
 
         public ICollection<PdfName> Keys => BaseDataObject.Keys;
 
-        public bool Remove(PdfName key)
-        { return BaseDataObject.Remove(key); }
+        public bool Remove(PdfName key) => BaseDataObject.Remove(key);
 
         public AppData this[PdfName key]
         {
@@ -85,8 +73,7 @@ namespace PdfClown.Documents.Interchange.Metadata
             set => throw new NotSupportedException();
         }
 
-        public bool TryGetValue(PdfName key, out AppData value)
-        { throw new NotImplementedException(); }
+        public bool TryGetValue(PdfName key, out AppData value) => throw new NotImplementedException();
 
         public ICollection<AppData> Values
         {
@@ -99,15 +86,11 @@ namespace PdfClown.Documents.Interchange.Metadata
             }
         }
 
-        #region ICollection
-        public void Add(KeyValuePair<PdfName, AppData> item)
-        { throw new NotSupportedException(); }
+        public void Add(KeyValuePair<PdfName, AppData> item) => throw new NotSupportedException();
 
-        public bool Contains(KeyValuePair<PdfName, AppData> item)
-        { return item.Value.BaseObject.Equals(BaseDataObject[item.Key]); }
+        public bool Contains(KeyValuePair<PdfName, AppData> item) => item.Value.BaseObject.Equals(BaseDataObject[item.Key]);
 
-        public void CopyTo(KeyValuePair<PdfName, AppData>[] array, int arrayIndex)
-        { throw new NotImplementedException(); }
+        public void CopyTo(KeyValuePair<PdfName, AppData>[] array, int arrayIndex) => throw new NotImplementedException();
 
         public int Count => BaseDataObject.Count;
 
@@ -121,22 +104,13 @@ namespace PdfClown.Documents.Interchange.Metadata
                 return false;
         }
 
-        #region IEnumerable<KeyValuePair<PdfName,AppData>>
         public IEnumerator<KeyValuePair<PdfName, AppData>> GetEnumerator()
         {
             foreach (PdfName key in Keys)
             { yield return new KeyValuePair<PdfName, AppData>(key, this[key]); }
         }
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<KeyValuePair<PdfName, AppData>>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
 

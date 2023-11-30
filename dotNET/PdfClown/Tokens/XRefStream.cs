@@ -42,8 +42,6 @@ namespace PdfClown.Tokens
     */
     public sealed class XRefStream : PdfStream, IDictionary<int, XRefEntry>
     {
-        #region static
-        #region fields
         private const int FreeEntryType = 0;
         private const int InUseEntryType = 1;
         private const int InUseCompressedEntryType = 2;
@@ -52,10 +50,7 @@ namespace PdfClown.Tokens
 
         private static readonly int EntryField0Size = 1;
         private static readonly int EntryField2Size = GetFieldSize(XRefEntry.GenerationUnreusable);
-        #endregion
 
-        #region interface
-        #region private
         /**
           <summary>Gets the number of bytes needed to store the specified value.</summary>
           <param name="maxValue">Maximum storable value.</param>
@@ -63,25 +58,11 @@ namespace PdfClown.Tokens
         private static int GetFieldSize(int maxValue)
         { return (int)Math.Ceiling(Math.Log(maxValue) / ByteBaseLog); }
 
-        /**
-          <summary>Converts the specified value into a customly-sized big-endian byte array.</summary>
-          <param name="value">Value to convert.</param>
-          <param name="length">Byte array's length.</param>
-         */
-        private static byte[] NumberToByteArray(int value, int length)
-        { return ConvertUtils.NumberToByteArray(value, length, ByteOrderEnum.BigEndian); }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private SortedDictionary<int, XRefEntry> entries;
-        #endregion
 
-        #region constructors
         public XRefStream(File file)
-            : this(new PdfDictionary(new PdfName[] { PdfName.Type }, new PdfDirectObject[] { PdfName.XRef }), new Bytes.Buffer())
+            : this(new PdfDictionary() { { PdfName.Type, PdfName.XRef } }, new ByteStream())
         {
             PdfDictionary header = Header;
             foreach (var entry in file.Trailer)
@@ -94,13 +75,10 @@ namespace PdfClown.Tokens
             }
         }
 
-        public XRefStream(PdfDictionary header, IBuffer body)
+        public XRefStream(PdfDictionary header, IByteStream body)
             : base(header, body)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
@@ -111,11 +89,7 @@ namespace PdfClown.Tokens
         */
         public int LinkedStreamOffset
         {
-            get
-            {
-                PdfInteger linkedStreamOffsetObject = (PdfInteger)Header[PdfName.Prev];
-                return (linkedStreamOffsetObject != null ? (int)linkedStreamOffsetObject.Value : -1);
-            }
+            get => Header.GetInt(PdfName.Prev, -1);
         }
 
         public override void WriteTo(IOutputStream stream, File context)
@@ -126,7 +100,6 @@ namespace PdfClown.Tokens
             base.WriteTo(stream, context);
         }
 
-        #region IDictionary
         public void Add(int key, XRefEntry value)
         {
             Entries.Add(key, value);
@@ -166,7 +139,6 @@ namespace PdfClown.Tokens
 
         public ICollection<XRefEntry> Values => Entries.Values;
 
-        #region ICollection
         void ICollection<KeyValuePair<int, XRefEntry>>.Add(KeyValuePair<int, XRefEntry> entry)
         {
             Add(entry.Key, entry.Value);
@@ -204,24 +176,16 @@ namespace PdfClown.Tokens
                 return false;
         }
 
-        #region IEnumerable<KeyValuePair<int,XRefEntry>>
         IEnumerator<KeyValuePair<int, XRefEntry>> IEnumerable<KeyValuePair<int, XRefEntry>>.GetEnumerator()
         {
             return Entries.GetEnumerator();
         }
 
-        #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable<KeyValuePair<int, XRefEntry>>)this).GetEnumerator();
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
 
-        #region private
         private SortedDictionary<int, XRefEntry> Entries
         {
             get
@@ -230,7 +194,7 @@ namespace PdfClown.Tokens
                 {
                     entries = new SortedDictionary<int, XRefEntry>();
 
-                    IBuffer body = Body;
+                    IByteStream body = Body;
                     if (body.Length > 0)
                     {
                         PdfDictionary header = Header;
@@ -321,7 +285,7 @@ namespace PdfClown.Tokens
               };
             {
                 // Get the stream buffer!
-                IBuffer body = Body;
+                IByteStream body = Body;
 
                 // Delete the old entries!
                 body.SetLength(0);
@@ -334,7 +298,7 @@ namespace PdfClown.Tokens
                     if (entryNumber - prevObjectNumber != 1) // Current subsection terminated.
                     {
                         if (indexArray.Count > 0)
-                        { indexArray.Add(PdfInteger.Get(prevObjectNumber - ((PdfInteger)indexArray[indexArray.Count - 1]).IntValue + 1)); } // Number of entries in the previous subsection.
+                        { indexArray.Add(PdfInteger.Get(prevObjectNumber - indexArray.GetInt(indexArray.Count - 1) + 1)); } // Number of entries in the previous subsection.
                         indexArray.Add(PdfInteger.Get(entryNumber)); // First object number in the next subsection.
                     }
                     prevObjectNumber = entryNumber;
@@ -342,25 +306,25 @@ namespace PdfClown.Tokens
                     switch (entry.Usage)
                     {
                         case XRefEntry.UsageEnum.Free:
-                            body.Append((byte)FreeEntryType);
-                            body.Append(NumberToByteArray(entry.Offset, entryFieldSizes[1]));
-                            body.Append(NumberToByteArray(entry.Generation, entryFieldSizes[2]));
+                            body.WriteByte(FreeEntryType);
+                            body.Write(entry.Offset, entryFieldSizes[1]);
+                            body.Write(entry.Generation, entryFieldSizes[2]);
                             break;
                         case XRefEntry.UsageEnum.InUse:
-                            body.Append((byte)InUseEntryType);
-                            body.Append(NumberToByteArray(entry.Offset, entryFieldSizes[1]));
-                            body.Append(NumberToByteArray(entry.Generation, entryFieldSizes[2]));
+                            body.WriteByte(InUseEntryType);
+                            body.Write(entry.Offset, entryFieldSizes[1]);
+                            body.Write(entry.Generation, entryFieldSizes[2]);
                             break;
                         case XRefEntry.UsageEnum.InUseCompressed:
-                            body.Append((byte)InUseCompressedEntryType);
-                            body.Append(NumberToByteArray(entry.StreamNumber, entryFieldSizes[1]));
-                            body.Append(NumberToByteArray(entry.Offset, entryFieldSizes[2]));
+                            body.WriteByte(InUseCompressedEntryType);
+                            body.Write(entry.StreamNumber, entryFieldSizes[1]);
+                            body.Write(entry.Offset, entryFieldSizes[2]);
                             break;
                         default:
                             throw new NotSupportedException();
                     }
                 }
-                indexArray.Add(PdfInteger.Get(prevObjectNumber - ((PdfInteger)indexArray[indexArray.Count - 1]).IntValue + 1)); // Number of entries in the previous subsection.
+                indexArray.Add(PdfInteger.Get(prevObjectNumber - indexArray.GetInt(indexArray.Count - 1) + 1)); // Number of entries in the previous subsection.
             }
 
             // 2. Header.
@@ -368,15 +332,13 @@ namespace PdfClown.Tokens
                 PdfDictionary header = Header;
                 header[PdfName.Index] = indexArray;
                 header[PdfName.Size] = PdfInteger.Get(File.IndirectObjects.Count + 1);
-                header[PdfName.W] = new PdfArray(
+                header[PdfName.W] = new PdfArray(3)
+                {
                   PdfInteger.Get(entryFieldSizes[0]),
                   PdfInteger.Get(entryFieldSizes[1]),
                   PdfInteger.Get(entryFieldSizes[2])
-                  );
+                };
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

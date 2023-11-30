@@ -43,7 +43,6 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public sealed class SoftwareIdentifier : PdfObjectWrapper<PdfDictionary>
     {
-        #region types
         /**
           <summary>Software version number [PDF:1.7:9.1.6].</summary>
         */
@@ -67,8 +66,8 @@ namespace PdfClown.Documents.Multimedia
                 get
                 {
                     IList<int> numbers = new List<int>();
-                    foreach (PdfDirectObject numberObject in BaseDataObject)
-                    { numbers.Add(((PdfInteger)numberObject).IntValue); }
+                    foreach (IPdfNumber numberObject in BaseDataObject)
+                    { numbers.Add(numberObject.IntValue); }
                     return numbers;
                 }
             }
@@ -76,19 +75,13 @@ namespace PdfClown.Documents.Multimedia
             public override string ToString()
             { return VersionUtils.ToString(this); }
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SoftwareIdentifier(Document context) : base(context, new PdfDictionary())
         { }
 
         public SoftwareIdentifier(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the operating system identifiers that indicate which operating systems this
           object applies to.</summary>
@@ -138,17 +131,13 @@ namespace PdfClown.Documents.Multimedia
             {
                 PdfDictionary baseDataObject = BaseDataObject;
                 return new Interval<VersionObject>(
-                  new VersionObject((PdfArray)baseDataObject[PdfName.L]),
-                  new VersionObject((PdfArray)baseDataObject[PdfName.H]),
-                  (bool)PdfBoolean.GetValue(baseDataObject[PdfName.LI], true),
-                  (bool)PdfBoolean.GetValue(baseDataObject[PdfName.HI], true)
-                  );
+                  new VersionObject(baseDataObject.GetArray(PdfName.L)),
+                  new VersionObject(baseDataObject.GetArray(PdfName.H)),
+                  baseDataObject.GetBool(PdfName.LI, true),
+                  baseDataObject.GetBool(PdfName.HI, true));
             }
         }
 
         //TODO:setters!!!
-        #endregion
-        #endregion
-        #endregion
     }
 }

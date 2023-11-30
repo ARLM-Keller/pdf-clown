@@ -37,16 +37,12 @@ namespace PdfClown.Documents.Interchange.Metadata
     [PDF(VersionEnum.PDF13)]
     public class AppData : PdfObjectWrapper<PdfDictionary>
     {
-        #region dynamic
-        #region constructors
         internal AppData(Document context) : base(context, new PdfDictionary())
         { }
 
         public AppData(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
         /**
           <summary>Gets/Sets the private data associated to the application.</summary>
           <remarks>It can be any type, although dictionary is its typical form.</remarks>
@@ -66,10 +62,8 @@ namespace PdfClown.Documents.Interchange.Metadata
         */
         public DateTime ModificationDate
         {
-            get => (DateTime)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.LastModified]);
+            get => BaseDataObject.GetDate(PdfName.LastModified) ?? DateTime.MinValue;
             internal set => BaseDataObject[PdfName.LastModified] = new PdfDate(value);
         }
-        #endregion
-        #endregion
     }
 }

@@ -44,15 +44,15 @@ namespace PdfClown.Samples.CLI
         private void Populate(Document document)
         {
             // Initialize a new page!
-            Page page = new Page(document);
+            var page = new Page(document);
             document.Pages.Add(page);
 
             // Initialize the primitive composer (within the new page context)!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
-            composer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Helvetica, true, false), 12);
+            var composer = new PrimitiveComposer(page);
+            composer.SetFont(FontType1.Load(document, FontName.HelveticaBold), 12);
 
             // Initialize the block composer (wrapping the primitive one)!
-            BlockComposer blockComposer = new BlockComposer(composer);
+            var blockComposer = new BlockComposer(composer);
 
             // Initialize the document layer configuration!
             LayerDefinition layerDefinition = document.Layer;

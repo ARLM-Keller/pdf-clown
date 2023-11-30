@@ -48,7 +48,6 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF10)]
     public abstract class Destination : PdfObjectWrapper<PdfArray>, IPdfNamedObjectWrapper
     {
-        #region types
         /**
           <summary>Destination mode [PDF:1.6:8.2.1].</summary>
         */
@@ -143,11 +142,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             */
             FitBoundingBoxVertical
         }
-        #endregion
 
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Wraps a destination base object into a destination object.</summary>
           <param name="baseObject">Destination base object.</param>
@@ -173,12 +168,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             else
                 throw new ArgumentException("Not a valid destination object.", "baseObject");
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new destination within the given document context.</summary>
           <param name="context">Document context.</param>
@@ -189,7 +179,7 @@ namespace PdfClown.Documents.Interaction.Navigation
           <param name="zoom">Magnification factor to use when displaying the page.</param>
         */
         protected Destination(Document context, object page, ModeEnum mode, object location, double? zoom)
-            : base(context, new PdfArray(null, null))
+            : base(context, new PdfArray(2) { null, null })
         {
             Page = page;
             Mode = mode;
@@ -199,10 +189,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         public Destination(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the page location.</summary>
         */
@@ -229,8 +216,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                     case ModeEnum.XYZ:
                         return new SKPoint(
                           BaseDataObject.GetFloat(2, float.NaN),
-                          BaseDataObject.GetFloat(3, float.NaN)
-                          );
+                          BaseDataObject.GetFloat(3, float.NaN));
                     default:
                         return null;
                 }
@@ -349,14 +335,9 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
         }
 
-        #region IPdfNamedObjectWrapper
         public PdfString Name => RetrieveName();
 
         public PdfDirectObject NamedBaseObject => RetrieveNamedBaseObject();
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 
     internal static class ModeEnumExtension

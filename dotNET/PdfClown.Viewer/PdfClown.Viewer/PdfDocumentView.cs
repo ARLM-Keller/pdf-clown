@@ -80,7 +80,7 @@ namespace PdfClown.Viewer
                 var box = page.RotatedBox;
                 var dpi = 1F;
                 var imageSize = new SKSize(box.Width * dpi, box.Height * dpi);
-                var pageView = new PdfPageView()
+                var pageView = new PdfPageView
                 {
                     Document = this,
                     Order = order++,
@@ -136,7 +136,6 @@ namespace PdfClown.Viewer
         {
             if (File != null)
             {
-
                 ClearPages();
                 File.Dispose();
                 File = null;
@@ -145,15 +144,6 @@ namespace PdfClown.Viewer
                 try { System.IO.File.Delete(TempFilePath); }
                 catch { }
             }
-        }
-
-        public void Load(string filePath)
-        {
-            FilePath = filePath;
-            TempFilePath = GetTempPath(filePath);
-            System.IO.File.Copy(filePath, TempFilePath, true);
-            var fileStream = new FileStream(TempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-            Load(fileStream);
         }
 
         private static string GetTempPath(string filePath)
@@ -167,6 +157,15 @@ namespace PdfClown.Viewer
             }
             while (System.IO.File.Exists(tempPath));
             return tempPath;
+        }
+
+        public void Load(string filePath)
+        {
+            FilePath = filePath;
+            TempFilePath = GetTempPath(filePath);
+            System.IO.File.Copy(filePath, TempFilePath, true);
+            var fileStream = new FileStream(TempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            Load(fileStream);
         }
 
         public void Load(Stream stream)
@@ -193,12 +192,30 @@ namespace PdfClown.Viewer
             System.IO.File.Copy(tempPath, path, true);
         }
 
-        public void Save(string path, SerializationModeEnum mode = SerializationModeEnum.Standard)
+        public void Save(string path)
+        {
+            Save(path, GetMode());
+        }
+
+        public void Save(string path, SerializationModeEnum mode)
         {
             File.Save(path, mode);
         }
 
-        public void SaveTo(Stream stream, SerializationModeEnum mode = SerializationModeEnum.Standard)
+        public void SaveTo(Stream stream)
+        {
+            SaveTo(stream, GetMode());
+        }
+
+        private SerializationModeEnum GetMode()
+        {
+            return ((IEnumerable<Field>)Fields).Any(x => x is SignatureField signature
+                                                                && signature.Contents != null)
+                            ? SerializationModeEnum.Incremental
+                            : SerializationModeEnum.Standard;
+        }
+
+        public void SaveTo(Stream stream, SerializationModeEnum mode)
         {
             File.Save(stream, mode);
         }
@@ -234,6 +251,8 @@ namespace PdfClown.Viewer
                 return fields;
             }
         }
+
+        public bool IsClosed => File == null;
 
         public Field AddField(Field field)
         {

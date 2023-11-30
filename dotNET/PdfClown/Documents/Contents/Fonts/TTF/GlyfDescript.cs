@@ -18,7 +18,8 @@
  */
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
+    using PdfClown.Bytes;
+    using System;
     using System.IO;
 
     /**
@@ -66,7 +67,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public static readonly byte Y_DUAL = 0x20;
 
-        private byte[] instructions;
+        private Memory<byte> instructions;
         private readonly int contourCount;
 
         /**
@@ -76,7 +77,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param bais the stream to be read
          * @ is thrown if something went wrong
          */
-        public GlyfDescript(short numberOfContours, TTFDataStream bais)
+        public GlyfDescript(short numberOfContours)
         {
             contourCount = numberOfContours;
         }
@@ -93,7 +94,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * Returns the hinting instructions.
          * @return an array containing the hinting instructions.
          */
-        public virtual byte[] Instructions
+        public virtual Memory<byte> Instructions
         {
             get => instructions;
         }
@@ -108,9 +109,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param count the number of instructions to be read 
          * @ is thrown if something went wrong
          */
-        protected void ReadInstructions(TTFDataStream bais, int count)
+        protected void ReadInstructions(IInputStream bais, int count)
         {
-            instructions = bais.ReadUnsignedByteArray(count);
+            instructions = bais.ReadMemory(count);
         }
 
         /**

@@ -28,11 +28,13 @@ using PdfClown.Documents;
 using PdfClown.Documents.Encryption;
 using PdfClown.Files;
 using PdfClown.Objects;
+using PdfClown.Util;
 using PdfClown.Util.Parsers;
 
 using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace PdfClown.Tokens
@@ -42,7 +44,6 @@ namespace PdfClown.Tokens
     */
     public sealed class FileParser : BaseParser
     {
-        #region types
         public struct Reference
         {
             public readonly int GenerationNumber;
@@ -54,39 +55,27 @@ namespace PdfClown.Tokens
                 this.GenerationNumber = generationNumber;
             }
         }
-        #endregion
 
-        #region static
-        #region fields
-        private static readonly int EOFMarkerChunkSize = 1024; // [PDF:1.6:H.3.18].
-        #endregion
-        #endregion
+       // private static readonly int EOFMarkerChunkSize = 1024; // [PDF:1.6:H.3.18].
 
-        #region dynamic
-        #region fields
         private Files.File file;
         private PdfEncryption encryption;
-        private System.IO.Stream keyStoreInputStream;
+        private Stream keyStoreInputStream;
         private string password;
         private string keyAlias;
-        private SecurityHandler securityHandler;
+        private ISecurityHandler securityHandler;
         private AccessPermission accessPermission;
 
         public string KeyAlias { get => keyAlias; set => keyAlias = value; }
-        #endregion
 
-        #region constructors
-        internal FileParser(IInputStream stream, Files.File file, string password = null, System.IO.Stream keyStoreInputStream = null)
+        internal FileParser(IInputStream stream, Files.File file, string password = null, Stream keyStoreInputStream = null)
             : base(stream)
         {
             this.file = file;
             this.password = password;
             this.keyStoreInputStream = keyStoreInputStream;
         }
-        #endregion
 
-        #region interface
-        #region public
         public override bool MoveNext()
         {
             bool moved = base.MoveNext();
@@ -114,19 +103,20 @@ namespace PdfClown.Tokens
                                 base.MoveNext();
                                 if (TokenType == TokenTypeEnum.Keyword)
                                 {
-                                    if (string.Equals(Token.ToString(), Keyword.Reference, StringComparison.Ordinal))
+                                    var span = CharsToken;
+                                    if (span.Equals(Keyword.Reference, StringComparison.Ordinal))
                                     {
                                         TokenType = TokenTypeEnum.Reference;
                                         Token = new Reference(objectNumber, generationNumber);
                                     }
-                                    else if (string.Equals(Token.ToString(), Keyword.BeginIndirectObject, StringComparison.Ordinal))
+                                    else if (span.Equals(Keyword.BeginIndirectObject, StringComparison.Ordinal))
                                     {
                                         TokenType = TokenTypeEnum.InderectObject;
                                         Token = new Reference(objectNumber, generationNumber);
                                     }
                                 }
                             }
-                            if (!(Token is Reference))
+                            if (Token is not Reference)
                             {
                                 // Rollback!
                                 stream.Seek(baseOffset);
@@ -159,8 +149,8 @@ namespace PdfClown.Tokens
                 int oldOffset = (int)stream.Position;
                 MoveNext();
                 // Is this dictionary the header of a stream object [PDF:1.6:3.2.7]?
-                if ((TokenType == TokenTypeEnum.Keyword)
-                  && string.Equals(Token.ToString(), Keyword.BeginStream, StringComparison.Ordinal))
+                if (TokenType == TokenTypeEnum.Keyword
+                    && CharsToken.Equals(Keyword.BeginStream, StringComparison.Ordinal))
                 {
                     // Keep track of current position!
                     /*
@@ -171,42 +161,72 @@ namespace PdfClown.Tokens
                     // Get the stream length!
                     int length = streamHeader.GetInt(PdfName.Length, 0);
                     // Move to the stream data beginning!
-                    stream.Seek(position); SkipEOL();
-                    if (length <= 0)
-                    {
-                        System.Diagnostics.Debug.Write($"warning: Repair Stream Object missing {PdfName.Length} header parameter");
-                        position = stream.Position;
-                        if (SkipKey(Keyword.EndStream))
-                        {
-                            length = (int)(stream.Position - position);
-                            streamHeader[PdfName.Length] = PdfInteger.Get(length);
-                            stream.Seek(position);
-                        }
-                        else
-                        {
-                            throw new Exception($"Pdf Stream Object missing {Keyword.EndStream} Keyword");
-                        }
-                    }
+                    stream.Seek(position);
+                    SkipEOL();
+                    ValidateLength(streamHeader, stream, ref position, ref length);
                     if (length < 0)
                         length = 0;
                     // Copy the stream data to the instance!
                     byte[] data = new byte[length];
                     stream.Read(data);
-
+                    var bytes = new ByteStream(data);
+                    position = stream.Position;
                     MoveNext(); // Postcondition (last token should be 'endstream' keyword).
-
                     var streamType = streamHeader[PdfName.Type];
                     if (PdfName.ObjStm.Equals(streamType)) // Object stream [PDF:1.6:3.4.6].
-                        return new ObjectStream(streamHeader, new Bytes.Buffer(data));
+                        return new ObjectStream(streamHeader, bytes);
                     else if (PdfName.XRef.Equals(streamType)) // Cross-reference stream [PDF:1.6:3.4.7].
-                        return new XRefStream(streamHeader, new Bytes.Buffer(data));
+                        return new XRefStream(streamHeader, bytes);
                     else // Generic stream.
-                        return new PdfStream(streamHeader, new Bytes.Buffer(data));
+                        return new PdfStream(streamHeader, bytes);
                 }
                 else // Stand-alone dictionary.
-                { stream.Seek(oldOffset); } // Restores postcondition (last token should be the dictionary end).
+                {
+                    // Restores postcondition (last token should be the dictionary end).
+                    stream.Seek(oldOffset);
+                }
             }
             return pdfObject;
+        }
+
+        private void ValidateLength(PdfDictionary streamHeader, IInputStream stream, ref long position, ref int length)
+        {
+            position = stream.Position;
+            if (length <= 0)
+            {
+                length = RepairStreamLength(streamHeader, stream, position);
+            }
+            else
+            {
+                stream.Skip(length);
+                MoveNext(); // Postcondition (last token should be 'endstream' keyword).
+                if (TokenType != TokenTypeEnum.Keyword
+                    || !CharsToken.Equals(Keyword.EndStream, StringComparison.Ordinal))
+                {
+                    stream.Seek(position);
+
+                    length = RepairStreamLength(streamHeader, stream, position);
+                }
+            }
+            stream.Seek(position);
+
+        }
+
+        private int RepairStreamLength(PdfDictionary streamHeader, IInputStream stream, long position)
+        {
+            int length;
+            System.Diagnostics.Debug.Write($"warning: Repair Stream Object missing {PdfName.Length} header parameter");
+            if (SkipKey(Keyword.EndStream))
+            {
+                length = (int)(stream.Position - position);
+                streamHeader[PdfName.Length] = PdfInteger.Get(length);
+            }
+            else
+            {
+                throw new Exception($"Pdf Stream Object missing {Keyword.EndStream} Keyword");
+            }
+
+            return length;
         }
 
         /**
@@ -217,12 +237,16 @@ namespace PdfClown.Tokens
         {
             // Go to the beginning of the indirect object!
             Seek(xrefEntry.Offset);
+
             // Skip the indirect-object header!
             MoveNext();
+            // Empty indirect object?
+            if (IsInderectObjectEnd())
+                return null;
+
             MoveNext();
             // Empty indirect object?
-            if (TokenType == TokenTypeEnum.Keyword
-                && string.Equals(Token.ToString(), Keyword.EndIndirectObject, StringComparison.Ordinal))
+            if (IsInderectObjectEnd())
                 return null;
 
             // Get the indirect data object!
@@ -233,6 +257,12 @@ namespace PdfClown.Tokens
                 securityHandler.Decrypt(dataObject, xrefEntry.Number, xrefEntry.Generation);
             }
             return dataObject;
+        }
+
+        private bool IsInderectObjectEnd()
+        {
+            return TokenType == TokenTypeEnum.Keyword
+                            && CharsToken.Equals(Keyword.EndIndirectObject, StringComparison.Ordinal);
         }
 
         /**
@@ -258,7 +288,7 @@ namespace PdfClown.Tokens
             IInputStream stream = Stream;
             var streamLength = stream.Length;
 
-            long position = SeekRevers(stream, streamLength, Keyword.StartXRef);
+            long position = SeekRevers(streamLength, Keyword.StartXRef);
             if (position < 0)
                 throw new PostScriptParseException("'" + Keyword.StartXRef + "' keyword not found.", this);
 
@@ -275,10 +305,10 @@ namespace PdfClown.Tokens
             MoveNext();
             //Repair 
             if (xrefPosition > streamLength
-                || (TokenType == TokenTypeEnum.Keyword && !string.Equals(Token?.ToString(), Keyword.XRef, StringComparison.Ordinal))
+                || (TokenType == TokenTypeEnum.Keyword && !CharsToken.Equals(Keyword.XRef, StringComparison.Ordinal))
                 || (TokenType != TokenTypeEnum.InderectObject && TokenType != TokenTypeEnum.Keyword))
             {
-                xrefPosition = SeekRevers(stream, streamLength, "\n" + Keyword.XRef);
+                xrefPosition = SeekRevers(streamLength, "\n" + Keyword.XRef);
                 if (xrefPosition >= 0)
                     xrefPosition++;
 
@@ -286,30 +316,32 @@ namespace PdfClown.Tokens
             return xrefPosition;
         }
 
-        private static long SeekRevers(IInputStream stream, long startPosition, string keyWord)
+        private long SeekRevers(long startPosition, string keyWord)
         {
-            string text = null;
-            long streamLength = stream.Length;
-            long position = startPosition;
-            int chunkSize = (int)Math.Min(streamLength, EOFMarkerChunkSize);
-            int index = -1;
+            Seek(startPosition);
+            return SkipKeyRevers(keyWord) ? Position : -1;
+            //string text = null;
+            //long streamLength = stream.Length;
+            //long position = startPosition;
+            //int chunkSize = (int)Math.Min(streamLength, EOFMarkerChunkSize);
+            //int index = -1;
 
-            while (index < 0 && position > 0)
-            {
-                /*
-                  NOTE: This condition prevents the keyword from being split by the chunk boundary.
-                */
-                if (position < streamLength)
-                { position += keyWord.Length; }
-                position -= chunkSize;
-                if (position < 0)
-                { position = 0; }
-                stream.Seek(position);
+            //while (index < 0 && position > 0)
+            //{
+            //    /*
+            //      NOTE: This condition prevents the keyword from being split by the chunk boundary.
+            //    */
+            //    if (position < streamLength)
+            //    { position += keyWord.Length; }
+            //    position -= chunkSize;
+            //    if (position < 0)
+            //    { position = 0; }
+            //    stream.Seek(position);
 
-                text = stream.ReadString(chunkSize);
-                index = text.LastIndexOf(keyWord, StringComparison.Ordinal);
-            }
-            return index < 0 ? -1 : position + index;
+            //    text = stream.ReadString(chunkSize);
+            //    index = text.LastIndexOf(keyWord, StringComparison.Ordinal);
+            //}
+            //return index < 0 ? -1 : position + index;
         }
 
         /**
@@ -363,9 +395,5 @@ namespace PdfClown.Tokens
                 }
             }
         }
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

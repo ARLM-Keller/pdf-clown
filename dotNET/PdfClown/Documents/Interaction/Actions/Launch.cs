@@ -39,13 +39,11 @@ namespace PdfClown.Documents.Interaction.Actions
     [PDF(VersionEnum.PDF11)]
     public sealed class Launch : Action
     {
-        #region types
         /**
           <summary>Windows-specific launch parameters [PDF:1.6:8.5.3].</summary>
         */
         public class WinTarget : PdfObjectWrapper<PdfDictionary>
         {
-            #region types
             /**
               <summary>Operation [PDF:1.6:8.5.3].</summary>
             */
@@ -63,14 +61,9 @@ namespace PdfClown.Documents.Interaction.Actions
 
             private const string ConstOpen = "open";
             private const string ConstPrint = "print";
-            #endregion
 
-            #region static
-            #region fields
             private static readonly Dictionary<OperationEnum, PdfString> OperationEnumCodes;
-            #endregion
 
-            #region constructors
             static WinTarget()
             {
                 OperationEnumCodes = new Dictionary<OperationEnum, PdfString>
@@ -79,22 +72,18 @@ namespace PdfClown.Documents.Interaction.Actions
                     [OperationEnum.Print] = new PdfString(ConstPrint)
                 };
             }
-            #endregion
 
-            #region interface
-            #region private
             /**
               <summary>Gets the code corresponding to the given value.</summary>
             */
-            private static PdfString ToCode(OperationEnum value)
-            { return OperationEnumCodes[value]; }
+            private static PdfString ToCode(OperationEnum value) => OperationEnumCodes[value];
 
             /**
               <summary>Gets the operation corresponding to the given value.</summary>
             */
             private static OperationEnum ToOperationEnum(IPdfString value)
             {
-                if(value == null)
+                if (value == null)
                     return OperationEnum.Open;
                 foreach (KeyValuePair<OperationEnum, PdfString> operation in OperationEnumCodes)
                 {
@@ -104,27 +93,21 @@ namespace PdfClown.Documents.Interaction.Actions
                 return OperationEnum.Open;
             }
 
-            #endregion
-            #endregion
-            #endregion
-
-            #region dynamic
-            #region constructors
-            public WinTarget(Document context, string fileName) : base(context, new PdfDictionary())
+            public WinTarget(Document context, string fileName)
+                : base(context, new PdfDictionary())
             { FileName = fileName; }
 
-            public WinTarget(Document context, string fileName, OperationEnum operation) : this(context, fileName)
+            public WinTarget(Document context, string fileName, OperationEnum operation)
+                : this(context, fileName)
             { Operation = operation; }
 
-            public WinTarget(Document context, string fileName, string parameterString) : this(context, fileName)
+            public WinTarget(Document context, string fileName, string parameterString)
+                : this(context, fileName)
             { ParameterString = parameterString; }
 
             public WinTarget(PdfDirectObject baseObject) : base(baseObject)
             { }
-            #endregion
 
-            #region interface
-            #region public
             public override object Clone(Document context)
             { throw new NotImplementedException(); }
 
@@ -172,15 +155,8 @@ namespace PdfClown.Documents.Interaction.Actions
                 }
                 set => BaseDataObject[PdfName.P] = new PdfString(value);
             }
-
-            #endregion
-            #endregion
-            #endregion
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a launcher.</summary>
           <param name="context">Document context.</param>
@@ -192,10 +168,7 @@ namespace PdfClown.Documents.Interaction.Actions
 
         internal Launch(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the action options.</summary>
         */
@@ -204,9 +177,7 @@ namespace PdfClown.Documents.Interaction.Actions
             get
             {
                 OptionsEnum options = 0;
-                PdfDirectObject optionsObject = BaseDataObject[PdfName.NewWindow];
-                if (optionsObject != null
-                  && ((PdfBoolean)optionsObject).BooleanValue)
+                if (BaseDataObject.GetBool(PdfName.NewWindow))
                 { options |= OptionsEnum.NewWindow; }
                 return options;
             }
@@ -247,8 +218,5 @@ namespace PdfClown.Documents.Interaction.Actions
                 { throw new ArgumentException("MUST be either FileSpecification or WinTarget"); }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

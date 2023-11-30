@@ -36,23 +36,14 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetWordSpace : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "Tw";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetWordSpace(double value) : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
         public SetWordSpace(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         { state.WordSpace = Value; }
 
@@ -61,8 +52,5 @@ namespace PdfClown.Documents.Contents.Objects
             get => ((IPdfNumber)operands[0]).FloatValue;
             set => operands[0] = PdfReal.Get(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -35,11 +35,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint Reserved = 0x00000000;
         public ICCXYZNumber Value;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
             Value.Load(buffer);
         }
     }

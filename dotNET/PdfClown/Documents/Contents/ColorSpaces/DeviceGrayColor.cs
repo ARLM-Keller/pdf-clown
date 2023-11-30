@@ -36,16 +36,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceGrayColor : DeviceColor, IEquatable<DeviceGrayColor>
     {
-        #region static
-        #region fields
         public static readonly DeviceGrayColor Black = new DeviceGrayColor(0);
         public static readonly DeviceGrayColor White = new DeviceGrayColor(1);
 
         public static readonly DeviceGrayColor Default = Black;
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the color corresponding to the specified components.</summary>
           <param name="components">Color components to convert.</param>
@@ -56,31 +51,23 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 ? components.Wrapper is DeviceGrayColor color ? color : new DeviceGrayColor(components)
                 : Default;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public DeviceGrayColor(float g)
-            : this(new PdfArray(new PdfDirectObject[] { PdfReal.Get(NormalizeComponent(g)) }))
+            : this(new PdfArray(1) { PdfReal.Get(NormalizeComponent(g)) })
         { }
 
         internal DeviceGrayColor(IList<PdfDirectObject> components)
             : base(DeviceGrayColorSpace.Default, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
-        #endregion
 
-        #region interface
-        #region public
 
         /**
           <summary>Gets/Sets the gray component.</summary>
         */
         public float G
         {
-            get => GetComponentValue(0);
-            set => SetComponentValue(0, value);
+            get => this[0];
+            set => this[0] = value;
         }
 
         public override bool IsZero => Equals(Black);
@@ -97,8 +84,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return G.Equals(other.G);
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

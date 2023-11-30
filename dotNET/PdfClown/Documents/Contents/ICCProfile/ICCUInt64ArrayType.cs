@@ -35,16 +35,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint Reserved = 0x00000000;
         public ulong[] Value;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
             var count = (Table.ElementSize - 8) / 8;
             Value = new ulong[count];
             for (int i = 0; i < count; i++)
             {
-                Value[i] = buffer.ReadUnsignedLong();
+                Value[i] = buffer.ReadUInt64();
             }
         }
     }

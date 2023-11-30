@@ -40,15 +40,12 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public abstract class Operation : ContentObject
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Gets an operation.</summary>
           <param name="@operator">Operator.</param>
           <param name="operands">List of operands.</param>
         */
-        public static Operation Get(string @operator, IList<PdfDirectObject> operands)
+        public static Operation Get(ReadOnlySpan<char> @operator, IList<PdfDirectObject> operands)
         {
             if (@operator == null)
                 return null;
@@ -59,12 +56,12 @@ namespace PdfClown.Documents.Contents.Objects
                 return new SetFont(operands);
             else if (@operator.Equals(SetStrokeColor.OperatorKeyword, StringComparison.Ordinal)
               || @operator.Equals(SetStrokeColor.ExtendedOperatorKeyword, StringComparison.Ordinal))
-                return new SetStrokeColor(@operator, operands);
+                return new SetStrokeColor(new string(@operator.ToArray()), operands);
             else if (@operator.Equals(SetStrokeColorSpace.OperatorKeyword, StringComparison.Ordinal))
                 return new SetStrokeColorSpace(operands);
             else if (@operator.Equals(SetFillColor.OperatorKeyword, StringComparison.Ordinal)
               || @operator.Equals(SetFillColor.ExtendedOperatorKeyword, StringComparison.Ordinal))
-                return new SetFillColor(@operator, operands);
+                return new SetFillColor(new string(@operator.ToArray()), operands);
             else if (@operator.Equals(SetFillColorSpace.OperatorKeyword, StringComparison.Ordinal))
                 return new SetFillColorSpace(operands);
             else if (@operator.Equals(SetDeviceGrayStrokeColor.OperatorKeyword, StringComparison.Ordinal))
@@ -114,12 +111,12 @@ namespace PdfClown.Documents.Contents.Objects
                 return new ShowSimpleText(operands);
             else if (@operator.Equals(ShowTextToNextLine.SimpleOperatorKeyword, StringComparison.Ordinal)
               || @operator.Equals(ShowTextToNextLine.SpaceOperatorKeyword, StringComparison.Ordinal))
-                return new ShowTextToNextLine(@operator, operands);
+                return new ShowTextToNextLine(new string(@operator.ToArray()), operands);
             else if (@operator.Equals(ShowAdjustedText.OperatorKeyword, StringComparison.Ordinal))
                 return new ShowAdjustedText(operands);
             else if (@operator.Equals(TranslateTextRelative.SimpleOperatorKeyword, StringComparison.Ordinal)
               || @operator.Equals(TranslateTextRelative.LeadOperatorKeyword, StringComparison.Ordinal))
-                return new TranslateTextRelative(@operator, operands);
+                return new TranslateTextRelative(new string(@operator.ToArray()), operands);
             else if (@operator.Equals(SetTextMatrix.OperatorKeyword, StringComparison.Ordinal))
                 return new SetTextMatrix(operands);
             else if (@operator.Equals(ModifyCTM.OperatorKeyword, StringComparison.Ordinal))
@@ -157,7 +154,7 @@ namespace PdfClown.Documents.Contents.Objects
             else if (@operator.Equals(DrawCurve.FinalOperatorKeyword, StringComparison.Ordinal)
               || @operator.Equals(DrawCurve.FullOperatorKeyword, StringComparison.Ordinal)
               || @operator.Equals(DrawCurve.InitialOperatorKeyword, StringComparison.Ordinal))
-                return new DrawCurve(@operator, operands);
+                return new DrawCurve(new string(@operator.ToArray()), operands);
             else if (@operator.Equals(EndInlineImage.OperatorKeyword, StringComparison.Ordinal))
                 return EndInlineImage.Value;
             else if (@operator.Equals(BeginText.OperatorKeyword, StringComparison.Ordinal))
@@ -166,12 +163,12 @@ namespace PdfClown.Documents.Contents.Objects
                 return EndText.Value;
             else if (@operator.Equals(BeginMarkedContent.SimpleOperatorKeyword, StringComparison.Ordinal)
               || @operator.Equals(BeginMarkedContent.PropertyListOperatorKeyword, StringComparison.Ordinal))
-                return new BeginMarkedContent(@operator, operands);
+                return new BeginMarkedContent(new string(@operator.ToArray()), operands);
             else if (@operator.Equals(EndMarkedContent.OperatorKeyword, StringComparison.Ordinal))
                 return EndMarkedContent.Value;
             else if (@operator.Equals(MarkedContentPoint.SimpleOperatorKeyword, StringComparison.Ordinal)
               || @operator.Equals(MarkedContentPoint.PropertyListOperatorKeyword, StringComparison.Ordinal))
-                return new MarkedContentPoint(@operator, operands);
+                return new MarkedContentPoint(new string(@operator.ToArray()), operands);
             else if (@operator.Equals(BeginInlineImage.OperatorKeyword, StringComparison.Ordinal))
                 return BeginInlineImage.Value;
             else if (@operator.Equals(EndInlineImage.OperatorKeyword, StringComparison.Ordinal))
@@ -183,19 +180,12 @@ namespace PdfClown.Documents.Contents.Objects
             else if (@operator.Equals(CharProcBBox.OperatorKeyword, StringComparison.Ordinal))
                 return new CharProcBBox(operands);
             else // No explicit operation implementation available.
-                return new GenericOperation(@operator, operands);
+                return new GenericOperation(new string(@operator.ToArray()), operands);
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         protected string @operator;
         protected IList<PdfDirectObject> operands;
-        #endregion
 
-        #region constructors
         protected Operation(string @operator)
         { this.@operator = @operator; }
 
@@ -218,20 +208,17 @@ namespace PdfClown.Documents.Contents.Objects
             this.@operator = @operator;
             this.operands = operands;
         }
-        #endregion
 
-        #region interface
-        #region public
         public string Operator => @operator;
 
         public IList<PdfDirectObject> Operands => operands;
 
         public override string ToString()
         {
-            StringBuilder buffer = new StringBuilder();
+            var buffer = new StringBuilder();
 
             // Begin.
-            buffer.Append("{");
+            buffer.Append('{');
 
             // Operator.
             buffer.Append(@operator);
@@ -239,19 +226,19 @@ namespace PdfClown.Documents.Contents.Objects
             // Operands.
             if (operands != null)
             {
-                buffer.Append(" [");
+                buffer.Append(' ').Append('[');
                 for (int i = 0, count = operands.Count; i < count; i++)
                 {
                     if (i > 0)
-                    { buffer.Append(", "); }
+                    { buffer.Append(',').Append(' '); }
 
                     buffer.Append(operands[i].ToString());
                 }
-                buffer.Append("]");
+                buffer.Append(']');
             }
 
             // End.
-            buffer.Append("}");
+            buffer.Append('}');
 
             return buffer.ToString();
         }
@@ -266,8 +253,5 @@ namespace PdfClown.Documents.Contents.Objects
             }
             stream.Write(@operator); stream.Write(Chunk.LineFeed);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

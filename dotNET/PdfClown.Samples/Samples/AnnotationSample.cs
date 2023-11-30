@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using SkiaSharp;
 using System.IO;
+using PdfClown.Documents.Contents.Fonts;
 
 namespace PdfClown.Samples.CLI
 {
@@ -38,11 +39,11 @@ namespace PdfClown.Samples.CLI
 
         private void Populate(Document document)
         {
-            Page page = new Page(document);
+            var page = new Page(document);
             document.Pages.Add(page);
 
-            PrimitiveComposer composer = new PrimitiveComposer(page);
-            fonts::PdfType1Font font = fonts::PdfType1Font.Load(document, fonts::PdfType1Font.FamilyEnum.Courier, true, false);
+            var composer = new PrimitiveComposer(page);
+            var font = FontType1.Load(document, FontName.CourierBold);
             composer.SetFont(font, 12);
 
             // Sticky note.
@@ -111,8 +112,7 @@ namespace PdfClown.Samples.CLI
               "Text of the File attachment annotation",
               FileSpecification.Get(
                 EmbeddedFile.Get(document, GetResourcePath("images" + Path.DirectorySeparatorChar + "gnu.jpg")),
-                "happyGNU.jpg")
-              )
+                "happyGNU.jpg"))
             {
                 AttachmentName = FileAttachmentImageType.PaperClip,
                 Author = "Stefano",
@@ -148,8 +148,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(300, 220),
                   new SKPoint(500, 220),
                   "Text of the Dimension line annotation",
-                  DeviceRGBColor.Get(SKColors.Blue)
-                  )
+                  DeviceRGBColor.Get(SKColors.Blue))
                 {
                     LeaderLineLength = -20,
                     LeaderLineExtension = 10,
@@ -187,7 +186,7 @@ namespace PdfClown.Samples.CLI
 
             // Rectangle.
             composer.ShowText("Rectangle annotation:", new SKPoint(35, 350));
-            new PdfClown.Documents.Interaction.Annotations.Rectangle(
+            new Rectangle(
               page,
               SKRect.Create(50, 370, 100, 30),
               "Text of the Rectangle annotation")
@@ -199,8 +198,7 @@ namespace PdfClown.Samples.CLI
                 Popup = new Popup(
                  page,
                  SKRect.Create(200, 325, 200, 75),
-                 "Text of the Popup annotation (this text won't be visible as associating popups to markup annotations overrides the former's properties with the latter's)"
-                 )
+                 "Text of the Popup annotation (this text won't be visible as associating popups to markup annotations overrides the former's properties with the latter's)")
             };
 
             // Ellipse.
@@ -220,14 +218,12 @@ namespace PdfClown.Samples.CLI
             // Rubber stamp.
             composer.ShowText("Rubber stamp annotations:", new SKPoint(35, 505));
             {
-                fonts::Font stampFont = fonts::PdfType0Font.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
+                var stampFont = FontType0.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
                 new Stamp(
                   page,
                   new SKPoint(75, 570),
                   "This is a round custom stamp",
-                  new StampAppearanceBuilder(document, StampAppearanceBuilder.TypeEnum.Round, "Done", 50, stampFont)
-                    .Build()
-                  )
+                  new StampAppearanceBuilder(document, StampAppearanceBuilder.TypeEnum.Round, "Done", 50, stampFont).Build())
                 {
                     Rotation = -10,
                     Author = "Stefano",
@@ -239,22 +235,20 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(210, 570),
                   "This is a squared (and round-cornered) custom stamp",
                   new StampAppearanceBuilder(document, StampAppearanceBuilder.TypeEnum.Squared, "Classified", 150, stampFont)
-                  { Color = DeviceRGBColor.Get(SKColors.Orange) }.Build()
-                  )
+                  { Color = DeviceRGBColor.Get(SKColors.Orange) }.Build())
                 {
                     Rotation = 15,
                     Author = "Stefano",
                     Subject = "Custom stamp"
                 };
 
-                fonts::Font stampFont2 = fonts::PdfType0Font.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "MgOpenCanonicaRegular.ttf"));
+                var stampFont2 = FontType0.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "MgOpenCanonicaRegular.ttf"));
                 new Stamp(
                   page,
                   new SKPoint(350, 570),
                   "This is a striped custom stamp",
                   new StampAppearanceBuilder(document, StampAppearanceBuilder.TypeEnum.Striped, "Out of stock", 100, stampFont2)
-                  { Color = DeviceRGBColor.Get(SKColors.Gray) }.Build()
-                  )
+                  { Color = DeviceRGBColor.Get(SKColors.Gray) }.Build())
                 {
                     Rotation = 90,
                     Author = "Stefano",
@@ -316,9 +310,8 @@ namespace PdfClown.Samples.CLI
             {
                 composer.BeginLocalState();
                 composer.SetFont(font, 8);
-                var matrix = page.RotateMatrix;
                 new TextMarkup(page,
-                  composer.ShowText("Highlight annotation", new SKPoint(35, 680)).Transform(ref matrix),
+                  composer.ShowText("Highlight annotation", new SKPoint(35, 680)),
                   "Text of the Highlight annotation",
                   TextMarkupType.Highlight)
                 {
@@ -327,7 +320,7 @@ namespace PdfClown.Samples.CLI
                 };
 
                 new TextMarkup(page,
-                  composer.ShowText("Highlight annotation 2", new SKPoint(35, 695)).Inflate(0, 1).Transform(ref matrix),
+                  composer.ShowText("Highlight annotation 2", new SKPoint(35, 695)).Inflate(0, 1),
                   "Text of the Highlight annotation 2",
                   TextMarkupType.Highlight)
                 {
@@ -335,7 +328,7 @@ namespace PdfClown.Samples.CLI
                 };
 
                 new TextMarkup(page,
-                  composer.ShowText("Highlight annotation 3", new SKPoint(35, 710)).Inflate(0, 2).Transform(ref matrix),
+                  composer.ShowText("Highlight annotation 3", new SKPoint(35, 710)).Inflate(0, 2),
                   "Text of the Highlight annotation 3",
                   TextMarkupType.Highlight)
                 {
@@ -343,12 +336,12 @@ namespace PdfClown.Samples.CLI
                 };
 
                 new TextMarkup(page,
-                  composer.ShowText("Squiggly annotation", new SKPoint(180, 680)).Transform(ref matrix),
+                  composer.ShowText("Squiggly annotation", new SKPoint(180, 680)),
                   "Text of the Squiggly annotation",
                   TextMarkupType.Squiggly);
 
                 new TextMarkup(page,
-                  composer.ShowText("Squiggly annotation 2", new SKPoint(180, 695)).Inflate(0, 2.5f).Transform(ref matrix),
+                  composer.ShowText("Squiggly annotation 2", new SKPoint(180, 695)).Inflate(0, 2.5f),
                   "Text of the Squiggly annotation 2",
                   TextMarkupType.Squiggly)
                 {
@@ -356,7 +349,7 @@ namespace PdfClown.Samples.CLI
                 };
 
                 new TextMarkup(page,
-                  composer.ShowText("Squiggly annotation 3", new SKPoint(180, 710)).Inflate(0, 3).Transform(ref matrix),
+                  composer.ShowText("Squiggly annotation 3", new SKPoint(180, 710)).Inflate(0, 3),
                   "Text of the Squiggly annotation 3",
                   TextMarkupType.Squiggly)
                 {
@@ -364,11 +357,11 @@ namespace PdfClown.Samples.CLI
                 };
 
                 new TextMarkup(page,
-                    composer.ShowText("Underline annotation", new SKPoint(320, 680)).Transform(ref matrix),
+                    composer.ShowText("Underline annotation", new SKPoint(320, 680)),
                     "Text of the Underline annotation",
                     TextMarkupType.Underline);
                 new TextMarkup(page,
-                  composer.ShowText("Underline annotation 2", new SKPoint(320, 695)).Inflate(0, 2.5f).Transform(ref matrix),
+                  composer.ShowText("Underline annotation 2", new SKPoint(320, 695)).Inflate(0, 2.5f),
                   "Text of the Underline annotation 2",
                   TextMarkupType.Underline)
                 {
@@ -376,7 +369,7 @@ namespace PdfClown.Samples.CLI
                 };
 
                 new TextMarkup(page,
-                  composer.ShowText("Underline annotation 3", new SKPoint(320, 710)).Inflate(0, 3).Transform(ref matrix),
+                  composer.ShowText("Underline annotation 3", new SKPoint(320, 710)).Inflate(0, 3),
                   "Text of the Underline annotation 3",
                   TextMarkupType.Underline)
                 {
@@ -384,12 +377,12 @@ namespace PdfClown.Samples.CLI
                 };
 
                 new TextMarkup(page,
-                    composer.ShowText("StrikeOut annotation", new SKPoint(455, 680)).Transform(ref matrix),
+                    composer.ShowText("StrikeOut annotation", new SKPoint(455, 680)),
                     "Text of the StrikeOut annotation",
                     TextMarkupType.StrikeOut);
 
                 new TextMarkup(page,
-                    composer.ShowText("StrikeOut annotation 2", new SKPoint(455, 695)).Inflate(0, 2.5f).Transform(ref matrix),
+                    composer.ShowText("StrikeOut annotation 2", new SKPoint(455, 695)).Inflate(0, 2.5f),
                     "Text of the StrikeOut annotation 2",
                     TextMarkupType.StrikeOut)
                 {
@@ -397,7 +390,7 @@ namespace PdfClown.Samples.CLI
                 };
 
                 new TextMarkup(page,
-                    composer.ShowText("StrikeOut annotation 3", new SKPoint(455, 710)).Inflate(0, 3).Transform(ref matrix),
+                    composer.ShowText("StrikeOut annotation 3", new SKPoint(455, 710)).Inflate(0, 3),
                     "Text of the StrikeOut annotation 3",
                     TextMarkupType.StrikeOut)
                 {

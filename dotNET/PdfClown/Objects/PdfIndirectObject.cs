@@ -37,15 +37,9 @@ namespace PdfClown.Objects
     */
     public class PdfIndirectObject : PdfObject, IPdfIndirectObject
     {
-        #region static
-        #region fields
         private static readonly byte[] BeginIndirectObjectChunk = Tokens.Encoding.Pdf.Encode(Symbol.Space + Keyword.BeginIndirectObject + Symbol.LineFeed);
         private static readonly byte[] EndIndirectObjectChunk = Tokens.Encoding.Pdf.Encode(Symbol.LineFeed + Keyword.EndIndirectObject + Symbol.LineFeed);
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private PdfDataObject dataObject;
         private File file;
         private bool original;
@@ -55,9 +49,7 @@ namespace PdfClown.Objects
         private bool updateable = true;
         private bool updated;
         private bool virtual_;
-        #endregion
 
-        #region constructors
         /**
           <param name="file">Associated file.</param>
           <param name="dataObject">
@@ -79,10 +71,7 @@ namespace PdfClown.Objects
             this.original = (xrefEntry.Offset >= 0);
             this.reference = new PdfReference(this);
         }
-        #endregion
 
-        #region interface
-        #region public
         public override PdfObject Accept(IVisitor visitor, object data)
         {
             return visitor.Visit(this, data);
@@ -148,19 +137,13 @@ namespace PdfClown.Objects
             }
         }
 
-        public override int GetHashCode()
-        {
-            return reference.GetHashCode();
-        }
+        public override int GetHashCode() => reference.GetHashCode();
 
         /**
           <summary>Gets whether this object is compressed within an object stream [PDF:1.6:3.4.6].
           </summary>
         */
-        public bool IsCompressed()
-        {
-            return xrefEntry.Usage == XRefEntry.UsageEnum.InUseCompressed;
-        }
+        public bool IsCompressed() => xrefEntry.Usage == XRefEntry.UsageEnum.InUseCompressed;
 
         /**
           <summary>Gets whether this object can be compressed within an object stream [PDF:1.6:3.4.6].
@@ -178,18 +161,12 @@ namespace PdfClown.Objects
         /**
           <summary>Gets whether this object contains a data object.</summary>
         */
-        public bool IsInUse()
-        {
-            return (xrefEntry.Usage == XRefEntry.UsageEnum.InUse);
-        }
+        public bool IsInUse() => (xrefEntry.Usage == XRefEntry.UsageEnum.InUse);
 
         /**
           <summary>Gets whether this object comes intact from an existing file.</summary>
         */
-        public bool IsOriginal()
-        {
-            return original;
-        }
+        public bool IsOriginal() => original;
 
         public override PdfObject Swap(PdfObject other)
         {
@@ -231,7 +208,6 @@ namespace PdfClown.Objects
 
         public XRefEntry XrefEntry => xrefEntry;
 
-        #region IPdfIndirectObject
         public PdfDataObject DataObject
         {
             get
@@ -309,10 +285,7 @@ namespace PdfClown.Objects
             }
             return buffer.ToString();
         }
-        #endregion
-        #endregion
 
-        #region protected
         protected internal override bool Virtual
         {
             get => virtual_;
@@ -332,9 +305,7 @@ namespace PdfClown.Objects
                 dataObject.Virtual = virtual_;
             }
         }
-        #endregion
 
-        #region internal
         internal void DropFile()
         {
             Uncompress();
@@ -345,8 +316,5 @@ namespace PdfClown.Objects
         {
             original = false;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

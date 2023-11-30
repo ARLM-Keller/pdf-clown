@@ -15,9 +15,12 @@
  * limitations under the License.
  */
 
+using Org.BouncyCastle.Utilities.Zlib;
+using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Objects;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Tokens;
+using PdfClown.Util.Collections;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -57,16 +60,23 @@ namespace PdfClown.Documents.Contents.Fonts
             this.embedSubset = embedSubset;
             this.ttf = ttf;
             fontDescriptor = CreateFontDescriptor(ttf);
-
+#if RELEASE
             if (!IsEmbeddingPermitted(ttf))
             {
                 throw new IOException("This font does not permit embedding");
             }
-
+#endif
             if (!embedSubset)
             {
                 // full embedding
-                PdfStream stream = new PdfStream(ttf.OriginalData);
+                // TrueType collections are not supported
+                var iStream = ttf.GetOriginalData(out _);
+                if (MemoryExtensions.Equals(iStream.ReadROS(4, Charset.ISO88591), "ttcf", StringComparison.Ordinal))
+                {
+                    throw new IOException("Full embedding of TrueType font collections not supported");
+                }
+                iStream.Seek(0);
+                var stream = new PdfStream(new ByteStream(iStream));
                 stream.Header[PdfName.Length] =
                     stream.Header[PdfName.Length1] = PdfInteger.Get(ttf.OriginalDataSize);
                 fontDescriptor.FontFile2 = new FontFile(document, stream);
@@ -78,12 +88,12 @@ namespace PdfClown.Documents.Contents.Fonts
             cmapLookup = ttf.GetUnicodeCmapLookup();
         }
 
-        public void BuildFontFile2(Bytes.Buffer ttfStream)
+        public void BuildFontFile2(ByteStream ttfStream)
         {
             PdfStream stream = new PdfStream(ttfStream);
 
             // as the stream was closed within the PdfStream constructor, we have to recreate it
-            using (var input = (Bytes.Buffer)stream.ExtractBody(true))
+            using (var input = (ByteStream)stream.ExtractBody(true))
             {
                 ttf = new TTFParser().ParseEmbedded(input);
                 if (!IsEmbeddingPermitted(ttf))
@@ -146,15 +156,26 @@ namespace PdfClown.Documents.Contents.Fonts
 		 */
         private FontDescriptor CreateFontDescriptor(TrueTypeFont ttf)
         {
-            FontDescriptor fd = new FontDescriptor(document, new PdfDictionary());
-            fd.FontName = ttf.Name;
-
+            var ttfName = ttf.Name;
             OS2WindowsMetricsTable os2 = ttf.OS2Windows;
+            if (os2 == null)
+            {
+                throw new IOException("os2 table is missing in font " + ttfName);
+            }
+
             PostScriptTable post = ttf.PostScript;
+            if (post == null)
+            {
+                throw new IOException("post table is missing in font " + ttfName);
+            }
+
+            var fd = new FontDescriptor(document, new PdfDictionary(14));
+            fd.FontName = ttfName;
 
             // Flags
+            var hHeader = ttf.HorizontalHeader;
             var flags = (FlagsEnum)0;
-            flags |= (post.IsFixedPitch > 0 || ttf.HorizontalHeader.NumberOfHMetrics == 1) ? FlagsEnum.FixedPitch : 0;
+            flags |= (post.IsFixedPitch > 0 || hHeader.NumberOfHMetrics == 1) ? FlagsEnum.FixedPitch : 0;
 
             int fsSelection = os2.FsSelection;
             flags |= ((fsSelection & (ITALIC | OBLIQUE)) != 0) ? FlagsEnum.Italic : 0;
@@ -193,14 +214,10 @@ namespace PdfClown.Documents.Contents.Fonts
                 header.XMax * scaling,
                 header.YMax * scaling
                 );
-
-
-            Rectangle rect = new Rectangle(skRect);
-
-            fd.FontBBox = rect;
+            fd.FontBBox = new Rectangle(skRect);
 
             // Ascent, Descent
-            HorizontalHeaderTable hHeader = ttf.HorizontalHeader;
+
             fd.Ascent = hHeader.Ascender * scaling;
             fd.Descent = hHeader.Descender * scaling;
 
@@ -220,7 +237,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 else
                 {
                     // estimate by summing the typographical +ve ascender and -ve descender
-                    fd.CapHeight = os2.TypoAscender + (os2.TypoDescender * scaling);
+                    fd.CapHeight = (os2.TypoAscender + os2.TypoDescender) * scaling;
                 }
                 var xPath = ttf.GetPath("x");
                 if (xPath != null)
@@ -230,7 +247,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 else
                 {
                     // estimate by halving the typographical ascender
-                    fd.XHeight = os2.TypoAscender / (2.0f * scaling);
+                    fd.XHeight = (os2.TypoAscender / 2.0f) * scaling;
                 }
             }
 
@@ -255,7 +272,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public void AddGlyphIds(ISet<int> glyphIds)
         {
-            allGlyphIds.AddAll(glyphIds);
+            allGlyphIds.AddRange(glyphIds);
         }
 
         public virtual void Subset()
@@ -271,18 +288,20 @@ namespace PdfClown.Documents.Contents.Fonts
             }
 
             // PDF spec required tables (if present), all others will be removed
-            List<string> tables = new List<string>();
-            tables.Add("head");
-            tables.Add("hhea");
-            tables.Add("loca");
-            tables.Add("maxp");
-            tables.Add("cvt ");
-            tables.Add("prep");
-            tables.Add("glyf");
-            tables.Add("hmtx");
-            tables.Add("fpgm");
-            // Windows ClearType
-            tables.Add("gasp");
+            var tables = new List<string>
+            {
+                "head",
+                "hhea",
+                "loca",
+                "maxp",
+                "cvt ",
+                "prep",
+                "glyf",
+                "hmtx",
+                "fpgm",
+                // Windows ClearType
+                "gasp"
+            };
 
             // set the GIDs to subset
             TTFSubsetter subsetter = new TTFSubsetter(ttf, tables);
@@ -299,13 +318,11 @@ namespace PdfClown.Documents.Contents.Fonts
             subsetter.SetPrefix(tag);
 
             // save the subset font
-            using (var output = new MemoryStream())
-            {
-                subsetter.WriteToStream(output);
-
-                // re-build the embedded font
-                BuildSubset(new Bytes.Buffer(output), tag, gidToCid);
-            }
+            var output = new ByteStream();
+            subsetter.WriteToStream((IOutputStream)output);
+            output.Seek(0);
+            // re-build the embedded font
+            BuildSubset(output, tag, gidToCid);
             ttf.Dispose();
         }
 
@@ -320,7 +337,7 @@ namespace PdfClown.Documents.Contents.Fonts
         /**
 		 * Rebuild a font subset.
 		 */
-        protected abstract void BuildSubset(Bytes.Buffer ttfSubset, string tag, Dictionary<int, int> gidToCid);
+        protected abstract void BuildSubset(ByteStream ttfSubset, string tag, Dictionary<int, int> gidToCid);
         /**
 		 * Returns an uppercase 6-character unique tag for the given subset.
 		 */

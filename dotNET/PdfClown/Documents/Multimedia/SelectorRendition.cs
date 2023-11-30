@@ -41,17 +41,12 @@ namespace PdfClown.Documents.Multimedia
     public sealed class SelectorRendition : Rendition
     {
 
-        #region dynamic
-        #region constructors
         public SelectorRendition(Document context) : base(context, PdfName.SR)
         { }
 
         internal SelectorRendition(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets an ordered collection of renditions. The first viable media rendition found
           in the array, or nested within a selector rendition in the array, should be used.</summary>
@@ -61,30 +56,5 @@ namespace PdfClown.Documents.Multimedia
             get => Wrap<Renditions>(BaseDataObject.Get<PdfArray>(PdfName.R));
             set => BaseDataObject[PdfName.R] = value.BaseObject;
         }
-        #endregion
-        #endregion
-        #endregion
-    }
-
-    public class Renditions : Array<Rendition>
-    {
-        #region static
-        #region types
-        private class ArrayWrapperObject : IWrapper<Rendition>
-        {
-            public Rendition Wrap(PdfDirectObject baseObject)
-            { return Rendition.Wrap(baseObject); }
-        }
-        #endregion
-
-        #region fields
-        private static readonly IWrapper<Rendition> ArrayWrapper = new ArrayWrapperObject();
-        #endregion
-        #endregion
-        public Renditions(Document context) : base(context, ArrayWrapper)
-        { }
-
-        public Renditions(PdfDirectObject baseObject) : base(ArrayWrapper, baseObject)
-        { }
     }
 }

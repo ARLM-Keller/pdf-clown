@@ -32,6 +32,7 @@ using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.X509;
+using PdfClown.Bytes;
 using PdfClown.Objects;
 using PdfClown.Util.IO;
 using System;
@@ -49,15 +50,14 @@ namespace PdfClown.Documents.Encryption
      * @author Benoit Guillon
      */
     // Just Translated, TODO Check & Debug
-    public sealed class PublicKeySecurityHandler : SecurityHandler
+    public sealed class PublicKeySecurityHandler : SecurityHandler<PublicKeyProtectionPolicy>
     {
         /** The filter name. */
         public static readonly string FILTER = "Adobe.PubSec";
 
         private static readonly string SUBFILTER4 = "adbe.pkcs7.s4";
         private static readonly string SUBFILTER5 = "adbe.pkcs7.s5";
-
-        private PublicKeyProtectionPolicy policy = null;
+        private static readonly byte[] foreBytes = new byte[] { 0xff, 0xff, 0xff, 0xff };
 
         /**
 		 * Constructor.
@@ -71,10 +71,10 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @param p The protection policy.
 		 */
-        public PublicKeySecurityHandler(PublicKeyProtectionPolicy p)
+        public PublicKeySecurityHandler(PublicKeyProtectionPolicy policy)
+            : base(policy)
         {
-            policy = p;
-            this.keyLength = policy.EncryptionKeyLength;
+            KeyLength = policy.EncryptionKeyLength;
         }
 
         /**
@@ -99,12 +99,19 @@ namespace PdfClown.Documents.Encryption
                         "Provided decryption material is not compatible with the document");
             }
 
-            SetDecryptMetadata(encryption.IsEncryptMetaData);
-            if (encryption.Length != 0)
+
+            var defaultCryptFilterDictionary = encryption.DefaultCryptFilterDictionary;
+            if (defaultCryptFilterDictionary != null && defaultCryptFilterDictionary.Length != 0)
             {
-
-                this.keyLength = encryption.Length;
-
+                KeyLength = (short)defaultCryptFilterDictionary.Length;
+                DecryptMetadata = defaultCryptFilterDictionary.IsEncryptMetaData;
+            }
+            else
+            {
+                KeyLength = (short)(encryption.Length != 0
+                    ? encryption.Length
+                    : 40);
+                DecryptMetadata = encryption.IsEncryptMetaData;
             }
 
             PublicKeyDecryptionMaterial material = (PublicKeyDecryptionMaterial)decryptionMaterial;
@@ -125,23 +132,21 @@ namespace PdfClown.Documents.Encryption
                 byte[] envelopedData = null;
 
                 // the bytes of each recipient in the recipients array
-                PdfArray array = (PdfArray)encryption.BaseDataObject.Resolve(PdfName.Recipients);
-                if (array == null)
-                {
-                    PdfCryptFilterDictionary defaultCryptFilterDictionary = encryption.DefaultCryptFilterDictionary;
-                    array = (PdfArray)defaultCryptFilterDictionary.BaseDataObject.Resolve(PdfName.Recipients);
-                }
-                byte[][] recipientFieldsBytes = new byte[array.Count][];
+                PdfArray array = (PdfArray)encryption.BaseDataObject.Resolve(PdfName.Recipients)
+                    ?? (PdfArray)defaultCryptFilterDictionary?.BaseDataObject.Resolve(PdfName.Recipients)
+                    ?? throw new IOException("/Recipients entry is missing in encryption dictionary");
+
+                Memory<byte>[] recipientFieldsBytes = new Memory<byte>[array.Count];
                 //TODO encryption.getRecipientsLength() and getRecipientStringAt() should be deprecated
 
                 int recipientFieldsLength = 0;
-                StringBuilder extraInfo = new StringBuilder();
+                var extraInfo = new StringBuilder();
                 for (int i = 0; i < array.Count; i++)
                 {
-                    PdfString recipientFieldString = (PdfString)array.Resolve(i);
-                    byte[] recipientBytes = recipientFieldString.GetBuffer();
-
-                    CmsEnvelopedData data = new CmsEnvelopedData(recipientBytes);
+                    var recipientFieldString = (PdfString)array.Resolve(i);
+                    var recipientBytes = recipientFieldString.RawValue;
+                    var stream = new ByteStream(recipientBytes);
+                    var data = new CmsEnvelopedData(stream);
                     var recipCertificatesIt = data.GetRecipientInfos().GetRecipients();
                     int j = 0;
                     foreach (RecipientInformation ri in recipCertificatesIt)
@@ -203,21 +208,33 @@ namespace PdfClown.Documents.Encryption
 
                 // put each bytes of the recipients array in the sha1 input
                 int sha1InputOffset = 20;
-                foreach (byte[] recipientFieldsByte in recipientFieldsBytes)
+                foreach (var recipientFieldsByte in recipientFieldsBytes)
                 {
-                    Array.Copy(recipientFieldsByte, 0, sha1Input, sha1InputOffset, recipientFieldsByte.Length);
+                    recipientFieldsByte.Span.CopyTo(sha1Input.AsSpan(sha1InputOffset, recipientFieldsByte.Length));
                     sha1InputOffset += recipientFieldsByte.Length;
                 }
 
                 byte[] mdResult;
                 if (encryption.Version == 4 || encryption.Version == 5)
                 {
-                    mdResult = SHA256.Create().Digest(sha1Input);
-
+                    if (!DecryptMetadata)
+                    {
+                        // "4 bytes with the value 0xFF if the key being generated is intended for use in
+                        // document-level encryption and the document metadata is being left as plaintext"
+                        Array.Resize(ref sha1Input, sha1Input.Length + 4);
+                        foreBytes.CopyTo(sha1Input.AsSpan(sha1Input.Length - 4, 4));
+                    }
+                    if (encryption.Version == 4)
+                    {
+                        mdResult = SHA1.Create().Digest(sha1Input);
+                    }
+                    else
+                    {
+                        mdResult = SHA256.Create().Digest(sha1Input);
+                    }
                     // detect whether AES encryption is used. This assumes that the encryption algo is 
                     // stored in the PDCryptFilterDictionary
                     // However, crypt filters are used only when V is 4 or 5.
-                    PdfCryptFilterDictionary defaultCryptFilterDictionary = encryption.DefaultCryptFilterDictionary;
                     if (defaultCryptFilterDictionary != null)
                     {
                         PdfName cryptFilterMethod = defaultCryptFilterDictionary.CryptFilterMethod;
@@ -230,8 +247,8 @@ namespace PdfClown.Documents.Encryption
                 }
 
                 // we have the encryption key ...
-                encryptionKey = new byte[this.keyLength / 8];
-                Array.Copy(mdResult, 0, encryptionKey, 0, this.keyLength / 8);
+                EncryptionKey = new byte[KeyLength / 8];
+                Array.Copy(mdResult, 0, EncryptionKey, 0, KeyLength / 8);
             }
             catch (Exception e)
             {
@@ -281,7 +298,7 @@ namespace PdfClown.Documents.Encryption
                 }
 
                 dictionary.Filter = FILTER;
-                dictionary.Length = this.keyLength;
+                dictionary.Length = KeyLength;
                 int version = ComputeVersionNumber();
                 dictionary.Version = version;
 
@@ -330,22 +347,27 @@ namespace PdfClown.Documents.Encryption
                 }
 
                 byte[] mdResult;
-                if (version == 4 || version == 5)
+                switch (version)
                 {
-                    dictionary.SubFilter = SUBFILTER5;
-                    mdResult = SHA256.Create().Digest(shaInput);
-                    PdfName aesVName = version == 5 ? PdfName.AESV3 : PdfName.AESV2;
-                    PrepareEncryptionDictAES(dictionary, aesVName, recipientsFields);
-                }
-                else
-                {
-                    dictionary.SubFilter = SUBFILTER4;
-                    mdResult = SHA1.Create().Digest(shaInput);
-                    dictionary.SetRecipients(recipientsFields);
+                    case 4:
+                        dictionary.SubFilter = SUBFILTER5;
+                        mdResult = SHA1.Create().Digest(shaInput);
+                        PrepareEncryptionDictAES(dictionary, PdfName.AESV2, recipientsFields);
+                        break;
+                    case 5:
+                        dictionary.SubFilter = SUBFILTER5;
+                        mdResult = SHA256.Create().Digest(shaInput);
+                        PrepareEncryptionDictAES(dictionary, PdfName.AESV3, recipientsFields);
+                        break;
+                    default:
+                        dictionary.SubFilter = SUBFILTER4;
+                        mdResult = SHA1.Create().Digest(shaInput);
+                        dictionary.SetRecipients(recipientsFields);
+                        break;
                 }
 
-                this.encryptionKey = new byte[this.keyLength / 8];
-                Array.Copy(mdResult, 0, this.encryptionKey, 0, this.keyLength / 8);
+                this.EncryptionKey = new byte[KeyLength / 8];
+                Array.Copy(mdResult, 0, this.EncryptionKey, 0, KeyLength / 8);
 
                 doc.File.Encryption = dictionary;
             }
@@ -355,35 +377,11 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        /**
-		 * Computes the version number of the StandardSecurityHandler based on the encryption key
-		 * length. See PDF Spec 1.6 p 93 and
-		 * <a href="https://www.adobe.com/content/dam/acom/en/devnet/pdf/adobe_supplement_iso32000.pdf">PDF
-		 * 1.7 Supplement ExtensionLevel: 3</a>
-		 *
-		 * @return The computed version number.
-		 */
-        private int ComputeVersionNumber()
-        {
-            switch (keyLength)
-            {
-                case 40:
-                    return 1;
-                case 128:
-                    return 2; // prefer RC4 (AES 128 doesn't work yet)
-                              //return 4; // prefer AES
-                case 256:
-                    return 5;
-                default:
-                    throw new ArgumentException("key length must be 40, 128 or 256");
-            }
-        }
-
         private void PrepareEncryptionDictAES(PdfEncryption encryptionDictionary, PdfName aesVName, byte[][] recipients)
         {
             PdfCryptFilterDictionary cryptFilterDictionary = new PdfCryptFilterDictionary(encryptionDictionary.File);
             cryptFilterDictionary.CryptFilterMethod = aesVName;
-            cryptFilterDictionary.Length = keyLength;
+            cryptFilterDictionary.Length = KeyLength;
             PdfArray array = new PdfArray();
             foreach (byte[] recipient in recipients)
             {
@@ -400,8 +398,8 @@ namespace PdfClown.Documents.Encryption
 
         private byte[][] ComputeRecipientsField(byte[] seed)
         {
-            byte[][] recipientsField = new byte[policy.NumberOfRecipients][];
-            var it = policy.RecipientsIterator;
+            byte[][] recipientsField = new byte[ProtectionPolicy.NumberOfRecipients][];
+            var it = ProtectionPolicy.RecipientsIterator;
             int i = 0;
 
             while (it.MoveNext())
@@ -425,6 +423,9 @@ namespace PdfClown.Documents.Encryption
                 pkcs7input[23] = one;
 
                 var obj = CreateDERForRecipient(pkcs7input, certificate);
+                var baos = new ByteStream();
+                obj.EncodeTo(baos, "DER");
+
                 recipientsField[i] = obj.GetDerEncoded();
 
                 i++;
@@ -435,11 +436,11 @@ namespace PdfClown.Documents.Encryption
         private Asn1Encodable CreateDERForRecipient(byte[] inp, X509Certificate cert)
         {
             string algorithm = PkcsObjectIdentifiers.RC2Cbc.Id;
-            Pkcs12ParametersGenerator apg;
+            PbeParametersGenerator apg;
             CipherKeyGenerator keygen;
             IBufferedCipher cipher;
             try
-            {
+            {                
                 apg = new Pkcs12ParametersGenerator(new Sha1Digest());//TODO Check
                 keygen = GeneratorUtilities.GetKeyGenerator(algorithm);
                 cipher = CipherUtilities.GetCipher(algorithm);
@@ -451,7 +452,7 @@ namespace PdfClown.Documents.Encryption
                         algorithm + "; possible reason: using an unsigned .jar file", e);
             }
 
-            //TODO apg.Init(PbeParametersGenerator.Pkcs12PasswordToBytes(password), salt, iCount);
+            //apg.Init(PbeParametersGenerator.Pkcs12PasswordToBytes(password.ToC), salt, iCount);
 
             var parameters = apg.GenerateDerivedParameters(algorithm, inp.Length * 8);
 
@@ -519,12 +520,5 @@ namespace PdfClown.Documents.Encryption
             return new KeyTransRecipientInfo(recipientId, algorithmId, octets);
         }
 
-        /**
-		 * {@inheritDoc}
-		 */
-        public override bool HasProtectionPolicy()
-        {
-            return policy != null;
-        }
     }
 }

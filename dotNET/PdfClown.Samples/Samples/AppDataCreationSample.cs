@@ -38,15 +38,16 @@ namespace PdfClown.Samples.CLI
                   this example, we chose a PdfDictionary populating it with arbitrary entries, including a
                   byte stream.
                 */
-                PdfStream myStream = new PdfStream(new Buffer("This is just some random characters to feed the stream..."));
-                myAppData.Data = new PdfDictionary(
-                  new PdfName("MyPrivateEntry"), PdfBoolean.True,
-                  new PdfName("MyStreamEntry"), file.Register(myStream)
-                  );
+                PdfStream myStream = new PdfStream(new ByteStream("This is just some random characters to feed the stream..."));
+                myAppData.Data = new PdfDictionary(2)
+                {
+                    { new PdfName("MyPrivateEntry"), PdfBoolean.True },
+                    { new PdfName("MyStreamEntry"), file.Register(myStream)}
+                };
 
                 // Add some (arbitrary) graphics content on the page!
                 BlockComposer composer = new BlockComposer(new PrimitiveComposer(page));
-                composer.BaseComposer.SetFont(PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Times, true, false), 14);
+                composer.BaseComposer.SetFont(FontType1.Load(document, FontName.TimesBold), 14);
                 SKSize pageSize = page.Size;
                 composer.Begin(SKRect.Create(50, 50, pageSize.Width - 100, pageSize.Height - 100), XAlignmentEnum.Left, YAlignmentEnum.Top);
                 composer.ShowText("This page holds private application data (see PieceInfo entry in its dictionary).");
@@ -61,16 +62,15 @@ namespace PdfClown.Samples.CLI
                   NOTE: Applications are free to define whatever structure their private data should have. In
                   this example, we chose a PdfDictionary populating it with arbitrary entries.
                 */
-                myAppData.Data = new PdfDictionary(
-                  new PdfName("MyPrivateDocEntry"), new PdfTextString("This is an arbitrary value"),
-                  new PdfName("AnotherPrivateEntry"), new PdfDictionary(
-                    new PdfName("SubEntry"), new PdfInteger(1287),
-                    new PdfName("SomeData"), new PdfArray(
-                      new PdfReal(282.773),
-                      new PdfReal(14.28378)
-                      )
-                    )
-                  );
+                myAppData.Data = new PdfDictionary()
+                {
+                    { new PdfName("MyPrivateDocEntry"), new PdfTextString("This is an arbitrary value") },
+                    { new PdfName("AnotherPrivateEntry"), new PdfDictionary
+                    {
+                        { new PdfName("SubEntry"), new PdfInteger(1287) },
+                        { new PdfName("SomeData"), new PdfArray(2) { new PdfReal(282.773), new PdfReal(14.28378)} }
+                    }}
+                };
             }
 
             // 3. Serialize the PDF file!

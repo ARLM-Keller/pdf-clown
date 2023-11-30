@@ -40,9 +40,6 @@ namespace PdfClown.Documents.Contents.XObjects
     [PDF(VersionEnum.PDF10)]
     public abstract class XObject : PdfObjectWrapper<PdfStream>, ILayerable
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Wraps an external object reference into an external object.</summary>
           <param name="baseObject">External object base object.</param>
@@ -68,12 +65,7 @@ namespace PdfClown.Documents.Contents.XObjects
             else
                 return null;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new external object inside the document.</summary>
         */
@@ -94,10 +86,7 @@ namespace PdfClown.Documents.Contents.XObjects
         */
         public XObject(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the mapping from external-object space to user space.</summary>
         */
@@ -116,15 +105,10 @@ namespace PdfClown.Documents.Contents.XObjects
             set;
         }
 
-        #region ILayerable
         public LayerEntity Layer
         {
             get => (LayerEntity)PropertyList.Wrap(BaseDataObject.Header[PdfName.OC]);
             set => BaseDataObject.Header[PdfName.OC] = value != null ? value.Membership.BaseObject : null;
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

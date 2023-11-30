@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using SkiaSharp;
 using PdfClown.Documents.Contents;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -45,21 +46,13 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class Stamp : Markup
     {
-        #region types
         /**
           <summary>Predefined stamp type [PDF:1.6:8.4.5].</summary>
         */
-        #endregion
 
-        #region static
-        #region fields
         private static readonly string CustomTypeName = "Custom";
         private static readonly StandardStampEnum DefaultType = StandardStampEnum.Draft;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new predefined stamp on the specified page.</summary>
           <param name="page">Page where this stamp has to be placed.</param>
@@ -105,10 +98,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public Stamp(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the type name of this stamp.</summary>
           <remarks>To ensure predictable rendering of the <see cref="StandardStampEnum">standard stamp
@@ -185,9 +175,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                 yield return cpBase;
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     public enum StandardStampEnum

@@ -17,7 +17,7 @@
  */
 using PdfClown.Objects;
 using PdfClown.Util;
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Util.Collections;
 using System;
 using System.Collections.Generic;
 
@@ -60,8 +60,8 @@ namespace PdfClown.Documents.Contents.Fonts
                 throw new ArgumentException("Invalid encoding: " + baseEncoding);
             }
 
-            codeToName.AddAll(this.baseEncoding.codeToName);
-            inverted.AddAll(this.baseEncoding.inverted);
+            CodeToNameMap.AddRange(this.baseEncoding.CodeToNameMap);
+            NameToCodeMap.AddRange(this.baseEncoding.NameToCodeMap);
             ApplyDifferences();
         }
 
@@ -119,16 +119,16 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             this.baseEncoding = baseEncoding;
 
-            codeToName.AddAll(baseEncoding.codeToName);
-            inverted.AddAll(baseEncoding.inverted);
+            CodeToNameMap.AddRange(baseEncoding.CodeToNameMap);
+            NameToCodeMap.AddRange(baseEncoding.NameToCodeMap);
             ApplyDifferences();
         }
 
         private void ApplyDifferences()
         {
             // now replace with the differences
-            var diff = encoding.Resolve(PdfName.Differences);
-            if (!(diff is PdfArray diffArray))
+            var diffArray = encoding.GetArray(PdfName.Differences);
+            if (diffArray == null)
             {
                 return;
             }
@@ -168,6 +168,19 @@ namespace PdfClown.Documents.Contents.Fonts
         public override PdfDirectObject GetPdfObject()
         {
             return encoding;
+        }
+
+        public override string EncodingName
+        {
+            get
+            {
+                if (baseEncoding == null)
+                {
+                    // In type 3 the /Differences array shall specify the complete character encoding
+                    return "differences";
+                }
+                return baseEncoding.EncodingName + " with differences";
+            }
         }
 
     }

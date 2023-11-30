@@ -34,6 +34,11 @@ using SkiaSharp;
 using PdfClown.Util.Math.Geom;
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Util;
+using System.Net;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Documents.Contents.Composition;
+using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Util.Math;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -45,38 +50,31 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class Line : Markup
     {
-        #region static
-        #region fields
+        private const int DefaultFontSize = 9;
         private static readonly double DefaultLeaderLineExtension = 0;
         private static readonly double DefaultLeaderLineLength = 0;
         private static readonly double DefaultLeaderLineOffset = 0;
         private static readonly LineEndStyleEnum DefaultLineEndStyle = LineEndStyleEnum.None;
-        #endregion
-        #endregion
 
-        #region dynamic
+        private SKPoint? captionOffset;
         private SKPoint? startPoint;
         private SKPoint? endPoint;
-        private SKPoint? captionOffset;
 
         private LineStartControlPoint cpStart;
         private LineEndControlPoint cpEnd;
-        #region constructors
+
         public Line(Page page, SKPoint startPoint, SKPoint endPoint, string text, DeviceRGBColor color)
             : base(page, PdfName.Line, SKRect.Create(startPoint.X, startPoint.Y, endPoint.X - startPoint.X, endPoint.Y - startPoint.Y), text)
         {
-            BaseDataObject[PdfName.L] = new PdfArray(new PdfDirectObject[] { PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0) });
-            StartPoint = startPoint;
-            EndPoint = endPoint;
+            BaseDataObject[PdfName.L] = new PdfArray(4) { PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0) };
+            StartPoint = page.InvertRotateMatrix.MapPoint(startPoint);
+            EndPoint = page.InvertRotateMatrix.MapPoint(endPoint);
             Color = color;
         }
 
         public Line(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets whether the contents should be shown as a caption.</summary>
         */
@@ -113,21 +111,17 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF17)]
         public SKPoint? CaptionOffset
         {
-            get
-            {
-                if (captionOffset == null)
-                {
-                    var offset = (PdfArray)BaseDataObject[PdfName.CO];
-                    captionOffset = new SKPoint(offset?.GetFloat(0) ?? 0F, offset?.GetFloat(1) ?? 0F);
-                }
-                return captionOffset;
-            }
+            get => captionOffset ??= BaseDataObject[PdfName.CO] is PdfArray offset
+                    ? new SKPoint(offset.GetFloat(0), offset.GetFloat(1))
+                    : new SKPoint(0F, 0F);
             set
             {
                 var oldValue = CaptionOffset;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.CO] = value == null ? null : new PdfArray(PdfReal.Get(value.Value.X), PdfReal.Get((float)value.Value.Y));
+                    BaseDataObject[PdfName.CO] = value == null
+                        ? null :
+                        new PdfArray(2) { PdfReal.Get(value.Value.X), PdfReal.Get((float)value.Value.Y) };
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -139,19 +133,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF14)]
         public LineEndStyleEnum StartStyle
         {
-            get
-            {
-                PdfArray endstylesObject = (PdfArray)BaseDataObject[PdfName.LE];
-                return endstylesObject != null
-                  ? LineEndStyleEnumExtension.Get((PdfName)endstylesObject[0])
+            get => BaseDataObject[PdfName.LE] is PdfArray endstylesObject
+                  ? LineEndStyleEnumExtension.Get(endstylesObject.GetString(0))
                   : DefaultLineEndStyle;
-            }
             set
             {
                 var oldValue = StartStyle;
                 if (oldValue != value)
                 {
-                    EnsureLineEndStylesObject()[0] = value.GetName();
+                    EnsureLineEndStylesObject().SetName(0, value.GetName());
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -163,19 +153,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF14)]
         public LineEndStyleEnum EndStyle
         {
-            get
-            {
-                PdfArray endstylesObject = (PdfArray)BaseDataObject[PdfName.LE];
-                return endstylesObject != null
-                  ? LineEndStyleEnumExtension.Get((PdfName)endstylesObject[1])
+            get => BaseDataObject[PdfName.LE] is PdfArray endstylesObject
+                  ? LineEndStyleEnumExtension.Get(endstylesObject.GetString(1))
                   : DefaultLineEndStyle;
-            }
             set
             {
                 var oldValue = EndStyle;
                 if (oldValue != value)
                 {
-                    EnsureLineEndStylesObject()[1] = value.GetName();
+                    EnsureLineEndStylesObject().SetName(1, value.GetName());
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -194,7 +180,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = LeaderLineExtension;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.LLE] = PdfReal.Get(value);
+                    BaseDataObject.SetDouble(PdfName.LLE, value);
                     /*
                       NOTE: If leader line extension entry is present, leader line MUST be too.
                     */
@@ -278,41 +264,40 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public SKPoint StartPoint
         {
-            get => startPoint ?? (startPoint = PageMatrix.MapPoint(new SKPoint(LineData.GetFloat(0), LineData.GetFloat(1)))).Value;
+            get => startPoint ??= new SKPoint(LineData.GetFloat(0), LineData.GetFloat(1));
             set
             {
                 var oldValue = StartPoint;
                 if (oldValue != value)
                 {
                     startPoint = value;
-                    value = InvertPageMatrix.MapPoint(value);
-                    PdfArray coordinatesObject = LineData;
-                    coordinatesObject[0] = PdfReal.Get(value.X);
-                    coordinatesObject[1] = PdfReal.Get(value.Y);
+                    var coordinatesObject = LineData;
+                    coordinatesObject.SetFloat(0, value.X);
+                    coordinatesObject.SetFloat(1, value.Y);
                     OnPropertyChanged(coordinatesObject, coordinatesObject, nameof(LineData));
                     RefreshBox();
                 }
             }
         }
 
+
         /**
           <summary>Gets/Sets the ending coordinates.</summary>
         */
         public SKPoint EndPoint
         {
-            get => endPoint ?? (endPoint = PageMatrix.MapPoint(new SKPoint(LineData.GetFloat(2), LineData.GetFloat(3)))).Value;
+            get => endPoint ??= new SKPoint(LineData.GetFloat(2), LineData.GetFloat(3));
             set
             {
                 var oldValue = EndPoint;
                 if (oldValue != value)
                 {
                     endPoint = value;
-                    value = InvertPageMatrix.MapPoint(value);
-                    PdfArray coordinatesObject = LineData;
-                    coordinatesObject[2] = PdfReal.Get(value.X);
-                    coordinatesObject[3] = PdfReal.Get(value.Y);
-                    OnPropertyChanged(coordinatesObject, coordinatesObject, nameof(LineData));
+                    var coordinatesObject = LineData;
+                    coordinatesObject.SetFloat(2, value.X);
+                    coordinatesObject.SetFloat(3, value.Y);
                     RefreshBox();
+                    OnPropertyChanged(LineData, LineData, nameof(LineData));
                 }
             }
         }
@@ -336,84 +321,120 @@ namespace PdfClown.Documents.Interaction.Annotations
             EndPoint = dif.MapPoint(EndPoint);
             base.MoveTo(newBox);
         }
-        #endregion
 
-        #region private
         private PdfArray EnsureLineEndStylesObject()
         {
             PdfArray endStylesObject = (PdfArray)BaseDataObject[PdfName.LE];
             if (endStylesObject == null)
             {
-                BaseDataObject[PdfName.LE] = endStylesObject = new PdfArray(
-                  new PdfDirectObject[] {
-                      DefaultLineEndStyle.GetName(),
-                      DefaultLineEndStyle.GetName() }
-                  );
+                BaseDataObject[PdfName.LE] = endStylesObject = new PdfArray(2)
+                {
+                      new PdfName(DefaultLineEndStyle.GetName()),
+                      new PdfName(DefaultLineEndStyle.GetName())
+                };
             }
             return endStylesObject;
         }
 
+        protected override void RefreshAppearance()
+        {
+            var appearence = ResetAppearance(out var matrix);
+            var composer = new PrimitiveComposer(appearence);
+            composer.SetStrokeColor(Color ?? DeviceRGBColor.Default);
+            composer.SetFillColor(Color ?? DeviceRGBColor.Default);
+
+
+            var startPoint = matrix.MapPoint(StartPoint);
+            var endPoint = matrix.MapPoint(EndPoint);
+            var lineLength = SKPoint.Distance(startPoint, endPoint);
+            var normal = SKPoint.Normalize(endPoint - startPoint);
+            var invertNormal = new SKPoint(normal.X * -1, normal.Y * -1);
+            if (CaptionVisible && !string.IsNullOrEmpty(Contents))
+            {
+                var fontName = appearence.GetDefaultFont(out var font);
+                var textLength = (float)font.GetWidth(Contents, DefaultFontSize);
+
+                var offset = (lineLength - textLength) / 2;
+
+                var textLocation = startPoint + new SKPoint(normal.X * offset, normal.Y * offset);
+                if (CaptionPosition == LineCaptionPosition.Inline)
+                {
+                    composer.StartPath(startPoint);
+                    composer.DrawLine(startPoint + new SKPoint(normal.X * offset, normal.Y * offset));
+
+                    composer.StartPath(endPoint);
+                    composer.DrawLine(endPoint + new SKPoint(normal.X * -offset, normal.Y * -offset));
+                }
+                else
+                {
+                    composer.StartPath(startPoint);
+                    composer.DrawLine(endPoint);
+                }
+                composer.Stroke();
+
+                var horizontal = new SKPoint(1, 0);
+                var theta = Math.Atan2(normal.X, normal.Y) - Math.Atan2(horizontal.X, horizontal.Y);
+
+                while (theta <= -Math.PI)
+                    theta += 2 * Math.PI;
+
+                while (theta > Math.PI)
+                    theta -= 2 * Math.PI;
+
+                composer.BeginLocalState();
+                composer.SetFont(fontName, DefaultFontSize);
+                composer.ShowText(Contents, textLocation, XAlignmentEnum.Left,
+                    CaptionPosition == LineCaptionPosition.Inline ? YAlignmentEnum.Middle : YAlignmentEnum.Top,
+                    MathUtils.ToDegrees(theta));
+                composer.End();
+            }
+            else
+            {
+                composer.StartPath(startPoint);
+                composer.DrawLine(endPoint);
+                composer.Stroke();
+            }
+            if (StartStyle == LineEndStyleEnum.OpenArrow)
+            {
+                composer.AddOpenArrow(startPoint, normal);
+                composer.Stroke();
+            }
+            else if (StartStyle == LineEndStyleEnum.ClosedArrow)
+            {
+                composer.AddClosedArrow(startPoint, normal);
+                composer.FillStroke();
+            }
+            else if (StartStyle == LineEndStyleEnum.Circle)
+            {
+                composer.DrawCircle(startPoint, 4);
+                composer.FillStroke();
+            }
+
+            if (EndStyle == LineEndStyleEnum.OpenArrow)
+            {
+                composer.AddOpenArrow(endPoint, invertNormal);
+                composer.Stroke();
+            }
+            else if (EndStyle == LineEndStyleEnum.ClosedArrow)
+            {
+                composer.AddClosedArrow(endPoint, invertNormal);
+                composer.FillStroke();
+            }
+            else if (EndStyle == LineEndStyleEnum.Circle)
+            {
+                composer.DrawCircle(endPoint, 4);
+                composer.FillStroke();
+            }
+
+
+            composer.Flush();
+
+        }
+
         public override void DrawSpecial(SKCanvas canvas)
         {
-            var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
-            using (var paint = new SKPaint { Color = color })
-            using (var path = new SKPath())
-            {
-                var lineLength = SKPoint.Distance(StartPoint, EndPoint);
-                var normal = SKPoint.Normalize(EndPoint - StartPoint);
-                var invertNormal = new SKPoint(normal.X * -1, normal.Y * -1);
-
-                Border?.Apply(paint, null);
-                path.MoveTo(StartPoint);
-                path.LineTo(EndPoint);
-
-                if (CaptionVisible && !string.IsNullOrEmpty(Contents))
-                {
-
-                    using (var textPaint = new SKPaint { Color = color, TextSize = 9, IsAntialias = true })
-                    {
-                        var textLength = textPaint.MeasureText(Contents);
-                        var offset = (lineLength - textLength) / 2;
-
-                        canvas.DrawTextOnPath(Contents, path, new SKPoint(offset, 2), textPaint);
-                        path.Rewind();
-                        path.MoveTo(StartPoint);
-                        path.LineTo(StartPoint + new SKPoint(normal.X * offset, normal.Y * offset));
-
-                        path.MoveTo(EndPoint);
-                        path.LineTo(EndPoint + new SKPoint(normal.X * -offset, normal.Y * -offset));
-                    }
-                }
-                if (StartStyle == LineEndStyleEnum.OpenArrow)
-                {
-                    path.AddOpenArrow(StartPoint, normal);
-                }
-                else if (StartStyle == LineEndStyleEnum.ClosedArrow)
-                {
-                    path.AddCloseArrow(StartPoint, normal);
-                }
-                else if (StartStyle == LineEndStyleEnum.Circle)
-                {
-                    path.AddCircle(StartPoint.X, StartPoint.Y, 4);
-                }
-
-                if (EndStyle == LineEndStyleEnum.OpenArrow)
-                {
-                    path.AddOpenArrow(EndPoint, invertNormal);
-                }
-                else if (EndStyle == LineEndStyleEnum.ClosedArrow)
-                {
-                    path.AddCloseArrow(EndPoint, invertNormal);
-                }
-                else if (EndStyle == LineEndStyleEnum.Circle)
-                {
-                    path.AddCircle(EndPoint.X, EndPoint.Y, 4);
-                }
-
-
-                canvas.DrawPath(path, paint);
-
-            }
+            RefreshAppearance();
+            DrawAppearance(canvas, Appearance.Normal[null]);
         }
 
         public override void RefreshBox()
@@ -439,9 +460,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             return cloned;
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 
     public enum LineCaptionPosition

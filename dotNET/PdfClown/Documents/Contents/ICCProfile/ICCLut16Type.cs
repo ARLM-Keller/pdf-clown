@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public class ICCLut16Type : ICCTag
@@ -50,11 +52,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public ushort[] InputTables;
         public ushort[] CLUTValues;
         public ushort[] OutputTables;
-        public override void Load(PdfClown.Bytes.Buffer buffer)
+        public override void Load(PdfClown.Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
             NumberOfInputChannels = (byte)buffer.ReadByte();
             NumberOfOutputChannels = (byte)buffer.ReadByte();
             NumberOfCLUTGridPoints = (byte)buffer.ReadByte();
@@ -68,22 +70,22 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             Encoded20 = buffer.ReadFixed32();
             Encoded21 = buffer.ReadFixed32();
             Encoded22 = buffer.ReadFixed32();
-            NumberOfInputTables = buffer.ReadUnsignedShort();
-            NumberOfOutputTables = buffer.ReadUnsignedShort();
+            NumberOfInputTables = buffer.ReadUInt16();
+            NumberOfOutputTables = buffer.ReadUInt16();
             InputTables = new ushort[NumberOfInputTables];
             for (int i = 0; i < NumberOfInputTables; i++)
             {
-                InputTables[i] = buffer.ReadUnsignedShort();
+                InputTables[i] = buffer.ReadUInt16();
             }
             CLUTValues = new ushort[NumberOfCLUTGridPoints];
             for (int i = 0; i < NumberOfCLUTGridPoints; i++)
             {
-                CLUTValues[i] = buffer.ReadUnsignedShort();
+                CLUTValues[i] = buffer.ReadUInt16();
             }
             OutputTables = new ushort[NumberOfOutputTables];
             for (int i = 0; i < NumberOfOutputTables; i++)
             {
-                OutputTables[i] = buffer.ReadUnsignedShort();
+                OutputTables[i] = buffer.ReadUInt16();
             }
         }
     }

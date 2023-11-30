@@ -37,16 +37,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceRGBColor : DeviceColor, IEquatable<DeviceRGBColor>
     {
-        #region static
-        #region fields
         public static readonly DeviceRGBColor Black = Get(SKColors.Black);
         public static readonly DeviceRGBColor White = Get(SKColors.White);
 
         public static readonly DeviceRGBColor Default = Black;
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the color corresponding to the specified components.</summary>
           <param name="components">Color components to convert.</param>
@@ -68,33 +63,27 @@ namespace PdfClown.Documents.Contents.ColorSpaces
               ? new DeviceRGBColor(color.Value.Red / 255d, color.Value.Green / 255d, color.Value.Blue / 255d)
               : Default);
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public DeviceRGBColor(double r, double g, double b)
-            : this(new PdfArray(
+            : this(new PdfArray(3)
+            {
                 PdfReal.Get(NormalizeComponent(r)),
                 PdfReal.Get(NormalizeComponent(g)),
-                PdfReal.Get(NormalizeComponent(b))))
+                PdfReal.Get(NormalizeComponent(b))
+            })
         { }
 
         internal DeviceRGBColor(IList<PdfDirectObject> components)
             : base(DeviceRGBColorSpace.Default, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the red component.</summary>
         */
         public float R
         {
-            get => GetComponentValue(0);
-            set => SetComponentValue(0, value);
+            get => this[0];
+            set => this[0] = value;
         }
 
         /**
@@ -102,8 +91,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public float G
         {
-            get => GetComponentValue(1);
-            set => SetComponentValue(1, value);
+            get => this[1];
+            set => this[1] = value;
         }
 
         /**
@@ -111,8 +100,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public float B
         {
-            get => GetComponentValue(2);
-            set => SetComponentValue(2, value);
+            get => this[2];
+            set => this[2] = value;
         }
 
         public override bool IsZero => Equals(Black);
@@ -131,8 +120,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 && B.Equals(other.B);
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

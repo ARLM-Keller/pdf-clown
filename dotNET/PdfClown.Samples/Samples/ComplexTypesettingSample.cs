@@ -40,7 +40,7 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            files::File file = new files::File();
+            var file = new files::File();
             Document document = file.Document;
             // Set default page size (A4)!
             document.PageSize = PageFormat.GetSize();
@@ -65,86 +65,46 @@ namespace PdfClown.Samples.CLI
             Pages pages = document.Pages;
             Bookmarks bookmarks = document.Bookmarks;
             Page page = pages[0];
-            Bookmark rootBookmark = new Bookmark(
-              document,
-              "Creation Sample",
-              new LocalDestination(page)
-              );
+            var rootBookmark = new Bookmark(document, "Creation Sample", new LocalDestination(page));
             bookmarks.Add(rootBookmark);
             bookmarks = rootBookmark.Bookmarks;
             page = pages[1];
-            Bookmark bookmark = new Bookmark(
-              document,
-              "2nd page (close-up view)",
-              new LocalDestination(
-                page,
-                Destination.ModeEnum.XYZ,
-                new SKPoint(0, 250),
-                2
-                )
-              );
+            var bookmark = new Bookmark(document, "2nd page (close-up view)",
+                new LocalDestination(page, Destination.ModeEnum.XYZ, new SKPoint(0, 250), 2));
             bookmarks.Add(bookmark);
-            bookmark.Bookmarks.Add(
-              new Bookmark(
-                document,
-                "2nd page (mid view)",
-                new LocalDestination(
-                  page,
-                  Destination.ModeEnum.XYZ,
-                  new SKPoint(0, page.Size.Height - 250),
-                  1
-                  )
-                )
-              );
+            bookmark.Bookmarks.Add(new Bookmark(document, "2nd page (mid view)",
+                new LocalDestination(page, Destination.ModeEnum.XYZ, new SKPoint(0, page.Size.Height - 250), 1)));
             page = pages[2];
-            bookmarks.Add(
-              new Bookmark(
-                document,
-                "3rd page (fit horizontal view)",
-                new LocalDestination(
-                  page,
-                  Destination.ModeEnum.FitHorizontal,
-                  0,
-                  null
-                  )
-                )
-              );
-            bookmarks.Add(
-              bookmark = new Bookmark(
-                  document,
-                  "PDF Clown Home Page",
-                  new actions::GoToURI(document, new Uri("http://www.pdfclown.org"))
-                  )
-                );
+            bookmarks.Add(new Bookmark(document, "3rd page (fit horizontal view)",
+                new LocalDestination(page, Destination.ModeEnum.FitHorizontal, 0, null)));
+            bookmarks.Add(bookmark = new Bookmark(document, "PDF Clown Home Page",
+                  new actions::GoToURI(document, new Uri("http://www.pdfclown.org"))));
             bookmark.Flags = Bookmark.FlagsEnum.Bold | Bookmark.FlagsEnum.Italic;
             bookmark.Color = new colorSpaces::DeviceRGBColor(.5, .5, 1);
 
             document.ViewerPreferences.PageMode = ViewerPreferences.PageModeEnum.Bookmarks;
         }
 
-        private void BuildFreeSoftwareDefinitionPages(
-          Document document,
-          FormXObject template
-          )
+        private void BuildFreeSoftwareDefinitionPages(Document document, FormXObject template)
         {
             // Add page!
-            Page page = new Page(document);
+            var page = new Page(document);
             document.Pages.Add(page);
             SKSize pageSize = page.Size;
 
             string title = "The Free Software Definition";
 
             // Create the article thread!
-            Article article = new Article(document);
+            var article = new Article(document);
             {
-                Information articleInfo = article.Information;
+                var articleInfo = article.Information;
                 articleInfo.Title = title;
                 articleInfo.Author = "Free Software Foundation, Inc.";
             }
             // Get the article beads collection to populate!
             ArticleElements articleElements = article.Elements;
 
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
             // Add the background template!
             composer.ShowXObject(template);
             // Wrap the content composer inside a block composer in order to achieve higher-level typographic control!
@@ -153,30 +113,20 @@ namespace PdfClown.Samples.CLI
               Flow-level typographic features are currently not supported: block-level typographic features
               are the foundations upon which flow-level typographic features will sit.
             */
-            BlockComposer blockComposer = new BlockComposer(composer);
+            var blockComposer = new BlockComposer(composer);
             blockComposer.Hyphenation = true;
 
             SKSize breakSize = new SKSize(0, 10);
             // Add the font to the document!
-            fonts::Font font = fonts::PdfType0Font.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
+            fonts::Font font = fonts::FontType0.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
 
-            SKRect frame = SKRect.Create(
-              20,
-              150,
-              (pageSize.Width - 90 - 20) / 2,
-              pageSize.Height - 250
-              );
+            SKRect frame = SKRect.Create(20, 150, (pageSize.Width - 90 - 20) / 2, pageSize.Height - 250);
 
             // Showing the 'GNU' image...
             // Instantiate a jpeg image object!
             entities::Image image = entities::Image.Get(GetResourcePath("images" + Path.DirectorySeparatorChar + "gnu.jpg")); // Abstract image (entity).
                                                                                                                               // Show the image!
-            composer.ShowXObject(
-              image.ToXObject(document),
-              new SKPoint(
-                (pageSize.Width - 90 - image.Width) / 2 + 20,
-                pageSize.Height - 100 - image.Height)
-              );
+            composer.ShowXObject(image.ToXObject(document), new SKPoint((pageSize.Width - 90 - image.Width) / 2 + 20, pageSize.Height - 100 - image.Height));
 
             // Showing the title...
             blockComposer.Begin(frame, XAlignmentEnum.Left, YAlignmentEnum.Top);
@@ -239,7 +189,7 @@ namespace PdfClown.Samples.CLI
           YAlignmentEnum.Top,
           YAlignmentEnum.Top
               };
-            String[] paragraphs = new String[]
+            var paragraphs = new String[]
               {
           "We maintain this free software definition to show clearly what must be true about a particular software program for it to be considered free software.",
           "\"Free software\" is a matter of liberty, not price. To understand the concept, you should think of \"free\" as in \"free speech\", not as in \"free beer\".",
@@ -334,11 +284,11 @@ namespace PdfClown.Samples.CLI
         private void BuildWelcomePage(Document document, FormXObject template)
         {
             // Add welcome page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new Page(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
             SKSize pageSize = page.Size;
 
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
             // Add the background template!
             composer.ShowXObject(template);
             // Wrap the content composer inside a block composer in order to achieve higher-level typographic control!
@@ -347,20 +297,19 @@ namespace PdfClown.Samples.CLI
               Flow-level typographic features are currently not supported: block-level typographic features
               are the foundations upon which flow-level typographic features will sit.
             */
-            BlockComposer blockComposer = new BlockComposer(composer);
+            var blockComposer = new BlockComposer(composer);
 
-            SKSize breakSize = new SKSize(0, 20); // Size of a paragraph break.
-                                                  // Instantiate the page body's font!
-            fonts::Font font = fonts::PdfType0Font.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "lazyDog.ttf"));
+            var breakSize = new SKSize(0, 20); // Size of a paragraph break.
+                                               // Instantiate the page body's font!
+            var font = fonts::FontType0.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "lazyDog.ttf"));
 
             // Showing the page title...
             // Define the box frame to force the page title within!
-            SKRect frame = SKRect.Create(
+            var frame = SKRect.Create(
               20,
               150,
               (float)pageSize.Width - 90,
-              (float)pageSize.Height - 250
-              );
+              (float)pageSize.Height - 250);
             // Begin the block!
             blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Top);
             // Set the font to use!
@@ -374,30 +323,24 @@ namespace PdfClown.Samples.CLI
 
             // Showing the clown photo...
             // Instantiate a jpeg image object!
-            entities::Image image = entities::Image.Get(GetResourcePath("images" + Path.DirectorySeparatorChar + "Clown.jpg")); // Abstract image (entity).
-            SKPoint imageLocation = new SKPoint(
+            var image = entities::Image.Get(GetResourcePath("images" + Path.DirectorySeparatorChar + "Clown.jpg")); // Abstract image (entity).
+            var imageLocation = new SKPoint(
               blockComposer.BoundBox.Left + blockComposer.BoundBox.Width - image.Width,
-              blockComposer.BoundBox.Top + blockComposer.BoundBox.Height + 25
-              );
+              blockComposer.BoundBox.Top + blockComposer.BoundBox.Height + 25);
             // Show the image!
-            composer.ShowXObject(
-              image.ToXObject(document),
-              imageLocation
-              );
+            composer.ShowXObject(image.ToXObject(document), imageLocation);
 
             SKRect descriptionFrame = SKRect.Create(
               imageLocation.X,
               imageLocation.Y + image.Height + 5,
               image.Width,
-              20
-              );
+              20);
 
             frame = SKRect.Create(
               blockComposer.BoundBox.Left,
               imageLocation.Y,
               blockComposer.BoundBox.Width - image.Width - 20,
-              image.Height
-              );
+              image.Height);
             blockComposer.Begin(frame, XAlignmentEnum.Left, YAlignmentEnum.Middle);
             {
                 composer.SetFont(font, 30);
@@ -411,8 +354,7 @@ namespace PdfClown.Samples.CLI
               blockComposer.BoundBox.Left,
               blockComposer.BoundBox.Top + blockComposer.BoundBox.Height,
               pageSize.Width - 90,
-              pageSize.Height - 100 - (blockComposer.BoundBox.Top + blockComposer.BoundBox.Height)
-              );
+              pageSize.Height - 100 - (blockComposer.BoundBox.Top + blockComposer.BoundBox.Height));
             blockComposer.Begin(frame, XAlignmentEnum.Justify, YAlignmentEnum.Bottom);
             {
                 composer.SetFont(font, 14);
@@ -483,68 +425,41 @@ namespace PdfClown.Samples.CLI
         private FormXObject BuildTemplate(Document document, DateTime creationDate)
         {
             // Create a template (form)!
-            FormXObject template = new FormXObject(document, document.PageSize.Value);
+            var template = new FormXObject(document, document.PageSize.Value);
             SKSize templateSize = template.Size;
 
             // Get form content stream!
-            PrimitiveComposer composer = new PrimitiveComposer(template);
+            var composer = new PrimitiveComposer(template);
 
             // Showing the header image inside the common content stream...
             // Instantiate a jpeg image object!
             entities::Image image = entities::Image.Get(GetResourcePath("images" + Path.DirectorySeparatorChar + "mountains.jpg")); // Abstract image (entity).
                                                                                                                                     // Show the image inside the common content stream!
-            composer.ShowXObject(
-              image.ToXObject(document),
-              new SKPoint(0, 0),
-              new SKSize(templateSize.Width - 50, 125)
-              );
+            composer.ShowXObject(image.ToXObject(document), new SKPoint(0, 0), new SKSize(templateSize.Width - 50, 125));
 
             // Showing the 'PdfClown' label inside the common content stream...
             composer.BeginLocalState();
             composer.SetFillColor(new colorSpaces::DeviceRGBColor(115f / 255, 164f / 255, 232f / 255));
             // Set the font to use!
-            composer.SetFont(fonts::PdfType1Font.Load(document, fonts::PdfType1Font.FamilyEnum.Times, true, false), 120);
+            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.TimesBold), 120);
             // Show the text!
-            composer.ShowText(
-              "PdfClown",
-              new SKPoint(
-                0,
-                templateSize.Height - (float)composer.State.Font.GetAscent(composer.State.FontSize)
-                )
-              );
+            composer.ShowText("PdfClown", new SKPoint(0, templateSize.Height - (float)composer.State.Font.GetAscent(composer.State.FontSize)));
 
             // Drawing the side rectangle...
-            composer.DrawRectangle(
-              SKRect.Create(
-                (float)templateSize.Width - 50,
-                0,
-                50,
-                (float)templateSize.Height
-                )
-              );
+            composer.DrawRectangle(SKRect.Create((float)templateSize.Width - 50, 0, 50, (float)templateSize.Height));
             composer.Fill();
             composer.End();
 
             // Showing the side text inside the common content stream...
             composer.BeginLocalState();
             {
-                composer.SetFont(fonts::PdfType1Font.Load(document, fonts::PdfType1Font.FamilyEnum.Helvetica, false, false), 8);
+                composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.Helvetica), 8);
                 composer.SetFillColor(colorSpaces::DeviceRGBColor.White);
                 composer.BeginLocalState();
                 {
-                    composer.Rotate(
-                      90,
-                      new SKPoint(
-                        templateSize.Width - 50,
-                        templateSize.Height - 25
-                        )
-                      );
+                    composer.Rotate(90, new SKPoint(templateSize.Width - 50, templateSize.Height - 25));
                     BlockComposer blockComposer = new BlockComposer(composer);
-                    blockComposer.Begin(
-                      SKRect.Create(0, 0, 300, 50),
-                      XAlignmentEnum.Left,
-                      YAlignmentEnum.Middle
-                      );
+                    blockComposer.Begin(SKRect.Create(0, 0, 300, 50), XAlignmentEnum.Left, YAlignmentEnum.Middle);
                     {
                         blockComposer.ShowText("Generated by PDF Clown on " + creationDate);
                         blockComposer.ShowBreak();

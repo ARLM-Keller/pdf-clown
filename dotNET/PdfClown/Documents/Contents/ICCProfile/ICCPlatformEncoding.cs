@@ -31,11 +31,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public uint Size;
         public uint Count;
         public ICCDeviceSettingsCombination[] SetttingCombinations;
-        internal void Load(Bytes.Buffer buffer)
+        internal void Load(Bytes.ByteStream buffer)
         {
-            PlatformId = (ICCPrimaryPlatformSignatures)buffer.ReadUnsignedInt();
-            Size = buffer.ReadUnsignedInt();
-            Count = buffer.ReadUnsignedInt();
+            PlatformId = (ICCPrimaryPlatformSignatures)buffer.ReadUInt32();
+            Size = buffer.ReadUInt32();
+            Count = buffer.ReadUInt32();
             SetttingCombinations = new ICCDeviceSettingsCombination[Count]; 
             for (int i = 0; i < Count; i++)
             {

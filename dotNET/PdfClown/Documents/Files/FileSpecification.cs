@@ -29,6 +29,8 @@ using PdfClown.Objects;
 
 using System;
 using io = System.IO;
+using PdfClown.Bytes;
+using System.IO;
 
 namespace PdfClown.Documents.Files
 {
@@ -38,8 +40,6 @@ namespace PdfClown.Documents.Files
     [PDF(VersionEnum.PDF11)]
     public abstract class FileSpecification : PdfObjectWrapper<PdfDirectObject>, IPdfNamedObjectWrapper
     {
-        #region static
-        #region public
         /**
           <summary>Creates a new reference to an external file.</summary>
           <param name="context">Document context.</param>
@@ -107,20 +107,13 @@ namespace PdfClown.Documents.Files
             else
                 return null;
         }
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         protected FileSpecification(Document context, PdfDirectObject baseDataObject) : base(context, baseDataObject)
         { }
 
         protected FileSpecification(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the file absolute path.</summary>
         */
@@ -139,19 +132,19 @@ namespace PdfClown.Documents.Files
         /**
           <summary>Gets an input stream to read from the file.</summary>
         */
-        public virtual bytes::IInputStream GetInputStream()
+        public virtual IInputStream GetInputStream()
         {
-            return new bytes::Stream(
-              new io::FileStream(GetAbsolutePath(), io::FileMode.Open, io::FileAccess.Read, io::FileShare.ReadWrite));
+            return new StreamContainer(
+              new FileStream(GetAbsolutePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
         }
 
         /**
           <summary>Gets an output stream to write into the file.</summary>
         */
-        public virtual bytes::IOutputStream GetOutputStream()
+        public virtual IOutputStream GetOutputStream()
         {
-            return new bytes::Stream(
-              new io::FileStream(GetAbsolutePath(), io::FileMode.Create, io::FileAccess.Write, io::FileShare.ReadWrite));
+            return new StreamContainer(
+              new FileStream(GetAbsolutePath(), FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
         }
 
         /**
@@ -159,14 +152,9 @@ namespace PdfClown.Documents.Files
         */
         public abstract string Path { get; set; }
 
-        #region IPdfNamedObjectWrapper
         public PdfString Name => RetrieveName();
 
         public PdfDirectObject NamedBaseObject => RetrieveNamedBaseObject();
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }
 

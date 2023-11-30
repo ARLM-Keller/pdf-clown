@@ -39,17 +39,12 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF14)]
     public sealed class DocumentActions : PdfObjectWrapper<PdfDictionary>
     {
-        #region dynamic
-        #region constructors
         public DocumentActions(Document context) : base(context, new PdfDictionary())
         { }
 
         public DocumentActions(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the action to be performed after printing the document.</summary>
         */
@@ -118,9 +113,5 @@ namespace PdfClown.Documents
                 Document.BaseDataObject[PdfName.OpenAction] = value.BaseObject;
             }
         }
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

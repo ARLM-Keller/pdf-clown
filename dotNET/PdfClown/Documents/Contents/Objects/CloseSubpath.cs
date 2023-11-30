@@ -36,30 +36,18 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class CloseSubpath : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "h";
 
         public static readonly CloseSubpath Value = new CloseSubpath();
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         private CloseSubpath() : base(OperatorKeyword)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void Scan(GraphicsState state)
         {
             var pathObject = state.Scanner.RenderObject;
             if (pathObject != null)
             { pathObject.Close(); }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

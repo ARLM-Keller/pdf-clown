@@ -26,7 +26,6 @@
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Files;
 using PdfClown.Objects;
-using PdfClown.Util.Collections.Generic;
 
 using System;
 using System.Collections;
@@ -40,11 +39,7 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF11)]
     public sealed class Articles : Array<Article>
     {
-        #region dynamic
-        #region constructors
         public Articles(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
-        #endregion
     }
 }

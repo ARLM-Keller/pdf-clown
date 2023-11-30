@@ -27,7 +27,7 @@ namespace PdfClown.Documents.Contents
                     var filterItem = (PdfName)filterArray[i];
                     var parameterItem = parameterArray?[i];
                     var temp = ExtractImage(imageObject, data, filterItem, parameterItem, imageObject.Header);
-                    if (temp is IBuffer tempBuffer)
+                    if (temp is IByteStream tempBuffer)
                     {
                         data = tempBuffer;
                     }
@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Contents
             {
                 var filterItem = (PdfName)filter;
                 var temp = ExtractImage(imageObject, data, filterItem, imageObject.Parameters, imageObject.Header);
-                if (temp is IBuffer tempBuffer)
+                if (temp is IByteStream tempBuffer)
                 {
                     data = tempBuffer;
                 }
@@ -51,11 +51,11 @@ namespace PdfClown.Documents.Contents
                 }
             }
 
-            var loader = new BitmapLoader(imageObject, data.GetBuffer(), state);
+            var loader = new BitmapLoader(imageObject, data.AsMemory(), state);
             return loader.Load();
         }
 
-        public static object ExtractImage(IImageObject imageObject, IBuffer data, PdfName filterItem,
+        public static object ExtractImage(IImageObject imageObject, IByteStream data, PdfName filterItem,
             PdfDirectObject parameterItem, IDictionary<PdfName, PdfDirectObject> header)
         {
             //using (var stream = new MemoryStream(data.GetBuffer()))
@@ -102,53 +102,11 @@ namespace PdfClown.Documents.Contents
 
             if (filterItem != null)
             {
-                return Bytes.Buffer.Extract(data, filterItem, parameterItem, imageObject.Header);
+                return data.Extract(filterItem, parameterItem, imageObject.Header);
             }
 
             return data;
         }
-
-        //private static SKBitmap LoadJBIG(IBuffer data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
-        //{
-        //    var imageParams = header;
-        //    var width = imageParams[PdfName.Width] as PdfInteger;
-        //    var height = imageParams[PdfName.Height] as PdfInteger;
-        //    var bpp = imageParams[PdfName.BitsPerComponent] as PdfInteger;
-        //    var flag = imageParams[PdfName.ImageMask] as PdfBoolean;
-
-        //    using (var output = new MemoryStream())
-        //    using (var input = new MemoryStream())
-        //    {
-        //        //
-        //        input.Write(new byte[] { 0X97, 0x4A, 0x42, 0x32, 0x0D, 0x0A, 0x1A, 0x0A, 0x01, 0x00, 0x00, 0x00, 0x79 }, 0, 13);
-        //        if (parameters is PdfDictionary dict)
-        //        {
-        //            var jbigGlobal = dict.Resolve(PdfName.JBIG2Globals) as PdfStream;
-        //            if (jbigGlobal != null)
-        //            {
-        //                var body = jbigGlobal.GetBody(false);
-        //                var bodyBuffer = body.GetBuffer();
-        //                input.Write(bodyBuffer, 0, bodyBuffer.Length);
-        //            }
-        //        }
-        //        input.Write(data.GetBuffer(), 0, (int)data.Length);
-        //        input.Write(new byte[] { 0X00, 0x00, 0x00, 0x03, 0x31, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 }, 0, 11);
-        //        input.Write(new byte[] { 0X00, 0x00, 0x00, 0x04, 0x33, 0x01, 0x00, 0x00, 0x00, 0x00 }, 0, 10);
-        //        input.Flush();
-        //        input.Position = 0;
-        //        FREE_IMAGE_FORMAT format = FreeImage.GetFileTypeFromStream(input);
-        //        var bmp = FreeImage.LoadFromStream(input);
-        //        if (bmp.IsNull)
-        //        {
-        //            return null;
-        //        }
-        //        FreeImage.SaveToStream(bmp, output, FREE_IMAGE_FORMAT.FIF_JPEG, FREE_IMAGE_SAVE_FLAGS.JPEG_OPTIMIZE);
-        //        FreeImage.Unload(bmp);
-        //        output.Flush();
-        //        output.Position = 0;
-        //        return SKBitmap.Decode(output);
-        //    }
-        //}
 
         private GraphicsState state;
         private IImageObject image;
@@ -165,7 +123,7 @@ namespace PdfClown.Documents.Contents
         private float min;
         private float max;
         private float interpolateConst;
-        private byte[] buffer;
+        private Memory<byte> buffer;
         private bool imageMask;
         private float[] decode;
         private IImageObject sMask;
@@ -176,29 +134,29 @@ namespace PdfClown.Documents.Contents
         public BitmapLoader(IImageObject image, GraphicsState state)
         {
             var buffer = image.Data;
-            var data = buffer.GetBuffer();
+            var data = buffer.AsMemory();
             var filter = image.Filter;
             if (filter != null)
             {
-                buffer = Bytes.Buffer.Extract(buffer, filter, image.Parameters, image.Header);
-                data = buffer.GetBuffer();
+                buffer = buffer.Extract(filter, image.Parameters, image.Header);
+                data = buffer.AsMemory();
             }
             Init(image, data, state);
         }
 
-        public BitmapLoader(IImageObject image, byte[] buffer, GraphicsState state)
+        public BitmapLoader(IImageObject image, Memory<byte> buffer, GraphicsState state)
         {
             Init(image, buffer, state);
         }
 
         public int BitsPerComponent { get => bitsPerComponent; set => bitsPerComponent = value; }
-        public byte[] Buffer { get => buffer; set => buffer = value; }
+        public Memory<byte> Buffer { get => buffer; set => buffer = value; }
         public int ComponentsCount { get => componentsCount; set => componentsCount = value; }
         public int RowBytes { get => rowBytes; set => rowBytes = value; }
         public int Height { get => height; set => height = value; }
         public int Width { get => width; set => width = value; }
 
-        private void Init(IImageObject image, byte[] buffer, GraphicsState state)
+        private void Init(IImageObject image, Memory<byte> buffer, GraphicsState state)
         {
             this.state = state;
             this.image = image;
@@ -261,124 +219,128 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        public void GetColor(int y, int x, int index, ref float[] components)
+        public void GetColor(int y, int x, int index, Span<float> components, Span<byte> buffer)
         {
-            if (bitsPerComponent == 1)
+            switch (bitsPerComponent)
             {
-                for (int i = 0; i < componentsCount; i++)
-                {
-                    var byteIndex = (rowBytes * y) + x / 8;
-                    var byteValue = buffer[byteIndex];
-                    //if (emptyBytes)
-                    //    byteIndex += y;
-                    var bitIndex = 7 - x % 8;
-                    var value = ((byteValue >> bitIndex) & 1) == 0 ? 0 : 1;
-                    if (decode[0] == 1)
+                case 1:
+                    for (int i = 0; i < componentsCount; i++)
                     {
-                        value = value == 0 ? 1 : 0;
+                        var byteIndex = rowBytes * y + x / 8;
+                        var byteValue = buffer[byteIndex];
+                        //if (emptyBytes)
+                        //    byteIndex += y;
+                        var bitIndex = 7 - x % 8;
+                        var value = (byteValue >> bitIndex & 1) == 0 ? 0 : 1;
+                        if (decode[0] == 1)
+                        {
+                            value = value == 0 ? 1 : 0;
+                        }
+                        var interpolate = indexed ? value : min + value * interpolateConst;
+                        components[i] = interpolate;
                     }
-                    var interpolate = indexed ? value : min + (value * (interpolateConst));
-                    components[i] = interpolate;
-                }
-            }
-            else if (bitsPerComponent == 2)
-            {
-                for (int i = 0; i < componentsCount; i++)
-                {
-                    var byteIndex = (rowBytes * y) + x / 4;
-                    var byteValue = buffer[byteIndex];
-                    //if (emptyBytes)
-                    //    byteIndex += y;
-                    var bitIndex = 6 - (x % 4) * 2;
-                    var value = ((byteValue >> bitIndex) & 0b11);
-                    if (decode[0] == 1)
+                    break;
+                case 2:
+                    for (int i = 0; i < componentsCount; i++)
                     {
-                        value = 3 - value;
+                        var byteIndex = rowBytes * y + x / 4;
+                        var byteValue = buffer[byteIndex];
+                        //if (emptyBytes)
+                        //    byteIndex += y;
+                        var bitIndex = 6 - x % 4 * 2;
+                        var value = byteValue >> bitIndex & 0b11;
+                        if (decode[0] == 1)
+                        {
+                            value = 3 - value;
+                        }
+                        var interpolate = indexed ? value : min + value * interpolateConst;
+                        components[i] = interpolate;
                     }
-                    var interpolate = indexed ? value : min + (value * (interpolateConst));
-                    components[i] = interpolate;
-                }
-            }
-            else if (bitsPerComponent == 4)
-            {
-                for (int i = 0; i < componentsCount; i++)
-                {
-                    var byteIndex = (rowBytes * y) + x / 2;
-                    var byteValue = buffer[byteIndex];
-                    //if (emptyBytes)
-                    //    byteIndex += y;
-                    var bitIndex = 4 - (x % 2) * 4;
-                    var value = ((byteValue >> bitIndex) & 0b1111);
-                    if (decode[0] == 1)
+                    break;
+                case 4:
+                    for (int i = 0; i < componentsCount; i++)
                     {
-                        value = 3 - value;
+                        var byteIndex = rowBytes * y + x / 2;
+                        var byteValue = buffer[byteIndex];
+                        //if (emptyBytes)
+                        //    byteIndex += y;
+                        var bitIndex = 4 - x % 2 * 4;
+                        var value = byteValue >> bitIndex & 0b1111;
+                        if (decode[0] == 1)
+                        {
+                            value = 3 - value;
+                        }
+                        var interpolate = indexed ? value : min + value * interpolateConst;
+                        components[i] = interpolate;
                     }
-                    var interpolate = indexed ? value : min + (value * (interpolateConst));
-                    components[i] = interpolate;
-                }
-            }
-            else if (bitsPerComponent == 8)
-            {
-                var componentIndex = index * componentsCount;
-                for (int i = 0; i < componentsCount; i++)
-                {
-                    var value = buffer[componentIndex];
-                    if (decode[0] == 1)
+                    break;
+                case 8:
                     {
-                        value = (byte)(255 - value);
+                        var componentIndex = index * componentsCount;
+                        for (int i = 0; i < componentsCount; i++)
+                        {
+                            var value = buffer[componentIndex];
+                            if (decode[0] == 1)
+                            {
+                                value = (byte)(255 - value);
+                            }
+                            var interpolate = indexed ? value : min + value * interpolateConst;
+                            components[i] = interpolate;
+                            componentIndex++;
+                        }
                     }
-                    var interpolate = indexed ? value : min + (value * (interpolateConst));
-                    components[i] = interpolate;
-                    componentIndex++;
-                }
-            }
-            else if (bitsPerComponent == 16)
-            {
-                var componentIndex = index * componentsCount * 2;
-                for (int i = 0; i < componentsCount; i++)
-                {
-                    var value = (buffer[componentIndex] << 8) + (buffer[componentIndex + 1] << 0);
-                    if (decode[0] == 1)
+                    break;
+                case 16:
                     {
-                        value = ushort.MaxValue - value;
+                        var componentIndex = index * componentsCount * 2;
+                        for (int i = 0; i < componentsCount; i++)
+                        {
+                            var value = (buffer[componentIndex] << 8) + (buffer[componentIndex + 1] << 0);
+                            if (decode[0] == 1)
+                            {
+                                value = ushort.MaxValue - value;
+                            }
+                            var interpolate = indexed ? value : min + value * interpolateConst;
+                            components[i] = interpolate;
+                            componentIndex += 2;
+                        }
+                        break;
                     }
-                    var interpolate = indexed ? value : min + (value * (interpolateConst));
-                    components[i] = interpolate;
-                    componentIndex += 2;
-                }
-            }
-            else if (bitsPerComponent == 24)
-            {
-                var componentIndex = index * componentsCount * 3;
-                for (int i = 0; i < componentsCount; i++)
-                {
-                    var value = (buffer[componentIndex] << 16) | (buffer[componentIndex + 1] << 8) | (buffer[componentIndex + 1] << 0);
-                    if (decode[0] == 1)
+                case 24:
                     {
-                        value = ushort.MaxValue - value;
+                        var componentIndex = index * componentsCount * 3;
+                        for (int i = 0; i < componentsCount; i++)
+                        {
+                            var value = buffer[componentIndex] << 16 | buffer[componentIndex + 1] << 8 | buffer[componentIndex + 1] << 0;
+                            if (decode[0] == 1)
+                            {
+                                value = ushort.MaxValue - value;
+                            }
+                            var interpolate = indexed ? value : min + value * interpolateConst;
+                            components[i] = interpolate;
+                            componentIndex += 3;
+                        }
+                        break;
                     }
-                    var interpolate = indexed ? value : min + (value * (interpolateConst));
-                    components[i] = interpolate;
-                    componentIndex += 3;
-                }
-            }
-            else if (bitsPerComponent == 32)
-            {
-                var componentIndex = index * componentsCount * 4;
-                for (int i = 0; i < componentsCount; i++)
-                {
-                    var value = (buffer[componentIndex] << 24) | (buffer[componentIndex + 1] << 16) | (buffer[componentIndex + 2] << 8) | (buffer[componentIndex + 3] << 0);
-                    if (decode[0] == 1)
+                case 32:
                     {
-                        value = ushort.MaxValue - value;
+                        var componentIndex = index * componentsCount * 4;
+                        for (int i = 0; i < componentsCount; i++)
+                        {
+                            var value = buffer[componentIndex] << 24 | buffer[componentIndex + 1] << 16 | buffer[componentIndex + 2] << 8 | buffer[componentIndex + 3] << 0;
+                            if (decode[0] == 1)
+                            {
+                                value = ushort.MaxValue - value;
+                            }
+                            var interpolate = indexed ? value : min + value * interpolateConst;
+                            components[i] = interpolate;
+                            componentIndex += 4;
+                        }
+                        break;
                     }
-                    var interpolate = indexed ? value : min + (value * (interpolateConst));
-                    components[i] = interpolate;
-                    componentIndex += 4;
-                }
+                default:
+                    break;
             }
-            else
-            { }
         }
 
         public SKBitmap Load()
@@ -409,20 +371,21 @@ namespace PdfClown.Documents.Contents
             }
             // create the buffer that will hold the pixels
             var raster = new uint[info.Width * info.Height];//var bitmap = new SKBitmap();
-            var components = new float[componentsCount];//TODO stackalloc
-            var maskComponents = new float[componentsCount];//TODO stackalloc
-
+            Span<float> components = stackalloc float[componentsCount];
+            Span<float> maskComponents = sMaskLoader != null ? stackalloc float[sMaskLoader.componentsCount] : Span<float>.Empty;
+            var buffer = this.buffer.Span;
+            var maskBuffer = sMaskLoader != null ? sMaskLoader.buffer.Span : Span<byte>.Empty;
             for (int y = 0; y < info.Height; y++)
             {
                 var row = y * info.Width;
                 for (int x = 0; x < info.Width; x++)
                 {
                     var index = row + x;
-                    GetColor(y, x, index, ref components);
+                    GetColor(y, x, index, components, buffer);
                     var skColor = colorSpace.GetSKColor(components, null);
                     if (sMaskLoader != null)
                     {
-                        sMaskLoader.GetColor(y, x, index, ref maskComponents);
+                        sMaskLoader.GetColor(y, x, index, maskComponents, maskBuffer);
                         //alfa
                         skColor = skColor.WithAlpha((byte)(maskComponents[0] * 255));
                         //shaping
@@ -457,15 +420,15 @@ namespace PdfClown.Documents.Contents
             };
             // create the buffer that will hold the pixels
             var raster = new byte[info.Width * info.Height];
-            var components = new float[componentsCount];//TODO stackalloc
-
+            Span<float> components = stackalloc float[componentsCount];
+            var buffer = this.buffer.Span;
             for (int y = 0; y < info.Height; y++)
             {
                 var row = y * info.Width;
                 for (int x = 0; x < info.Width; x++)
                 {
                     var index = (row + x);
-                    GetColor(y, x, index, ref components);
+                    GetColor(y, x, index, components, buffer);
                     var skColor = colorSpace.GetSKColor(components, null);
 
                     raster[index] = skColor.Red;
@@ -484,23 +447,24 @@ namespace PdfClown.Documents.Contents
         {
             //Bug https://bugs.chromium.org/p/skia/issues/detail?id=6847
             var format = bitsPerComponent == 1 ? SKMaskFormat.BW : SKMaskFormat.A8;
-            var skMask = SKMask.Create(buffer, SKRectI.Create(0, 0, width, height), (uint)rowBytes, format);
+            var skMask = SKMask.Create(buffer.Span, SKRectI.Create(0, 0, width, height), (uint)rowBytes, format);
             return skMask;
         }
 
         public SKBitmap LoadMask()
         {
+            var buffer = this.buffer.Span;
             var info = new SKImageInfo(width, height)
             {
                 AlphaType = SKAlphaType.Unpremul,
                 ColorType = SKColorType.Alpha8
             };
-            var raster = new byte[info.Width * info.Height];
+            var raster = new byte[width * height];
 
-            for (int y = 0; y < info.Height; y++)
+            for (int y = 0; y < height; y++)
             {
-                var row = y * info.Width;
-                for (int x = 0; x < info.Width; x++)
+                var row = y * width;
+                for (int x = 0; x < width; x++)
                 {
                     var index = (row + x);
                     byte value = 0;

@@ -38,29 +38,19 @@ namespace PdfClown.Documents.Interaction.Actions
       [PDF:1.6:8.5.3].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class GoToRemote
-      : GotoNonLocal<RemoteDestination>
+    public sealed class GoToRemote : GotoNonLocal<RemoteDestination>
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToRemote(
-          Document context,
-          FileSpecification destinationFile,
-          RemoteDestination destination
-          ) : base(context, PdfName.GoToR, destinationFile, destination)
+        public GoToRemote(Document context, FileSpecification destinationFile, RemoteDestination destination)
+            : base(context, PdfName.GoToR, destinationFile, destination)
         { }
 
-        internal GoToRemote(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal GoToRemote(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override FileSpecification DestinationFile
         {
             get => base.DestinationFile;
@@ -72,8 +62,5 @@ namespace PdfClown.Documents.Interaction.Actions
                 base.DestinationFile = value;
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

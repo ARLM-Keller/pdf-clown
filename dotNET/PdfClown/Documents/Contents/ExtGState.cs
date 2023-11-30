@@ -24,10 +24,12 @@
 */
 
 using PdfClown.Documents;
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Functions;
 using PdfClown.Objects;
 
 using System;
@@ -41,24 +43,14 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF12)]
     public sealed class ExtGState : PdfObjectWrapper<PdfDictionary>
     {
-        #region static
-        #region fields
         internal static readonly IList<BlendModeEnum> DefaultBlendMode = new BlendModeEnum[0];
-        #endregion
 
-        #endregion
-
-        #region dynamic
-        #region constructors
         public ExtGState(Document context) : base(context, new PdfDictionary())
         { }
 
         public ExtGState(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets whether the current soft mask and alpha constant are to be interpreted as
           shape values instead of opacity values.</summary>
@@ -66,8 +58,8 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF14)]
         public bool AlphaShape
         {
-            get => (bool)PdfSimpleObject<object>.GetValue(BaseDataObject[PdfName.AIS], false);
-            set => BaseDataObject[PdfName.AIS] = PdfBoolean.Get(value);
+            get => BaseDataObject.GetBool(PdfName.AIS, false);
+            set => BaseDataObject.SetBool(PdfName.AIS, value);
         }
 
         public void ApplyTo(GraphicsState state)
@@ -89,25 +81,67 @@ namespace PdfClown.Documents.Contents
                     if (!AlphaShape)
                         state.FillAlpha = FillAlpha;
                 }
+                else if (parameterName.Equals(PdfName.SA))
+                {
+                    state.StrokeAdjustment = StrokeAdjustment;
+                }
+                else if (parameterName.Equals(PdfName.OP))
+                {
+                    state.StrokeOverprint = StrokeOverprint;
+                }
+                else if (parameterName.Equals(PdfName.op))
+                {
+                    state.FillOverprint = FillOverprint;
+                }
+                else if (parameterName.Equals(PdfName.OPM))
+                {
+                    state.OverprintMode = OverprintMode;
+                }
                 else if (parameterName.Equals(PdfName.AIS))
-                { state.AlphaIsShape = AlphaShape; }
+                {
+                    state.AlphaIsShape = AlphaShape;
+                }
                 else if (parameterName.Equals(PdfName.LC))
-                { state.LineCap = LineCap.Value; }
+                {
+                    state.LineCap = LineCap.Value;
+                }
                 else if (parameterName.Equals(PdfName.D))
-                { state.LineDash = LineDash; }
+                {
+                    state.LineDash = LineDash;
+                }
                 else if (parameterName.Equals(PdfName.LJ))
-                { state.LineJoin = LineJoin.Value; }
+                {
+                    state.LineJoin = LineJoin.Value;
+                }
                 else if (parameterName.Equals(PdfName.LW))
-                { state.LineWidth = LineWidth.Value; }
+                {
+                    state.LineWidth = LineWidth.Value;
+                }
                 else if (parameterName.Equals(PdfName.ML))
-                { state.MiterLimit = MiterLimit.Value; }
+                {
+                    state.MiterLimit = MiterLimit.Value;
+                }
                 else if (parameterName.Equals(PdfName.BM))
-                { state.BlendMode = BlendMode; }
-                else if (parameterName.Equals(PdfName.Type))
-                { }
+                {
+                    state.BlendMode = BlendMode;
+                }
                 else if (parameterName.Equals(PdfName.SMask))
                 {
                     state.SMask = SMask;
+                    if (state.SMask != null)
+                        state.SMask.InitialMatrix = state.Ctm;
+                }
+                else if (parameterName.Equals(PdfName.TK))
+                {
+                    state.Knockout = BaseDataObject.GetBool(PdfName.TK);
+                }
+                else if (parameterName.Equals(PdfName.BG))
+                {
+                    state.Function = BG;
+                }
+                else if (parameterName.Equals(PdfName.BG2))
+                {
+                    state.Function = BG2;
                 }
                 else
                 {
@@ -157,7 +191,7 @@ namespace PdfClown.Documents.Contents
                 { blendModeObject = value[0].GetName(); }
                 else
                 {
-                    PdfArray blendModeArray = new PdfArray();
+                    var blendModeArray = new PdfArray();
                     foreach (BlendModeEnum blendMode in value)
                     { blendModeArray.Add(blendMode.GetName()); }
                     blendModeObject = blendModeArray;
@@ -174,12 +208,8 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF14)]
         public float? FillAlpha
         {
-            get
-            {
-                var number = BaseDataObject[PdfName.ca] as IPdfNumber;
-                return number == null ? null : (float?)number.FloatValue;
-            }
-            set => BaseDataObject[PdfName.ca] = PdfReal.Get(value);
+            get => BaseDataObject.GetNFloat(PdfName.ca);
+            set => BaseDataObject.SetFloat(PdfName.ca, value);
         }
 
         /**
@@ -190,12 +220,32 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF14)]
         public float? StrokeAlpha
         {
-            get
-            {
-                var number = BaseDataObject[PdfName.CA] as IPdfNumber;
-                return number == null ? null : (float?)number.FloatValue;
-            }
-            set => BaseDataObject[PdfName.CA] = PdfReal.Get(value);
+            get => BaseDataObject.GetNFloat(PdfName.CA);
+            set => BaseDataObject.SetFloat(PdfName.CA, value);
+        }
+
+        public bool FillOverprint
+        {
+            get => BaseDataObject.GetBool(PdfName.op);
+            set => BaseDataObject.SetBool(PdfName.op, value);
+        }
+
+        public bool StrokeOverprint
+        {
+            get => BaseDataObject.GetBool(PdfName.OP);
+            set => BaseDataObject.SetBool(PdfName.OP, value);
+        }
+
+        public int OverprintMode
+        {
+            get => BaseDataObject.GetInt(PdfName.OPM);
+            set => BaseDataObject.SetInt(PdfName.OPM, value);
+        }
+
+        public bool StrokeAdjustment
+        {
+            get => BaseDataObject.GetBool(PdfName.SA);
+            set => BaseDataObject.SetBool(PdfName.SA, value);
         }
 
         [PDF(VersionEnum.PDF13)]
@@ -203,14 +253,14 @@ namespace PdfClown.Documents.Contents
         {
             get
             {
-                PdfArray fontObject = (PdfArray)BaseDataObject[PdfName.Font];
-                return fontObject != null ? Font.Wrap(fontObject[0]) : null;
+                var fontObject = (PdfArray)BaseDataObject[PdfName.Font];
+                return Font.Wrap(fontObject?[0]);
             }
             set
             {
-                PdfArray fontObject = (PdfArray)BaseDataObject[PdfName.Font];
+                var fontObject = (PdfArray)BaseDataObject[PdfName.Font];
                 if (fontObject == null)
-                { fontObject = new PdfArray(PdfObjectWrapper.GetBaseObject(value), PdfInteger.Default); }
+                { fontObject = new PdfArray(2) { PdfObjectWrapper.GetBaseObject(value), PdfInteger.Default }; }
                 else
                 { fontObject[0] = PdfObjectWrapper.GetBaseObject(value); }
                 BaseDataObject[PdfName.Font] = fontObject;
@@ -222,16 +272,16 @@ namespace PdfClown.Documents.Contents
         {
             get
             {
-                PdfArray fontObject = (PdfArray)BaseDataObject[PdfName.Font];
-                return fontObject != null ? ((IPdfNumber)fontObject[1]).FloatValue : (float?)null;
+                var fontObject = (PdfArray)BaseDataObject[PdfName.Font];
+                return fontObject?.GetFloat(1);
             }
             set
             {
-                PdfArray fontObject = (PdfArray)BaseDataObject[PdfName.Font];
+                var fontObject = (PdfArray)BaseDataObject[PdfName.Font];
                 if (fontObject == null)
-                { fontObject = new PdfArray(null, PdfReal.Get(value)); }
+                { fontObject = new PdfArray(2) { null, PdfReal.Get(value) }; }
                 else
-                { fontObject[1] = PdfReal.Get(value); }
+                { fontObject.SetFloat(1, value); }
                 BaseDataObject[PdfName.Font] = fontObject;
             }
         }
@@ -239,12 +289,8 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF13)]
         public LineCapEnum? LineCap
         {
-            get
-            {
-                PdfInteger lineCapObject = (PdfInteger)BaseDataObject[PdfName.LC];
-                return lineCapObject != null ? (LineCapEnum)lineCapObject.RawValue : (LineCapEnum?)null;
-            }
-            set => BaseDataObject[PdfName.LC] = value.HasValue ? PdfInteger.Get((int)value.Value) : null;
+            get => (LineCapEnum?)BaseDataObject.GetNInt(PdfName.LC);
+            set => BaseDataObject.SetInt(PdfName.LC, value.HasValue ? (int)value.Value : null);
         }
 
         [PDF(VersionEnum.PDF13)]
@@ -252,14 +298,14 @@ namespace PdfClown.Documents.Contents
         {
             get
             {
-                PdfArray lineDashObject = (PdfArray)BaseDataObject[PdfName.D];
+                var lineDashObject = (PdfArray)BaseDataObject[PdfName.D];
                 return lineDashObject != null ? LineDash.Get((PdfArray)lineDashObject[0], (IPdfNumber)lineDashObject[1]) : null;
             }
             set
             {
-                PdfArray lineDashObject = new PdfArray();
+                var lineDashObject = new PdfArray();
                 {
-                    PdfArray dashArrayObject = new PdfArray();
+                    var dashArrayObject = new PdfArray();
                     foreach (double dashArrayItem in value.DashArray)
                     { dashArrayObject.Add(PdfReal.Get(dashArrayItem)); }
                     lineDashObject.Add(dashArrayObject);
@@ -272,39 +318,34 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF13)]
         public LineJoinEnum? LineJoin
         {
-            get
-            {
-                PdfInteger lineJoinObject = (PdfInteger)BaseDataObject[PdfName.LJ];
-                return lineJoinObject != null ? (LineJoinEnum)lineJoinObject.RawValue : (LineJoinEnum?)null;
-            }
-            set => BaseDataObject[PdfName.LJ] = value.HasValue ? PdfInteger.Get((int)value.Value) : null;
+            get => (LineJoinEnum?)BaseDataObject.GetNInt(PdfName.LJ);
+            set => BaseDataObject.SetInt(PdfName.LJ, value.HasValue ? (int)value.Value : null);
         }
 
         [PDF(VersionEnum.PDF13)]
         public float? LineWidth
         {
-            get
-            {
-                IPdfNumber lineWidthObject = (IPdfNumber)BaseDataObject[PdfName.LW];
-                return lineWidthObject != null ? lineWidthObject.FloatValue : (float?)null;
-            }
-            set => BaseDataObject[PdfName.LW] = PdfReal.Get(value);
+            get => BaseDataObject.GetNFloat(PdfName.LW);
+            set => BaseDataObject.SetFloat(PdfName.LW, value);
         }
 
         [PDF(VersionEnum.PDF13)]
         public float? MiterLimit
         {
-            get
-            {
-                IPdfNumber miterLimitObject = (IPdfNumber)BaseDataObject[PdfName.ML];
-                return miterLimitObject != null ? miterLimitObject.FloatValue : (float?)null;
-            }
-            set => BaseDataObject[PdfName.ML] = PdfReal.Get(value);
+            get => BaseDataObject.GetNFloat(PdfName.ML);
+            set => BaseDataObject.SetFloat(PdfName.ML, value);
         }
 
+        public Function BG
+        {
+            get => BaseDataObject[PdfName.BG] is PdfName ? null : Function.Wrap(BaseDataObject[PdfName.BG]);
+            set => BaseDataObject[PdfName.BG] = value.BaseObject;
+        }
 
-        #endregion
-        #endregion
-        #endregion
+        public Function BG2
+        {
+            get => BaseDataObject[PdfName.BG2] is PdfName ? null : Function.Wrap(BaseDataObject[PdfName.BG2]);
+            set => BaseDataObject[PdfName.BG2] = value.BaseObject;
+        }
     }
 }

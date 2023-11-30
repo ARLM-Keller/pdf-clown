@@ -41,7 +41,6 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaPlayParameters : PdfObjectWrapper<PdfDictionary>
     {
-        #region types
         /**
           <summary>Media player parameters viability.</summary>
         */
@@ -49,15 +48,12 @@ namespace PdfClown.Documents.Multimedia
         {
             private class DurationObject : PdfObjectWrapper<PdfDictionary>
             {
-                public DurationObject(double value) : base(
-                    new PdfDictionary(
-                        new PdfName[] { PdfName.Type },
-                      new PdfDirectObject[] { PdfName.MediaDuration }
-                      )
-                    )
+                public DurationObject(double value)
+                    : base(new PdfDictionary(2) { { PdfName.Type, PdfName.MediaDuration } })
                 { Value = value; }
 
-                public DurationObject(PdfDirectObject baseObject) : base(baseObject)
+                public DurationObject(PdfDirectObject baseObject)
+                    : base(baseObject)
                 { }
 
                 /**
@@ -154,8 +150,8 @@ namespace PdfClown.Documents.Multimedia
             */
             public bool Autoplay
             {
-                get => (Boolean)PdfBoolean.GetValue(BaseDataObject[PdfName.A], true);
-                set => BaseDataObject[PdfName.A] = PdfBoolean.Get(value);
+                get => BaseDataObject.GetBool(PdfName.A, true);
+                set => BaseDataObject.SetBool(PdfName.A, value);
             }
 
             /**
@@ -172,11 +168,7 @@ namespace PdfClown.Documents.Multimedia
             */
             public double Duration
             {
-                get
-                {
-                    PdfDirectObject durationObject = BaseDataObject[PdfName.D];
-                    return durationObject != null ? new DurationObject(durationObject).Value : Double.NegativeInfinity;
-                }
+                get => Wrap<DurationObject>(BaseDataObject[PdfName.D])?.Value ?? Double.NegativeInfinity;
                 set => BaseDataObject[PdfName.D] = new DurationObject(value).BaseObject;
             }
 
@@ -196,8 +188,8 @@ namespace PdfClown.Documents.Multimedia
             */
             public bool PlayerSpecificControl
             {
-                get => (Boolean)PdfBoolean.GetValue(BaseDataObject[PdfName.C], false);
-                set => BaseDataObject[PdfName.C] = PdfBoolean.Get(value);
+                get => BaseDataObject.GetBool(PdfName.C, false);
+                set => BaseDataObject.SetBool(PdfName.C, value);
             }
 
             /**
@@ -211,8 +203,8 @@ namespace PdfClown.Documents.Multimedia
             */
             public double RepeatCount
             {
-                get => (Double)PdfReal.GetValue(BaseDataObject[PdfName.RC], 1d);
-                set => BaseDataObject[PdfName.RC] = PdfReal.Get(value);
+                get => BaseDataObject.GetDouble(PdfName.RC, 1d);
+                set => BaseDataObject.SetDouble(PdfName.RC, value);
             }
 
             /**
@@ -221,36 +213,26 @@ namespace PdfClown.Documents.Multimedia
             */
             public int Volume
             {
-                get => (int)PdfInteger.GetValue(BaseDataObject[PdfName.V], 100);
+                get => BaseDataObject.GetInt(PdfName.V, 100);
                 set
                 {
                     if (value < 0)
                     { value = 0; }
                     else if (value > 100)
                     { value = 100; }
-                    BaseDataObject[PdfName.V] = PdfInteger.Get(value);
+                    BaseDataObject.SetInt(PdfName.V, value);
                 }
             }
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
-        public MediaPlayParameters(Document context) : base(
-            context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type },
-              new PdfDirectObject[] { PdfName.MediaPlayParams }
-              )
-            )
+        public MediaPlayParameters(Document context)
+            : base(context, new PdfDictionary(4) { { PdfName.Type, PdfName.MediaPlayParams } })
         { }
 
-        public MediaPlayParameters(PdfDirectObject baseObject) : base(baseObject)
+        public MediaPlayParameters(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the player rules for playing this media.</summary>
         */
@@ -279,9 +261,6 @@ namespace PdfClown.Documents.Multimedia
             get => Wrap<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.MH));
             set => BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     internal static class FitModeEnumExtension

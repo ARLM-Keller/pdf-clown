@@ -36,28 +36,18 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>'Change the view to a specified destination within the same PDF file' action [PDF:1.6:8.5.3].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public sealed class GoToLocal
-      : GoToDestination<LocalDestination>
+    public sealed class GoToLocal : GoToDestination<LocalDestination>
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToLocal(
-          Document context,
-          LocalDestination destination
-          ) : base(context, PdfName.GoTo, destination)
+        public GoToLocal(Document context, LocalDestination destination)
+            : base(context, PdfName.GoTo, destination)
         { }
 
-        internal GoToLocal(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal GoToLocal(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #endregion
-        #endregion
     }
 }

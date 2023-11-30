@@ -39,9 +39,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     */
     public abstract class ColorSpace : PdfObjectWrapper<PdfDirectObject>
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Wraps the specified color space base object into a color space object.</summary>
           <param name="baseObject">Base object of a color space object.</param>
@@ -99,22 +96,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 return null;
             //throw new NotSupportedException("Color space " + name + " unknown.");
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         protected ColorSpace(Document context, PdfDirectObject baseDataObject)
             : base(context, baseDataObject)
         { }
 
         public ColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the number of components used to represent a color value.</summary>
         */
@@ -135,7 +124,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets the rendering representation of the specified color value.</summary>
           <param name="color">Color value to convert into an equivalent rendering representation.</param>
         */
-        public virtual SKPaint GetPaint(Color color, float? alpha = null)
+        public virtual SKPaint GetPaint(Color color, float? alpha = null, GraphicsState graphicsState = null)
         {
             var skColor = GetSKColor(color, alpha);
             return new SKPaint
@@ -157,7 +146,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public abstract SKColor GetSKColor(Color color, float? alpha = null);
 
-        public abstract SKColor GetSKColor(float[] components, float? alpha = null);
+        public abstract SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null);
 
         public abstract bool IsSpaceColor(Color value);
 
@@ -165,9 +154,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             return v > 255 ? (byte)255 : v < 0 ? (byte)0 : (byte)v;
         }
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

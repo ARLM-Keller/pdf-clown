@@ -38,22 +38,13 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF14)]
     public sealed class NamedEmbeddedFiles : NameTree<FileSpecification>
     {
-
-        #region dynamic
-        #region constructors
         public NamedEmbeddedFiles(Document context) : base(context)
         { }
 
         public NamedEmbeddedFiles(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override FileSpecification WrapValue(PdfDirectObject baseObject)
         { return FileSpecification.Wrap(baseObject); }
-        #endregion
-        #endregion
-        #endregion
     }
 }

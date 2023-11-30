@@ -37,14 +37,14 @@ namespace PdfClown.Samples.CLI
 
         private void BuildLinks(Document document)
         {
-            Pages pages = document.Pages;
-            Page page = new Page(document);
+            var pages = document.Pages;
+            var page = new Page(document);
             pages.Add(page);
 
-            PrimitiveComposer composer = new PrimitiveComposer(page);
-            BlockComposer blockComposer = new BlockComposer(composer);
+            var composer = new PrimitiveComposer(page);
+            var blockComposer = new BlockComposer(composer);
 
-            PdfType1Font font = PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Courier, true, false);
+            var font = FontType1.Load(document, FontName.CourierBold);
 
             /*
               2.1. Goto-URI link.

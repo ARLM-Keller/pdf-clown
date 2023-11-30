@@ -81,5 +81,7 @@ namespace PdfClown.Documents.Contents
 
         TransparencyXObject Group { get; }
 
+        Stack<GraphicsState> GetGraphicsStateContext();
+
     }
 }

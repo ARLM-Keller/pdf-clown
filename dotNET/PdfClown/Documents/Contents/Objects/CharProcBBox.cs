@@ -38,25 +38,15 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class CharProcBBox : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "d1";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public CharProcBBox(double wx, double wy, double x, double y, double width, double height)
             : base(OperatorKeyword,
-                  new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(wx), PdfReal.Get(wy), PdfReal.Get(x), PdfReal.Get(y), PdfReal.Get(width), PdfReal.Get(height) }))
+                  new List<PdfDirectObject>(6) { PdfReal.Get(wx), PdfReal.Get(wy), PdfReal.Get(x), PdfReal.Get(y), PdfReal.Get(width), PdfReal.Get(height) })
         { }
 
         public CharProcBBox(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
-
-        #region interface
-        #region public        
 
         public override void Scan(GraphicsState state)
         {
@@ -102,9 +92,5 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get => new SKRect((float)Left, (float)Top, (float)Right, (float)Bottom);
         }
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

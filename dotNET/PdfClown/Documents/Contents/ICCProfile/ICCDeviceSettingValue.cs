@@ -27,6 +27,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public interface ICCDeviceSettingValue
     {
-        void Load(Bytes.Buffer buffer);
+        void Load(Bytes.ByteStream buffer);
     }
 }

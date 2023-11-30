@@ -37,7 +37,6 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF11)]
     public sealed class Transition : PdfObjectWrapper<PdfDictionary>
     {
-        #region types
         /**
           <summary>Transition direction (counterclockwise) [PDF:1.6:8.3.3].</summary>
         */
@@ -159,10 +158,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             [PDF(VersionEnum.PDF15)]
             Fade
         };
-        #endregion
 
-        #region static
-        #region fields
         private static readonly Dictionary<DirectionEnum, PdfDirectObject> DirectionEnumCodes;
         private static readonly Dictionary<OrientationEnum, PdfName> OrientationEnumCodes;
         private static readonly Dictionary<PageDirectionEnum, PdfName> PageDirectionEnumCodes;
@@ -174,9 +170,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         private static readonly PageDirectionEnum DefaultPageDirection = PageDirectionEnum.Inward;
         private static readonly double DefaultScale = 1;
         private static readonly StyleEnum DefaultStyle = StyleEnum.Replace;
-        #endregion
 
-        #region constructors
         static Transition()
         {
             //TODO: transfer to extension methods!
@@ -218,33 +212,26 @@ namespace PdfClown.Documents.Interaction.Navigation
                 [StyleEnum.Fade] = PdfName.Fade
             };
         }
-        #endregion
-
-        #region interface
-        #region private
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
-        private static PdfDirectObject ToCode(DirectionEnum value)
-        { return DirectionEnumCodes[value]; }
 
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
-        private static PdfName ToCode(OrientationEnum value)
-        { return OrientationEnumCodes[value]; }
+        private static PdfDirectObject ToCode(DirectionEnum value) => DirectionEnumCodes[value];
 
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
-        private static PdfName ToCode(PageDirectionEnum value)
-        { return PageDirectionEnumCodes[value]; }
+        private static PdfName ToCode(OrientationEnum value) => OrientationEnumCodes[value];
 
         /**
           <summary>Gets the code corresponding to the given value.</summary>
         */
-        private static PdfName ToCode(StyleEnum value)
-        { return StyleEnumCodes[value]; }
+        private static PdfName ToCode(PageDirectionEnum value) => PageDirectionEnumCodes[value];
+
+        /**
+          <summary>Gets the code corresponding to the given value.</summary>
+        */
+        private static PdfName ToCode(StyleEnum value) => StyleEnumCodes[value];
 
         /**
           <summary>Gets the direction corresponding to the given value.</summary>
@@ -303,22 +290,12 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
             return DefaultStyle;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public Transition(Document context) : base(
-            context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type },
-              new PdfDirectObject[] { PdfName.Trans }
-              )
-            )
+        public Transition(Document context)
+            : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Trans } })
         { }
 
         public Transition(Document context, StyleEnum style)
@@ -342,10 +319,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         public Transition(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the transition direction.</summary>
         */
@@ -366,19 +340,13 @@ namespace PdfClown.Documents.Interaction.Navigation
         */
         public double Duration
         {
-            get
-            {
-                IPdfNumber durationObject = (IPdfNumber)BaseDataObject[PdfName.D];
-                return durationObject == null
-                  ? DefaultDuration
-                  : durationObject.RawValue;
-            }
+            get => BaseDataObject.GetDouble(PdfName.D, DefaultDuration);
             set
             {
                 if (value == DefaultDuration)
                 { BaseDataObject.Remove(PdfName.D); }
                 else
-                { BaseDataObject[PdfName.D] = PdfReal.Get(value); }
+                { BaseDataObject.SetDouble(PdfName.D, value); }
             }
         }
 
@@ -399,7 +367,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         /**
           <summary>Gets/Sets the transition direction on page.</summary>
-        */
+*/
         public PageDirectionEnum PageDirection
         {
             get => ToPageDirectionEnum((IPdfString)BaseDataObject[PdfName.M]);
@@ -414,29 +382,23 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         /**
           <summary>Gets/Sets the scale at which the changes are drawn.</summary>
-        */
+*/
         [PDF(VersionEnum.PDF15)]
         public double Scale
         {
-            get
-            {
-                IPdfNumber scaleObject = (IPdfNumber)BaseDataObject[PdfName.SS];
-                return scaleObject == null
-                  ? DefaultScale
-                  : scaleObject.RawValue;
-            }
+            get => BaseDataObject.GetDouble(PdfName.SS, DefaultScale);
             set
             {
                 if (value == DefaultScale)
                 { BaseDataObject.Remove(PdfName.SS); }
                 else
-                { BaseDataObject[PdfName.SS] = PdfReal.Get(value); }
+                { BaseDataObject.SetDouble(PdfName.SS, value); }
             }
         }
 
         /**
           <summary>Gets/Sets the transition style.</summary>
-        */
+*/
         public StyleEnum Style
         {
             get => ToStyleEnum((IPdfString)BaseDataObject[PdfName.S]);
@@ -448,8 +410,5 @@ namespace PdfClown.Documents.Interaction.Navigation
                 { BaseDataObject[PdfName.S] = ToCode(value); }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

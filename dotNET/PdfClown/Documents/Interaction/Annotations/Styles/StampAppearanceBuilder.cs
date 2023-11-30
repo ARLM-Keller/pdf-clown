@@ -39,25 +39,17 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
     */
     public class StampAppearanceBuilder
     {
-        #region types
         public enum TypeEnum
         {
             Round,
             Squared,
             Striped
         }
-        #endregion
 
-        #region static
-        #region fields
         private static readonly Length DefaultBorderRadius = new Length(.05, Length.UnitModeEnum.Relative);
         private static readonly Length DefaultBorderWidth = new Length(.025, Length.UnitModeEnum.Relative);
         private static readonly colors::Color DefaultColor = colors::DeviceRGBColor.Get(SKColors.Red);
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private bool borderDoubled = true;
         private Length borderRadius = DefaultBorderRadius;
         private Length borderWidth = DefaultBorderWidth;
@@ -68,9 +60,7 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
         private float width;
 
         private Document document;
-        #endregion
 
-        #region constructors
         public StampAppearanceBuilder(Document document, TypeEnum type, string text, float width, fonts::Font font)
         {
             this.document = document;
@@ -79,10 +69,7 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
             Text = text;
             Font = font;
         }
-        #endregion
 
-        #region interface
-        #region public
         public bool BorderDoubled
         {
             set => borderDoubled = value;
@@ -110,9 +97,9 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
             float height = (float)(isRound ? width : (font.GetAscent(fontSize) * 1.2 + doubleBorderGap * 2 + (borderWidth * (borderDoubled ? 1.5 : 1) * 2)));
             SKSize size = new SKSize(width, height);
 
-            FormXObject appearance = new FormXObject(document, size);
+            var appearance = new FormXObject(document, size);
             {
-                PrimitiveComposer composer = new PrimitiveComposer(appearance);
+                var composer = new PrimitiveComposer(appearance);
                 if (color != null)
                 {
                     composer.SetStrokeColor(color);
@@ -170,8 +157,5 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
         {
             set => text = value.ToUpper();
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

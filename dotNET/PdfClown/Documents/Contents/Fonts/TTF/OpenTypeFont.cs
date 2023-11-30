@@ -17,10 +17,11 @@
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
+    using PdfClown.Bytes;
     using SkiaSharp;
     using System;
     using System.IO;
+    using System.Security.Cryptography;
 
     /**
      * An OpenType (OTF/TTF) font.
@@ -34,7 +35,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          *
          * @param fontData The font data.
          */
-        public OpenTypeFont(TTFDataStream fontData) : base(fontData)
+        public OpenTypeFont(IInputStream fontData) : base(fontData)
         {
 
         }
@@ -59,10 +60,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         public override SKPath GetPath(string name)
         {
-            int gid = NameToGID(name);
-            return IsPostScript
-                ? (CFF?.Font.GetType2CharString(gid)?.Path ?? Glyph?.GetGlyph(gid)?.GetPath())
-                : Glyph?.GetGlyph(gid)?.GetPath();
+            if (IsPostScript && IsSupportedOTF)
+            {
+                int gid = NameToGID(name);
+                return CFF.Font.GetType2CharString(gid).Path;
+            }
+            return base.GetPath(name);
         }
 
         /**
@@ -70,7 +73,24 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public bool IsPostScript
         {
-            get => isPostScript ?? (isPostScript = tables.ContainsKey(CFFTable.TAG)).Value;
+            get => isPostScript ??= (tables.ContainsKey(CFFTable.TAG) || tables.ContainsKey("CFF2"));
+        }
+
+        /**
+        * Returns true if this font is supported.
+        * 
+        * There are 3 kind of OpenType fonts, fonts using TrueType outlines, fonts using CFF outlines (version 1 and 2)
+        * 
+      * Fonts using CFF outlines version 2 aren't supported yet.
+      * 
+      * @return true if the font is supported
+      */
+        public bool IsSupportedOTF
+        {
+            // OTF using CFF2 based outlines aren't yet supported
+            get => !(IsPostScript
+                    && !tables.ContainsKey(CFFTable.TAG)
+                    && tables.ContainsKey("CFF2"));
         }
 
         /**
@@ -81,8 +101,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return tables.ContainsKey("BASE") ||
                    tables.ContainsKey("GDEF") ||
                    tables.ContainsKey("GPOS") ||
-                   tables.ContainsKey("GSUB") ||
-                   tables.ContainsKey("JSTF");
+                   tables.ContainsKey(GlyphSubstitutionTable.TAG) ||
+                   tables.ContainsKey(OTLTable.TAG);
         }
     }
 }

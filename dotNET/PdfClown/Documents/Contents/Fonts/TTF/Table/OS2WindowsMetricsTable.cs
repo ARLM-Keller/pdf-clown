@@ -14,7 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
+using System;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
@@ -216,10 +220,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private int usBreakChar;
         private int usMaxContext;
 
-        public OS2WindowsMetricsTable(TrueTypeFont font) : base(font)
-        {
-
-        }
+        public OS2WindowsMetricsTable()
+        { }
 
         /**
          * @return Returns the achVendId.
@@ -562,50 +564,78 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
-            version = data.ReadUnsignedShort();
-            averageCharWidth = data.ReadSignedShort();
-            weightClass = data.ReadUnsignedShort();
-            widthClass = data.ReadUnsignedShort();
-            fsType = data.ReadSignedShort();
-            subscriptXSize = data.ReadSignedShort();
-            subscriptYSize = data.ReadSignedShort();
-            subscriptXOffset = data.ReadSignedShort();
-            subscriptYOffset = data.ReadSignedShort();
-            superscriptXSize = data.ReadSignedShort();
-            superscriptYSize = data.ReadSignedShort();
-            superscriptXOffset = data.ReadSignedShort();
-            superscriptYOffset = data.ReadSignedShort();
-            strikeoutSize = data.ReadSignedShort();
-            strikeoutPosition = data.ReadSignedShort();
-            familyClass = data.ReadSignedShort();
-            panose = data.Read(10);
-            unicodeRange1 = data.ReadUnsignedInt();
-            unicodeRange2 = data.ReadUnsignedInt();
-            unicodeRange3 = data.ReadUnsignedInt();
-            unicodeRange4 = data.ReadUnsignedInt();
+            var limit = Offset + Length;
+            if (limit > data.Length)
+                limit = data.Length;
+            version = data.ReadUInt16();
+            averageCharWidth = data.ReadInt16();
+            weightClass = data.ReadUInt16();
+            widthClass = data.ReadUInt16();
+            fsType = data.ReadInt16();
+            subscriptXSize = data.ReadInt16();
+            subscriptYSize = data.ReadInt16();
+            subscriptXOffset = data.ReadInt16();
+            subscriptYOffset = data.ReadInt16();
+            superscriptXSize = data.ReadInt16();
+            superscriptYSize = data.ReadInt16();
+            superscriptXOffset = data.ReadInt16();
+            superscriptYOffset = data.ReadInt16();
+            strikeoutSize = data.ReadInt16();
+            strikeoutPosition = data.ReadInt16();
+            familyClass = data.ReadInt16();
+            panose = data.ReadSpan(10).ToArray();
+            unicodeRange1 = data.ReadUInt32();
+            unicodeRange2 = data.ReadUInt32();
+            unicodeRange3 = data.ReadUInt32();
+            unicodeRange4 = data.ReadUInt32();
             achVendId = data.ReadString(4);
-            fsSelection = data.ReadUnsignedShort();
-            firstCharIndex = data.ReadUnsignedShort();
-            lastCharIndex = data.ReadUnsignedShort();
-            typoAscender = data.ReadSignedShort();
-            typoDescender = data.ReadSignedShort();
-            typoLineGap = data.ReadSignedShort();
-            winAscent = data.ReadUnsignedShort();
-            winDescent = data.ReadUnsignedShort();
+            fsSelection = data.ReadUInt16();
+            firstCharIndex = data.ReadUInt16();
+            lastCharIndex = data.ReadUInt16();
+            if ((limit - data.Position) >= 10)
+            {
+                typoAscender = data.ReadInt16();
+                typoDescender = data.ReadInt16();
+                typoLineGap = data.ReadInt16();
+                winAscent = data.ReadUInt16();
+                winDescent = data.ReadUInt16();
+            }
+            else
+            {
+                Debug.WriteLine("warn: EOF, probably some legacy TrueType font ");
+                initialized = true;
+                return;
+            }
             if (version >= 1)
             {
-                codePageRange1 = data.ReadUnsignedInt();
-                codePageRange2 = data.ReadUnsignedInt();
+                if ((limit - data.Position) >= 4)
+                {
+                    codePageRange1 = data.ReadUInt32();
+                    codePageRange2 = data.ReadUInt32();
+                }
+                else
+                {
+                    version = 0;
+                    Debug.WriteLine("warn: Could not read all expected parts of version >= 1, setting version to 0 ");
+                }
             }
-            if (version >= 1.2)
+            if (version >= 2)
             {
-                sxHeight = data.ReadSignedShort();
-                sCapHeight = data.ReadSignedShort();
-                usDefaultChar = data.ReadUnsignedShort();
-                usBreakChar = data.ReadUnsignedShort();
-                usMaxContext = data.ReadUnsignedShort();
+                if ((limit - data.Position) >= 10)
+                {
+                    sxHeight = data.ReadInt16();
+                    sCapHeight = data.ReadInt16();
+                    usDefaultChar = data.ReadUInt16();
+                    usBreakChar = data.ReadUInt16();
+                    usMaxContext = data.ReadUInt16();
+                }
+                else
+                {
+                    version = 1;
+                    Debug.WriteLine("warn: Could not read all expected parts of version >= 2, setting version to 1 ");
+                }
             }
             initialized = true;
         }

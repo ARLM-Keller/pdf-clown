@@ -36,29 +36,20 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class CharProcWidth : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "d0";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public CharProcWidth(double wx, double wy)
             : base(OperatorKeyword,
-                  new List<PdfDirectObject>(new PdfDirectObject[] { PdfReal.Get(wx), PdfReal.Get(wy) }))
+                  new List<PdfDirectObject>(2) { PdfReal.Get(wx), PdfReal.Get(wy) })
         { }
 
         public CharProcWidth(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
-
-        #region interface
-        #region public        
 
         public override void Scan(GraphicsState state)
         {
         }
+
         public double WX
         {
             get => ((IPdfNumber)operands[0]).RawValue;
@@ -70,8 +61,5 @@ namespace PdfClown.Documents.Contents.Objects
             get => ((IPdfNumber)operands[1]).RawValue;
             set => operands[1] = PdfReal.Get(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

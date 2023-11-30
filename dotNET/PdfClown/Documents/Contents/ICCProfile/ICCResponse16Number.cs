@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public struct ICCResponse16Number
@@ -31,10 +33,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public ushort Reserved;
         public float Value;
 
-        public void Load(Bytes.Buffer buffer)
+        public void Load(Bytes.ByteStream buffer)
         {
-            Interval = buffer.ReadUnsignedShort();
-            Reserved = buffer.ReadUnsignedShort();
+            Interval = buffer.ReadUInt16();
+            Reserved = buffer.ReadUInt16();
             Value = buffer.ReadFixed32();
         }
     }

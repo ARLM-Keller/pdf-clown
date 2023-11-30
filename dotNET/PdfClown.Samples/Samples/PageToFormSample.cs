@@ -62,8 +62,7 @@ namespace PdfClown.Samples.CLI
                   GeomUtils.Scale(formSize, new SKSize(300, 0)),
                   XAlignmentEnum.Center,
                   YAlignmentEnum.Middle,
-                  45
-                  );
+                  45);
                 // Form 2.
                 composer.ShowXObject(
                   form,
@@ -71,8 +70,7 @@ namespace PdfClown.Samples.CLI
                   GeomUtils.Scale(formSize, new SKSize(0, 300)),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Bottom,
-                  0
-                  );
+                  0);
                 // Form 3.
                 composer.ShowXObject(
                   form,
@@ -80,20 +78,14 @@ namespace PdfClown.Samples.CLI
                   new SKSize(80, 200),
                   XAlignmentEnum.Right,
                   YAlignmentEnum.Bottom,
-                  0
-                  );
+                  0);
             }
             // 3.2. Showing the comments on the page...
             {
-                BlockComposer blockComposer = new BlockComposer(composer);
-                SKRect frame = SKRect.Create(
-                  18,
-                  18,
-                  pageSize.Width * .5f,
-                  pageSize.Height * .5f
-                  );
+                var blockComposer = new BlockComposer(composer);
+                SKRect frame = SKRect.Create(18, 18, pageSize.Width * .5f, pageSize.Height * .5f);
                 blockComposer.Begin(frame, XAlignmentEnum.Justify, YAlignmentEnum.Top);
-                PdfType1Font bodyFont = PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Courier, true, false);
+                var bodyFont = FontType1.Load(document, FontName.CourierBold);
                 composer.SetFont(bodyFont, 24);
                 blockComposer.ShowText("Page-to-form sample");
                 SKSize breakSize = new SKSize(0, 8);

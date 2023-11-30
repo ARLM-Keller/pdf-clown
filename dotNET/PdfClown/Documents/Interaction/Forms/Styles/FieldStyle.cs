@@ -35,27 +35,17 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
     */
     public abstract class FieldStyle
     {
-        #region dynamic
-        #region fields
         private Color backColor = DeviceRGBColor.White;
         private char checkSymbol = (char)52;
         private double fontSize = 10;
         private Color foreColor = DeviceRGBColor.Black;
         private bool graphicsVisibile = false;
         private char radioSymbol = (char)108;
-        #endregion
 
-        #region constructors
-        protected FieldStyle(
-          )
+        protected FieldStyle()
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public abstract void Apply(
-          Field field
-          );
+        public abstract void Apply(Field field);
 
         public Color BackColor
         {
@@ -92,8 +82,5 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             get => radioSymbol;
             set => radioSymbol = value;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

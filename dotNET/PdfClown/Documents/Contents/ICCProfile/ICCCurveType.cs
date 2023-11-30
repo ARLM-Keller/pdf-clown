@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public class ICCCurveType : ICCTag
@@ -37,18 +39,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public ushort[] Values;
         public float Gamma;
 
-        public override void Load(PdfClown.Bytes.Buffer buffer)
+        public override void Load(PdfClown.Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            Count = buffer.ReadUnsignedInt();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            Count = buffer.ReadUInt32();
             Values = new ushort[Count];
             if (Count > 1)
             {
                 for (int i = 0; i < Count; i++)
                 {
-                    Values[i] = buffer.ReadUnsignedShort();
+                    Values[i] = buffer.ReadUInt16();
                 }
             }
             else if (Count == 1)

@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using colors = PdfClown.Documents.Contents.ColorSpaces;
-using fonts = PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Objects;
 
 using System;
@@ -34,6 +32,9 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 using PdfClown.Util.Math.Geom;
 using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Functions;
+using PdfClown.Documents.Contents.Patterns;
+using PdfClown.Documents.Contents.ColorSpaces;
 
 namespace PdfClown.Documents.Contents
 {
@@ -42,21 +43,19 @@ namespace PdfClown.Documents.Contents
     */
     public sealed class GraphicsState : ICloneable
     {
-        #region dynamic
-        #region fields
         private IList<BlendModeEnum> blendMode;
         private SKMatrix ctm;
-        private colors::Color fillColor;
-        private colors::ColorSpace fillColorSpace;
-        private colors::Color strokeColor;
-        private colors::ColorSpace strokeColorSpace;
+        private Color fillColor;
+        private ColorSpace fillColorSpace;
+        private Color strokeColor;
+        private ColorSpace strokeColorSpace;
         private LineCapEnum lineCap;
         private LineDash lineDash;
         private LineJoinEnum lineJoin;
         private float lineWidth;
         private float miterLimit;
 
-        private fonts::Font font;
+        private Font font;
         private float fontSize;
 
         private TextRenderModeEnum renderMode;
@@ -69,10 +68,7 @@ namespace PdfClown.Documents.Contents
 
         private TextGraphicsState textState;
         private ContentScanner scanner;
-        private static Stack<GraphicsState> stack;
-        #endregion
 
-        #region constructors
         private GraphicsState()
         { }
 
@@ -81,15 +77,11 @@ namespace PdfClown.Documents.Contents
             this.scanner = scanner;
             Initialize();
         }
-        #endregion
-
-        #region interface
-        #region public
 
         /**
          <summary>Gets/Sets the current font [PDF:1.6:5.2].</summary>
        */
-        public fonts::Font Font
+        public Font Font
         {
             get => font;
             set => font = value;
@@ -197,13 +189,17 @@ namespace PdfClown.Documents.Contents
         public SKMatrix Ctm
         {
             get => ctm;
-            set => ctm = value;
+            set
+            {
+                ctm = value;
+                Scanner?.RenderContext?.SetMatrix(ctm);
+            }
         }
 
         /**
           <summary>Gets/Sets the current color for nonstroking operations [PDF:1.6:4.5.1].</summary>
         */
-        public colors::Color FillColor
+        public Color FillColor
         {
             get => fillColor;
             set => fillColor = value;
@@ -212,7 +208,7 @@ namespace PdfClown.Documents.Contents
         /**
           <summary>Gets/Sets the current color space for nonstroking operations [PDF:1.6:4.5.1].</summary>
         */
-        public colors::ColorSpace FillColorSpace
+        public ColorSpace FillColorSpace
         {
             get => fillColorSpace;
             set => fillColorSpace = value;
@@ -271,7 +267,7 @@ namespace PdfClown.Documents.Contents
         /**
           <summary>Gets/Sets the current color for stroking operations [PDF:1.6:4.5.1].</summary>
         */
-        public colors::Color StrokeColor
+        public Color StrokeColor
         {
             get => strokeColor;
             set => strokeColor = value;
@@ -280,7 +276,7 @@ namespace PdfClown.Documents.Contents
         /**
           <summary>Gets/Sets the current color space for stroking operations [PDF:1.6:4.5.1].</summary>
         */
-        public colors::ColorSpace StrokeColorSpace
+        public ColorSpace StrokeColorSpace
         {
             get => strokeColorSpace;
             set => strokeColorSpace = value;
@@ -294,7 +290,19 @@ namespace PdfClown.Documents.Contents
 
         public SoftMask SMask { get; set; }
 
-        public colors.Shading Shading { get; internal set; }
+        public Patterns.Shadings.Shading Shading { get; internal set; }
+
+        public bool Knockout { get; internal set; }
+
+        public Function Function { get; internal set; }
+
+        public bool StrokeOverprint { get; internal set; }
+
+        public bool FillOverprint { get; internal set; }
+
+        public int OverprintMode { get; internal set; }
+
+        public bool StrokeAdjustment { get; internal set; }
 
         /**
   <summary>Gets the initial current transformation matrix.</summary>
@@ -315,9 +323,12 @@ namespace PdfClown.Documents.Contents
         {
             SKMatrix initialCtm;
             var rotation = contentContext.Rotation;
-            if (contentContext is colors.TilingPattern tiling
-                || contentContext is FormXObject xObject
-                || contentContext is PdfType3CharProc charProc)
+            if (contentContext is FormXObject xObject)
+            {
+                return xObject.InitialMatrix;
+            }
+            else if (contentContext is TilingPattern tiling
+                || contentContext is Type3CharProc charProc)
             {
                 return SKMatrix.Identity;
             }
@@ -331,8 +342,7 @@ namespace PdfClown.Documents.Contents
             SKSize rotatedCanvasSize = rotation.Transform(canvasSize);
             initialCtm = initialCtm.PreConcat(SKMatrix.CreateScale(
                rotatedCanvasSize.Width / contentBox.Width,
-               rotatedCanvasSize.Height / contentBox.Height
-               ));
+               rotatedCanvasSize.Height / contentBox.Height));
 
             // Origin alignment.
             initialCtm = initialCtm.PreConcat(SKMatrix.CreateTranslation(-contentBox.Left, -contentBox.Top)); //TODO: verify minimum coordinates!
@@ -366,6 +376,10 @@ namespace PdfClown.Documents.Contents
                         ApplyBlend(paint, mode);
                     }
                 }
+                if (SMask != null)
+                {
+                    ApplyMask(paint);
+                }
             }
             return paint;
         }
@@ -377,7 +391,7 @@ namespace PdfClown.Documents.Contents
 
         public SKPaint CreateFillPaint()
         {
-            var paint = FillColorSpace?.GetPaint(FillColor, FillAlpha);
+            var paint = FillColorSpace?.GetPaint(FillColor, FillAlpha, this);
             if (paint != null)
             {
                 //paint.TextSize = (float)FontSize;
@@ -390,8 +404,44 @@ namespace PdfClown.Documents.Contents
                         ApplyBlend(paint, mode);
                     }
                 }
+                if (SMask != null)
+                {
+                    ApplyMask(paint);
+                }
             }
             return paint;
+        }
+
+        private void ApplyMask(SKPaint paint)// , SKCanvas canvas, SKPicture picture)
+        {
+            var softMask = SMask;
+            var softMaskFormObject = softMask.Group;
+            var subtype = softMask.SubType;
+            var isLuminosity = subtype.Equals(PdfName.Luminosity);
+
+            var group = softMaskFormObject.Group;
+            var isolated = group.Isolated;
+            var knockout = group.Knockout;
+            var softMaskPicture = softMaskFormObject.Render(Scanner);//
+
+            if (isLuminosity)
+            {
+                paint.Shader = SKShader.CreatePicture(softMaskPicture);
+                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Luminosity;
+            }
+            else // alpha
+            {
+                //paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
+                //{
+                //    0, 0, 0, 1, 0,
+                //    0, 0, 0, 1, 0,
+                //    0, 0, 0, 1, 0,
+                //    0, 0, 0, 1, 0
+                //});
+                paint.Shader = SKShader.CreatePicture(softMaskPicture);
+                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.DstOver;
+
+            }
         }
 
         private static void ApplyBlend(SKPaint paint, BlendModeEnum mode)
@@ -469,10 +519,18 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        public static SKMatrix GetRotationMatrix(SKRect box, int degrees)
+        public static SKMatrix GetRotationLeftBottomMatrix(SKRect box, int degrees)
         {
             var matrix = SKMatrix.CreateRotationDegrees(degrees);
             matrix = matrix.PreConcat(SKMatrix.CreateScale(1, -1));
+            var mappedBox = matrix.MapRect(box);
+            matrix = matrix.PostConcat(SKMatrix.CreateTranslation(-mappedBox.Left, -mappedBox.Top));
+            return matrix;
+        }
+
+        public static SKMatrix GetRotationMatrix(SKRect box, int degrees)
+        {
+            var matrix = SKMatrix.CreateRotationDegrees(degrees);
             var mappedBox = matrix.MapRect(box);
             matrix = matrix.PostConcat(SKMatrix.CreateTranslation(-mappedBox.Left, -mappedBox.Top));
             return matrix;
@@ -483,15 +541,14 @@ namespace PdfClown.Documents.Contents
           <param name="topDown">Whether the y-axis orientation has to be adjusted to common top-down
           orientation rather than standard PDF coordinate system (bottom-up).</param>
         */
-        public SKMatrix GetTextToDeviceMatrix(bool topDown)
+        public SKMatrix GetTextToDeviceMatrix(IContentContext context)
         {
             /*
               NOTE: The text rendering matrix (trm) is obtained from the concatenation of the current
               transformation matrix (ctm) and the text matrix (tm).
             */
-            SKMatrix matrix = GetUserToDeviceMatrix(topDown);
-            matrix = matrix.PreConcat(textState.Tm);
-            return matrix;
+            var matrix = GetUserToDeviceMatrix(context);
+            return matrix.PostConcat(textState.Tm);
         }
 
         /**
@@ -499,43 +556,32 @@ namespace PdfClown.Documents.Contents
           <param name="topDown">Whether the y-axis orientation has to be adjusted to common top-down
           orientation rather than standard PDF coordinate system (bottom-up).</param>
         */
-        public SKMatrix GetUserToDeviceMatrix(bool topDown)
+        public SKMatrix GetUserToDeviceMatrix(IContentContext context)
         {
-            if (topDown)
-            {
-                SKMatrix matrix = new SKMatrix { Values = new float[] { 1, 0, 0, 0, -1, scanner.CanvasSize.Height, 0, 0, 1 } };
-                matrix = matrix.PreConcat(ctm);
-                return matrix;
-            }
-            else
-            {
-                return ctm;
-            }
+            var matrix = context.RotateMatrix;
+            return matrix.PreConcat(ctm);
         }
 
 
         public void Save()
         {
-            if (stack == null)
-            {
-                stack = new Stack<GraphicsState>();
-            }
+            Scanner?.RenderContext?.Save();
+            var stack = Scanner.ContentContext.GetGraphicsStateContext();
             var cloned = (GraphicsState)Clone();
             stack.Push(cloned);
         }
 
         public void Restore()
         {
-            if (stack != null && stack.Count > 0)
+            Scanner?.RenderContext?.Restore();
+            var stack = Scanner.ContentContext.GetGraphicsStateContext();
+            if (stack.Count > 0)
             {
                 var poped = stack.Pop();
                 poped.CopyTo(this);
             }
         }
 
-        #endregion
-
-        #region internal
         internal GraphicsState Clone(ContentScanner scanner)
         {
             GraphicsState state = (GraphicsState)Clone();
@@ -548,14 +594,14 @@ namespace PdfClown.Documents.Contents
             // State parameters initialization.
             blendMode = ExtGState.DefaultBlendMode;
             Ctm = GetInitialCtm();
-            fillColor = colors::DeviceGrayColor.Default;
-            fillColorSpace = colors::DeviceGrayColorSpace.Default;
-            strokeColor = colors::DeviceGrayColor.Default;
-            strokeColorSpace = colors::DeviceGrayColorSpace.Default;
+            fillColor = DeviceGrayColor.Default;
+            fillColorSpace = DeviceGrayColorSpace.Default;
+            strokeColor = DeviceGrayColor.Default;
+            strokeColorSpace = DeviceGrayColorSpace.Default;
             lineCap = LineCapEnum.Butt;
             lineDash = new LineDash();
             lineJoin = LineJoinEnum.Miter;
-            lineWidth = 0;
+            lineWidth = 1;
             miterLimit = 10;
             font = null;
             fontSize = 0;
@@ -569,8 +615,6 @@ namespace PdfClown.Documents.Contents
             SMask = null;
             StrokeAlpha = null;
             FillAlpha = null;
-            // Rendering context initialization.
-            Scanner.RenderContext?.SetMatrix(ctm);
         }
 
         /**
@@ -578,7 +622,7 @@ namespace PdfClown.Documents.Contents
         */
         public object Clone()
         {
-            GraphicsState clone = new GraphicsState
+            var clone = new GraphicsState
             {
                 scanner = scanner,
                 //Text
@@ -595,17 +639,20 @@ namespace PdfClown.Documents.Contents
                 ctm = ctm,
                 fillColor = fillColor,
                 fillColorSpace = fillColorSpace,
-                strokeColor = colors::DeviceGrayColor.Default,
-                strokeColorSpace = colors::DeviceGrayColorSpace.Default,
+                strokeColor = strokeColor,
+                strokeColorSpace = strokeColorSpace,
                 lineCap = lineCap,
                 lineDash = lineDash,// != null ? new LineDash(lineDash.DashArray, lineDash.DashPhase),
                 lineJoin = lineJoin,
-                lineWidth = 0,
-                miterLimit = 10,
+                lineWidth = lineWidth,
+                miterLimit = miterLimit,
                 SMask = SMask,
                 AlphaIsShape = AlphaIsShape,
                 StrokeAlpha = StrokeAlpha,
                 FillAlpha = FillAlpha,
+                FillOverprint = FillOverprint,
+                StrokeOverprint = StrokeOverprint,
+                OverprintMode = OverprintMode,
                 TextState = new TextGraphicsState
                 {
                     Tm = textState.Tm,
@@ -621,7 +668,7 @@ namespace PdfClown.Documents.Contents
         */
         public void CopyTo(GraphicsState state)
         {
-            state.Ctm = ctm;
+            state.ctm = ctm;
             //Text
             state.font = font;
             state.fontSize = fontSize;
@@ -647,11 +694,11 @@ namespace PdfClown.Documents.Contents
             state.AlphaIsShape = AlphaIsShape;
             state.FillAlpha = FillAlpha;
             state.StrokeAlpha = StrokeAlpha;
+            state.FillOverprint = FillOverprint;
+            state.StrokeOverprint = StrokeOverprint;
+            state.OverprintMode = OverprintMode;
+
         }
 
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -37,28 +37,18 @@ namespace PdfClown.Tokens
     /**
       <summary>PDF file writer implementing classic cross-reference table [PDF:1.6:3.4.3].</summary>
     */
-    internal sealed class PlainWriter
-      : Writer
+    internal sealed class PlainWriter : Writer
     {
-        #region static
-        #region fields
         private static readonly byte[] TrailerChunk = Encoding.Pdf.Encode(Keyword.Trailer + Symbol.LineFeed);
         private static readonly string XRefChunk = Keyword.XRef + Symbol.LineFeed;
         private static readonly string XRefEOLChunk = "" + Symbol.CarriageReturn + Symbol.LineFeed;
 
         private const string XRefGenerationFormat = "00000";
         private const string XRefOffsetFormat = "0000000000";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         internal PlainWriter(Files.File file, IOutputStream stream) : base(file, stream)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override void WriteIncremental()
         {
             // 1. Original content (head, body and previous trailer).
@@ -67,20 +57,17 @@ namespace PdfClown.Tokens
 
             // 2. Body update (modified indirect objects insertion).
             int xrefSize = file.IndirectObjects.Count;
-            StringBuilder xrefBuilder = new StringBuilder(XRefChunk);
+            var xrefBuilder = new StringBuilder(XRefChunk);
             {
                 /*
                   NOTE: Incremental xref table comprises multiple sections
                   each one composed by multiple subsections; this update
                   adds a new section.
                 */
-                StringBuilder xrefSubBuilder = new StringBuilder(); // Xref-table subsection builder.
+                var xrefSubBuilder = new StringBuilder(); // Xref-table subsection builder.
                 int xrefSubCount = 0; // Xref-table subsection counter.
                 int prevKey = 0; // Previous-entry object number.
-                foreach (
-                  KeyValuePair<int, PdfIndirectObject> indirectObjectEntry
-                    in file.IndirectObjects.ModifiedObjects
-                  )
+                foreach (var indirectObjectEntry in file.IndirectObjects.ModifiedObjects)
                 {
                     // Is the object in the current subsection?
                     /*
@@ -97,8 +84,7 @@ namespace PdfClown.Tokens
                           xrefBuilder,
                           prevKey - xrefSubCount + 1,
                           xrefSubCount,
-                          xrefSubBuilder
-                          );
+                          xrefSubBuilder);
 
                         // Begin next subsection!
                         xrefSubBuilder.Length = 0;
@@ -111,11 +97,7 @@ namespace PdfClown.Tokens
                     if (indirectObjectEntry.Value.IsInUse()) // In-use entry.
                     {
                         // Add in-use entry!
-                        AppendXRefEntry(
-                          xrefSubBuilder,
-                          indirectObjectEntry.Value.Reference,
-                          stream.Length
-                          );
+                        AppendXRefEntry(xrefSubBuilder, indirectObjectEntry.Value.Reference, stream.Length);
                         // Add in-use entry content!
                         indirectObjectEntry.Value.WriteTo(stream, file);
                     }
@@ -127,20 +109,11 @@ namespace PdfClown.Tokens
                           so that this entry links directly back to object number 0, having a generation number of 65535
                           (not reusable) [PDF:1.6:3.4.3].
                         */
-                        AppendXRefEntry(
-                          xrefSubBuilder,
-                          indirectObjectEntry.Value.Reference,
-                          0
-                          );
+                        AppendXRefEntry(xrefSubBuilder, indirectObjectEntry.Value.Reference, 0);
                     }
                 }
                 // End last subsection!
-                AppendXRefSubsection(
-                  xrefBuilder,
-                  prevKey - xrefSubCount + 1,
-                  xrefSubCount,
-                  xrefSubBuilder
-                  );
+                AppendXRefSubsection(xrefBuilder, prevKey - xrefSubCount + 1, xrefSubCount, xrefSubBuilder);
             }
 
             // 3. XRef-table last section.
@@ -161,7 +134,7 @@ namespace PdfClown.Tokens
 
             // 2. Body [PDF:1.6:3.4.2].
             int xrefSize = file.IndirectObjects.Count;
-            StringBuilder xrefBuilder = new StringBuilder(XRefChunk);
+            var xrefBuilder = new StringBuilder(XRefChunk);
             {
                 /*
                   NOTE: A standard xref table comprises just one section composed by just one subsection.
@@ -171,9 +144,9 @@ namespace PdfClown.Tokens
                 */
                 AppendXRefSubsectionIndexer(xrefBuilder, 0, xrefSize);
 
-                StringBuilder xrefInUseBlockBuilder = new StringBuilder();
-                IndirectObjects indirectObjects = file.IndirectObjects;
-                PdfReference freeReference = indirectObjects[0].Reference; // Initialized to the first free entry.
+                var xrefInUseBlockBuilder = new StringBuilder();
+                var indirectObjects = file.IndirectObjects;
+                var freeReference = indirectObjects[0].Reference; // Initialized to the first free entry.
                 for (int index = 1; index < xrefSize; index++)
                 {
                     // Current entry insertion.
@@ -212,9 +185,7 @@ namespace PdfClown.Tokens
             // 4. Trailer [PDF:1.6:3.4.4].
             WriteTrailer(startxref, xrefSize, null);
         }
-        #endregion
 
-        #region private
         private StringBuilder AppendXRefEntry(StringBuilder xrefBuilder, PdfReference reference, long offset)
         {
             string usage;
@@ -283,8 +254,5 @@ namespace PdfClown.Tokens
             // 3. Tail.
             WriteTail(startxref);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
 using System.IO;
 
 
@@ -94,25 +95,25 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public static readonly int ENCODING_MAC_UNINTERPRETED = 32;
 
         // Unicode encoding ids
-        public static readonly int LANGUGAE_UNICODE = 0;
+        public static readonly int LANGUAGE_UNICODE = 0;
 
         // Windows language ids
-        public static readonly int LANGUGAE_WIN_EN_AU = 0x0C09;
-        public static readonly int LANGUGAE_WIN_EN_BZ = 0x2809;
-        public static readonly int LANGUGAE_WIN_EN_CA = 0x1009;
-        public static readonly int LANGUGAE_WIN_EN_CR = 0x2409;
-        public static readonly int LANGUGAE_WIN_EN_IN = 0x4009;
-        public static readonly int LANGUGAE_WIN_EN_IR = 0x1809;
-        public static readonly int LANGUGAE_WIN_EN_JM = 0x2009;
-        public static readonly int LANGUGAE_WIN_EN_ML = 0x4409;
-        public static readonly int LANGUGAE_WIN_EN_NZ = 0x1409;
-        public static readonly int LANGUGAE_WIN_EN_PH = 0x3909;
-        public static readonly int LANGUGAE_WIN_EN_SG = 0x4809;
-        public static readonly int LANGUGAE_WIN_EN_SA = 0x1C09;
-        public static readonly int LANGUGAE_WIN_EN_TT = 0x2C09;
-        public static readonly int LANGUGAE_WIN_EN_UK = 0x0809;
-        public static readonly int LANGUGAE_WIN_EN_US = 0x0409;
-        public static readonly int LANGUGAE_WIN_EN_ZB = 0x3009;
+        public static readonly int LANGUAGE_WIN_EN_AU = 0x0C09;
+        public static readonly int LANGUAGE_WIN_EN_BZ = 0x2809;
+        public static readonly int LANGUAGE_WIN_EN_CA = 0x1009;
+        public static readonly int LANGUAGE_WIN_EN_CR = 0x2409;
+        public static readonly int LANGUAGE_WIN_EN_IN = 0x4009;
+        public static readonly int LANGUAGE_WIN_EN_IR = 0x1809;
+        public static readonly int LANGUAGE_WIN_EN_JM = 0x2009;
+        public static readonly int LANGUAGE_WIN_EN_ML = 0x4409;
+        public static readonly int LANGUAGE_WIN_EN_NZ = 0x1409;
+        public static readonly int LANGUAGE_WIN_EN_PH = 0x3909;
+        public static readonly int LANGUAGE_WIN_EN_SG = 0x4809;
+        public static readonly int LANGUAGE_WIN_EN_SA = 0x1C09;
+        public static readonly int LANGUAGE_WIN_EN_TT = 0x2C09;
+        public static readonly int LANGUAGE_WIN_EN_UK = 0x0809;
+        public static readonly int LANGUAGE_WIN_EN_US = 0x0409;
+        public static readonly int LANGUAGE_WIN_EN_ZB = 0x3009;
 
         // Macintosh language ids
         public static readonly int LANGUGAE_MAC_ENGLISH = 0;
@@ -244,14 +245,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public void InitData(TrueTypeFont ttf, TTFDataStream data)
+        public void InitData(TrueTypeFont ttf, IInputStream data)
         {
-            platformId = data.ReadUnsignedShort();
-            platformEncodingId = data.ReadUnsignedShort();
-            languageId = data.ReadUnsignedShort();
-            nameId = data.ReadUnsignedShort();
-            stringLength = data.ReadUnsignedShort();
-            stringOffset = data.ReadUnsignedShort();
+            platformId = data.ReadUInt16();
+            platformEncodingId = data.ReadUInt16();
+            languageId = data.ReadUInt16();
+            nameId = data.ReadUInt16();
+            stringLength = data.ReadUInt16();
+            stringOffset = data.ReadUInt16();
         }
 
         /**

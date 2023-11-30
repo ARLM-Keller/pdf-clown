@@ -38,17 +38,12 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF12)]
     public sealed class PageActions : PdfObjectWrapper<PdfDictionary>
     {
-        #region dynamic
-        #region constructors
         public PageActions(Document context) : base(context, new PdfDictionary())
         { }
 
         public PageActions(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the action to be performed when the page is closed.</summary>
         */
@@ -66,8 +61,5 @@ namespace PdfClown.Documents
             get => Action.Wrap(BaseDataObject[PdfName.O]);
             set => BaseDataObject[PdfName.O] = value.BaseObject;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public class ICCTextDescriptionType : ICCTag
@@ -41,18 +43,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public byte ScriptcodeCount;
         public string MacDescription;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            Count = buffer.ReadUnsignedInt();
-            Description = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes((int)Count));
-            UnicodeCode = buffer.ReadUnsignedInt();
-            UnicodeCount = buffer.ReadUnsignedInt();
-            ScriptcodeCode = buffer.ReadUnsignedShort();
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            Count = buffer.ReadUInt32();
+            Description = buffer.ReadString((int)Count, System.Text.Encoding.ASCII);
+            UnicodeCode = buffer.ReadUInt32();
+            UnicodeCount = buffer.ReadUInt32();
+            ScriptcodeCode = buffer.ReadUInt16();
             ScriptcodeCount = (byte)buffer.ReadByte();
-            MacDescription = System.Text.Encoding.ASCII.GetString(buffer.ReadBytes(67));
+            MacDescription = buffer.ReadString(67, System.Text.Encoding.ASCII);
         }
     }
 }

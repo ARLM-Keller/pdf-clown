@@ -38,25 +38,17 @@ namespace PdfClown.Documents.Interaction.Actions
     [PDF(VersionEnum.PDF15)]
     public sealed class DoTransition : Action
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public DoTransition(
-          Document context,
-          Transition transition
-          ) : base(context, PdfName.Trans)
+        public DoTransition(Document context, Transition transition)
+            : base(context, PdfName.Trans)
         { Transition = transition; }
 
-        internal DoTransition(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal DoTransition(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the transition effect to be used for the update of the display.</summary>
         */
@@ -65,8 +57,5 @@ namespace PdfClown.Documents.Interaction.Actions
             get => Wrap<Transition>(BaseDataObject[PdfName.Trans]);
             set => BaseDataObject[PdfName.Trans] = value.BaseObject;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

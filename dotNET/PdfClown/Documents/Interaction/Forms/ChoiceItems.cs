@@ -41,39 +41,27 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class ChoiceItems : PdfObjectWrapper<PdfArray>, IList<ChoiceItem>
     {
-        #region dynamic
-        #region fields
-        #endregion
-
-        #region constructors
         public ChoiceItems(Document context) : base(context, new PdfArray())
         { }
 
         public ChoiceItems(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public ChoiceItem Add(string value)
         {
-            ChoiceItem item = new ChoiceItem(value);
+            var item = new ChoiceItem(value);
             Add(item);
-
             return item;
         }
 
         public ChoiceItem Insert(int index, string value)
         {
-            ChoiceItem item = new ChoiceItem(value);
+            var item = new ChoiceItem(value);
             Insert(index, item);
-
             return item;
         }
 
-        #region IList
-        public int IndexOf(ChoiceItem value)
-        { return BaseDataObject.IndexOf(value.BaseObject); }
+        public int IndexOf(ChoiceItem value) => BaseDataObject.IndexOf(value.BaseObject);
 
         public void Insert(int index, ChoiceItem value)
         {
@@ -81,8 +69,7 @@ namespace PdfClown.Documents.Interaction.Forms
             value.Items = this;
         }
 
-        public void RemoveAt(int index)
-        { BaseDataObject.RemoveAt(index); }
+        public void RemoveAt(int index) => BaseDataObject.RemoveAt(index);
 
         public ChoiceItem this[int index]
         {
@@ -94,18 +81,15 @@ namespace PdfClown.Documents.Interaction.Forms
             }
         }
 
-        #region ICollection
         public void Add(ChoiceItem value)
         {
             BaseDataObject.Add(value.BaseObject);
             value.Items = this;
         }
 
-        public void Clear()
-        { BaseDataObject.Clear(); }
+        public void Clear() => BaseDataObject.Clear();
 
-        public bool Contains(ChoiceItem value)
-        { return BaseDataObject.Contains(value.BaseObject); }
+        public bool Contains(ChoiceItem value) => BaseDataObject.Contains(value.BaseObject);
 
         public void CopyTo(ChoiceItem[] values, int index)
         { throw new NotImplementedException(); }
@@ -114,25 +98,14 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public bool IsReadOnly => false;
 
-        public bool Remove(ChoiceItem value)
-        { return BaseDataObject.Remove(value.BaseObject); }
+        public bool Remove(ChoiceItem value) => BaseDataObject.Remove(value.BaseObject);
 
-        #region IEnumerable<ChoiceItem>
         IEnumerator<ChoiceItem> IEnumerable<ChoiceItem>.GetEnumerator()
         {
             for (int index = 0, length = Count; index < length; index++)
             { yield return this[index]; }
         }
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<ChoiceItem>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<ChoiceItem>)this).GetEnumerator();
     }
 }

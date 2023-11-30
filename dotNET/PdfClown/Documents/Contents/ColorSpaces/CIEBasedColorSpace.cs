@@ -34,28 +34,22 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public abstract class CIEBasedColorSpace : ColorSpace
     {
-        #region dynamic
-        #region constructors
+        private float[] blackPoint;
+        private float[] whitePoint;
+
         //TODO:IMPL new element constructor!
 
         protected CIEBasedColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the tristimulus value, in the CIE 1931 XYZ space, of the diffuse black point.</summary>
         */
         public float[] BlackPoint
         {
-            get
-            {
-                PdfArray black = (PdfArray)Dictionary[PdfName.BlackPoint];
-                return (black == null
-                  ? new float[] { 0, 0, 0 }
-                  : new float[] { black.GetFloat(0), black.GetFloat(1), black.GetFloat(2) });
-            }
+            get => blackPoint ??= Dictionary.Resolve(PdfName.BlackPoint) is PdfArray array
+                      ? new float[] { array.GetFloat(0), array.GetFloat(1), array.GetFloat(2) }
+                      : new float[] { 0, 0, 0 };
         }
 
         /**
@@ -63,22 +57,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public float[] WhitePoint
         {
-            get
-            {
-                PdfArray white = (PdfArray)Dictionary[PdfName.WhitePoint];
-                return new float[] { white.GetFloat(0), white.GetFloat(1), white.GetFloat(2) };
-            }
+            get => whitePoint ??= Dictionary.Resolve(PdfName.WhitePoint) is PdfArray array
+                  ? new float[] { array.GetFloat(0), array.GetFloat(1), array.GetFloat(2) }
+                  : new float[] { 0, 0, 0 };
         }
-        #endregion
 
-        #region protected
         /**
           <summary>Gets this color space's dictionary.</summary>
         */
         protected override PdfDictionary Dictionary => (PdfDictionary)((PdfArray)BaseDataObject).Resolve(1);
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

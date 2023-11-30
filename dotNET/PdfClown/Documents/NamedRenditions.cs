@@ -38,17 +38,12 @@ namespace PdfClown.Documents
     public sealed class NamedRenditions : NameTree<Rendition>
     {
 
-        #region dynamic
-        #region constructors
         public NamedRenditions(Document context) : base(context)
         { }
 
         public NamedRenditions(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override bool Remove(PdfString key)
         {
             Rendition oldValue = this[key];
@@ -68,14 +63,10 @@ namespace PdfClown.Documents
                 UpdateName(value, key);
             }
         }
-        #endregion
 
-        #region protected
         protected override Rendition WrapValue(PdfDirectObject baseObject)
         { return Rendition.Wrap(baseObject); }
-        #endregion
 
-        #region private
         /**
           <summary>Ensures name reference synchronization for the specified rendition [PDF:1.7:9.1.2].
           </summary>
@@ -87,9 +78,5 @@ namespace PdfClown.Documents
 
             rendition.BaseDataObject[PdfName.N] = name;
         }
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

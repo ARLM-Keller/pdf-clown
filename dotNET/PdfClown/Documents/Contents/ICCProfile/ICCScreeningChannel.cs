@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     public struct ICCScreeningChannel
@@ -31,11 +33,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public float ScreenAngle;
         public ICCScreeningSpotEncodings SpotShape;
 
-        public void Load(Bytes.Buffer buffer)
+        public void Load(Bytes.ByteStream buffer)
         {
             Frequency = buffer.ReadFixed32();
             ScreenAngle = buffer.ReadFixed32();
-            SpotShape = (ICCScreeningSpotEncodings)buffer.ReadUnsignedInt();
+            SpotShape = (ICCScreeningSpotEncodings)buffer.ReadUInt32();
         }
     }
 }

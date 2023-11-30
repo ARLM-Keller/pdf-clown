@@ -36,49 +36,41 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF12)]
     public sealed class ApplyExtGState : Operation, IResourceReference<ExtGState>
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "gs";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public ApplyExtGState(PdfName name) : base(OperatorKeyword, name)
         { }
 
         public ApplyExtGState(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the <see cref="ExtGState">graphics state parameters</see> resource to be set.
           </summary>
           <param name="context">Content context.</param>
         */
-        public ExtGState GetExtGState(IContentContext context)
-        { return GetResource(context); }
+        public ExtGState GetExtGState(ContentScanner context) => GetResource(context);
+
+        public ExtGState GetResource(ContentScanner context)
+        {
+            var pcontext = context;
+            ExtGState gstate;
+            while ((gstate = pcontext.ContentContext.Resources.ExtGStates[Name]) == null
+                && (pcontext = pcontext.ParentLevel) != null)
+            { }
+            return gstate;
+        }
 
         public override void Scan(GraphicsState state)
         {
-            ExtGState extGState = GetExtGState(state.Scanner.ContentContext);
-            extGState.ApplyTo(state);
+            ExtGState extGState = GetExtGState(state.Scanner);
+            extGState?.ApplyTo(state);
         }
-
-        #region IResourceReference
-        public ExtGState GetResource(IContentContext context)
-        { return context.Resources.ExtGStates[Name]; }
 
         public PdfName Name
         {
             get => (PdfName)operands[0];
             set => operands[0] = value;
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

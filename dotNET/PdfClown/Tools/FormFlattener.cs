@@ -48,7 +48,7 @@ namespace PdfClown.Tools
         */
         public void Flatten(Document document)
         {
-            Dictionary<Page, PageStamper> pageStampers = new Dictionary<Page, PageStamper>();
+            var pageStampers = new Dictionary<Page, PageStamper>();
             Form form = document.Form;
             Fields formFields = form.Fields;
             foreach (Field field in formFields.Values)
@@ -70,7 +70,7 @@ namespace PdfClown.Tools
                             if (!pageStampers.TryGetValue(widgetPage, out widgetStamper))
                             { pageStampers[widgetPage] = widgetStamper = new PageStamper(widgetPage); }
 
-                            SKRect widgetBox = widget.Box;
+                            SKRect widgetBox = widget.GetBounds();
                             widgetStamper.Foreground.ShowXObject(widgetCurrentAppearance, widgetBox.Location, widgetBox.Size);
                         }
                     }

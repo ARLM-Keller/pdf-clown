@@ -41,27 +41,18 @@ namespace PdfClown.Tools
     */
     public class LayerManager
     {
-        #region dynamic
-        #region interface
-        #region public
         /**
           <summary>Removes the specified layers from the document.</summary>
           <param name="layers">Layers to remove (they MUST belong to the same document).</param>
         */
-        public void Remove(
-          params Layer[] layers
-          )
-        { Remove(false, layers); }
+        public void Remove(params Layer[] layers) => Remove(false, layers);
 
         /**
           <summary>Removes the specified layers from the document.</summary>
           <param name="preserveContent">Whether the layer contents have to be flattened only.</param>
           <param name="layers">Layers to remove (they MUST belong to the same document).</param>
         */
-        public void Remove(
-          bool preserveContent,
-          params Layer[] layers
-          )
+        public void Remove(bool preserveContent, params Layer[] layers)
         {
             var document = layers[0].Document;
 
@@ -101,16 +92,8 @@ namespace PdfClown.Tools
             // 4. Reference cleanup.
             Optimizer.RemoveOrphanedObjects(document.File);
         }
-        #endregion
 
-        #region private
-        private void RemoveLayerContents(
-          Page page,
-          ICollection<Layer> removedLayers,
-          ICollection<LayerEntity> layerEntities,
-          ICollection<xobjects::XObject> layerXObjects,
-          bool preserveContent
-          )
+        private void RemoveLayerContents(Page page, ICollection<Layer> removedLayers, ICollection<LayerEntity> layerEntities, ICollection<xobjects::XObject> layerXObjects, bool preserveContent)
         {
             var pageResources = page.Resources;
 
@@ -194,12 +177,7 @@ namespace PdfClown.Tools
             }
         }
 
-        private void RemoveLayerContents(
-          ContentScanner level,
-          ICollection<PdfName> layerEntityNames,
-          ICollection<PdfName> layerXObjectNames,
-          bool preserveContent
-          )
+        private void RemoveLayerContents(ContentScanner level, ICollection<PdfName> layerEntityNames, ICollection<PdfName> layerXObjectNames, bool preserveContent)
         {
             if (level == null)
                 return;
@@ -247,10 +225,7 @@ namespace PdfClown.Tools
             }
         }
 
-        private void RemoveLayerReferences(
-          LayerConfiguration layerConfiguration,
-          ICollection<PdfReference> layerReferences
-          )
+        private void RemoveLayerReferences(LayerConfiguration layerConfiguration, ICollection<PdfReference> layerReferences)
         {
             if (layerConfiguration == null)
                 return;
@@ -269,11 +244,7 @@ namespace PdfClown.Tools
             RemoveLayerReferences(layerConfigurationDictionary, PdfName.RBGroups, layerReferences);
         }
 
-        private void RemoveLayerReferences(
-          PdfDictionary dictionaryObject,
-          PdfName key,
-          ICollection<PdfReference> layerReferences
-          )
+        private void RemoveLayerReferences(PdfDictionary dictionaryObject, PdfName key, ICollection<PdfReference> layerReferences)
         {
             if (dictionaryObject == null)
                 return;
@@ -281,10 +252,7 @@ namespace PdfClown.Tools
             RemoveLayerReferences((PdfArray)dictionaryObject.Resolve(key), layerReferences);
         }
 
-        private void RemoveLayerReferences(
-          PdfArray arrayObject,
-          ICollection<PdfReference> layerReferences
-          )
+        private void RemoveLayerReferences(PdfArray arrayObject, ICollection<PdfReference> layerReferences)
         {
             if (arrayObject == null)
                 return;
@@ -292,9 +260,9 @@ namespace PdfClown.Tools
             for (int index = arrayObject.Count - 1; index >= 0; index--)
             {
                 PdfDataObject itemObject = arrayObject[index];
-                if (itemObject is PdfReference)
+                if (itemObject is PdfReference pdfReference)
                 {
-                    if (layerReferences.Contains((PdfReference)itemObject))
+                    if (layerReferences.Contains(pdfReference))
                     {
                         arrayObject.RemoveAt(index);
 
@@ -309,13 +277,10 @@ namespace PdfClown.Tools
                     else
                     { itemObject = itemObject.Resolve(); }
                 }
-                if (itemObject is PdfArray)
-                { RemoveLayerReferences((PdfArray)itemObject, layerReferences); }
+                if (itemObject is PdfArray pdfArray)
+                { RemoveLayerReferences(pdfArray, layerReferences); }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }
 

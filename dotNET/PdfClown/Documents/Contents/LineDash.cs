@@ -37,9 +37,6 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF10)]
     public sealed class LineDash : IEquatable<LineDash>
     {
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Gets the pattern corresponding to the specified components.</summary>
         */
@@ -53,21 +50,14 @@ namespace PdfClown.Documents.Contents
             for (int index = 0, length = dashArrayValue.Length; index < length; index++)
             { dashArrayValue[index] = dashArray.GetFloat(index); }
             // Dash phase.
-            var dashPhaseValue = dashPhase != null ? dashPhase.FloatValue : 0;
+            var dashPhaseValue = dashPhase?.FloatValue ?? 0F;
 
             return new LineDash(dashArrayValue, dashPhaseValue);
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private readonly float[] dashArray;
         private readonly float dashPhase;
-        #endregion
 
-        #region constructors
         public LineDash() : this(null) { }
 
         public LineDash(float[] dashArray) : this(dashArray, 0)
@@ -78,10 +68,7 @@ namespace PdfClown.Documents.Contents
             this.dashArray = dashArray != null ? dashArray : new float[0]; // [FIX:9] NullPointerException if dashArray not initialized.
             this.dashPhase = dashPhase;
         }
-        #endregion
 
-        #region interface
-        #region public
         public float[] DashArray => dashArray;
 
         public float DashPhase => dashPhase;
@@ -100,7 +87,6 @@ namespace PdfClown.Documents.Contents
                 }
                 stroke.PathEffect = SKPathEffect.CreateDash(dashArray, DashPhase);
             }
-
         }
 
         public bool Equals(LineDash other)
@@ -110,8 +96,5 @@ namespace PdfClown.Documents.Contents
             return DashPhase == other.DashPhase
                 && DashArray.SequenceEqual(other.DashArray);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

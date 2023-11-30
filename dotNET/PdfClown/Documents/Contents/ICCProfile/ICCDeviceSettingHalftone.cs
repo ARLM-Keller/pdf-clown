@@ -28,9 +28,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     public struct ICCDeviceSettingHalftone : ICCDeviceSettingValue
     {
         public ICCDeviceSettingsHalftone Value;
-        public void Load(Bytes.Buffer buffer)
+        public void Load(Bytes.ByteStream buffer)
         {
-            Value = (ICCDeviceSettingsHalftone)buffer.ReadUnsignedInt();
+            Value = (ICCDeviceSettingsHalftone)buffer.ReadUInt32();
         }
     }
 }

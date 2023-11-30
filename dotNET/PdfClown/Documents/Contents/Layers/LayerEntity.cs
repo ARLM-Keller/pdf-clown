@@ -37,7 +37,6 @@ namespace PdfClown.Documents.Contents.Layers
     [PDF(VersionEnum.PDF15)]
     public abstract class LayerEntity : PropertyList
     {
-        #region types
         /**
           <summary>Membership visibility policy [PDF:1.7:4.10.1].</summary>
         */
@@ -60,24 +59,15 @@ namespace PdfClown.Documents.Contents.Layers
             */
             AllOff
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         protected LayerEntity(Document context, PdfName typeName) : base(
             context,
-            new PdfDictionary(
-              new PdfName[] { PdfName.Type },
-              new PdfDirectObject[] { typeName }
-            ))
+            new PdfDictionary(1) { { PdfName.Type, typeName } })
         { }
 
         protected LayerEntity(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the default membership, corresponding to the hierarchical relation between this
           layer entity and its ascendants; top-level layers return themselves.</summary>
@@ -118,9 +108,6 @@ namespace PdfClown.Documents.Contents.Layers
             get;
             set;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     internal static class VisibilityPolicyEnumExtension
@@ -136,9 +123,7 @@ namespace PdfClown.Documents.Contents.Layers
             codes[LayerMembership.VisibilityPolicyEnum.AllOff] = PdfName.AllOff;
         }
 
-        public static LayerMembership.VisibilityPolicyEnum Get(
-          PdfName name
-          )
+        public static LayerMembership.VisibilityPolicyEnum Get(PdfName name)
         {
             if (name == null)
                 return LayerMembership.VisibilityPolicyEnum.AnyOn;
@@ -150,9 +135,7 @@ namespace PdfClown.Documents.Contents.Layers
             return visibilityPolicy.Value;
         }
 
-        public static PdfName GetName(
-          this LayerMembership.VisibilityPolicyEnum visibilityPolicy
-          )
+        public static PdfName GetName(this LayerMembership.VisibilityPolicyEnum visibilityPolicy)
         { return codes[visibilityPolicy]; }
     }
 }

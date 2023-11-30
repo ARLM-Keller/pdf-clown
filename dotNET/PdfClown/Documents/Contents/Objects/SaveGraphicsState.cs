@@ -36,25 +36,13 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SaveGraphicsState : Operation
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "q";
 
         public static readonly SaveGraphicsState Value = new SaveGraphicsState();
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         private SaveGraphicsState() : base(OperatorKeyword)
         { }
 
-        public override void Scan(GraphicsState state)
-        {
-            //TODO state.Save();
-            state?.Scanner?.RenderContext?.Save();
-        }
-        #endregion
-        #endregion
+        public override void Scan(GraphicsState state) => state.Save();
     }
 }

@@ -36,34 +36,21 @@ namespace PdfClown.Objects
     */
     public sealed class PdfBoolean : PdfSimpleObject<bool>
     {
-        #region static
-        #region fields
         public static readonly PdfBoolean False = new PdfBoolean(false);
         public static readonly PdfBoolean True = new PdfBoolean(true);
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the object equivalent to the given value.</summary>
         */
         public static PdfBoolean Get(bool? value)
         { return value.HasValue ? (value.Value ? True : False) : null; }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public PdfBoolean() : this(false)
         { }
 
         public PdfBoolean(bool value)
         { RawValue = value; }
-        #endregion
 
-        #region interface
-        #region public
         public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
@@ -74,8 +61,5 @@ namespace PdfClown.Objects
 
         public override void WriteTo(IOutputStream stream, File context)
         { stream.Write(RawValue ? Keyword.True : Keyword.False); }
-        #endregion
-        #endregion
-        #endregion
     }
 }

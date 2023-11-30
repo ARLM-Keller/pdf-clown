@@ -39,8 +39,6 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF12)]
     public class SetFillColor : Operation
     {
-        #region static
-        #region fields
         /**
           <summary>'Set the color to use for nonstroking operations in any color space' operator.</summary>
         */
@@ -52,11 +50,7 @@ namespace PdfClown.Documents.Contents.Objects
         */
         [PDF(VersionEnum.PDF11)]
         public static readonly string OperatorKeyword = "sc";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public SetFillColor(Color value)
             : this(ExtendedOperatorKeyword, value)
         { }
@@ -75,7 +69,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         /**
           <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Pattern"/>).</param>
+          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
          */
         protected SetFillColor(string @operator, PdfName name)
             : this(@operator, name, null)
@@ -83,7 +77,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         /**
           <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Pattern"/>).</param>
+          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
           <param name="underlyingColor">Color used to colorize the pattern.</param>
          */
         protected SetFillColor(string @operator, PdfName name, Color underlyingColor)
@@ -96,21 +90,12 @@ namespace PdfClown.Documents.Contents.Objects
             }
             operands.Add(name);
         }
-        #endregion
 
-        #region interface
-        #region public
         public IList<PdfDirectObject> Components => operands;
 
         public override void Scan(GraphicsState state)
         {
-            state.FillColor = state.FillColorSpace.GetColor(
-              operands,
-              state.Scanner.ContentContext
-              );
+            state.FillColor = state.FillColorSpace.GetColor(operands, state.Scanner.ContentContext);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

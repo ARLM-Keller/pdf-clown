@@ -42,8 +42,6 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class DrawCurve : Operation
     {
-        #region static
-        #region fields
         /**
           <summary>Specifies only the second control point
           (the first control point coincides with the initial point of the curve).</summary>
@@ -58,11 +56,7 @@ namespace PdfClown.Documents.Contents.Objects
           (the second control point coincides with the final point of the curve).</summary>
         */
         public static readonly string InitialOperatorKeyword = "y";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a fully-explicit curve.</summary>
           <param name="point">Final endpoint.</param>
@@ -77,7 +71,7 @@ namespace PdfClown.Documents.Contents.Objects
           <summary>Creates a fully-explicit curve.</summary>
         */
         public DrawCurve(double pointX, double pointY, double control1X, double control1Y, double control2X, double control2Y)
-            : base(FullOperatorKeyword, new List<PdfDirectObject>(new PdfDirectObject[]
+            : base(FullOperatorKeyword, new List<PdfDirectObject>(6)
               {
                   PdfReal.Get(control1X),
                   PdfReal.Get(control1Y),
@@ -85,9 +79,7 @@ namespace PdfClown.Documents.Contents.Objects
                   PdfReal.Get(control2Y),
                   PdfReal.Get(pointX),
                   PdfReal.Get(pointY)
-              }
-              )
-            )
+              })
         { }
 
         /**
@@ -100,23 +92,18 @@ namespace PdfClown.Documents.Contents.Objects
         public DrawCurve(SKPoint point, SKPoint control, string @operator)
             : base(@operator.Equals(InitialOperatorKeyword, StringComparison.Ordinal)
                   ? InitialOperatorKeyword
-                  : FinalOperatorKeyword, new List<PdfDirectObject>(new PdfDirectObject[]
+                  : FinalOperatorKeyword, new List<PdfDirectObject>(4)
               {
                   PdfReal.Get(control.X),
                   PdfReal.Get(control.Y),
                   PdfReal.Get(point.X),
                   PdfReal.Get(point.Y)
-              }
-              )
-            )
+              })
         { }
 
         public DrawCurve(string @operator, IList<PdfDirectObject> operands) : base(@operator, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the first control point.</summary>
         */
@@ -124,13 +111,11 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get
             {
-                if (@operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal))
-                    return null;
-                else
-                    return new SKPoint(
+                return @operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal)
+                    ? null
+                    : new SKPoint(
                       ((IPdfNumber)operands[0]).FloatValue,
-                      ((IPdfNumber)operands[1]).FloatValue
-                      );
+                      ((IPdfNumber)operands[1]).FloatValue);
             }
             set
             {
@@ -155,16 +140,13 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get
             {
-                if (@operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal))
-                    return new SKPoint(
+                return @operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal)
+                    ? new SKPoint(
                       ((IPdfNumber)operands[0]).FloatValue,
-                      ((IPdfNumber)operands[1]).FloatValue
-                      );
-                else
-                    return new SKPoint(
+                      ((IPdfNumber)operands[1]).FloatValue)
+                    : new SKPoint(
                       ((IPdfNumber)operands[2]).FloatValue,
-                      ((IPdfNumber)operands[3]).FloatValue
-                      );
+                      ((IPdfNumber)operands[3]).FloatValue);
             }
             set
             {
@@ -188,16 +170,13 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get
             {
-                if (@operator.Equals(FullOperatorKeyword, StringComparison.Ordinal))
-                    return new SKPoint(
+                return @operator.Equals(FullOperatorKeyword, StringComparison.Ordinal)
+                    ? new SKPoint(
                       ((IPdfNumber)operands[4]).FloatValue,
-                      ((IPdfNumber)operands[5]).FloatValue
-                      );
-                else
-                    return new SKPoint(
+                      ((IPdfNumber)operands[5]).FloatValue)
+                    : new SKPoint(
                       ((IPdfNumber)operands[2]).FloatValue,
-                      ((IPdfNumber)operands[3]).FloatValue
-                      );
+                      ((IPdfNumber)operands[3]).FloatValue);
             }
             set
             {
@@ -225,8 +204,5 @@ namespace PdfClown.Documents.Contents.Objects
                 pathObject.CubicTo(controlPoint1, controlPoint2, finalPoint);
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

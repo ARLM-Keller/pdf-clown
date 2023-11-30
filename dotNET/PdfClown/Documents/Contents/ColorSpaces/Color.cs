@@ -27,6 +27,7 @@ using PdfClown.Objects;
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -35,9 +36,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     */
     public abstract class Color : PdfObjectWrapper<PdfDataObject>
     {
-        #region static
-        #region interface
-        #region protected
         /**
           <summary>Gets the normalized value of a color component [PDF:1.6:4.5.1].</summary>
           <param name="value">Color component value to normalize.</param>
@@ -57,16 +55,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             else
                 return value;
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private ColorSpace colorSpace;
-        #endregion
 
-        #region constructors
         //TODO:verify whether to remove the colorSpace argument (should be agnostic?)!
         protected Color(ColorSpace colorSpace, PdfDirectObject baseObject) : base(baseObject)
         {
@@ -75,10 +66,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public Color(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         //TODO:remove? - one dependency
         public ColorSpace ColorSpace => colorSpace;
 
@@ -89,8 +77,22 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             get;
         }
-        #endregion
-        #endregion
-        #endregion
+
+        public void CopyTo(Span<float> to)
+        {
+            var components = Components;
+            for (int i = 0; i < components.Count; i++)
+            {
+                to[i] = ((IPdfNumber)components[i]).FloatValue;
+            }
+        }
+
+        public Span<float> AsSpan()
+        {
+            Span<float> components = new float[Components.Count];
+            CopyTo(components);
+            return components;
+        }
+
     }
 }

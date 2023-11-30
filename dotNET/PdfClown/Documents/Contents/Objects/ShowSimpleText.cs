@@ -25,7 +25,9 @@
 
 using PdfClown.Bytes;
 using PdfClown.Objects;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -35,33 +37,27 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class ShowSimpleText : ShowText
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "Tj";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         /**
           <param name="text">Text encoded using current font's encoding.</param>
         */
-        public ShowSimpleText(byte[] text) : base(OperatorKeyword, new PdfByteString(text))
+        public ShowSimpleText(Memory<byte> text) : base(OperatorKeyword, new PdfByteString(text))
         { }
 
         public ShowSimpleText(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        public override byte[] Text
+        public override Memory<byte> Text
         {
             get => ((PdfString)operands[0]).RawValue;
             set => operands[0] = new PdfByteString(value);
         }
-        #endregion
-        #endregion
-        #endregion
+
+        public override IEnumerable<PdfDirectObject> Value
+        {
+            get => Enumerable.Repeat(operands[0], 1);
+            set => operands[0] = value.FirstOrDefault();
+        }
     }
 }

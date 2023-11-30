@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using System;
+
 namespace PdfClown.Bytes
 {
     /**
@@ -35,7 +37,9 @@ namespace PdfClown.Bytes
         */
         void Clear();
 
-        void Write(byte data);
+        void WriteByte(byte value);
+
+        void Write(int number, int size);
 
         /**
           <summary>Writes a byte array into the stream.</summary>
@@ -44,23 +48,18 @@ namespace PdfClown.Bytes
         void Write(byte[] data);
 
         /**
+          <summary>Writes a byte span into the stream.</summary>
+          <param name="data">Byte span to write into the stream.</param>
+        */
+        void Write(ReadOnlySpan<byte> data);
+
+        /**
           <summary>Writes a byte range into the stream.</summary>
           <param name="data">Byte array to write into the stream.</param>
           <param name="offset">Location in the byte array at which writing begins.</param>
           <param name="length">Number of bytes to write.</param>
         */
-        void Write(byte[] data, int offset, int length);
+        void Write(byte[] data, int offset, int length);               
 
-        /**
-          <summary>Writes a string into the stream.</summary>
-          <param name="data">String to write into the stream.</param>
-        */
-        void Write(string data);
-
-        /**
-          <summary>Writes an <see cref="IInputStream"/> into the stream.</summary>
-          <param name="data">IInputStream to write into the stream.</param>
-        */
-        void Write(IInputStream data);
     }
 }

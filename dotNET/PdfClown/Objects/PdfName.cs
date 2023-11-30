@@ -37,14 +37,12 @@ namespace PdfClown.Objects
     /**
       <summary>PDF name object [PDF:1.6:3.2.4].</summary>
     */
-    public sealed class PdfName : PdfSimpleObject<string>, IPdfString
+    public sealed class PdfName : PdfSimpleObject<string>, IPdfString, IEquatable<PdfName>
     {
         /*
           NOTE: As name objects are simple symbols uniquely defined by sequences of characters,
           the bytes making up the name are never treated as text, always keeping them escaped.
         */
-        #region static
-        #region fields
         /*
           NOTE: Name lexical conventions prescribe that the following reserved characters
           are to be escaped when placed inside names' character sequences:
@@ -102,6 +100,7 @@ namespace PdfClown.Objects
         public static readonly PdfName BE = new PdfName("BE");
         public static readonly PdfName Bead = new PdfName("Bead");
         public static readonly PdfName BG = new PdfName("BG");
+        public static readonly PdfName BG2 = new PdfName("BG2");
         public static readonly PdfName BitsPerComponent = new PdfName("BitsPerComponent");
         public static readonly PdfName BitsPerCoordinate = new PdfName("BitsPerCoordinate");
         public static readonly PdfName BitsPerFlag = new PdfName("BitsPerFlag");
@@ -374,6 +373,7 @@ namespace PdfClown.Objects
         public static readonly PdfName Limits = new PdfName("Limits");
         public static readonly PdfName Line = new PdfName("Line");
         public static readonly PdfName LineArrow = new PdfName("LineArrow");
+        public static readonly PdfName Linearized = new PdfName("Linearized");
         public static readonly PdfName LineDimension = new PdfName("LineDimension");
         public static readonly PdfName Link = new PdfName("Link");
         public static readonly PdfName ListMode = new PdfName("ListMode");
@@ -451,10 +451,12 @@ namespace PdfClown.Objects
         public static readonly PdfName ON = new PdfName("ON");
         public static readonly PdfName OneColumn = new PdfName("OneColumn");
         public static readonly PdfName OP = new PdfName("OP");
+        public static readonly PdfName op = new PdfName("op");
         public static readonly PdfName Open = new PdfName("Open");
         public static readonly PdfName OpenAction = new PdfName("OpenAction");
         public static readonly PdfName OpenArrow = new PdfName("OpenArrow");
         public static readonly PdfName OpenType = new PdfName("OpenType");
+        public static readonly PdfName OPM = new PdfName("OPM");
         public static readonly PdfName Opt = new PdfName("Opt");
         public static readonly PdfName Or = new PdfName("Or");
         public static readonly PdfName Order = new PdfName("Order");
@@ -538,6 +540,7 @@ namespace PdfClown.Objects
         public static readonly PdfName RT = new PdfName("RT");
         public static readonly PdfName RunLengthDecode = new PdfName("RunLengthDecode");
         public static readonly PdfName S = new PdfName("S");
+        public static readonly PdfName SA = new PdfName("SA");
         public static readonly PdfName Saturation = new PdfName("Saturation");
         public static readonly PdfName SBApproved = new PdfName("SBApproved");
         public static readonly PdfName SBCompleted = new PdfName("SBCompleted");
@@ -609,6 +612,7 @@ namespace PdfClown.Objects
         public static readonly PdfName TilingType = new PdfName("TilingType");
         public static readonly PdfName Timespan = new PdfName("Timespan");
         public static readonly PdfName Title = new PdfName("Title");
+        public static readonly PdfName TK = new PdfName("TK");
         public static readonly PdfName Toggle = new PdfName("Toggle");
         public static readonly PdfName Top = new PdfName("Top");
         public static readonly PdfName TopSecret = new PdfName("TopSecret");
@@ -652,6 +656,7 @@ namespace PdfClown.Objects
         public static readonly PdfName VE = new PdfName("VE");
         public static readonly PdfName Version = new PdfName("Version");
         public static readonly PdfName Vertices = new PdfName("Vertices");
+        public static readonly PdfName VerticesPerRow = new PdfName("VerticesPerRow");
         public static readonly PdfName View = new PdfName("View");
         public static readonly PdfName ViewerPreferences = new PdfName("ViewerPreferences");
         public static readonly PdfName ViewState = new PdfName("ViewState");
@@ -673,6 +678,7 @@ namespace PdfClown.Objects
         public static readonly PdfName XML = new PdfName("XML");
         public static readonly PdfName XObject = new PdfName("XObject");
         public static readonly PdfName XRef = new PdfName("XRef");
+        public static readonly PdfName XRefStm = new PdfName("XRefStm");
         public static readonly PdfName XHeight = new PdfName("XHeight");
         public static readonly PdfName XStep = new PdfName("XStep");
         public static readonly PdfName XYZ = new PdfName("XYZ");
@@ -685,10 +691,6 @@ namespace PdfClown.Objects
 
         private static readonly byte[] NamePrefixChunk = tokens::Encoding.Pdf.Encode(tokens.Keyword.NamePrefix);
 
-        #endregion
-
-        #region interface
-        #region public
         /**
           <summary>Gets the object equivalent to the given value.</summary>
         */
@@ -704,12 +706,7 @@ namespace PdfClown.Objects
         {
             return value == null ? null : new PdfName(value);
         }
-        #endregion
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public PdfName(string value)
             : this(value, false)
         { }
@@ -726,10 +723,7 @@ namespace PdfClown.Objects
             else
             { Value = value; }
         }
-        #endregion
 
-        #region interface
-        #region public
         public string StringValue => (string)Value;
 
         public override object Value
@@ -741,7 +735,7 @@ namespace PdfClown.Objects
                   NOTE: Before being accepted, any character sequence identifying a name MUST be normalized
                   escaping reserved characters.
                 */
-                StringBuilder buffer = new StringBuilder();
+                var buffer = new StringBuilder();
                 {
                     string stringValue = (string)value;
                     int index = 0;
@@ -768,14 +762,11 @@ namespace PdfClown.Objects
             }
         }
 
-        public override PdfObject Accept(IVisitor visitor, object data)
-        {
-            return visitor.Visit(this, data);
-        }
+        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 
         public override int CompareTo(PdfDirectObject obj)
         {
-            if (!(obj is PdfName objName))
+            if (obj is not PdfName objName)
                 throw new ArgumentException("Object MUST be a PdfName");
 
             return string.Compare(RawValue, objName.RawValue, StringComparison.Ordinal);
@@ -785,7 +776,11 @@ namespace PdfClown.Objects
         {
             if (obj is PdfName objName)
             {
-                return string.Equals(RawValue, objName.RawValue, StringComparison.Ordinal);
+                return Equals(objName);
+            }
+            else if (obj is IPdfString pdfString)
+            {
+                return string.Equals(RawValue, pdfString.StringValue, StringComparison.Ordinal);
             }
             else if (obj is string objString)
             {
@@ -795,10 +790,7 @@ namespace PdfClown.Objects
             return base.Equals(obj);
         }
 
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+        public override int GetHashCode() => base.GetHashCode();
 
         public override string ToString()
         {
@@ -835,8 +827,10 @@ namespace PdfClown.Objects
             stream.Write(NamePrefixChunk);
             stream.Write(RawValue);
         }
-        #endregion
-        #endregion
-        #endregion
+
+        public bool Equals(PdfName other)
+        {
+            return string.Equals(RawValue, other?.RawValue, StringComparison.Ordinal);
+        }
     }
 }

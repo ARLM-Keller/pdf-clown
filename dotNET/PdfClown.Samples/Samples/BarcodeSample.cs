@@ -55,19 +55,17 @@ namespace PdfClown.Samples.CLI
 
                 PrimitiveComposer composer = new PrimitiveComposer(page);
                 {
-                    BlockComposer blockComposer = new BlockComposer(composer);
+                    var blockComposer = new BlockComposer(composer);
                     blockComposer.Hyphenation = true;
                     blockComposer.Begin(
                       SKRect.Create(
                         Margin,
                         Margin,
                         pageSize.Width - Margin * 2,
-                        pageSize.Height - Margin * 2
-                        ),
+                        pageSize.Height - Margin * 2),
                       XAlignmentEnum.Left,
-                      YAlignmentEnum.Top
-                      );
-                    PdfType1Font bodyFont = PdfType1Font.Load(document, PdfType1Font.FamilyEnum.Courier, true, false);
+                      YAlignmentEnum.Top);
+                    var bodyFont = FontType1.Load(document, FontName.CourierBold);
                     composer.SetFont(bodyFont, 32);
                     blockComposer.ShowText("Barcode sample"); blockComposer.ShowBreak();
                     composer.SetFont(bodyFont, 16);

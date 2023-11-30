@@ -30,10 +30,8 @@ namespace PdfClown.Util.Math
     /**
       <summary>Specialized math operations.</summary>
     */
-    public sealed class OperationUtils
+    public static class OperationUtils
     {
-        #region static
-        #region fields
         /**
           <summary>Double-precision floating-point exponent bias.</summary>
         */
@@ -51,9 +49,7 @@ namespace PdfClown.Util.Math
           <summary>Default relative floating-point precision error tolerance.</summary>
         */
         private const double Epsilon = 0.000001;
-        #endregion
 
-        #region interface
         /**
           <summary>Compares double-precision floating-point numbers applying the default error tolerance.
           </summary>
@@ -124,24 +120,29 @@ namespace PdfClown.Util.Math
             return 0;
         }
 
-        /**
-          <summary>Increments a big-endian byte array.</summary>
-        */
-        public static void Increment(byte[] data)
-        { Increment(data, data.Length - 1); }
+        ///<summary>Increments a big-endian byte array.</summary>
+        public static bool Increment(this Span<byte> data) => Increment(data, data.Length - 1);
 
-        /**
-          <summary>Increments a big-endian byte array at the specified position.</summary>
-        */
-        public static void Increment(byte[] data, int position)
+        ///<summary>Increments a big-endian byte array at the specified position.</summary>
+        public static bool Increment(this Span<byte> data, int position)
         {
-            if ((data[position] & 0xff) == 255)
+            if ((data[position] & 0xFF) == 255)
             {
-                data[position] = 0;
-                Increment(data, position - 1);
+                if (position > 0)
+                {
+                    data[position] = 0;
+                    return Increment(data, position - 1);
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
-            { data[position]++; }
+            {
+                data[position] = (byte)(data[position] + 1);
+            }
+            return true;
         }
 
         /**
@@ -149,7 +150,5 @@ namespace PdfClown.Util.Math
         */
         private static int GetExponent(double value)
         { return (int)(((BitConverter.DoubleToInt64Bits(value) & DoubleExponentBitMask) >> (DoubleSignificandBitCount)) - DoubleExponentBias); }
-        #endregion
-        #endregion
     }
 }

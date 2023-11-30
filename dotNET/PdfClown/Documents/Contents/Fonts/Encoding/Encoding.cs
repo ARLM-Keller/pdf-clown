@@ -37,35 +37,31 @@ namespace PdfClown.Documents.Contents.Fonts
     // TODO: This hierarchy is going to be superseded by PdfClown.Tokens.Encoding.
     public class Encoding
     {
-        #region static
-        #region fields
+        protected static readonly int CHAR_CODE = 0;
+        protected static readonly int CHAR_NAME = 1;
         protected static readonly Dictionary<PdfName, Encoding> Encodings = new Dictionary<PdfName, Encoding>();
-        #endregion
 
-        #region interface
         public static Encoding Get(PdfName name)
         {
             if (!Encodings.TryGetValue(name, out var encoding))
             {
-                if (name == PdfName.Identity)
+                if (name.Equals(PdfName.Identity))
                     encoding = IdentityEncoding.Instance;
-                else if (name == PdfName.MacExpertEncoding)
+                else if (name.Equals(PdfName.MacExpertEncoding))
                     encoding = MacExpertEncoding.Instance;
-                else if (name == PdfName.MacRomanEncoding)
+                else if (name.Equals(PdfName.MacRomanEncoding))
                     encoding = MacRomanEncoding.Instance;
-                else if (name == PdfName.StandardEncoding)
+                else if (name.Equals(PdfName.StandardEncoding))
                     encoding = StandardEncoding.Instance;
-                else if (name == PdfName.Symbol)
+                else if (name.Equals(PdfName.Symbol))
                     encoding = SymbolEncoding.Instance;
-                else if (name == PdfName.WinAnsiEncoding)
+                else if (name.Equals(PdfName.WinAnsiEncoding))
                     encoding = WinAnsiEncoding.Instance;
-                else if (name == PdfName.ZapfDingbats)
+                else if (name.Equals(PdfName.ZapfDingbats))
                     encoding = ZapfDingbatsEncoding.Instance;
             }
             return encoding;
         }
-        #endregion
-        #endregion
         public Encoding()
         { }
 
@@ -74,14 +70,9 @@ namespace PdfClown.Documents.Contents.Fonts
             this.codeToName = codeToName;
         }
 
-        #region dynamic
-        #region fields
-        protected internal readonly Dictionary<int, string> codeToName = new Dictionary<int, string>();
-        protected internal readonly Dictionary<string, int> inverted = new Dictionary<string, int>(StringComparer.Ordinal);
-        #endregion
+        private readonly Dictionary<int, string> codeToName = new Dictionary<int, string>();
+        private readonly Dictionary<string, int> nameToCode = new Dictionary<string, int>(StringComparer.Ordinal);
 
-        #region interface
-        #region public
 
         public Dictionary<int, string> CodeToNameMap
         {
@@ -90,22 +81,25 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public Dictionary<string, int> NameToCodeMap
         {
-            get => inverted;
+            get => nameToCode;
+        }
+
+        public int? GetCode(string name)
+        {
+            return nameToCode.TryGetValue(name, out var code) ? code : null;
         }
 
         public virtual string GetName(int key)
         {
             return codeToName.TryGetValue(key, out var name) ? name : null;
         }
-        #endregion
 
-        #region protected
         protected void Put(int charCode, string charName)
         {
             codeToName[charCode] = charName;
-            if (!inverted.ContainsKey(charName))
+            if (!nameToCode.ContainsKey(charName))
             {
-                inverted[charName] = charCode;
+                nameToCode[charName] = charCode;
             }
         }
 
@@ -122,12 +116,12 @@ namespace PdfClown.Documents.Contents.Fonts
             // remove existing reverse mapping first
             if (codeToName.TryGetValue(code, out string oldName))
             {
-                if (inverted.TryGetValue(oldName, out int oldCode) && oldCode == code)
+                if (nameToCode.TryGetValue(oldName, out int oldCode) && oldCode == code)
                 {
-                    inverted.Remove(oldName);
+                    nameToCode.Remove(oldName);
                 }
             }
-            inverted[name] = code;
+            nameToCode[name] = code;
             codeToName[code] = name;
         }
 
@@ -136,17 +130,10 @@ namespace PdfClown.Documents.Contents.Fonts
          * 
          * @param name PostScript glyph name
          */
-        public bool Contains(string name)
-        {
-            return inverted.ContainsKey(name);
-        }
+        public bool Contains(string name) => nameToCode.ContainsKey(name);
 
-        public virtual PdfDirectObject GetPdfObject()
-        {
-            return null;
-        }
-        #endregion
-        #endregion
-        #endregion
+        public virtual PdfDirectObject GetPdfObject() => null;
+
+        public virtual string EncodingName => null;
     }
 }

@@ -39,16 +39,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public string Suffix;
         public string FirstColor;
 
-        public override void Load(Bytes.Buffer buffer)
+        public override void Load(Bytes.ByteStream buffer)
         {
             buffer.Seek(Table.Offset);
-            buffer.ReadUnsignedInt();
-            buffer.ReadUnsignedInt();
-            VendorSpecificFlag = buffer.ReadUnsignedInt();
-            Count = buffer.ReadUnsignedInt();
-            Prefix = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
-            Suffix = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
-            FirstColor = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitaded());
+            buffer.ReadUInt32();
+            buffer.ReadUInt32();
+            VendorSpecificFlag = buffer.ReadUInt32();
+            Count = buffer.ReadUInt32();
+            Prefix = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitadedSpan());
+            Suffix = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitadedSpan());
+            FirstColor = System.Text.Encoding.ASCII.GetString(buffer.ReadNullTermitadedSpan());
             //....color coordinates. Color space of data
         }
     }

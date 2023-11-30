@@ -40,8 +40,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             return new CommonAnnotationActions(annotation, baseObject);
         }
 
-        #region dynamic
-        #region constructors
         public CommonAnnotationActions(Annotation parent, PdfDirectObject baseObject) : base(parent, baseObject)
         { }
 
@@ -49,7 +47,5 @@ namespace PdfClown.Documents.Interaction.Annotations
         { }
 
 
-        #endregion
-        #endregion
     }
 }

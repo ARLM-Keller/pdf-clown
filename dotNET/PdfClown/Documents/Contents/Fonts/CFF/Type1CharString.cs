@@ -41,8 +41,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         private SKPoint current;
         private bool isFlex = false;
         private readonly List<SKPoint> flexPoints = new List<SKPoint>();
-        protected List<object> type1Sequence;
-        protected int commandCount;
+        private readonly List<object> type1Sequence = new List<object>();
+        private int commandCount;
 
         /**
          * Constructs a new Type1CharString object.
@@ -55,7 +55,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         public Type1CharString(IType1CharStringReader font, string fontName, string glyphName, List<object> sequence)
             : this(font, fontName, glyphName)
         {
-            type1Sequence = sequence;
+            type1Sequence.AddRange(sequence);
         }
 
         /**
@@ -135,12 +135,6 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         }
 
         /**
-         * Returns the Type 1 char string sequence.
-         * @return the Type 1 sequence
-         */
-        public List<object> Type1Sequence => type1Sequence;
-
-        /**
          * Renders the Type 1 char string sequence to a GeneralPath.
          */
         private void Render()
@@ -148,18 +142,36 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             path = new SKPath() { FillType = SKPathFillType.EvenOdd };
             leftSideBearing = new SKPoint(0, 0);
             width = 0;
-            CharStringHandler handler = new CharStringHandler();
-            handler.HandleSequence(type1Sequence, RenderHandleCommand);
+            var numbers = new List<float>();
+            foreach (var obj in type1Sequence)
+            {
+                if (obj is CharStringCommand command)
+                {
+                    var results = HandleType1Command(numbers, command);
+                    numbers.Clear();
+                    numbers.AddRange(results);
+                }
+                else
+                {
+                    numbers.Add(System.Convert.ToSingle(obj));
+                }
+            }
         }
 
-        public List<float> RenderHandleCommand(List<float> numbers, CharStringCommand command)
+
+        private List<float> HandleType1Command(List<float> numbers, CharStringCommand command)
         {
             commandCount++;
-            CharStringCommand.TYPE1_VOCABULARY.TryGetValue(command.Key, out string name);
-
-            switch (name)
+            var type1KeyWord = command.Type1KeyWord;
+            if (type1KeyWord == CharStringCommand.COMMAND_UNKNOWN.Type1KeyWord)
             {
-                case "rmoveto":
+                // indicates an invalid charstring
+                Debug.WriteLine($"warn: Unknown charstring command: {command.Type1KeyWord} in glyph {glyphName} of font {fontName}");
+                return new List<float>();
+            }
+            switch (type1KeyWord)
+            {
+                case Type1KeyWord.RMOVETO:
                     if (numbers.Count >= 2)
                     {
                         if (isFlex)
@@ -168,11 +180,11 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                         }
                         else
                         {
-                            rmoveTo(numbers[0], numbers[1]);
+                            RmoveTo(numbers[0], numbers[1]);
                         }
                     }
                     break;
-                case "vmoveto":
+                case Type1KeyWord.VMOVETO:
                     if (numbers.Count > 0)
                     {
                         if (isFlex)
@@ -182,11 +194,11 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                         }
                         else
                         {
-                            rmoveTo(0, numbers[0]);
+                            RmoveTo(0, numbers[0]);
                         }
                     }
                     break;
-                case "hmoveto":
+                case Type1KeyWord.HMOVETO:
                     if (numbers.Count > 0)
                     {
                         if (isFlex)
@@ -196,39 +208,39 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                         }
                         else
                         {
-                            rmoveTo(numbers[0], 0);
+                            RmoveTo(numbers[0], 0);
                         }
                     }
                     break;
-                case "rlineto":
+                case Type1KeyWord.RLINETO:
                     if (numbers.Count >= 2)
                     {
-                        rlineTo(numbers[0], numbers[1]);
+                        RlineTo(numbers[0], numbers[1]);
                     }
                     break;
-                case "hlineto":
+                case Type1KeyWord.HLINETO:
                     if (numbers.Count > 0)
                     {
-                        rlineTo(numbers[0], 0);
+                        RlineTo(numbers[0], 0);
                     }
                     break;
-                case "vlineto":
+                case Type1KeyWord.VLINETO:
                     if (numbers.Count > 0)
                     {
-                        rlineTo(0, numbers[0]);
+                        RlineTo(0, numbers[0]);
                     }
                     break;
-                case "rrcurveto":
+                case Type1KeyWord.RRCURVETO:
                     if (numbers.Count >= 6)
                     {
-                        rrcurveTo(numbers[0], numbers[1], numbers[2],
+                        RrcurveTo(numbers[0], numbers[1], numbers[2],
                                 numbers[3], numbers[4], numbers[5]);
                     }
                     break;
-                case "closepath":
-                    closepath();
+                case Type1KeyWord.CLOSEPATH:
+                    CloseCharString1Path();
                     break;
-                case "sbw":
+                case Type1KeyWord.SBW:
                     if (numbers.Count >= 3)
                     {
                         leftSideBearing = new SKPoint(numbers[0], numbers[1]);
@@ -236,7 +248,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                         current = leftSideBearing;
                     }
                     break;
-                case "hsbw":
+                case Type1KeyWord.HSBW:
                     if (numbers.Count >= 2)
                     {
                         leftSideBearing = new SKPoint(numbers[0], 0);
@@ -244,72 +256,67 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                         current = leftSideBearing;
                     }
                     break;
-                case "vhcurveto":
+                case Type1KeyWord.VHCURVETO:
                     if (numbers.Count >= 4)
                     {
-                        rrcurveTo(0, numbers[0], numbers[1], numbers[2], numbers[3], 0);
+                        RrcurveTo(0, numbers[0], numbers[1], numbers[2], numbers[3], 0);
                     }
                     break;
-                case "hvcurveto":
+                case Type1KeyWord.HVCURVETO:
                     if (numbers.Count >= 4)
                     {
-                        rrcurveTo(numbers[0], 0, numbers[1], numbers[2], 0, numbers[3]);
+                        RrcurveTo(numbers[0], 0, numbers[1], numbers[2], 0, numbers[3]);
                     }
                     break;
-                case "seac":
+                case Type1KeyWord.SEAC:
                     if (numbers.Count >= 5)
                     {
-                        seac(numbers[0], numbers[1], numbers[2], numbers[3], numbers[4]);
+                        Seac(numbers[0], numbers[1], numbers[2], numbers[3], numbers[4]);
                     }
                     break;
-                case "setcurrentpoint":
+                case Type1KeyWord.SETCURRENTPOINT:
                     if (numbers.Count >= 2)
                     {
                         SetCurrentPoint(numbers[0], numbers[1]);
                     }
                     break;
-                case "callothersubr":
+                case Type1KeyWord.CALLOTHERSUBR:
                     if (numbers.Count > 0)
                     {
-                        callothersubr((int)numbers[0]);
+                        Callothersubr((int)numbers[0]);
                     }
                     break;
-                case "div":
-                    float b = numbers[numbers.Count - 1];
-                    float a = numbers[numbers.Count - 2];
+                case Type1KeyWord.DIV:
+                    if (numbers.Count >= 2)
+                    {
+                        float b = numbers[numbers.Count - 1];
+                        float a = numbers[numbers.Count - 2];
 
-                    float result = a / b;
+                        float result = a / b;
 
-                    List<float> list = new List<float>(numbers);
-                    list.RemoveAt(list.Count - 1);
-                    list.RemoveAt(list.Count - 1);
-                    list.Add(result);
-                    return list;
-                case "hstem":
-                case "vstem":
-                case "hstem3":
-                case "vstem3":
-                case "dotsection":
+                        var list = new List<float>(numbers.Take(numbers.Count - 2));
+                        list.Add(result);
+                        return list;
+                    }
+                    break;
+                case Type1KeyWord.HSTEM:
+                case Type1KeyWord.VSTEM:
+                case Type1KeyWord.HSTEM3:
+                case Type1KeyWord.VSTEM3:
+                case Type1KeyWord.DOTSECTION:
                     // ignore hints
                     break;
-                case "endchar":
+                case Type1KeyWord.ENDCHAR:
                     // end
                     break;
-                case "return":
+                case Type1KeyWord.RET:
+                case Type1KeyWord.CALLSUBR:
                     // indicates an invalid charstring
-                    Debug.WriteLine($"warn: Unexpected charstring command: {command.Key} in glyph {glyphName} of font {fontName}");
+                    Debug.WriteLine($"warn: Unexpected charstring command: {command} in glyph {glyphName} of font {fontName}");
                     break;
                 default:
-                    if (name != null)
-                    {
-                        // indicates a PDFBox bug
-                        throw new ArgumentException($"Unhandled command: {name}");
-                    }
-                    else
-                    {
-                        // indicates an invalid charstring
-                        Debug.WriteLine($"warn: Unknown charstring command: {command.Key} in glyph {glyphName} of font {fontName}");
-                    }
+                    // indicates an invalid charstring
+                    Debug.WriteLine($"warn: Unknown charstring command: {command} in glyph {glyphName} of font {fontName}");
                     break;
             }
             return new List<float>();
@@ -328,7 +335,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
          * Flex (via OtherSubrs)
          * @param num OtherSubrs entry number
          */
-        private void callothersubr(int num)
+        private void Callothersubr(int num)
         {
             if (num == 0)
             {
@@ -337,7 +344,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 
                 if (flexPoints.Count < 7)
                 {
-                    Debug.WriteLine("warn: flex without moveTo in font " + fontName + ", glyph " + glyphName + ", command " + commandCount);
+                    Debug.WriteLine($"warn: flex without moveTo in font {fontName}, glyph {glyphName}, command {commandCount}");
                     return;
                 }
 
@@ -353,13 +360,19 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 // make the first point relative to the start point
                 first = new SKPoint(first.X - current.X, first.Y - current.Y);
 
-                rrcurveTo(flexPoints[1].X, flexPoints[1].Y,
-                          flexPoints[2].X, flexPoints[2].Y,
-                          flexPoints[3].X, flexPoints[3].Y);
+                var p1 = flexPoints[1];
+                var p2 = flexPoints[2];
+                var p3 = flexPoints[3];
+                RrcurveTo(p1.X, p1.Y,
+                          p2.X, p2.Y,
+                          p3.X, p3.Y);
 
-                rrcurveTo(flexPoints[4].X, flexPoints[4].Y,
-                          flexPoints[5].X, flexPoints[5].Y,
-                          flexPoints[6].X, flexPoints[6].Y);
+                var p4 = flexPoints[4];
+                var p5 = flexPoints[5];
+                var p6 = flexPoints[6];
+                RrcurveTo(p4.X, p4.Y,
+                          p5.X, p5.Y,
+                          p6.X, p6.Y);
 
                 flexPoints.Clear();
             }
@@ -371,14 +384,14 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             else
             {
                 // indicates a PDFBox bug
-                throw new ArgumentException("Unexpected other subroutine: " + num);
+                Debug.WriteLine($"warn: Invalid callothersubr parameter: {num}");
             }
         }
 
         /**
          * Relative moveto.
          */
-        private void rmoveTo(float dx, float dy)
+        private void RmoveTo(float dx, float dy)
         {
             float x = (float)current.X + dx;
             float y = (float)current.Y + dy;
@@ -389,7 +402,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         /**
          * Relative lineto.
          */
-        private void rlineTo(float dx, float dy)
+        private void RlineTo(float dx, float dy)
         {
             float x = (float)current.X + dx;
             float y = (float)current.Y + dy;
@@ -408,7 +421,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         /**
          * Relative curveto.
          */
-        private void rrcurveTo(float dx1, float dy1, float dx2, float dy2, float dx3, float dy3)
+        private void RrcurveTo(float dx1, float dy1, float dx2, float dy2, float dx3, float dy3)
         {
             float x1 = (float)current.X + dx1;
             float y1 = (float)current.Y + dy1;
@@ -419,7 +432,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             if (path.PointCount == 0)
             {
                 Debug.WriteLine($"warn: rrcurveTo without initial moveTo in font {fontName}, glyph {glyphName}");
-                path.MoveTo(x1, y1);
+                path.MoveTo(x3, y3);
             }
 
             {
@@ -431,7 +444,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         /**
          * Close path.
          */
-        private void closepath()
+        private void CloseCharString1Path()
         {
             if (path.PointCount == 0)
             {
@@ -450,31 +463,63 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
          * Makes an accented character from two other characters.
          * @param asb
          */
-        private void seac(float asb, float adx, float ady, float bchar, float achar)
+        private void Seac(float asb, float adx, float ady, float bchar, float achar)
         {
             // base character
             string baseName = StandardEncoding.Instance.GetName((int)bchar);
             try
             {
-                Type1CharString baseString = font.GetType1CharString(baseName);
+                var baseString = font.GetType1CharString(baseName);
                 path.AddPath(baseString.Path);
             }
             catch (Exception e)
             {
-                Debug.WriteLine("warn: invalid seac character in glyph " + glyphName + " of font " + fontName, e);
+                Debug.WriteLine($"warn: invalid seac character in glyph {glyphName} of font {fontName} {e}");
             }
             // accent character
-            string accentName = StandardEncoding.Instance.GetName((int)achar);
+            string accentName = StandardEncoding.Instance.GetName((int)achar) ?? ".notdef";
+
             try
             {
-                Type1CharString accent = font.GetType1CharString(accentName);
+                if (accentName == glyphName)
+                {
+                    // PDFBOX-5339: avoid ArrayIndexOutOfBoundsException 
+                    // reproducable with poc file crash-4698e0dc7833a3f959d06707e01d03cda52a83f4
+                    Debug.WriteLine("warn: Path for " + baseName + " and for accent " + accentName + " are same, ignored");
+                    return;
+                }
+                var accent = font.GetType1CharString(accentName);
+                var accentPath = accent.Path;
+
                 var at = SKMatrix.CreateTranslation(leftSideBearing.X + adx - asb, leftSideBearing.Y + ady);
-                path.AddPath(accent.Path, ref at, SKPathAddMode.Append);
+                path.AddPath(accentPath, ref at, SKPathAddMode.Append);
             }
             catch (Exception e)
             {
-                Debug.WriteLine("warn: invalid seac character in glyph " + glyphName + " of font " + fontName, e);
+                Debug.WriteLine($"warn: invalid seac character in glyph {glyphName} of font {fontName} {e}");
             }
+        }
+
+        /**
+         * Add a command to the type1 sequence.
+         * 
+        * @param numbers the parameters of the command to be added
+        * @param command the command to be added
+        */
+        protected void AddCommand(List<float> numbers, CharStringCommand command)
+        {
+            type1Sequence.AddRange(numbers.Cast<object>());
+            type1Sequence.Add(command);
+        }
+
+        protected bool IsSequenceEmpty
+        {
+            get => type1Sequence.Count == 0;
+        }
+
+        protected object LastSequenceEntry
+        {
+            get => !IsSequenceEmpty ? type1Sequence[type1Sequence.Count - 1] : null;
         }
 
         override public string ToString()

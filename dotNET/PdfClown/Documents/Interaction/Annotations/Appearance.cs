@@ -37,17 +37,12 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF12)]
     public sealed class Appearance : PdfObjectWrapper<PdfDictionary>
     {
-        #region dynamic
-        #region constructors
         public Appearance(Document context) : base(context, new PdfDictionary())
         { }
 
         public Appearance(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the annotation's down appearance.</summary>
         */
@@ -62,8 +57,5 @@ namespace PdfClown.Documents.Interaction.Annotations
           <summary>Gets the annotation's rollover appearance.</summary>
         */
         public AppearanceStates Rollover => AppearanceStates.Wrap(PdfName.R, this);
-        #endregion
-        #endregion
-        #endregion
     }
 }

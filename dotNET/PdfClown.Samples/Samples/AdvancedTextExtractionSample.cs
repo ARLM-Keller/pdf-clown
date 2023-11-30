@@ -25,7 +25,7 @@ namespace PdfClown.Samples.CLI
                 Document document = file.Document;
 
                 // 2. Text extraction from the document pages.
-                TextExtractor extractor = new TextExtractor();
+                var extractor = new TextExtractor();
                 foreach (Page page in document.Pages)
                 {
                     if (!PromptNextPage(page, false))
@@ -37,7 +37,7 @@ namespace PdfClown.Samples.CLI
                     IList<ITextString> textStrings = extractor.Extract(page)[TextExtractor.DefaultArea];
                     foreach (ITextString textString in textStrings)
                     {
-                        var textStringQuad = textString.Quad.Value;
+                        var textStringQuad = textString.Quad;
                         Console.WriteLine(
                           $"Text [x:{Math.Round(textStringQuad.Left)},y:{Math.Round(textStringQuad.Top)},w:{Math.Round(textStringQuad.Width)},h:{Math.Round(textStringQuad.Height)}]: {textString.Text}");
                     }

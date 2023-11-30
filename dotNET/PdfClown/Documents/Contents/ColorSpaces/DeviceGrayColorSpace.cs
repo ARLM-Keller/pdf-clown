@@ -38,27 +38,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceGrayColorSpace : DeviceColorSpace
     {
-        #region static
-        #region fields
         /*
           NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
           of the contextual resource dictionary) [PDF:1.6:4.5.7].
         */
         public static readonly DeviceGrayColorSpace Default = new DeviceGrayColorSpace(PdfName.DeviceGray);
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public DeviceGrayColorSpace(Document context) : base(context, PdfName.DeviceGray)
         { }
 
         internal DeviceGrayColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new NotImplementedException(); }
 
@@ -84,7 +75,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return skColor;
         }
 
-        public override SKColor GetSKColor(float[] components, float? alpha = null)
+        public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null)
         {
             var g = (byte)Math.Round(components[0] * 255);
             var skColor = new SKColor(g, g, g);
@@ -94,9 +85,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
             return skColor;
         }
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

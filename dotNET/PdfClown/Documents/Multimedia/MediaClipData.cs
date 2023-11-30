@@ -129,8 +129,8 @@ namespace PdfClown.Documents.Multimedia
         */
         public string MimeType
         {
-            get => (string)PdfString.GetValue(BaseDataObject[PdfName.CT]);
-            set => BaseDataObject[PdfName.CT] = (value != null ? new PdfString(value) : null);
+            get => BaseDataObject.GetString(PdfName.CT);
+            set => BaseDataObject.SetString(PdfName.CT, value);
         }
 
         /**

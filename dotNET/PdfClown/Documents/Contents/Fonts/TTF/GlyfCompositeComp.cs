@@ -18,6 +18,7 @@
  */
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
+    using PdfClown.Bytes;
     using System;
     using System.IO;
 
@@ -88,23 +89,23 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param bais the stream to be read
          * @ is thrown if something went wrong
          */
-        public GlyfCompositeComp(TTFDataStream bais)
+        public GlyfCompositeComp(IInputStream bais)
         {
-            flags = bais.ReadSignedShort();
-            glyphIndex = bais.ReadUnsignedShort();// number of glyph in a font is uint16
+            flags = bais.ReadInt16();
+            glyphIndex = bais.ReadUInt16();// number of glyph in a font is uint16
 
             // Get the arguments as just their raw values
             if ((flags & ARG_1_AND_2_ARE_WORDS) != 0)
             {
                 // If this is set, the arguments are 16-bit (uint16 or int16)
-                argument1 = bais.ReadSignedShort();
-                argument2 = bais.ReadSignedShort();
+                argument1 = bais.ReadInt16();
+                argument2 = bais.ReadInt16();
             }
             else
             {
                 // otherwise, they are bytes (uint8 or int8).
-                argument1 = (short)bais.ReadSignedByte();
-                argument2 = (short)bais.ReadSignedByte();
+                argument1 = (short)bais.ReadSByte();
+                argument2 = (short)bais.ReadSByte();
             }
 
             // Assign the arguments according to the flags
@@ -130,25 +131,25 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             // Get the scale values (if any)
             if ((flags & WE_HAVE_A_SCALE) != 0)
             {
-                int i = bais.ReadSignedShort();
+                int i = bais.ReadInt16();
                 xscale = yscale = i / (double)0x4000;
             }
             else if ((flags & WE_HAVE_AN_X_AND_Y_SCALE) != 0)
             {
-                short i = bais.ReadSignedShort();
+                short i = bais.ReadInt16();
                 xscale = i / (double)0x4000;
-                i = bais.ReadSignedShort();
+                i = bais.ReadInt16();
                 yscale = i / (double)0x4000;
             }
             else if ((flags & WE_HAVE_A_TWO_BY_TWO) != 0)
             {
-                int i = bais.ReadSignedShort();
+                int i = bais.ReadInt16();
                 xscale = i / (double)0x4000;
-                i = bais.ReadSignedShort();
+                i = bais.ReadInt16();
                 scale01 = i / (double)0x4000;
-                i = bais.ReadSignedShort();
+                i = bais.ReadInt16();
                 scale10 = i / (double)0x4000;
-                i = bais.ReadSignedShort();
+                i = bais.ReadInt16();
                 yscale = i / (double)0x4000;
             }
         }

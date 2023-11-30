@@ -16,7 +16,7 @@
  */
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
+    using PdfClown.Bytes;
     using System.IO;
 
     /**
@@ -57,9 +57,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private CmapSubtable[] cmaps;
 
-        public CmapTable(TrueTypeFont font) : base(font)
-        {
-        }
+        public CmapTable()
+        { }
 
         /**
          * @return Returns the cmaps.
@@ -79,21 +78,22 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @ If there is an error reading the data.
          */
 
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             //@SuppressWarnings({"unused", "squid:S1854", "squid:S1481"})
-            int version = data.ReadUnsignedShort();
-            int numberOfTables = data.ReadUnsignedShort();
+            int version = data.ReadUInt16();
+            int numberOfTables = data.ReadUInt16();
             cmaps = new CmapSubtable[numberOfTables];
             for (int i = 0; i < numberOfTables; i++)
             {
-                CmapSubtable cmap = new CmapSubtable();
+                var cmap = new CmapSubtable();
                 cmap.InitData(data);
                 cmaps[i] = cmap;
             }
+            int numberOfGlyphs = ttf.NumberOfGlyphs;
             for (int i = 0; i < numberOfTables; i++)
             {
-                cmaps[i].InitSubtable(this, ttf.NumberOfGlyphs, data);
+                cmaps[i].InitSubtable(this, numberOfGlyphs, data);
             }
             initialized = true;
         }

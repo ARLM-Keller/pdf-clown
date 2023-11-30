@@ -49,7 +49,6 @@ namespace PdfClown.Objects
 
           [1] http://en.wikipedia.org/wiki/Introduction_to_Algorithms
         */
-        #region types
         /**
           Node children.
         */
@@ -115,32 +114,27 @@ namespace PdfClown.Objects
             /**
               <summary>Gets whether the collection size has reached its maximum.</summary>
             */
-            public bool IsFull()
-            { return Items.Count >= Info.MaxCount; }
+            public bool IsFull() => Items.Count >= Info.MaxCount;
 
             /**
               <summary>Gets whether this collection represents a leaf node.</summary>
             */
-            public bool IsLeaf()
-            { return !TypeName.Equals(PdfName.Kids); }
+            public bool IsLeaf() => !TypeName.Equals(PdfName.Kids);
 
             /**
               <summary>Gets whether the collection size is more than its maximum.</summary>
             */
-            public bool IsOversized()
-            { return Items.Count > Info.MaxCount; }
+            public bool IsOversized() => Items.Count > Info.MaxCount;
 
             /**
               <summary>Gets whether the collection size is less than its minimum.</summary>
             */
-            public bool IsUndersized()
-            { return Items.Count < Info.MinCount; }
+            public bool IsUndersized() => Items.Count < Info.MinCount;
 
             /**
               <summary>Gets whether the collection size is within the order limits.</summary>
             */
-            public bool IsValid()
-            { return !(IsUndersized() || IsOversized()); }
+            public bool IsValid() => !(IsUndersized() || IsOversized());
 
             /**
               <summary>Gets the node's children collection.</summary>
@@ -169,8 +163,6 @@ namespace PdfClown.Objects
 
         private class Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
         {
-            #region dynamic
-            #region fields
             /**
               <summary>Current named object.</summary>
             */
@@ -202,9 +194,7 @@ namespace PdfClown.Objects
               <summary>Name tree.</summary>
             */
             private Tree<TKey, TValue> tree;
-            #endregion
 
-            #region constructors
             internal Enumerator(Tree<TKey, TValue> tree)
             {
                 this.tree = tree;
@@ -226,14 +216,9 @@ namespace PdfClown.Objects
                     kids = (PdfArray)kidsObject.Resolve();
                 }
             }
-            #endregion
 
-            #region interface
-            #region public
-            #region IEnumerator<KeyValuePair<TKey,TValue>>
             KeyValuePair<TKey, TValue> IEnumerator<KeyValuePair<TKey, TValue>>.Current => current.Value;
 
-            #region IEnumerator
             public object Current => ((IEnumerator<KeyValuePair<TKey, TValue>>)this).Current;
 
             public bool MoveNext()
@@ -241,16 +226,10 @@ namespace PdfClown.Objects
 
             public void Reset()
             { throw new NotSupportedException(); }
-            #endregion
 
-            #region IDisposable
             public void Dispose()
             { }
-            #endregion
-            #endregion
-            #endregion
 
-            #region private
             private KeyValuePair<TKey, TValue>? GetNext()
             {
                 /*
@@ -322,9 +301,6 @@ namespace PdfClown.Objects
                     }
                 }
             }
-            #endregion
-            #endregion
-            #endregion
         }
 
         private interface IFiller<TObject>
@@ -357,33 +333,21 @@ namespace PdfClown.Objects
 
             public ICollection<TValue> Collection => values;
         }
-        #endregion
 
-        #region static
-        #region fields
         /**
           Minimum number of items in non-root nodes.
           Note that the tree (high) order is assumed twice as much (<see cref="Children.Info.Info(int, int)"/>.
         */
         private static readonly int TreeLowOrder = 5;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region fields
         private PdfName pairsKey;
-        #endregion
 
-        #region constructors
         public Tree(Document context) : base(context, new PdfDictionary())
         { Initialize(); }
 
         public Tree(PdfDirectObject baseObject) : base(baseObject)
         { Initialize(); }
-        #endregion
 
-        #region interface
-        #region public
         /**
           Gets the key associated to the specified value.
         */
@@ -402,7 +366,6 @@ namespace PdfClown.Objects
             return null;
         }
 
-        #region IDictionary
         public virtual void Add(TKey key, TValue value)
         { Add(key, value, false); }
 
@@ -418,7 +381,7 @@ namespace PdfClown.Objects
         {
             get
             {
-                KeysFiller filler = new KeysFiller();
+                var filler = new KeysFiller();
                 Fill(filler, BaseDataObject);
 
                 return filler.Collection;
@@ -683,7 +646,6 @@ namespace PdfClown.Objects
             }
         }
 
-        #region ICollection
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> keyValuePair)
         { Add(keyValuePair.Key, keyValuePair.Value); }
 
@@ -703,20 +665,12 @@ namespace PdfClown.Objects
         public virtual bool Remove(KeyValuePair<TKey, TValue> keyValuePair)
         { throw new NotSupportedException(); }
 
-        #region IEnumerable<KeyValuePair<TKey,TValue>>
         public virtual IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         { return new Enumerator(this); }
 
-        #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
         { return this.GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
 
-        #region protected
         /**
           <summary>Gets the name of the key-value pairs entries.</summary>
         */
@@ -741,9 +695,7 @@ namespace PdfClown.Objects
           <summary>Wraps a base object within its corresponding high-level representation.</summary>
         */
         protected abstract TValue WrapValue(PdfDirectObject baseObject);
-        #endregion
 
-        #region private
         /**
           <summary>Adds an entry into the tree.</summary>
           <param name="key">New entry's key.</param>
@@ -762,8 +714,8 @@ namespace PdfClown.Objects
                 if (rootChildren.IsFull())
                 {
                     // Transfer the root contents into the new leaf!
-                    PdfDictionary leaf = (PdfDictionary)new PdfDictionary().Swap(root);
-                    PdfArray rootChildrenObject = new PdfArray(new PdfDirectObject[] { File.Register(leaf) });
+                    var leaf = (PdfDictionary)new PdfDictionary().Swap(root);
+                    var rootChildrenObject = new PdfArray(1) { File.Register(leaf) };
                     root[PdfName.Kids] = rootChildrenObject;
                     // Split the leaf!
                     SplitFullNode(
@@ -1029,9 +981,7 @@ namespace PdfClown.Objects
             }
             else
             {
-                node[PdfName.Limits] = new PdfArray(
-                  new PdfDirectObject[] { lowLimit, highLimit }
-                  );
+                node[PdfName.Limits] = new PdfArray(2) { lowLimit, highLimit };
             }
         }
 
@@ -1059,8 +1009,5 @@ namespace PdfClown.Objects
         {
             throw new NotImplementedException();
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

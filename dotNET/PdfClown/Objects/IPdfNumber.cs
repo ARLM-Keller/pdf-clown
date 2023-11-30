@@ -35,26 +35,19 @@ namespace PdfClown.Objects
         /**
           <summary>Gets the double-precision floating-point representation of the value.</summary>
         */
-        double DoubleValue
-        {
-            get;
-        }
+        double DoubleValue { get; }
 
         /**
           <summary>Gets the floating-point representation of the value.</summary>
         */
-        float FloatValue
-        {
-            get;
-        }
+        float FloatValue { get; }
 
         /**
           <summary>Gets the integer representation of the value.</summary>
         */
-        int IntValue
-        {
-            get;
-        }
+        int IntValue { get; }
+
+        T GetValue<T>() where T : struct;
     }
 
     internal class PdfNumber

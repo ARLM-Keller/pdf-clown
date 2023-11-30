@@ -27,28 +27,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
      */
     public abstract class CFFEncoding : Encoding
     {
-        private new readonly Dictionary<int, string> codeToName = new Dictionary<int, string>(250);
-
         /**
 		 * Package-private constructor for subclasses.
 		 */
         public CFFEncoding()
         { }
 
-        /**
-		 * Returns the name of the glyph for the given character code.
-		 *
-		 * @param code character code
-		 * @return PostScript glyph name
-		 */
-        public override string GetName(int code)
-        {
-            if (!codeToName.TryGetValue(code, out var name))
-            {
-                return ".notdef";
-            }
-            return name;
-        }
 
         /**
 		 * Adds a new code/SID combination to the encoding.
@@ -57,7 +41,6 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 */
         public void Add(int code, int sid, string name)
         {
-            codeToName[code] = name;
             Put(code, name);
         }
 
@@ -66,9 +49,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 		 */
         protected void Add(int code, int sid)
         {
-            string name = CFFStandardString.GetName(sid);
-            codeToName[code] = name;
-            Put(code, name);
+            Put(code, CFFStandardString.GetName(sid));
         }
     }
 }

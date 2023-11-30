@@ -19,7 +19,6 @@ namespace PdfClown.Samples.CLI
     */
     public static class SampleLoader
     {
-        #region types
         private class TypeComparer : IComparer<Type>
         {
             public int Compare(Type type1, Type type2)
@@ -27,20 +26,14 @@ namespace PdfClown.Samples.CLI
                 return type1.Name.CompareTo(type2.Name);
             }
         }
-        #endregion
 
-        #region static
-        #region fields
         private static readonly string ClassName = (typeof(SampleLoader)).FullName;
 
         private static readonly string Properties_InputPath = ClassName + ".InputPath";
         private static readonly string Properties_OutputPath = ClassName + ".OutputPath";
 
         private static readonly string QuitChoiceSymbol = "Q";
-        #endregion
 
-        #region interface
-        #region public
         public static void Main(string[] args)
         {
             Console.WriteLine("\nSampleLoader running...");
@@ -55,9 +48,7 @@ namespace PdfClown.Samples.CLI
 
             Console.WriteLine("\nSampleLoader finished.\n");
         }
-        #endregion
 
-        #region private
         private static void Run(string inputPath, string outputPath)
         {
             if (!Directory.Exists(outputPath))
@@ -122,8 +113,5 @@ namespace PdfClown.Samples.CLI
                 }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

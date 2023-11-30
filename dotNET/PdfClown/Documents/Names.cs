@@ -42,17 +42,12 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF12)]
     public sealed class Names : PdfObjectWrapper<PdfDictionary>, ICompositeDictionary<PdfString>
     {
-        #region dynamic
-        #region constructors
         public Names(Document context) : base(context, new PdfDictionary())
         { }
 
         public Names(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the named destinations.</summary>
         */
@@ -103,7 +98,6 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.Renditions] = value.BaseObject;
         }
 
-        #region ICompositeDictionary
         public PdfObjectWrapper Get(Type type)
         {
             if (typeof(Destination).IsAssignableFrom(type))
@@ -125,10 +119,5 @@ namespace PdfClown.Documents
             PdfObjectWrapper names = Get(typeof(T));
             return names is IDictionary dictionary ? (T)dictionary[key] : default(T);
         }
-
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

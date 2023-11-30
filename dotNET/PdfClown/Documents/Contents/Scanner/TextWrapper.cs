@@ -75,7 +75,7 @@ namespace PdfClown.Documents.Contents.Scanner
                         if (!quad.HasValue)
                         { quad = textString.Quad; }
                         else
-                        { quad = Util.Math.Geom.Quad.Union(quad.Value, textString.Quad.Value); }
+                        { quad = Util.Math.Geom.Quad.Union(quad.Value, textString.Quad); }
                     }
                 }
                 return quad;
@@ -88,7 +88,7 @@ namespace PdfClown.Documents.Contents.Scanner
             {
                 if (text == null)
                 {
-                    StringBuilder textBuilder = new StringBuilder();
+                    var textBuilder = new StringBuilder();
                     foreach (TextStringWrapper textString in textStrings)
                     {
                         textBuilder.Append(textString.Text);
@@ -104,8 +104,7 @@ namespace PdfClown.Documents.Contents.Scanner
         */
         public List<TextStringWrapper> TextStrings => textStrings;
 
-        public override string ToString()
-        { return Text; }
+        public override string ToString() => Text;
 
         private void Extract(ContentScanner level)
         {

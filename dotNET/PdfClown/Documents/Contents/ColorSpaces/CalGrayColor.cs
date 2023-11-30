@@ -37,35 +37,26 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     public sealed class CalGrayColor
       : LeveledColor
     {
-        #region static
-        #region fields
         public static readonly CalGrayColor Black = new CalGrayColor(0);
         public static readonly CalGrayColor White = new CalGrayColor(1);
 
         public static readonly CalGrayColor Default = Black;
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public CalGrayColor(double g)
-            : this(new PdfArray(new PdfDirectObject[] { PdfReal.Get(NormalizeComponent(g)) }))
+            : this(new PdfArray(1) { PdfReal.Get(NormalizeComponent(g)) })
         { }
 
         internal CalGrayColor(IList<PdfDirectObject> components) //TODO:colorspace?
             : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the gray component.</summary>
         */
         public float G
         {
-            get => GetComponentValue(0);
-            set => SetComponentValue(0, value);
+            get => this[0];
+            set => this[0] = value;
         }
 
         public override object Clone(Document context)
@@ -73,8 +64,5 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             throw new NotImplementedException();
         }
 
-        #endregion
-        #endregion
-        #endregion
     }
 }

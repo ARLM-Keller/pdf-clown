@@ -17,7 +17,7 @@
 using System.IO;
 using System.Diagnostics;
 using System;
-
+using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
@@ -45,10 +45,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          */
         public const string TAG = "post";
 
-        public PostScriptTable(TrueTypeFont font)
-                : base(font)
-        {
-        }
+        public PostScriptTable()
+        { }
 
         /**
          * This will read the required data from the stream.
@@ -57,35 +55,34 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @ If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             formatType = data.Read32Fixed();
             italicAngle = data.Read32Fixed();
-            underlinePosition = data.ReadSignedShort();
-            underlineThickness = data.ReadSignedShort();
-            isFixedPitch = data.ReadUnsignedInt();
-            minMemType42 = data.ReadUnsignedInt();
-            maxMemType42 = data.ReadUnsignedInt();
-            mimMemType1 = data.ReadUnsignedInt();
-            maxMemType1 = data.ReadUnsignedInt();
+            underlinePosition = data.ReadInt16();
+            underlineThickness = data.ReadInt16();
+            isFixedPitch = data.ReadUInt32();
+            minMemType42 = data.ReadUInt32();
+            maxMemType42 = data.ReadUInt32();
+            mimMemType1 = data.ReadUInt32();
+            maxMemType1 = data.ReadUInt32();
 
             if (formatType.CompareTo(1.0f) == 0)
             {
                 /*
                  * This TrueType font file contains exactly the 258 glyphs in the standard Macintosh TrueType.
                  */
-                glyphNames = new string[WGL4Names.NUMBER_OF_MAC_GLYPHS];
-                Array.Copy(WGL4Names.MAC_GLYPH_NAMES, 0, glyphNames, 0, WGL4Names.NUMBER_OF_MAC_GLYPHS);
+                glyphNames = WGL4Names.GetAllNames();
             }
             else if (formatType.CompareTo(2.0f) == 0)
             {
-                int numGlyphs = data.ReadUnsignedShort();
-                int[] glyphNameIndex = new int[numGlyphs];
+                int numGlyphs = data.ReadUInt16();
+                var glyphNameIndex = new ushort[numGlyphs];
                 glyphNames = new string[numGlyphs];
-                int maxIndex = int.MinValue;
+                var maxIndex = ushort.MinValue;
                 for (int i = 0; i < numGlyphs; i++)
                 {
-                    int index = data.ReadUnsignedShort();
+                    var index = data.ReadUInt16();
                     glyphNameIndex[i] = index;
                     // PDFBOX-808: Index numbers between 32768 and 65535 are
                     // reserved for future use, so we should just ignore them
@@ -100,8 +97,16 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     nameArray = new string[maxIndex - WGL4Names.NUMBER_OF_MAC_GLYPHS + 1];
                     for (int i = 0; i < maxIndex - WGL4Names.NUMBER_OF_MAC_GLYPHS + 1; i++)
                     {
-                        int numberOfChars = data.ReadUnsignedByte();
-                        nameArray[i] = data.ReadString(numberOfChars);
+                        int numberOfChars = data.ReadByte();
+                        // PDFBOX-4851: EOF
+                        if (numberOfChars > -1 && data.Position + numberOfChars < data.Length)
+                        {
+                            nameArray[i] = data.ReadString(numberOfChars);
+                        }
+                        else
+                        {
+                            nameArray[i] = ".notdef";
+                        }
                     }
                 }
                 for (int i = 0; i < numGlyphs; i++)
@@ -109,7 +114,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     int index = glyphNameIndex[i];
                     if (index >= 0 && index < WGL4Names.NUMBER_OF_MAC_GLYPHS)
                     {
-                        glyphNames[i] = WGL4Names.MAC_GLYPH_NAMES[index];
+                        glyphNames[i] = WGL4Names.GetGlyphName(index);
                     }
                     else if (index >= WGL4Names.NUMBER_OF_MAC_GLYPHS && index <= 32767 && nameArray != null)
                     {
@@ -125,11 +130,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
             else if (formatType.CompareTo(2.5f) == 0)
             {
-                int[] glyphNameIndex = new int[ttf.NumberOfGlyphs];
+                var glyphNameIndex = new ushort[ttf.NumberOfGlyphs];
                 for (int i = 0; i < glyphNameIndex.Length; i++)
                 {
-                    int offset = data.ReadSignedByte();
-                    glyphNameIndex[i] = i + 1 + offset;
+                    var offset = data.ReadSByte();
+                    glyphNameIndex[i] = (ushort)(i + 1 + offset);
                 }
                 glyphNames = new string[glyphNameIndex.Length];
                 for (int i = 0; i < glyphNames.Length; i++)
@@ -137,7 +142,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     int index = glyphNameIndex[i];
                     if (index >= 0 && index < WGL4Names.NUMBER_OF_MAC_GLYPHS)
                     {
-                        string name = WGL4Names.MAC_GLYPH_NAMES[index];
+                        string name = WGL4Names.GetGlyphName(index);
                         if (name != null)
                         {
                             glyphNames[i] = name;
@@ -152,7 +157,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             else if (formatType.CompareTo(3.0f) == 0)
             {
                 // no postscript information is provided.
-                Debug.WriteLine($"debug: No PostScript name information is provided for the font {font.Name}");
+                //Debug.WriteLine($"debug: No PostScript name information is provided for the font {font.Name}");
             }
             initialized = true;
         }

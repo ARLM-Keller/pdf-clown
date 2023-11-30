@@ -36,38 +36,26 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>'Play a sound' action [PDF:1.6:8.5.3].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class PlaySound
-      : Action
+    public sealed class PlaySound : Action
     {
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public PlaySound(
-          Document context,
-          Sound sound
-          ) : base(context, PdfName.Sound)
+        public PlaySound(Document context, Sound sound)
+            : base(context, PdfName.Sound)
         { Sound = sound; }
 
-        internal PlaySound(
-          PdfDirectObject baseObject
-          ) : base(baseObject)
+        internal PlaySound(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the sound to be played.</summary>
         */
         public Sound Sound
         {
-            get =>
-                /*
-NOTE: 'Sound' entry MUST exist.
-*/
-                Wrap<Sound>(BaseDataObject.Get<PdfStream>(PdfName.Sound));
+            //NOTE: 'Sound' entry MUST exist.
+            get => Wrap<Sound>(BaseDataObject.Get<PdfStream>(PdfName.Sound));
             set
             {
                 if (value == null)
@@ -76,8 +64,5 @@ NOTE: 'Sound' entry MUST exist.
                 BaseDataObject[PdfName.Sound] = value.BaseObject;
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

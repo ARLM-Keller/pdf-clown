@@ -25,10 +25,17 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents;
+using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Composition;
+using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
-
+using SkiaSharp;
 using System;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
@@ -38,22 +45,15 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF13)]
     public sealed class SignatureField : Field
     {
-        //TODO
-        #region dynamic
-        #region constructors
         /**
           <summary>Creates a new signature field within the given document context.</summary>
         */
-        //TODO:dictionary mandatory items (if any)!!!
         public SignatureField(string name, Widget widget) : base(PdfName.Sig, name, widget)
         { }
 
         internal SignatureField(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <returns>A <see cref="PdfDictionary"/>.</returns>
         */
@@ -90,24 +90,69 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public string Filter
         {
-            get => ((IPdfString)ValueDictionary[PdfName.Filter])?.StringValue;
-            set => ValueDictionary[PdfName.Filter] = new PdfName(value);
+            get => ValueDictionary.GetString(PdfName.Filter);
+            set => ValueDictionary.SetName(PdfName.Filter, value);
         }
 
         public DateTime? DateM
         {
-            get => ((PdfDate)ValueDictionary[PdfName.M])?.DateValue;
-            set => ValueDictionary[PdfName.M] = value is DateTime notNullValue ? new PdfDate(notNullValue) : null;
+            get => ValueDictionary.GetNDate(PdfName.M);
+            set => ValueDictionary.SetDate(PdfName.M, value);
         }
 
         public string SignatureName
         {
-            get => ((IPdfString)ValueDictionary[PdfName.Name]).StringValue;
-            set=> ValueDictionary[PdfName.Name] = new PdfString(value);
+            get => ValueDictionary.GetString(PdfName.Name);
+            set => ValueDictionary.SetText(PdfName.Name, value);
         }
 
-        #endregion
-        #endregion
-        #endregion
+        public void RefreshAppearence(string text)
+        {
+            var nameArray = SignatureName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var widget = Widgets[0];
+            var rect = widget.Box;
+
+            var normalAppearanceState = widget.ResetAppearance(out var zeroMatrix);
+
+            var box = zeroMatrix.MapRect(rect);
+
+            var font = FontType0.Load(Document, FontMappers.Instance.GetTrueTypeFont("Times", null).Font, false);
+
+            var horizontal = box.Width > box.Height;
+            var maxSize = nameArray.Select(x => font.GetWidth(x, 1)).Max();
+            var availible = horizontal ? (box.Width / 2) - 4 : box.Width - 4;
+            var headerFontSize = availible / maxSize;
+            var composer = new PrimitiveComposer(normalAppearanceState);
+            
+            composer.BeginLocalState();
+            composer.ApplyMatrix(GraphicsState.GetRotationMatrix(box, widget.Page.Rotate));
+            composer.SetFillColor(DeviceRGBColor.Black);
+            composer.SetFont(font, headerFontSize);
+            composer.ShowText(string.Join('\n', nameArray),
+                horizontal
+                    ? new SKPoint(box.Left, box.Height / 2)
+                    : new SKPoint(box.Left, box.Height / 4),
+                XAlignmentEnum.Left,
+                YAlignmentEnum.Middle, 0);
+            composer.End();
+
+
+            composer.BeginLocalState();
+            var blockComp = new BlockComposer(composer)
+            {
+                Hyphenation = true
+            };
+            blockComp.Begin(horizontal
+                    ? new SKRect(box.MidX, box.Top, box.Right, box.Bottom)
+                    : new SKRect(box.Left, box.MidY, box.Right, box.Bottom),
+                XAlignmentEnum.Left,
+                YAlignmentEnum.Middle);
+            composer.SetFillColor(DeviceRGBColor.Black);
+            composer.SetFont(font, headerFontSize / 2.5);
+            blockComp.ShowText(text);
+            blockComp.End();
+            composer.End();
+            composer.Flush();
+        }
     }
 }

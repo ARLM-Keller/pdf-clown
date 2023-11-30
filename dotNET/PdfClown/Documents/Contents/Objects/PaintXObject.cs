@@ -32,6 +32,9 @@ using SkiaSharp;
 using System;
 using PdfClown.Tools;
 using PdfClown.Documents.Contents.XObjects;
+using static PdfClown.Documents.Contents.Objects.ShowText;
+using PdfClown.Bytes.Filters.Jpx;
+using PdfClown.Documents.Interaction.Forms;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -41,34 +44,24 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class PaintXObject : Operation, IResourceReference<xObjects::XObject>
     {
-        #region static
-        #region fields
         public static readonly string OperatorKeyword = "Do";
         public static readonly SKPaint ImagePaint = new SKPaint { FilterQuality = SKFilterQuality.Low, BlendMode = SKBlendMode.SrcOver };
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public PaintXObject(PdfName name) : base(OperatorKeyword, name)
         { }
 
         public PaintXObject(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
         { }
-        #endregion
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets the scanner for the contents of the painted external object.</summary>
           <param name="context">Scanning context.</param>
         */
         public ContentScanner GetScanner(ContentScanner context)
         {
-            xObjects::XObject xObject = GetXObject(context.ContentContext);
-            return xObject is xObjects::FormXObject
-              ? new ContentScanner((xObjects::FormXObject)xObject, context)
+            xObjects::XObject xObject = GetXObject(context);
+            return xObject is FormXObject form
+              ? new ContentScanner(form, context)
               : null;
         }
 
@@ -77,12 +70,18 @@ namespace PdfClown.Documents.Contents.Objects
           </summary>
           <param name="context">Content context.</param>
         */
-        public xObjects::XObject GetXObject(IContentContext context)
-        { return GetResource(context); }
+        public xObjects::XObject GetXObject(ContentScanner scanner) => GetResource(scanner);
 
-        #region IResourceReference
-        public xObjects::XObject GetResource(IContentContext context)
-        { return context.Resources.XObjects[Name]; }
+        public xObjects::XObject GetResource(ContentScanner scanner)
+        {
+            var pscanner = scanner;
+            xObjects::XObject xobj;
+
+            while ((xobj = pscanner.ContentContext.Resources.XObjects[Name]) == null
+                && (pscanner = pscanner.ParentLevel) != null)
+            { }
+            return xobj;
+        }
 
         public PdfName Name
         {
@@ -96,7 +95,7 @@ namespace PdfClown.Documents.Contents.Objects
             var canvas = scanner.RenderContext;
             if (canvas == null)
                 return;
-            var xObject = GetXObject(scanner.ContentContext);
+            var xObject = GetXObject(scanner);
 
             try
             {
@@ -114,23 +113,9 @@ namespace PdfClown.Documents.Contents.Objects
 
                         if (imageObject.ImageMask)
                         {
-                            using (var paint = new SKPaint())
+                            using (var paint = state.CreateFillPaint())
                             {
-                                paint.Color = state.GetFillColor() ?? SKColors.Black;
                                 canvas.DrawBitmap(image, 0, 0, paint);
-                            }
-                        }
-                        else if (state.SMask is SoftMask softMask)
-                        {
-                            using (var recorder = new SKPictureRecorder())
-                            using (var recorderCanvas = recorder.BeginRecording(new SKRect(0, 0, image.Width, image.Height)))
-                            {
-                                recorderCanvas.DrawBitmap(image, 0, 0, ImagePaint);
-
-                                using (var picture = recorder.EndRecording())
-                                {
-                                    ApplyMask(softMask, canvas, picture);
-                                }
                             }
                         }
                         else
@@ -144,22 +129,15 @@ namespace PdfClown.Documents.Contents.Objects
                 }
                 else if (xObject is FormXObject formObject)
                 {
-                    var picture = formObject.Render();
+                    var picture = formObject.Render(scanner);
 
                     var ctm = state.Ctm;
                     ctm = ctm.PreConcat(formObject.Matrix);
                     canvas.SetMatrix(ctm);
 
-                    if (state.SMask is SoftMask softMask)
+                    using (var paint = state.CreateFillPaint())
                     {
-                        ApplyMask(softMask, canvas, picture);
-                    }
-                    else
-                    {
-                        using (var paint = state.CreateFillPaint())
-                        {
-                            canvas.DrawPicture(picture, paint);
-                        }
+                        canvas.DrawPicture(picture, paint);
                     }
 
                     foreach (var textString in formObject.Strings)
@@ -178,52 +156,7 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        private static void ApplyMask(SoftMask softMask, SKCanvas canvas, SKPicture picture)
-        {
-            var softMaskFormObject = softMask.Group;
-            var subtype = softMask.SubType;
-            var isLuminosity = subtype.Equals(PdfName.Luminosity);
 
-            var group = softMaskFormObject.Group;
-            var isolated = group.Isolated;
-            var knockout = group.Knockout;
-            var softMaskPicture = softMaskFormObject.Render(softMask);//
 
-            var paint = new SKPaint();
-            if (isLuminosity)
-            {
-                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-                {
-                    0.33f, 0.33f, 0.33f, 0, 0,
-                    0.33f, 0.33f, 0.33f, 0, 0,
-                    0.33f, 0.33f, 0.33f, 0, 0,
-                    0.33f, 0.33f, 0.33f, 0, 0
-                    //0.30f, 0.59f, 0.11f, 0, 0,
-                    //0.30f, 0.59f, 0.11f, 0, 0,
-                    //0.30f, 0.59f, 0.11f, 0, 0,
-                    //0.30f, 0.59f, 0.11f, 0, 0
-                });
-                paint.ImageFilter = SKImageFilter.CreatePicture(softMaskPicture);
-                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
-                canvas.DrawPicture(picture, paint);
-            }
-            else // alpha
-            {
-                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-                {
-                    0, 0, 0, 1, 0,
-                    0, 0, 0, 1, 0,
-                    0, 0, 0, 1, 0,
-                    0, 0, 0, 1, 0
-                });
-                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
-                canvas.DrawPicture(softMaskPicture, paint);
-                canvas.DrawPicture(picture);
-            }
-        }
-
-        #endregion
-        #endregion
-        #endregion
     }
 }

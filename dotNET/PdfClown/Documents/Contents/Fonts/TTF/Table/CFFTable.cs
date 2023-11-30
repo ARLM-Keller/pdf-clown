@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.CCF;
+using System;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
@@ -27,13 +29,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * A tag that identifies this table type.
          */
-        public static readonly string TAG = "CFF ";
+        public const string TAG = "CFF ";
 
         private CFFFont cffFont;
 
-        public CFFTable(TrueTypeFont font) : base(font)
-        {
-        }
+        public CFFTable()
+        { }
 
         /**
          * This will read the required data from the stream.
@@ -42,12 +43,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @param data The stream to read the data from.
          * @throws java.io.IOException If there is an error reading the data.
          */
-        public override void Read(TrueTypeFont ttf, TTFDataStream data)
+        public override void Read(TrueTypeFont ttf, IInputStream data)
         {
-            byte[] bytes = data.Read((int)Length);
+            var bytes = data.ReadMemory((int)Length);
 
             CFFParser parser = new CFFParser();
-            cffFont = parser.Parse(bytes, new CFFBytesource(font))[0];
+            cffFont = parser.Parse(bytes, new CFFBytesource(ttf))[0];
 
             initialized = true;
         }
@@ -72,7 +73,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 this.ttf = ttf;
             }
 
-            public byte[] GetBytes()
+            public Memory<byte> GetBytes()
             {
                 return ttf.GetTableBytes(ttf.TableMap.TryGetValue(CFFTable.TAG, out var ccfTable) ? ccfTable : null);
             }

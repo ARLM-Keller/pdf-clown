@@ -22,7 +22,7 @@
   redistributions retain the above copyright notice, license and disclaimer, along with
   this list of conditions.
 */
-
+using PdfClown.Bytes;
 using bytes = PdfClown.Bytes;
 using PdfClown.Util;
 
@@ -36,27 +36,18 @@ namespace PdfClown.Documents.Contents.Fonts
     */
     internal sealed class CMapBuilder
     {
-        #region types
         public enum EntryTypeEnum
         {
             BaseFont,
             CID
         }
-        #endregion
 
-        #region delegates
-        public delegate int GetOutCodeDelegate(KeyValuePair<ByteArray, int> entry);
+        public delegate int GetOutCodeDelegate(KeyValuePair<ByteKey, int> entry);
 
-        private delegate bytes::IBuffer BuildEntryDelegate<T>(T entry, bytes::IBuffer buffer, GetOutCodeDelegate outCodeFunction, string outCodeFormat);
-        #endregion
+        private delegate void BuildEntryDelegate<T>(T entry, IByteStream buffer, GetOutCodeDelegate outCodeFunction, string outCodeFormat);
 
-        #region static
-        #region fields
         private static readonly int SubSectionMaxCount = 100;
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Builds a CMap according to the specified arguments.</summary>
           <param name="entryType"></param>
@@ -65,9 +56,9 @@ namespace PdfClown.Documents.Contents.Fonts
           <param name="outCodeFunction"></param>
           <returns>Buffer containing the serialized CMap.</returns>
         */
-        public static bytes::IBuffer Build(EntryTypeEnum entryType, string cmapName, SortedDictionary<ByteArray, int> codes, GetOutCodeDelegate outCodeFunction)
+        public static IByteStream Build(EntryTypeEnum entryType, string cmapName, SortedDictionary<ByteKey, int> codes, GetOutCodeDelegate outCodeFunction)
         {
-            bytes::IBuffer buffer = new bytes::Buffer();
+            IByteStream buffer = new ByteStream();
 
             // Header.
             string outCodeFormat;
@@ -77,7 +68,7 @@ namespace PdfClown.Documents.Contents.Fonts
                     {
                         if (cmapName == null)
                         { cmapName = "Adobe-Identity-UCS"; }
-                        buffer.Append(
+                        buffer.Write(
                           "/CIDInit /ProcSet findresource begin\n"
                             + "12 dict begin\n"
                             + "begincmap\n"
@@ -86,7 +77,9 @@ namespace PdfClown.Documents.Contents.Fonts
                             + "/Ordering (UCS)\n"
                             + "/Supplement 0\n"
                             + ">> def\n"
-                            + "/CMapName /").Append(cmapName).Append(" def\n"
+                            + "/CMapName /");
+                        buffer.Write(cmapName);
+                        buffer.Write(" def\n"
                             + "/CMapVersion 10.001 def\n"
                             + "/CMapType 2 def\n"
                             + "1 begincodespacerange\n"
@@ -100,30 +93,36 @@ namespace PdfClown.Documents.Contents.Fonts
                     {
                         if (cmapName == null)
                         { cmapName = "Custom"; }
-                        buffer.Append(
+                        buffer.Write(
                           "%!PS-Adobe-3.0 Resource-CMap\n"
                             + "%%DocumentNeededResources: ProcSet (CIDInit)\n"
                             + "%%IncludeResource: ProcSet (CIDInit)\n"
-                            + "%%BeginResource: CMap (").Append(cmapName).Append(")\n"
-                            + "%%Title: (").Append(cmapName).Append(" Adobe Identity 0)\n"
-                            + "%%Version: 1\n"
-                            + "%%EndComments\n"
-                            + "/CIDInit /ProcSet findresource begin\n"
-                            + "12 dict begin\n"
-                            + "begincmap\n"
-                            + "/CIDSystemInfo 3 dict dup begin\n"
-                            + "/Registry (Adobe) def\n"
-                            + "/Ordering (Identity) def\n"
-                            + "/Supplement 0 def\n"
-                            + "end def\n"
-                            + "/CMapVersion 1 def\n"
-                            + "/CMapType 1 def\n"
-                            + "/CMapName /").Append(cmapName).Append(" def\n"
-                            + "/WMode 0 def\n"
-                            + "1 begincodespacerange\n"
-                            + "<0000> <FFFF>\n"
-                            + "endcodespacerange\n"
-                          );
+                            + "%%BeginResource: CMap (");
+                        buffer.Write(cmapName);
+                        buffer.Write(")\n"
+                            + "%%Title: (");
+                        buffer.Write(cmapName);
+                        buffer.Write(" Adobe Identity 0)\n"
+                        + "%%Version: 1\n"
+                        + "%%EndComments\n"
+                        + "/CIDInit /ProcSet findresource begin\n"
+                        + "12 dict begin\n"
+                        + "begincmap\n"
+                        + "/CIDSystemInfo 3 dict dup begin\n"
+                        + "/Registry (Adobe) def\n"
+                        + "/Ordering (Identity) def\n"
+                        + "/Supplement 0 def\n"
+                        + "end def\n"
+                        + "/CMapVersion 1 def\n"
+                        + "/CMapType 1 def\n"
+                        + "/CMapName /");
+                        buffer.Write(cmapName);
+                        buffer.Write(" def\n"
+                        + "/WMode 0 def\n"
+                        + "1 begincodespacerange\n"
+                        + "<0000> <FFFF>\n"
+                        + "endcodespacerange\n"
+                      );
                         outCodeFormat = "{0}";
                         break;
                     }
@@ -133,22 +132,24 @@ namespace PdfClown.Documents.Contents.Fonts
 
             // Entries.
             {
-                IList<KeyValuePair<ByteArray, int>> cidChars = new List<KeyValuePair<ByteArray, int>>();
-                IList<KeyValuePair<ByteArray, int>[]> cidRanges = new List<KeyValuePair<ByteArray, int>[]>();
+                IList<KeyValuePair<ByteKey, int>> cidChars = new List<KeyValuePair<ByteKey, int>>();
+                IList<KeyValuePair<ByteKey, int>[]> cidRanges = new List<KeyValuePair<ByteKey, int>[]>();
                 {
-                    KeyValuePair<ByteArray, int>? lastCodeEntry = null;
-                    KeyValuePair<ByteArray, int>[] lastCodeRange = null;
-                    foreach (KeyValuePair<ByteArray, int> codeEntry in codes)
+                    KeyValuePair<ByteKey, int>? lastCodeEntry = null;
+                    KeyValuePair<ByteKey, int>[] lastCodeRange = null;
+                    foreach (KeyValuePair<ByteKey, int> codeEntry in codes)
                     {
                         if (lastCodeEntry.HasValue)
                         {
-                            int codeLength = codeEntry.Key.Data.Length;
-                            if (codeLength == lastCodeEntry.Value.Key.Data.Length
-                              && codeEntry.Key.Data[codeLength - 1] - lastCodeEntry.Value.Key.Data[codeLength - 1] == 1
+                            var codeArray = codeEntry.Key.ToArray();
+                            var lastCodeArray = lastCodeEntry.Value.Key.ToArray();
+                            int codeLength = codeEntry.Key.Length;
+                            if (codeLength == lastCodeEntry.Value.Key.Length
+                              && codeArray[codeLength - 1] - lastCodeArray[codeLength - 1] == 1
                               && outCodeFunction(codeEntry) - outCodeFunction(lastCodeEntry.Value) == 1) // Contiguous codes.
                             {
                                 if (lastCodeRange == null)
-                                { lastCodeRange = new KeyValuePair<ByteArray, int>[] { lastCodeEntry.Value, default(KeyValuePair<ByteArray, int>) }; }
+                                { lastCodeRange = new KeyValuePair<ByteKey, int>[] { lastCodeEntry.Value, default(KeyValuePair<ByteKey, int>) }; }
                             }
                             else // Separated codes.
                             {
@@ -170,7 +171,7 @@ namespace PdfClown.Documents.Contents.Fonts
             switch (entryType)
             {
                 case EntryTypeEnum.BaseFont:
-                    buffer.Append(
+                    buffer.Write(
                       "endcmap\n"
                         + "CMapName currentdict /CMap defineresource pop\n"
                         + "end\n"
@@ -178,7 +179,7 @@ namespace PdfClown.Documents.Contents.Fonts
                       );
                     break;
                 case EntryTypeEnum.CID:
-                    buffer.Append(
+                    buffer.Write(
                       "endcmap\n"
                         + "CMapName currentdict /CMap defineresource pop\n"
                         + "end\n"
@@ -193,14 +194,12 @@ namespace PdfClown.Documents.Contents.Fonts
 
             return buffer;
         }
-        #endregion
 
-        #region private
         private static void AddEntry(
-          IList<KeyValuePair<ByteArray, int>[]> cidRanges,
-          IList<KeyValuePair<ByteArray, int>> cidChars,
-          KeyValuePair<ByteArray, int> lastEntry,
-          KeyValuePair<ByteArray, int>[] lastRange
+          IList<KeyValuePair<ByteKey, int>[]> cidRanges,
+          IList<KeyValuePair<ByteKey, int>> cidChars,
+          KeyValuePair<ByteKey, int> lastEntry,
+          KeyValuePair<ByteKey, int>[] lastRange
           )
         {
             if (lastRange != null) // Range.
@@ -212,14 +211,17 @@ namespace PdfClown.Documents.Contents.Fonts
             { cidChars.Add(lastEntry); }
         }
 
-        private static bytes::IBuffer BuildCharEntry(KeyValuePair<ByteArray, int> cidChar, bytes::IBuffer buffer, GetOutCodeDelegate outCodeFunction, string outCodeFormat)
+        private static void BuildCharEntry(KeyValuePair<ByteKey, int> cidChar, IByteStream buffer, GetOutCodeDelegate outCodeFunction, string outCodeFormat)
         {
-            return buffer.Append("<").Append(ConvertUtils.ByteArrayToHex(cidChar.Key.Data)).Append("> ")
-              .Append(String.Format(outCodeFormat, outCodeFunction(cidChar))).Append("\n");
+            buffer.Write("<");
+            buffer.Write(ConvertUtils.ByteArrayToHex(cidChar.Key.ToArray()));
+            buffer.Write("> ");
+            buffer.Write(String.Format(outCodeFormat, outCodeFunction(cidChar)));
+            buffer.Write("\n");
         }
 
         private static void BuildEntriesSection<T>(
-          bytes::IBuffer buffer,
+          IByteStream buffer,
           EntryTypeEnum entryType,
           IList<T> items,
           BuildEntryDelegate<T> buildEntryFunction,
@@ -236,23 +238,37 @@ namespace PdfClown.Documents.Contents.Fonts
                 if (index % SubSectionMaxCount == 0)
                 {
                     if (index > 0)
-                    { buffer.Append("end").Append(entryType.Tag()).Append(operatorSuffix).Append("\n"); }
-                    buffer.Append(Math.Min(count - index, SubSectionMaxCount).ToString()).Append(" ").Append("begin").Append(entryType.Tag()).Append(operatorSuffix).Append("\n");
+                    {
+                        buffer.Write("end");
+                        buffer.Write(entryType.Tag());
+                        buffer.Write(operatorSuffix);
+                        buffer.Write("\n");
+                    }
+                    buffer.Write(Math.Min(count - index, SubSectionMaxCount).ToString());
+                    buffer.Write(" ");
+                    buffer.Write("begin");
+                    buffer.Write(entryType.Tag());
+                    buffer.Write(operatorSuffix);
+                    buffer.Write("\n");
                 }
                 buildEntryFunction(items[index], buffer, outCodeFunction, outCodeFormat);
             }
-            buffer.Append("end").Append(entryType.Tag()).Append(operatorSuffix).Append("\n");
+            buffer.Write("end");
+            buffer.Write(entryType.Tag());
+            buffer.Write(operatorSuffix);
+            buffer.Write("\n");
         }
 
-        private static bytes::IBuffer BuildRangeEntry(KeyValuePair<ByteArray, int>[] cidRange, bytes::IBuffer buffer, GetOutCodeDelegate outCodeFunction, string outCodeFormat)
+        private static void BuildRangeEntry(KeyValuePair<ByteKey, int>[] cidRange, IByteStream buffer, GetOutCodeDelegate outCodeFunction, string outCodeFormat)
         {
-            return buffer.Append("<").Append(ConvertUtils.ByteArrayToHex(cidRange[0].Key.Data)).Append("> <")
-              .Append(ConvertUtils.ByteArrayToHex(cidRange[1].Key.Data)).Append("> ")
-              .Append(String.Format(outCodeFormat, outCodeFunction(cidRange[0]))).Append("\n");
+            buffer.Write("<");
+            buffer.Write(ConvertUtils.ByteArrayToHex(cidRange[0].Key.ToArray()));
+            buffer.Write("> <");
+            buffer.Write(ConvertUtils.ByteArrayToHex(cidRange[1].Key.ToArray()));
+            buffer.Write("> ");
+            buffer.Write(String.Format(outCodeFormat, outCodeFunction(cidRange[0])));
+            buffer.Write("\n");
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     internal static class EntryTypeEnumExtension

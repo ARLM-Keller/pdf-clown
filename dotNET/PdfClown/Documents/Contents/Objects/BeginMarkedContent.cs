@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents.Layers;
 using PdfClown.Objects;
 
 using System.Collections.Generic;
@@ -36,15 +37,9 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF12)]
     public sealed class BeginMarkedContent : ContentMarker
     {
-        #region static
-        #region fields
         public static readonly string PropertyListOperatorKeyword = "BDC";
         public static readonly string SimpleOperatorKeyword = "BMC";
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public BeginMarkedContent(PdfName tag) : base(tag)
         { }
 
@@ -53,20 +48,21 @@ namespace PdfClown.Documents.Contents.Objects
 
         internal BeginMarkedContent(string @operator, IList<PdfDirectObject> operands) : base(@operator, operands)
         { }
-        #endregion
 
-        #region interface
-        #region protected
         protected override string PropertyListOperator => PropertyListOperatorKeyword;
 
         protected override string SimpleOperator => SimpleOperatorKeyword;
 
         public override void Scan(GraphicsState state)
         {
-            base.Scan(state);
+            var properties = GetProperties(state.Scanner);
+            if (properties is Layer layer
+                && layer.Viewable == false)
+            {
+               //state.Scanner.ContentContext.HiddenLayer++;
+            }
         }
-        #endregion
-        #endregion
-        #endregion
     }
+
+
 }

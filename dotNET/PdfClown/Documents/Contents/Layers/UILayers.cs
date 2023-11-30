@@ -35,7 +35,6 @@ namespace PdfClown.Documents.Contents.Layers
     [PDF(VersionEnum.PDF15)]
     public class UILayers : Array<IUILayerNode>
     {
-        #region types
         private delegate int EvaluateNode(int currentNodeIndex, int currentBaseIndex);
 
         private class ItemWrapper : IWrapper<IUILayerNode>
@@ -55,25 +54,15 @@ namespace PdfClown.Documents.Contents.Layers
                     throw new ArgumentException(baseDataObject.GetType().Name + " is NOT a valid layer node.");
             }
         }
-        #endregion
 
-        #region static
-        #region fields
         private static readonly ItemWrapper Wrapper = new ItemWrapper();
-        #endregion
 
-        #endregion
 
-        #region dynamic
-        #region constructors
         public UILayers(Document context) : base(context, Wrapper) { }
 
-        internal UILayers(PdfDirectObject baseObject) : base(Wrapper, baseObject)
+        public UILayers(PdfDirectObject baseObject) : base(Wrapper, baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override int Count => Evaluate(delegate (int currentNodeIndex, int currentBaseIndex)
                                                    {
                                                        if (currentBaseIndex == -1)
@@ -109,9 +98,7 @@ namespace PdfClown.Documents.Contents.Layers
             get => base[GetBaseIndex(index)];
             set => base[GetBaseIndex(index)] = value;
         }
-        #endregion
 
-        #region private
         /**
           <summary>Gets the positional information resulting from the collection evaluation.</summary>
           <param name="evaluator">Expression used to evaluate the positional matching.</param>
@@ -162,8 +149,5 @@ namespace PdfClown.Documents.Contents.Layers
                     return -1;
             });
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -37,27 +37,18 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class Text : GraphicsObject
     {
-        #region static
-        #region fields
         public static readonly string BeginOperatorKeyword = BeginText.OperatorKeyword;
         public static readonly string EndOperatorKeyword = EndText.OperatorKeyword;
 
         private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(BeginOperatorKeyword + Symbol.LineFeed);
         private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
-        #endregion
-        #endregion
 
-        #region dynamic
-        #region constructors
         public Text()
         { }
 
         public Text(IList<ContentObject> objects) : base(objects)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override void WriteTo(IOutputStream stream, Document context)
         {
             stream.Write(BeginChunk);
@@ -72,8 +63,5 @@ namespace PdfClown.Documents.Contents.Objects
             base.Scan(state);
             state.TextState = temp;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

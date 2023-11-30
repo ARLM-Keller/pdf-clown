@@ -50,9 +50,24 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 
         private ISet<string> GetMatchersAsStrings(ICollection<List<int>> matchers)
         {
-            ISet<string> stringMatchers = new HashSet<string>();
+            ISet<string> stringMatchers = new SortedSet<string>(StrangeStringComparer.Instance);
             foreach (var glyphIds in matchers) stringMatchers.Add(ConvertGlyphIdsToString(glyphIds));
             return stringMatchers;
+        }
+
+        private class StrangeStringComparer : IComparer<string>
+        {
+            public static readonly StrangeStringComparer Instance = new StrangeStringComparer();
+            public int Compare(string s1, string s2)
+            {
+                // comparator to ensure that strings with the same beginning
+                // put the larger string first        
+                if (s1.Length == s2.Length)
+                {
+                    return string.Compare(s2, s1, StringComparison.Ordinal);
+                }
+                return s2.Length.CompareTo(s1.Length);
+            }
         }
 
         private string ConvertGlyphIdsToString(List<int> glyphIds)
@@ -69,11 +84,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 
             foreach (string glyphId in glyphIdsAsString.Split(GLYPH_ID_SEPARATOR, StringSplitOptions.RemoveEmptyEntries))
             {
-                if (glyphId.Trim().Length == 0)
+                var trimmed = glyphId.Trim();
+                if (trimmed.Length == 0)
                 {
                     continue;
                 }
-                gsubProcessedGlyphsIds.Add(int.Parse(glyphId));
+                gsubProcessedGlyphsIds.Add(int.Parse(trimmed));
             }
 
             return gsubProcessedGlyphsIds;

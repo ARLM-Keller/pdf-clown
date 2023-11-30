@@ -34,14 +34,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     */
     public abstract class LeveledColor : Color
     {
-        #region dynamic
-        #region constructors
         protected LeveledColor(ColorSpace colorSpace, PdfDirectObject baseObject) : base(colorSpace, baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public sealed override IList<PdfDirectObject> Components => BaseArray;
 
         public override bool Equals(object obj)
@@ -68,9 +63,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             { hashCode ^= component.GetHashCode(); }
             return hashCode;
         }
-        #endregion
 
-        #region protected
         /*
           NOTE: This is a workaround to the horrible lack of covariance support in C# 3 which forced me
           to flatten type parameters at top hierarchy level (see Java implementation). Anyway, suggestions
@@ -82,17 +75,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets the specified color component.</summary>
           <param name="index">Component index.</param>
         */
-        protected float GetComponentValue(int index)
+        protected float this[int index]
         {
-            return ((IPdfNumber)Components[index]).FloatValue;
+            get => BaseArray.GetFloat(index);
+            set => BaseArray.SetDouble(index, NormalizeComponent(value));
         }
-
-        protected void SetComponentValue(int index, float value)
-        {
-            Components[index] = PdfReal.Get(NormalizeComponent(value));
-        }
-        #endregion
-        #endregion
-        #endregion
     }
 }

@@ -39,16 +39,12 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class Ellipse : Shape
     {
-        #region dynamic
-        #region constructors
         public Ellipse(Page page, SKRect box, string text) : base(page, box, text, PdfName.Circle)
         { }
 
         public Ellipse(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
         public override void DrawSpecial(SKCanvas canvas)
         {
             using (var path = new SKPath())
@@ -57,7 +53,5 @@ namespace PdfClown.Documents.Interaction.Annotations
                 DrawPath(canvas, path);
             }
         }
-        #endregion
-        #endregion
     }
 }

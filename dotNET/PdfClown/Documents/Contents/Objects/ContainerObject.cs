@@ -35,14 +35,10 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public abstract class ContainerObject : CompositeObject
     {
-        #region dynamic
-        #region constructors
         protected ContainerObject()
         { }
 
         protected ContainerObject(IList<ContentObject> objects) : base(objects)
         { }
-        #endregion
-        #endregion
     }
 }

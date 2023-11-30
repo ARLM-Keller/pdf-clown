@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @param key The RC4 key used during encryption.
 		 */
-        public void SetKey(byte[] key)
+        public void SetKey(ReadOnlySpan<byte> key)
         {
             b = 0;
             c = 0;
@@ -62,7 +62,7 @@ namespace PdfClown.Documents.Encryption
             int saltIndex = 0;
             for (int i = 0; i < salt.Length; i++)
             {
-                saltIndex = (FixByte(key[keyIndex]) + salt[i] + saltIndex) % 256;
+                saltIndex = (key[keyIndex] + salt[i] + saltIndex) % 256;
                 Swap(salt, i, saltIndex);
                 keyIndex = (keyIndex + 1) % key.Length;
             }
@@ -109,8 +109,8 @@ namespace PdfClown.Documents.Encryption
             c = (salt[b] + c) % 256;
             Swap(salt, b, c);
             int saltIndex = (salt[b] + salt[c]) % 256;
-            var buffer = new byte[] { (byte)(aByte ^ (byte)salt[saltIndex]) };
-            output.Write(buffer, 0, 1);
+            var buffer = (byte)(aByte ^ (byte)salt[saltIndex]);
+            output.WriteByte(buffer);
         }
 
         /**
@@ -121,7 +121,7 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error writing to the output stream.
 		 */
-        public void Write(byte[] data, Stream output)
+        public void Write(ReadOnlySpan<byte> data, Stream output)
         {
             foreach (byte aData in data)
             {
@@ -139,8 +139,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public void Write(Stream data, Stream output)
         {
-            byte[]
-            buffer = new byte[1024];
+            var buffer = new byte[1024];
             int amountRead;
             while ((amountRead = data.Read(buffer, 0, buffer.Length)) > 0)
             {
@@ -160,7 +159,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public void Write(byte[] data, int offset, int len, Stream output)
         {
-            for (int i = offset; i < offset + len; i++)
+            for (int i = offset, count = offset + len; i < count; i++)
             {
                 Write(data[i], output);
             }

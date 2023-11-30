@@ -44,15 +44,10 @@ namespace PdfClown.Documents.Contents.Objects
     {
         private float[] decode;
 
-        #region dynamic
-        #region constructors
         // [FIX:0.0.4:2] Null operator.
         public InlineImageHeader(IList<PdfDirectObject> operands) : base(String.Empty, operands)
         { }
-        #endregion
 
-        #region public
-        #region IDictionary
         public void Add(PdfName key, PdfDirectObject value)
         {
             if (ContainsKey(key))
@@ -195,7 +190,6 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        #region ICollection
         void ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Add(KeyValuePair<PdfName, PdfDirectObject> keyValuePair)
         { Add(keyValuePair.Key, keyValuePair.Value); }
 
@@ -215,7 +209,6 @@ namespace PdfClown.Documents.Contents.Objects
         public bool Remove(KeyValuePair<PdfName, PdfDirectObject> keyValuePair)
         { throw new NotImplementedException(); }
 
-        #region IEnumerable<KeyValuePair<PdfName,PdfDirectObject>>
         IEnumerator<KeyValuePair<PdfName, PdfDirectObject>> IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>.GetEnumerator()
         {
             for (int index = 0, length = operands.Count - 1; index < length; index += 2)
@@ -227,16 +220,9 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
         { return ((IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
 
-        #region private
         private int? GetKeyIndex(object key)
         {
             for (int index = 0, length = operands.Count - 1; index < length; index += 2)
@@ -246,7 +232,5 @@ namespace PdfClown.Documents.Contents.Objects
             }
             return null;
         }
-        #endregion
-        #endregion
     }
 }

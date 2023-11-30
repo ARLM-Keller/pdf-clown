@@ -13,7 +13,7 @@
 * limitations under the License.
 */
 
-using PdfClown.Util.Collections.Generic;
+using PdfClown.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,13 +24,15 @@ namespace PdfClown.Bytes.Filters.Jpx
     public class JpxError : Exception
     {
         public JpxError(string msg)
-        : base($"JPX error: { msg}")
+        : base($"JPX error: {msg}")
         {
         }
     }
 
     public class JpxImage
     {
+        private const int DefaultHeadSize = 8;
+
         // Table E.1
         Dictionary<string, int> SubbandsGainLog2 = new Dictionary<string, int>(StringComparer.Ordinal) { { "LL", 0 }, { "LH", 1 }, { "HL", 1 }, { "HH", 2 } };
         bool failOnCorruptedImage;
@@ -48,13 +50,14 @@ namespace PdfClown.Bytes.Filters.Jpx
         void JpxImageClosure()
         { }
 
-        public void Parse(byte[] data)
+        public void Parse(ByteStream input)
         {
-            var head = data.ReadUint16(0);
+            var data = (ReadOnlySpan<byte>)input.AsSpan();
+            var head = data.ReadUInt16(0);
             // No box header, immediate start of codestream (SOC)
             if (head == 0xff4f)
             {
-                ParseCodestream(data, 0, data.Length);
+                ParseCodestream(input, data.Length);
                 return;
             }
 
@@ -62,17 +65,17 @@ namespace PdfClown.Bytes.Filters.Jpx
             var length = data.Length;
             while (position < length)
             {
-                var headerSize = 8;
-                long lbox = data.ReadUint32(position);
-                var tbox = data.ReadUint32(position + 4);
+                var headerSize = DefaultHeadSize;
+                long lbox = data.ReadUInt32(position);
+                var tbox = data.ReadUInt32(position + 4);
                 position += headerSize;
                 if (lbox == 1)
                 {
                     // XLBox: read UInt64 according to spec.
                     // JavaScript's int precision of 53 bit should be sufficient here.
-                    lbox = data.ReadUint32(position) * 4294967296 + data.ReadUint32(position + 4);
-                    position += 8;
-                    headerSize += 8;
+                    lbox = data.ReadUInt32(position) * 4294967296 + data.ReadUInt32(position + 4);//(long)data.ReadUInt64();
+                    position += DefaultHeadSize;
+                    headerSize += DefaultHeadSize;
                 }
                 if (lbox == 0)
                 {
@@ -86,7 +89,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                 var jumpDataLength = true;
                 switch (tbox)
                 {
-                    case 0x6a703268: // 'jp2h'
+                    case 0x6a703268: // 'jp2h'                        
                         jumpDataLength = false; // parsing child boxes
                         break;
                     case 0x636f6c72: // 'colr'
@@ -95,7 +98,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                         if (method == 1)
                         {
                             // enumerated colorspace
-                            var colorspace = data.ReadUint32(position + 3);
+                            var colorspace = data.ReadUInt32(position + 3);
                             switch (colorspace)
                             {
                                 case 16: // this indicates a sRGB colorspace
@@ -113,10 +116,11 @@ namespace PdfClown.Bytes.Filters.Jpx
                         }
                         break;
                     case 0x6a703263: // 'jp2c'
-                        ParseCodestream(data, position, position + dataLength);
+                        input.Seek(position);
+                        ParseCodestream(input, dataLength);
                         break;
                     case 0x6a502020: // 'jP\024\024'
-                        if (data.ReadUint32(position) != 0x0d0a870a)
+                        if (data.ReadUInt32(position) != 0x0d0a870a)
                         {
                             Debug.WriteLine("warn: Invalid JP2 signature");
                         }
@@ -134,7 +138,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             (char)((tbox >> 16) & 0xff),
                             (char)((tbox >> 8) & 0xff),
                             (char)(tbox & 0xff)});
-                        Debug.WriteLine("warn: Unsupported header type " + tbox + " (" + headerType + ")");
+                        Debug.WriteLine($"warn: Unsupported header type {tbox} ({headerType})");
                         break;
                 }
                 if (jumpDataLength)
@@ -172,20 +176,21 @@ namespace PdfClown.Bytes.Filters.Jpx
             }
             throw new JpxError("No size marker found in JPX stream");
         }
-        void ParseCodestream(byte[] data, int start, long end)
+
+        void ParseCodestream(ByteStream data, long streamLength)
         {
             var context = new Context();
             var doNotRecover = false;
             try
             {
-                var position = start;
-                while (position + 1 < end)
+
+                var end = data.Position + streamLength;
+                while (data.Position + 1 < end)
                 {
-                    var code = data.ReadUint16(position);
-                    position += 2;
+                    var code = data.ReadUInt16();
+                    var position = (int)data.Position;
 
                     var length = 0;
-                    var j = 0;
                     var sqcd = 0;
                     var spqcds = (List<EpsilonMU>)null;
                     var spqcdSize = 0;
@@ -199,29 +204,30 @@ namespace PdfClown.Bytes.Filters.Jpx
                         case 0xffd9: // End of codestream (EOC)
                             break;
                         case 0xff51: // Image and tile size (SIZ)
-                            length = data.ReadUint16(position);
+                            length = data.ReadUInt16();
+                            data.Skip(2);
                             var siz = new SIZ(
-                            Xsiz: (int)data.ReadUint32(position + 4),
-                            Ysiz: (int)data.ReadUint32(position + 8),
-                            XOsiz: (int)data.ReadUint32(position + 12),
-                            YOsiz: (int)data.ReadUint32(position + 16),
-                            XTsiz: (int)data.ReadUint32(position + 20),
-                            YTsiz: (int)data.ReadUint32(position + 24),
-                            XTOsiz: (int)data.ReadUint32(position + 28),
-                            YTOsiz: (int)data.ReadUint32(position + 32));
-                            var componentsCount = data.ReadUint16(position + 36);
+                                Xsiz: (int)data.ReadUInt32(),
+                                Ysiz: (int)data.ReadUInt32(),
+                                XOsiz: (int)data.ReadUInt32(),
+                                YOsiz: (int)data.ReadUInt32(),
+                                XTsiz: (int)data.ReadUInt32(),
+                                YTsiz: (int)data.ReadUInt32(),
+                                XTOsiz: (int)data.ReadUInt32(),
+                                YTOsiz: (int)data.ReadUInt32());
+                            var componentsCount = data.ReadUInt16();
                             siz.Csiz = componentsCount;
                             var components = new List<Component>(componentsCount);
-                            j = position + 38;
+
                             for (var i = 0; i < componentsCount; i++)
                             {
+                                var jbyte = data.ReadUByte();
                                 Component component = new Component(
-                                precision: (data[j] & 0x7f) + 1,
-                                isSigned: 0 != (data[j] & 0x80),
-                                XRsiz: data[j + 1],
-                                YRsiz: data[j + 2]
-                                );
-                                j += 3;
+                                    precision: (jbyte & 0x7f) + 1,
+                                    isSigned: 0 != (jbyte & 0x80),
+                                    XRsiz: data.ReadUByte(),
+                                    YRsiz: data.ReadUByte());
+
                                 CalculateComponentDimensions(component, siz);
                                 components.Add(component);
                             }
@@ -232,10 +238,9 @@ namespace PdfClown.Bytes.Filters.Jpx
                             context.COC = new Dictionary<int, Cod>();
                             break;
                         case 0xff5c: // Quantization default (QCD)
-                            length = data.ReadUint16(position);
+                            length = data.ReadUInt16();
                             var qcd = new Quantization();
-                            j = position + 2;
-                            sqcd = data[j++];
+                            sqcd = data.ReadUByte();
                             switch (sqcd & 0x1f)
                             {
                                 case 0:
@@ -253,23 +258,23 @@ namespace PdfClown.Bytes.Filters.Jpx
                                 default:
                                     throw new Exception("Invalid SQcd value " + sqcd);
                             }
-                            qcd.NoQuantization = spqcdSize == 8;
+                            qcd.NoQuantization = spqcdSize == DefaultHeadSize;
                             qcd.ScalarExpounded = scalarExpounded;
                             qcd.GuardBits = sqcd >> 5;
                             spqcds = new List<EpsilonMU>();
-                            while (j < length + position)
+                            while (data.Position < length + position)
                             {
+                                var jbyte = data.ReadUByte();
                                 var spqcd = new EpsilonMU();
-                                if (spqcdSize == 8)
+                                if (spqcdSize == DefaultHeadSize)
                                 {
-                                    spqcd.epsilon = data[j++] >> 3;
+                                    spqcd.epsilon = jbyte >> 3;
                                     spqcd.mu = 0;
                                 }
                                 else
                                 {
-                                    spqcd.epsilon = data[j] >> 3;
-                                    spqcd.mu = ((data[j] & 0x7) << 8) | data[j + 1];
-                                    j += 2;
+                                    spqcd.epsilon = jbyte >> 3;
+                                    spqcd.mu = ((jbyte & 0x7) << 8) | data.ReadUByte();
                                 }
                                 spqcds.Add(spqcd);
                             }
@@ -285,20 +290,18 @@ namespace PdfClown.Bytes.Filters.Jpx
                             }
                             break;
                         case 0xff5d: // Quantization component (QCC)
-                            length = data.ReadUint16(position);
+                            length = data.ReadUInt16();
                             var qcc = new Quantization();
-                            j = position + 2;
                             ushort cqcc;
                             if (context.SIZ.Csiz < 257)
                             {
-                                cqcc = data[j++];
+                                cqcc = data.ReadUByte();
                             }
                             else
                             {
-                                cqcc = data.ReadUint16(j);
-                                j += 2;
+                                cqcc = data.ReadUInt16();
                             }
-                            sqcd = data[j++];
+                            sqcd = data.ReadUByte();
                             switch (sqcd & 0x1f)
                             {
                                 case 0:
@@ -316,23 +319,23 @@ namespace PdfClown.Bytes.Filters.Jpx
                                 default:
                                     throw new Exception("Invalid SQcd value " + sqcd);
                             }
-                            qcc.NoQuantization = spqcdSize == 8;
+                            qcc.NoQuantization = spqcdSize == DefaultHeadSize;
                             qcc.ScalarExpounded = scalarExpounded;
                             qcc.GuardBits = sqcd >> 5;
                             spqcds = new List<EpsilonMU>();
-                            while (j < length + position)
+                            while (data.Position < length + position)
                             {
+                                var jbyte = data.ReadUByte();
                                 var spqcd = new EpsilonMU { };
-                                if (spqcdSize == 8)
+                                if (spqcdSize == DefaultHeadSize)
                                 {
-                                    spqcd.epsilon = data[j++] >> 3;
+                                    spqcd.epsilon = jbyte >> 3;
                                     spqcd.mu = 0;
                                 }
                                 else
                                 {
-                                    spqcd.epsilon = data[j] >> 3;
-                                    spqcd.mu = ((data[j] & 0x7) << 8) | data[j + 1];
-                                    j += 2;
+                                    spqcd.epsilon = jbyte >> 3;
+                                    spqcd.mu = ((jbyte & 0x7) << 8) | data.ReadUByte();
                                 }
                                 spqcds.Add(spqcd);
                             }
@@ -347,37 +350,35 @@ namespace PdfClown.Bytes.Filters.Jpx
                             }
                             break;
                         case 0xff52: // Coding style default (COD)
-                            length = data.ReadUint16(position);
+                            length = data.ReadUInt16();
                             var cod = new Cod();
-                            j = position + 2;
-                            var scod = data[j++];
+                            var scod = data.ReadUByte();
 
                             cod.EntropyCoderWithCustomPrecincts = 0 != (scod & 1);
                             cod.SopMarkerUsed = 0 != (scod & 2);
                             cod.EphMarkerUsed = 0 != (scod & 4);
 
-                            cod.ProgressionOrder = data[j++];
-                            cod.LayersCount = data.ReadUint16(j);
-                            j += 2;
-                            cod.MultipleComponentTransform = data[j++] != 0;
+                            cod.ProgressionOrder = data.ReadUByte();
+                            cod.LayersCount = data.ReadUInt16();
+                            cod.MultipleComponentTransform = data.ReadUByte() != 0;
 
-                            cod.DecompositionLevelsCount = data[j++];
-                            cod.Xcb = (data[j++] & 0xf) + 2;
-                            cod.Ycb = (data[j++] & 0xf) + 2;
-                            var blockStyle = data[j++];
+                            cod.DecompositionLevelsCount = data.ReadUByte();
+                            cod.Xcb = (data.ReadUByte() & 0xf) + 2;
+                            cod.Ycb = (data.ReadUByte() & 0xf) + 2;
+                            var blockStyle = data.ReadUByte();
                             cod.SelectiveArithmeticCodingBypass = 0 != (blockStyle & 1);
                             cod.ResetContextProbabilities = 0 != (blockStyle & 2);
                             cod.TerminationOnEachCodingPass = 0 != (blockStyle & 4);
                             cod.VerticallyStripe = 0 != (blockStyle & 8);
                             cod.PredictableTermination = 0 != (blockStyle & 16);
                             cod.SegmentationSymbolUsed = 0 != (blockStyle & 32);
-                            cod.ReversibleTransformation = data[j++] != 0;
+                            cod.ReversibleTransformation = data.ReadUByte() != 0;
                             if (cod.EntropyCoderWithCustomPrecincts)
                             {
                                 var precinctsSizes = new List<PrecinctSize>();
-                                while (j < length + position)
+                                while (data.Position < length + position)
                                 {
-                                    var precinctsSize = data[j++];
+                                    var precinctsSize = data.ReadUByte();
                                     precinctsSizes.Add(new PrecinctSize(pPx: precinctsSize & 0xf, pPy: precinctsSize >> 4));
                                 }
                                 cod.PrecinctsSizes = precinctsSizes;
@@ -386,10 +387,6 @@ namespace PdfClown.Bytes.Filters.Jpx
                             if (cod.SelectiveArithmeticCodingBypass)
                             {
                                 unsupported.Add("selectiveArithmeticCodingBypass");
-                            }
-                            if (cod.ResetContextProbabilities)
-                            {
-                                unsupported.Add("resetContextProbabilities");
                             }
                             if (cod.TerminationOnEachCodingPass)
                             {
@@ -406,9 +403,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             if (unsupported.Count > 0)
                             {
                                 doNotRecover = true;
-                                throw new Exception(
-                                "Unsupported COD options (" + string.Join(", ", unsupported) + ")"
-                                );
+                                Debug.WriteLine($"`warn: JPX: Unsupported COD options ({string.Join(", ", unsupported)})");
                             }
                             if (context.MainHeader)
                             {
@@ -421,12 +416,12 @@ namespace PdfClown.Bytes.Filters.Jpx
                             }
                             break;
                         case 0xff90: // Start of tile-part (SOT)
-                            length = data.ReadUint16(position);
-                            tile = new Tile(index: data.ReadUint16(position + 2),
-                            length: (int)data.ReadUint32(position + 4),
-                            partIndex: data[position + 8],
-                            partsCount: data[position + 9]);
-                            tile.DataEnd = tile.Length + position - 2;
+                            length = data.ReadUInt16();
+                            tile = new Tile(index: data.ReadUInt16(),
+                                length: (int)data.ReadUInt32(),
+                                partIndex: data.ReadUByte(),
+                                partsCount: data.ReadUByte());
+                            tile.DataEnd = tile.Length + (int)position - 2;
 
 
                             context.MainHeader = false;
@@ -450,21 +445,23 @@ namespace PdfClown.Bytes.Filters.Jpx
 
                             // moving to the end of the data
                             length = tile.DataEnd - position;
-                            ParseTilePackets(context, data, position, length);
+                            ParseTilePackets(context, data, length);
+                            break;
+                        case 0xff53: // Coding style component (COC)
+                            length = data.ReadUInt16();
+                            Debug.WriteLine("warn: JPX: Codestream code 0xFF53 (COC) is not implemented.");
                             break;
                         case 0xff55: // Tile-part lengths, main header (TLM)
                         case 0xff57: // Packet length, main header (PLM)
                         case 0xff58: // Packet length, tile-part header (PLT)
                         case 0xff64: // Comment (COM)
-                            length = data.ReadUint16(position);
+                            length = data.ReadUInt16();
                             // skipping content
                             break;
-                        case 0xff53: // Coding style component (COC)
-                            throw new Exception("Codestream code 0xFF53 (COC) is not implemented");
                         default:
-                            throw new Exception("Unknown codestream code: " + code.ToString());
+                            throw new Exception($"Unknown codestream code: {code.ToString()}");
                     }
-                    position += length;
+                    data.Position = position + length;
                 }
             }
             catch (Exception e)
@@ -475,7 +472,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                 }
                 else
                 {
-                    Debug.WriteLine("warn: JPX: Trying to recover from: " + e.Message);
+                    Debug.WriteLine($"warn: JPX: Trying to recover from: {e.Message}");
                 }
             }
             tiles = TransformComponents(context);
@@ -829,7 +826,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             resolution: resolution);
                         BuildCodeblocks(context, subband, blocksDimensions);
                         subbands.Add(subband);
-                        resolution.subbands = new List<SubBand>(new[] { subband });
+                        resolution.subbands = new List<SubBand> { subband };
                     }
                     else
                     {
@@ -895,13 +892,13 @@ namespace PdfClown.Bytes.Filters.Jpx
                     tile.PacketsIterator = new ComponentPositionResolutionLayerIterator(context);
                     break;
                 default:
-                    throw new JpxError($"Unsupported progression order { progressionOrder }");
+                    throw new JpxError($"Unsupported progression order {progressionOrder}");
             }
         }
 
-        private int ParseTilePackets(Context context, byte[] data, int offset, int dataLength)
+        private void ParseTilePackets(Context context, ByteStream data, int length)
         {
-            var position = 0;
+            var end = data.Position + length;
             var buffer = 0;
             var bufferSize = 0;
             var skipNextBit = false;
@@ -909,8 +906,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             {
                 while (bufferSize < count)
                 {
-                    var b = data[offset + position];
-                    position++;
+                    var b = data.ReadUByte();
                     if (skipNextBit)
                     {
                         buffer = (buffer << 7) | b;
@@ -932,30 +928,26 @@ namespace PdfClown.Bytes.Filters.Jpx
             }
             bool skipMarkerIfEqual(byte value)
             {
-                if (data[offset + position - 1] == 0xff &&
-                data[offset + position] == value)
+                if (data.PeekUByte(-1) == 0xff
+                    && data.PeekUByte(0) == value)
                 {
-                    skipBytes(1);
+                    data.Skip(1);
                     return true;
                 }
-                else if (data[offset + position] == 0xff &&
-                data[offset + position + 1] == value)
+                else if (data.PeekUByte(0) == 0xff
+                    && data.PeekUByte(1) == value)
                 {
-                    skipBytes(2);
+                    data.Skip(2);
                     return true;
                 }
                 return false;
-            }
-            void skipBytes(int count)
-            {
-                position += count;
             }
             void alignToByte()
             {
                 bufferSize = 0;
                 if (skipNextBit)
                 {
-                    position++;
+                    data.Skip(1);
                     skipNextBit = false;
                 }
             }
@@ -987,13 +979,13 @@ namespace PdfClown.Bytes.Filters.Jpx
             var sopMarkerUsed = context.COD.SopMarkerUsed;
             var ephMarkerUsed = context.COD.EphMarkerUsed;
             var packetsIterator = tile.PacketsIterator;
-            while (position < dataLength)
+            while (data.Position < end)
             {
                 alignToByte();
                 if (sopMarkerUsed && skipMarkerIfEqual(0x91))
                 {
                     // Skip also marker segment length and packet sequence ID
-                    skipBytes(4);
+                    data.Skip(4);
                 }
                 var packet = packetsIterator.NextPacket();
                 if (0 == readBits(1))
@@ -1037,6 +1029,13 @@ namespace PdfClown.Bytes.Filters.Jpx
                             zeroBitPlanesTree = new TagTree(width, height);
                             precinct.InclusionTree = inclusionTree;
                             precinct.ZeroBitPlanesTree = zeroBitPlanesTree;
+                            for (var l = 0; l < layerNumber; l++)
+                            {
+                                if (readBits(1) != 0)
+                                {
+                                    throw new JpxError("Invalid tag tree");
+                                }
+                            }
                         }
 
                         if (inclusionTree.Reset(codeblockColumn, codeblockRow, layerNumber))
@@ -1111,19 +1110,15 @@ namespace PdfClown.Bytes.Filters.Jpx
                         codeblock.Data = new List<CodeBlockData>();
                     }
                     codeblock.Data.Add(new CodeBlockData(
-                    data,
-                    start: offset + position,
-                    end: offset + position + packetItem.DataLength,
-                    codingpasses: packetItem.Codingpasses
-                    ));
-                    position += packetItem.DataLength;
+                        data: data.ReadMemory(packetItem.DataLength),
+                        codingpasses: packetItem.Codingpasses));
                 }
             }
-            return position;
         }
 
         private void CopyCoefficients(double[] coefficients, int levelWidth, int levelHeight,
-        SubBand subband, double delta, int mb, bool reversible, bool segmentationSymbolUsed)
+        SubBand subband, double delta, int mb, bool reversible, bool segmentationSymbolUsed,
+        bool resetContextProbabilities)
         {
             var x0 = subband.Tbx0;
             var y0 = subband.Tby0;
@@ -1151,11 +1146,11 @@ namespace PdfClown.Bytes.Filters.Jpx
                 var totalLength = 0;
                 var codingpasses = 0;
                 var j = 0; var jj = 0;
-                var dataItem = (CodeBlockData)null;
+                CodeBlockData dataItem;
                 for (j = 0, jj = data.Count; j < jj; j++)
                 {
                     dataItem = data[j];
-                    totalLength += dataItem.End - dataItem.Start;
+                    totalLength += dataItem.Data.Length;
                     codingpasses += dataItem.Codingpasses;
                 }
 
@@ -1166,18 +1161,17 @@ namespace PdfClown.Bytes.Filters.Jpx
 
                 var currentCodingpassType = 2; // first bit plane starts from cleanup
 
-                var encodedData = new byte[totalLength];
+                Memory<byte> encodedData = new byte[totalLength];
                 var position = 0;
                 for (j = 0, jj = data.Count; j < jj; j++)
                 {
                     dataItem = data[j];
-                    var chunk = dataItem.Data.CopyOfRange(dataItem.Start, dataItem.End);
-                    Array.Copy(chunk, 0, encodedData, position, chunk.Length);
-                    position += chunk.Length;
+                    dataItem.Data.CopyTo(encodedData.Slice(position));
+                    position += dataItem.Data.Length;
                 }
                 // decoding the item
                 var bitModel = new BitModel(blockWidth, blockHeight, codeblock.SubbandType, codeblock.ZeroBitPlanes, mb);
-                var decoder = new ArithmeticDecoder(encodedData, 0, totalLength);
+                var decoder = new ArithmeticDecoder(encodedData);
                 bitModel.SetDecoder(decoder);
 
                 for (j = 0; j < codingpasses; j++)
@@ -1197,6 +1191,10 @@ namespace PdfClown.Bytes.Filters.Jpx
                                 bitModel.CheckSegmentation();
                             }
                             break;
+                    }
+                    if (resetContextProbabilities)
+                    {
+                        bitModel.Reset();
                     }
                     currentCodingpassType = (currentCodingpassType + 1) % 3;
                 }
@@ -1229,14 +1227,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             }
                             nb = bitsDecoded[position];
                             var pos = interleave ? levelOffset + (offset << 1) : offset;
-                            if (reversible && nb >= mb)
-                            {
-                                coefficients[pos] = n;
-                            }
-                            else
-                            {
-                                coefficients[pos] = n * (1 << (mb - nb));
-                            }
+                            coefficients[pos] = reversible && nb >= mb ? n : n * (1 << (mb - nb));
                         }
                         offset++;
                         position++;
@@ -1256,6 +1247,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             var scalarExpounded = quantizationParameters.ScalarExpounded;
             var guardBits = quantizationParameters.GuardBits;
             var segmentationSymbolUsed = codingStyleParameters.SegmentationSymbolUsed;
+            var resetContextProbabilities = codingStyleParameters.ResetContextProbabilities;
             var precision = context.Components[c].Precision;
 
             var reversible = codingStyleParameters.ReversibleTransformation;
@@ -1302,7 +1294,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                     // copyCoefficients will consecutively fill in the values that belong
                     // to the interleaved positions of the HL, LH, and HH coefficients.
                     // The LL coefficients will then be interleaved in Transform.iterate().
-                    CopyCoefficients(coefficients, width, height, subband, delta, mb, reversible, segmentationSymbolUsed);
+                    CopyCoefficients(coefficients, width, height, subband, delta, mb, reversible, segmentationSymbolUsed, resetContextProbabilities);
                 }
                 subbandCoefficients.Add(new Coefficient(width, height, items: coefficients));
             }
@@ -1355,7 +1347,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                     // HACK: The multiple component transform formulas below assume that
                     // all components have the same precision. With this in mind, we
                     // compute shift and offset only once.
-                    shift = components[0].Precision - 8;
+                    shift = components[0].Precision - DefaultHeadSize;
                     offset = (128 << shift) + 0.5D;
 
                     var component0 = tile.Components[0];
@@ -1403,7 +1395,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                     for (var c = 0; c < componentsCount; c++)
                     {
                         var items = transformedTiles[c].Items;
-                        shift = components[c].Precision - 8;
+                        shift = components[c].Precision - DefaultHeadSize;
                         offset = (128 << shift) + 0.5D;
                         for (pos = c, j = 0, jj = items.Length; j < jj; j++)
                         {
@@ -1981,7 +1973,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             {
                 var temp = level.Items;
                 level.Items = new byte?[level.Index + 1];
-                level.Items.Set(temp, 0);
+                temp.AsSpan().CopyTo(level.Items);
             }
         }
 
@@ -2182,7 +2174,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             var contexts = Contexts;
             var labels = ContextLabelTable;
             var bitsDecoded = BitsDecoded;
-            var processedInverseMask = ~1;
+            var processedInverseMask = (sbyte)(~1);
             var processedMask = 1;
             var firstMagnitudeBitMask = 2;
 
@@ -2199,7 +2191,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                             break;
                         }
                         // clear processed flag first
-                        processingFlags[index] = FiltersExtension.ToByte(processingFlags[index] & processedInverseMask);
+                        processingFlags[index] = (byte)(processingFlags[index] & processedInverseMask);
 
                         if (coefficentsMagnitude[index] != 0 ||
                         neighborsSignificance[index] == 0)
@@ -2541,14 +2533,14 @@ namespace PdfClown.Bytes.Filters.Jpx
             {
                 for (v = 0, k = 0; v < height; v++, k += width)
                 {
-                    var sub1 = items.SubArray(k, k + width);
-                    rowBuffer.Set(sub1, bufferPadding);
+                    var sub1 = items.AsSpan(k, width);
+                    sub1.CopyTo(rowBuffer.AsSpan(bufferPadding));
 
                     Extend(rowBuffer, bufferPadding, width);
                     Filter(rowBuffer, bufferPadding, width);
 
-                    var sub2 = rowBuffer.SubArray(bufferPadding, bufferPadding + width);
-                    items.Set(sub2, k);
+                    var sub2 = rowBuffer.AsSpan(bufferPadding, width);
+                    sub2.CopyTo(items.AsSpan(k));
                 }
             }
 
@@ -2637,7 +2629,7 @@ namespace PdfClown.Bytes.Filters.Jpx
         public override void Filter(double[] x, int offset, int length)
         {
             var len = length >> 1;
-            offset = offset | 0;
+            offset |= 0;
             var j = 0;
             var n = 0;
             var current = 0D;
@@ -2752,7 +2744,7 @@ namespace PdfClown.Bytes.Filters.Jpx
         public override void Filter(double[] x, int offset, int length)
         {
             var len = length >> 1;
-            offset = offset | 0;
+            offset |= 0;
             var j = 0;
             var n = 0;
 
@@ -2770,18 +2762,14 @@ namespace PdfClown.Bytes.Filters.Jpx
     }
 
     //Classes
-    internal class CodeBlockData
+    internal struct CodeBlockData
     {
-        internal readonly byte[] Data;
-        internal readonly int Start;
-        internal readonly int End;
+        internal readonly Memory<byte> Data;
         internal readonly int Codingpasses;
 
-        public CodeBlockData(byte[] data, int start, int end, int codingpasses)
+        public CodeBlockData(Memory<byte> data, int codingpasses)
         {
             Data = data;
-            Start = start;
-            End = end;
             Codingpasses = codingpasses;
         }
     }

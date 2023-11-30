@@ -32,6 +32,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
@@ -43,8 +44,8 @@ namespace PdfClown.Documents.Interaction.Forms
     {
         public static FieldWidgets Wrap(PdfDirectObject baseObject, Field field)
         {
-            return baseObject != null 
-                ? (FieldWidgets)(baseObject.AlternateWrapper ??= new FieldWidgets(baseObject, field)) 
+            return baseObject != null
+                ? (FieldWidgets)(baseObject.AlternateWrapper ??= new FieldWidgets(baseObject, field))
                 : null;
         }
         /*
@@ -53,21 +54,14 @@ namespace PdfClown.Documents.Interaction.Forms
           This implementation hides such a complexity to the user, smoothly exposing just the most
           general case (array) yet preserving its internal state.
         */
-        #region dynamic
-        #region fields
         private Field field;
-        #endregion
 
-        #region constructors
         internal FieldWidgets(PdfDirectObject baseObject, Field field)
         {
             BaseObject = baseObject;
             this.field = field;
         }
-        #endregion
 
-        #region interface
-        #region public
         public override object Clone(Document context)
         { throw new NotImplementedException(); } // TODO:verify field reference.
 
@@ -76,7 +70,6 @@ namespace PdfClown.Documents.Interaction.Forms
         */
         public Field Field => field;
 
-        #region IList
         public int IndexOf(Widget value)
         {
             var baseDataObject = BaseDataObject;
@@ -91,11 +84,9 @@ namespace PdfClown.Documents.Interaction.Forms
             return ((PdfArray)baseDataObject).IndexOf(value.BaseObject);
         }
 
-        public void Insert(int index, Widget value)
-        { EnsureArray().Insert(index, value.BaseObject); }
+        public void Insert(int index, Widget value) => EnsureArray().Insert(index, value.BaseObject);
 
-        public void RemoveAt(int index)
-        { EnsureArray().RemoveAt(index); }
+        public void RemoveAt(int index) => EnsureArray().RemoveAt(index);
 
         public Widget this[int index]
         {
@@ -115,7 +106,6 @@ namespace PdfClown.Documents.Interaction.Forms
             set => EnsureArray()[index] = value.BaseObject;
         }
 
-        #region ICollection
         public void Add(Widget value)
         {
             value.BaseDataObject[PdfName.Parent] = Field.BaseObject;
@@ -123,8 +113,7 @@ namespace PdfClown.Documents.Interaction.Forms
             EnsureArray().Add(value.BaseObject);
         }
 
-        public void Clear()
-        { EnsureArray().Clear(); }
+        public void Clear() => EnsureArray().Clear();
 
         public bool Contains(Widget value)
         {
@@ -157,26 +146,16 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public bool IsReadOnly => false;
 
-        public bool Remove(Widget value)
-        { return EnsureArray().Remove(value.BaseObject); }
+        public bool Remove(Widget value) => EnsureArray().Remove(value.BaseObject);
 
-        #region IEnumerable<Widget>
         IEnumerator<Widget> IEnumerable<Widget>.GetEnumerator()
         {
             for (int index = 0, length = Count; index < length; index++)
             { yield return this[index]; }
         }
 
-        #region IEnumerable
-        IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<Widget>)this).GetEnumerator(); }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<Widget>)this).GetEnumerator();
 
-        #region private
         private PdfArray EnsureArray()
         {
             PdfDataObject baseDataObject = BaseDataObject;
@@ -187,7 +166,7 @@ namespace PdfClown.Documents.Interaction.Forms
                     PdfDictionary fieldDictionary = (PdfDictionary)baseDataObject;
                     PdfDictionary widgetDictionary = null;
                     // Extracting widget entries from the field...
-                    foreach (PdfName key in new List<PdfName>(fieldDictionary.Keys))
+                    foreach (PdfName key in fieldDictionary.Keys.ToList())
                     {
                         // Is it a widget entry?
                         if (key.Equals(PdfName.Type)
@@ -242,10 +221,6 @@ namespace PdfClown.Documents.Interaction.Forms
             return (PdfArray)baseDataObject;
         }
 
-        private Widget NewWidget(PdfDirectObject baseObject)
-        { return (Widget)Annotation.Wrap(baseObject); }
-        #endregion
-        #endregion
-        #endregion
+        private Widget NewWidget(PdfDirectObject baseObject) => (Widget)Annotation.Wrap(baseObject);
     }
 }

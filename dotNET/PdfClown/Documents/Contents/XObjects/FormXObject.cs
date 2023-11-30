@@ -201,7 +201,7 @@ namespace PdfClown.Documents.Contents.XObjects
 
                         canvas.Clear(backgroundColorSK);
                     }
-                    InitialMatrix = mask.InitialMatrix;
+                    //InitialMatrix = mask.InitialMatrix;
                 }
 
                 Render(canvas, box.Size, false, parentLevel);

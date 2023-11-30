@@ -426,31 +426,20 @@ namespace PdfClown.Documents.Contents
 
             if (isLuminosity)
             {
-                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-                {
-                    //0.33f, 0.33f, 0.33f, 0, 0,
-                    //0.33f, 0.33f, 0.33f, 0, 0,
-                    //0.33f, 0.33f, 0.33f, 0, 0,
-                    //0.33f, 0.33f, 0.33f, 0, 0
-                    0.30f, 0.59f, 0.11f, 0, 0,
-                    0.30f, 0.59f, 0.11f, 0, 0,
-                    0.30f, 0.59f, 0.11f, 0, 0,
-                    0.30f, 0.59f, 0.11f, 0, 0
-                });
                 paint.Shader = SKShader.CreatePicture(softMaskPicture);
-                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
+                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Luminosity;
             }
             else // alpha
             {
-                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-                {
-                    0, 0, 0, 1, 0,
-                    0, 0, 0, 1, 0,
-                    0, 0, 0, 1, 0,
-                    0, 0, 0, 1, 0
-                });
+                //paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
+                //{
+                //    0, 0, 0, 1, 0,
+                //    0, 0, 0, 1, 0,
+                //    0, 0, 0, 1, 0,
+                //    0, 0, 0, 1, 0
+                //});
                 paint.Shader = SKShader.CreatePicture(softMaskPicture);
-                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Overlay;
+                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.DstOver;
 
             }
         }

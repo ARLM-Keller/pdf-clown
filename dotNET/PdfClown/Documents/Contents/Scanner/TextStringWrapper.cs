@@ -100,7 +100,7 @@ namespace PdfClown.Documents.Contents.Scanner
                         { quad = Util.Math.Geom.Quad.Union(quad.Value, textChar.Quad); }
                     }
                 }
-                return quad.Value;
+                return quad ?? Quad.Empty;
             }
         }
 

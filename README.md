@@ -22,7 +22,7 @@ https://sourceforge.net/projects/clown/ mirror
   - Suppress reflections invocation
   - PdfObjects Wrappers caching
   - Move buffered IO to use Memory, Span\<byte\>
-- Fonts and Encryption and meny other things by integrate [Apache PdfBox Project](https://pdfbox.apache.org/) from [mirror](https://github.com/apache/pdfbox).
+- Fonts, Encryption, Functions, Shadings by integrate [Apache PdfBox Project](https://pdfbox.apache.org/) from [mirror](https://github.com/apache/pdfbox).
   - Source code translated from java to C#
   - Full Fonts processing & text rendering engine
   - LZW, CCITTFax and other fixes of Images loading engine

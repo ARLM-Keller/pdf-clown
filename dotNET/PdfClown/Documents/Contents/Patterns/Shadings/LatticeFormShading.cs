@@ -54,32 +54,14 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             set => Dictionary.SetInt(PdfName.VerticesPerRow, value);
         }
 
-        protected override (List<SKPoint> points, List<SKColor> colors) CollectTriangles(SKMatrix matrix)
+        protected override Vertices LoadTriangles()
         {
             var dict = BaseDataObject;
             if (dict is not PdfStream stream)
             {
-                return (null, null);
+                return null;
             }
-            var rangeX = Decodes[0];
-            var rangeY = Decodes[1];
-            if (rangeX == null || rangeY == null ||
-                rangeX.Low.CompareTo(rangeX.High) == 0 ||
-                rangeY.Low.CompareTo(rangeY.High) == 0)
-            {
-                return (null, null);
-            }
-
             int numPerRow = VerticesPerRow;
-            var colRange = new Interval<float>[NumberOfColorComponents];
-            for (int i = 0; i < colRange.Length; ++i)
-            {
-                colRange[i] = Decodes[2 + i];
-                if (colRange[i] == null)
-                {
-                    throw new IOException("Range missing in shading /Decode entry");
-                }
-            }
             var vlist = new List<(SKPoint, SKColor)>();
             long maxSrcCoord = (long)Math.Pow(2, BitsPerCoordinate) - 1;
             long maxSrcColor = (long)Math.Pow(2, BitsPerComponent) - 1;
@@ -90,7 +72,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                 {
                     try
                     {
-                        var p = ReadVertex(mciis, maxSrcCoord, maxSrcColor, rangeX, rangeY, colRange, matrix);
+                        var p = ReadVertex(mciis, maxSrcCoord, maxSrcColor);
                         vlist.Add(p);
                     }
                     catch (Exception)
@@ -103,7 +85,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             if (rowNum < 2)
             {
                 // must have at least two rows; if not, return empty list
-                return (null, null);
+                return null;
             }
             var latticeArray = new (SKPoint, SKColor)[rowNum, numPerRow];
             for (int i = 0; i < rowNum; i++)
@@ -117,7 +99,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             return CreateShadedTriangleList(rowNum, numPerRow, latticeArray);
         }
 
-        private (List<SKPoint> points, List<SKColor> colors) CreateShadedTriangleList(int rowNum, int numPerRow, (SKPoint point, SKColor color)[,] latticeArray)
+        private Vertices CreateShadedTriangleList(int rowNum, int numPerRow, (SKPoint point, SKColor color)[,] latticeArray)
         {
             var ps = new List<SKPoint>(); // array will be shallow-cloned in ShadedTriangle constructor
             var cs = new List<SKColor>();
@@ -140,7 +122,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                     cs.Add(latticeArray[i + 1, j + 1].color);
                 }
             }
-            return (ps, cs);
+            return new Vertices(ps, cs);
         }
     }
 }

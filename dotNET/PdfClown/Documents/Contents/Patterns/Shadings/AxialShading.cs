@@ -82,12 +82,6 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             }
         }
 
-        public Function Function
-        {
-            get => Functions.Function.Wrap(Dictionary[PdfName.Function]);
-            set => Dictionary[PdfName.Function] = value.BaseObject;
-        }
-
         public bool[] Extend
         {
             get => extend ??= Dictionary.Resolve(PdfName.Extend) is PdfArray array
@@ -128,5 +122,9 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             return SKShader.CreateLinearGradient(coords[0], coords[1], colors, domain, mode, sKMatrix);
         }
 
+        public override SKMatrix CalculateMatrix(SKMatrix skMatrix, GraphicsState state)
+        {
+            return skMatrix;
+        }
     }
 }

@@ -59,7 +59,9 @@ namespace PdfClown.Documents.Contents.Patterns
 
         public SKShader GetShader(GraphicsState state)
         {
-            return Shading.GetShader(SKMatrix, state);
+            var skMatrix = Shading.CalculateMatrix(SKMatrix, state);
+
+            return Shading.GetShader(skMatrix, state);
         }
     }
 }

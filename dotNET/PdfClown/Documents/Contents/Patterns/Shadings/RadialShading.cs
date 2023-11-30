@@ -26,6 +26,7 @@
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Functions;
 using PdfClown.Objects;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 
@@ -36,6 +37,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         private SKPoint3[] coords;
         private float[] domain;
         private bool[] extend;
+        private SKRect? box;
 
         internal RadialShading(PdfDirectObject baseObject) : base(baseObject)
         { }
@@ -57,7 +59,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             set
             {
                 coords = value;
-                Dictionary[PdfName.Domain] = new PdfArray(6)
+                Dictionary[PdfName.Coords] = new PdfArray(6)
                 {
                     new PdfReal(value[0].X), new PdfReal(value[0].Y), new PdfReal(value[0].Z),
                     new PdfReal(value[1].X), new PdfReal(value[1].Y), new PdfReal(value[1].Z)
@@ -81,12 +83,6 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             }
         }
 
-        public Function Function
-        {
-            get => Functions.Function.Wrap(Dictionary[PdfName.Function]);
-            set => Dictionary[PdfName.Function] = value.BaseObject;
-        }
-
         public bool[] Extend
         {
             get => extend ??= Dictionary.Resolve(PdfName.Extend) is PdfArray array
@@ -103,6 +99,20 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             }
         }
 
+        public override SKRect Box => box ??= CalculateBox();
+
+        private SKRect CalculateBox()
+        {
+            var point1 = Coords[0];
+            var point2 = Coords[1];
+            var rect = new SKRect(point1.X, point1.Y, point2.X, point2.Y);
+            rect.Add(new SKPoint(point1.X - point1.Z, point1.Y - point1.Z));
+            rect.Add(new SKPoint(point1.X + point1.Z, point1.Y + point1.Z));
+            rect.Add(new SKPoint(point2.X - point2.Z, point2.Y - point2.Z));
+            rect.Add(new SKPoint(point2.X + point2.Z, point2.Y + point2.Z));
+            return rect;
+        }
+
         public override SKShader GetShader(SKMatrix sKMatrix, GraphicsState state)
         {
             var coords = Coords;
@@ -113,7 +123,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             var domain = Domain;
             Span<float> components = stackalloc float[compCount];
             for (int i = 0; i < domain.Length; i++)
-            {                
+            {
                 components[0] = domain[i];
                 var result = Function.Calculate(components);
                 colors[i] = colorSpace.GetSKColor(result, null);
@@ -126,6 +136,11 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             return SKShader.CreateTwoPointConicalGradient(new SKPoint(coords[0].X, coords[0].Y), coords[0].Z,
                                                           new SKPoint(coords[1].X, coords[1].Y), coords[1].Z,
                                                           colors, domain, mode, sKMatrix);
+        }
+
+        public override SKMatrix CalculateMatrix(SKMatrix skMatrix, GraphicsState state)
+        {
+            return skMatrix;
         }
     }
 }

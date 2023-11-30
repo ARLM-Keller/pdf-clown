@@ -29,12 +29,14 @@ using PdfClown.Documents.Functions;
 using PdfClown.Objects;
 using PdfClown.Util.Collections;
 using PdfClown.Util.Math;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using static PdfClown.Documents.Contents.Fonts.CCF.CFFParser;
 
 namespace PdfClown.Documents.Contents.Patterns.Shadings
 {
@@ -43,6 +45,8 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         private float[] decode;
         private IList<Interval<float>> decodes;
         private int numberOfColorComponents = -1;
+        private Vertices vertices;
+        private SKRect? box;
 
         internal FreeFormShading(PdfDirectObject baseObject) : base(baseObject)
         { }
@@ -70,17 +74,11 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             set => Dictionary.SetInt(PdfName.BitsPerFlag, value);
         }
 
-        public Function Function
-        {
-            get => Function.Wrap(Dictionary[PdfName.Function]);
-            set => Dictionary[PdfName.Function] = value.BaseObject;
-        }
-
         public float[] Decode
         {
             get => decode ??= Dictionary.Resolve(PdfName.Decode) is PdfArray array
                         ? array.Select(p => ((IPdfNumber)p).FloatValue).ToArray()
-                        : new float[0];
+                        : GenerateDecode();
             set
             {
                 decode = value;
@@ -103,31 +101,55 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             }
         }
 
+        public Vertices Vertices => vertices ??= LoadTriangles();
 
-        public virtual void Load()
-        {
-
-        }
+        public override SKRect Box => box ??= CalculateBox();
 
         public override SKShader GetShader(SKMatrix sKMatrix, GraphicsState state)
         {
-            (var points, var colors) = CollectTriangles(sKMatrix);
-            var vertexes = SKVertices.CreateCopy(SKVertexMode.Triangles, points.ToArray(), colors.ToArray());
-            var minX = points.Min(x => x.X);
-            var minY = points.Min(x => x.Y);
-            var maxX = points.Max(x => x.X);
-            var maxY = points.Max(x => x.Y);
-            var rect = new SKRect(minX, minY, maxX, maxY);
-            using var recorder = SKSurface.Create(new SKImageInfo((int)rect.Width, (int)rect.Height));
+            var paint = Render();
+            return paint == null ? null : SKShader.CreatePicture(paint, SKShaderTileMode.Decal, SKShaderTileMode.Decal, sKMatrix, SKRect.Create(SKPoint.Empty, Box.Size));
+        }
+
+        private SKPicture Render()
+        {
+            var vertices = Vertices;
+            if (vertices == null)
+                return null;
+            var skVerteces = SKVertices.CreateCopy(SKVertexMode.Triangles, vertices.Points.ToArray(), vertices.Colors.ToArray());
+
+            using var recorder = new SKPictureRecorder();
+            using var canvas = recorder.BeginRecording(Box);
             using var paint = new SKPaint { IsAntialias = true };
-            recorder.Canvas.DrawVertices(vertexes, SKBlendMode.Overlay, paint);
-            if (state?.Scanner?.RenderObject is SKPath path)
+            canvas.DrawVertices(skVerteces, SKBlendMode.Modulate, paint);
+            return recorder.EndRecording();
+        }
+
+        private SKRect CalculateBox()
+        {
+            var vertices = Vertices;
+            if (vertices == null)
+                return SKRect.Empty;
+            var box = SKRect.Create(vertices.Points.First(), SKSize.Empty);
+            box.Add(vertices.Points);
+            return box;
+        }
+
+        private float[] GenerateDecode()
+        {
+            long maxSrcCoord = (long)Math.Pow(2, BitsPerCoordinate) - 1;
+            long maxSrcColor = (long)Math.Pow(2, BitsPerComponent) - 1;
+            var array = new float[4 + NumberOfColorComponents];
+            array[0] = -maxSrcCoord;
+            array[1] = maxSrcCoord;
+            array[2] = -maxSrcCoord;
+            array[3] = maxSrcCoord;
+            for (int i = 4; i < (array.Length - 4); i++)
             {
-                var pathRect = path.Bounds;
-                var matrix = SKMatrix.CreateScale(pathRect.Width / rect.Width, pathRect.Height / rect.Height);
-                return SKShader.CreateImage(recorder.Snapshot(), SKShaderTileMode.Clamp, SKShaderTileMode.Clamp, matrix);
+                array[i] = -maxSrcColor;
+                array[++i] = maxSrcColor;
             }
-            return SKShader.CreateImage(recorder.Snapshot(), SKShaderTileMode.Clamp, SKShaderTileMode.Clamp);
+            return array;
         }
 
         /**
@@ -158,57 +180,49 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         * @return a new vertex with the flag and the interpolated values
         * @throws IOException if something went wrong
         */
-        protected (SKPoint, SKColor) ReadVertex(IInputStream input, long maxSrcCoord, long maxSrcColor,
-                                    Interval<float> rangeX, Interval<float> rangeY, Interval<float>[] colRangeTab,
-                                    SKMatrix matrix)
+        protected (SKPoint, SKColor) ReadVertex(IInputStream input, long maxSrcCoord, long maxSrcColor)
         {
             Span<float> colorComponentTab = stackalloc float[NumberOfColorComponents];
+            var rangeX = Decodes[0];
+            var rangeY = Decodes[1];
             long x = input.ReadBits(BitsPerCoordinate);
             long y = input.ReadBits(BitsPerCoordinate);
             float dstX = Interpolate(x, maxSrcCoord, rangeX.Low, rangeX.High);
             float dstY = Interpolate(y, maxSrcCoord, rangeY.Low, rangeY.High);
-            var p = matrix.MapPoint(dstX, dstY);
+            var p = new SKPoint(dstX, dstY);
 
             for (int n = 0; n < colorComponentTab.Length; ++n)
             {
                 int color = (int)input.ReadBits(BitsPerComponent);
-                colorComponentTab[n] = Interpolate(color, maxSrcColor, colRangeTab[n].Low, colRangeTab[n].High);
+                var range = Decodes[n + 2];
+                colorComponentTab[n] = Interpolate(color, maxSrcColor, range.Low, range.High);
             }
 
             // "Each set of vertex data shall occupy a whole number of bytes.
             // If the total number of bits required is not divisible by 8, the last data byte
             // for each vertex is padded at the end with extra bits, which shall be ignored."
             input.ByteAlign();
-            var skColor = ColorSpace.GetSKColor(colorComponentTab);
+            SKColor skColor = GetSKColor(colorComponentTab);
             return (p, skColor);
         }
 
-        protected virtual (List<SKPoint> points, List<SKColor> colors) CollectTriangles(SKMatrix matrix)
+        protected SKColor GetSKColor(ReadOnlySpan<float> colorComponents)
+        {
+            if (Function != null)
+            {
+                colorComponents = Function.Calculate(colorComponents);
+            }
+            return ColorSpace.GetSKColor(colorComponents);
+        }
+
+        protected virtual Vertices LoadTriangles()
         {
             int bitsPerFlag = BitsPerFlag;
             var dict = BaseDataObject;
             if (!(dict is PdfStream stream))
             {
-                return (null, null);
+                return null;
             }
-            var rangeX = Decodes[0];
-            var rangeY = Decodes[1];
-            if (rangeX == null || rangeY == null ||
-                rangeX.Low.CompareTo(rangeX.High) == 0 ||
-                rangeY.Low.CompareTo(rangeY.High) == 0)
-            {
-                return (null, null);
-            }
-            var colRange = new Interval<float>[NumberOfColorComponents];
-            for (int i = 0; i < colRange.Length; ++i)
-            {
-                colRange[i] = Decodes[2 + i];
-                if (colRange[i] == null)
-                {
-                    throw new IOException("Range missing in shading /Decode entry");
-                }
-            }
-
             var points = new List<SKPoint>();
             var colors = new List<SKColor>();
             long maxSrcCoord = (long)Math.Pow(2, BitsPerCoordinate) - 1;
@@ -228,6 +242,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
+                    return null;
                 }
 
                 while (true)
@@ -242,20 +257,20 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                         {
                             case 0:
                                 if (input.Position + triangleLength > input.Length)
-                                    return (points, colors);
-                                p0 = ReadVertex(input, maxSrcCoord, maxSrcColor, rangeX, rangeY, colRange, matrix);
+                                    return new Vertices(points, colors);
+                                p0 = ReadVertex(input, maxSrcCoord, maxSrcColor);
                                 flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
                                 if (flag != 0)
                                 {
                                     Debug.WriteLine($"error: bad triangle: {flag}");
                                 }
-                                p1 = ReadVertex(input, maxSrcCoord, maxSrcColor, rangeX, rangeY, colRange, matrix);
+                                p1 = ReadVertex(input, maxSrcCoord, maxSrcColor);
                                 flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
                                 if (flag != 0)
                                 {
                                     Debug.WriteLine($"error: bad triangle: {flag}");
                                 }
-                                p2 = ReadVertex(input, maxSrcCoord, maxSrcColor, rangeX, rangeY, colRange, matrix);
+                                p2 = ReadVertex(input, maxSrcCoord, maxSrcColor);
 
                                 break;
                             case 1:
@@ -264,21 +279,21 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                                 if (index < 0)
                                 {
                                     Debug.WriteLine($"error: broken data stream");
-                                    return (points, colors);
+                                    return new Vertices(points, colors);
                                 }
                                 else
                                 {
                                     if (input.Position + vertextLength > input.Length)
-                                        return (points, colors);
+                                        return new Vertices(points, colors);
 
                                     p0 = (points[index], colors[index]);
                                     p1 = (points[points.Count - 1], colors[points.Count - 1]);
-                                    p2 = ReadVertex(input, maxSrcCoord, maxSrcColor, rangeX, rangeY, colRange, matrix);
+                                    p2 = ReadVertex(input, maxSrcCoord, maxSrcColor);
                                 }
                                 break;
                             default:
                                 Debug.WriteLine($"warn: bad flag: {flag}");
-                                return (points, colors);
+                                return new Vertices(points, colors);
                         }
                         points.Add(p0.point);
                         colors.Add(p0.color);
@@ -296,7 +311,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                     }
                 }
             }
-            return (points, colors);
+            return new Vertices(points, colors);
         }
 
         private int GetTriangleBitLength(int vertextBitLength)
@@ -308,5 +323,23 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         {
             return 2 * BitsPerCoordinate + NumberOfColorComponents * BitsPerComponent;
         }
+
+    }
+
+    public class Vertices
+    {
+        private List<SKPoint> points;
+        private List<SKColor> colors;
+
+        public Vertices(List<SKPoint> points, List<SKColor> colors)
+        {
+            this.Points = points;
+            this.Colors = colors;
+        }
+
+        public List<SKPoint> Points { get => points; set => points = value; }
+
+        public List<SKColor> Colors { get => colors; set => colors = value; }
+
     }
 }

@@ -23,28 +23,14 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Patterns.Shadings.Patches;
-using PdfClown.Objects;
 using SkiaSharp;
 
-namespace PdfClown.Documents.Contents.Patterns.Shadings
+namespace PdfClown.Documents.Contents.Patterns.Shadings.Patches
 {
-    public class TensorProductShading : CoonsFormShading
+    class TensorPatch : CoonsPatch
     {
-        internal TensorProductShading(PdfDirectObject baseObject) : base(baseObject)
+        public TensorPatch(SKPoint[] points, SKColor[] color) : base(points[0..12], color)
         {
-            base.controlPoints = 16;
-        }
-
-        public TensorProductShading()
-        {
-            ShadingType = 7;
-            base.controlPoints = 16;
-        }
-
-        protected override Patch GeneratePatch(SKPoint[] points, SKColor[] colors)
-        {
-            return new TensorPatch(points, colors);
         }
     }
 }

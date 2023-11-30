@@ -138,6 +138,20 @@ namespace PdfClown.Util.Math.Geom
             }
         }
 
+        public static void Add(this ref SKRect rectangle, IEnumerable<SKRect> rects)
+        {
+            foreach (var rect in rects)
+            {
+                rectangle.Add(rect);
+            }
+        }
+
+        public static void Add(this ref SKRect rectangle, SKRect rect)
+        {
+            rectangle.Add(new SKPoint(rect.Left, rect.Top));
+            rectangle.Add(new SKPoint(rect.Right, rect.Bottom));
+        }
+
         public static void Add(this ref SKRect rectangle, SKPoint point)
         {
             if (point.X < rectangle.Left)

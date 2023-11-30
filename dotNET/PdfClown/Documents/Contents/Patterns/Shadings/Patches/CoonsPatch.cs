@@ -23,28 +23,44 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Patterns.Shadings.Patches;
-using PdfClown.Objects;
+using PdfClown.Bytes;
 using SkiaSharp;
+using System;
+using PdfClown.Util.Math.Geom;
 
-namespace PdfClown.Documents.Contents.Patterns.Shadings
+namespace PdfClown.Documents.Contents.Patterns.Shadings.Patches
 {
-    public class TensorProductShading : CoonsFormShading
+    class CoonsPatch : Patch
     {
-        internal TensorProductShading(PdfDirectObject baseObject) : base(baseObject)
+        /**
+        * Constructor of a patch for type 6 shading.
+        *
+        * @param points 12 control points
+        * @param color 4 corner colors
+        */
+        public CoonsPatch(SKPoint[] points, SKColor[] color)
+                : base(color)
         {
-            base.controlPoints = 16;
+            controlPoints = points;
         }
 
-        public TensorProductShading()
+        public override void GetFlag1Edge(Span<SKPoint> points)
         {
-            ShadingType = 7;
-            base.controlPoints = 16;
+            controlPoints.AsSpan(3, 4).CopyTo(points);
         }
 
-        protected override Patch GeneratePatch(SKPoint[] points, SKColor[] colors)
+        public override void GetFlag2Edge(Span<SKPoint> points)
         {
-            return new TensorPatch(points, colors);
+            controlPoints.AsSpan(6, 4).CopyTo(points);
         }
+
+        public override void GetFlag3Edge(Span<SKPoint> points)
+        {
+            points[0] = controlPoints[9];
+            points[1] = controlPoints[10];
+            points[2] = controlPoints[11];
+            points[3] = controlPoints[0];
+        }
+
     }
 }

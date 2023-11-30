@@ -26,6 +26,7 @@
 using Org.BouncyCastle.Utilities;
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Functions;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
@@ -99,6 +100,12 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
 
         public Color BackgroundColor => Background is PdfArray array ? ColorSpace.GetColor(array, null) : null;
 
+        public Function Function
+        {
+            get => Functions.Function.Wrap(Dictionary[PdfName.Function]);
+            set => Dictionary[PdfName.Function] = value.BaseObject;
+        }
+
         public virtual SKRect Box
         {
             get
@@ -115,5 +122,27 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         }
 
         public abstract SKShader GetShader(SKMatrix sKMatrix, GraphicsState state);
+
+
+        public virtual SKMatrix CalculateMatrix(SKMatrix skMatrix, GraphicsState state)
+        {
+            var box = Box;
+            var pathRect = state.Scanner.ContentContext.Box;
+            if (state.Scanner.RenderObject is SKPath path)
+            {
+                pathRect = state.Ctm.MapRect(path.Bounds);
+            }
+            else if (state.Scanner.RenderContext is SKCanvas canvas)
+            {
+                pathRect = canvas.LocalClipBounds;
+            }
+            if (skMatrix == SKMatrix.Identity && !pathRect.IntersectsWith(box))
+            {
+                //skMatrix = SKMatrix.CreateTranslation();
+            }
+            box = skMatrix.MapRect(box);
+            var scale = Math.Min(pathRect.Height, pathRect.Width) / Math.Min(box.Height, box.Width);
+            return SKMatrix.CreateScale(scale, scale).PreConcat(skMatrix);
+        }
     }
 }

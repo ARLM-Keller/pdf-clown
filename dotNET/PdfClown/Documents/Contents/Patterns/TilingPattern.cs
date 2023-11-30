@@ -175,7 +175,7 @@ namespace PdfClown.Documents.Contents.Patterns
                 return picture;
             var box = Box;
             using (var recorder = new SKPictureRecorder())// SKBitmap((int)box.Width, (int)box.Height);
-            using (var canvas = recorder.BeginRecording(SKRect.Create(box.Width, box.Height)))
+            using (var canvas = recorder.BeginRecording(Box))
             {
                 Render(canvas, box.Size, false);
                 return picture = recorder.EndRecording();

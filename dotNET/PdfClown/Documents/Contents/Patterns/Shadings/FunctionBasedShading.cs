@@ -98,12 +98,6 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             }
         }
 
-        public Functions.Function Function
-        {
-            get => Functions.Function.Wrap(Dictionary[PdfName.Function]);
-            set => Dictionary[PdfName.Function] = value.BaseObject;
-        }
-
         public override SKShader GetShader(SKMatrix sKMatrix, GraphicsState state)
         {
             return null;

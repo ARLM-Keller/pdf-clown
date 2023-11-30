@@ -83,7 +83,8 @@ namespace PdfClown.Documents.Contents.Objects
                     paint.Color = shading.ColorSpace.GetSKColor(color);
                     scanner.RenderContext.DrawPaint(paint);
                 }
-                paint.Shader = shading?.GetShader(SKMatrix.Identity, state);
+                var matrix = shading.CalculateMatrix(SKMatrix.Identity, state);
+                paint.Shader = shading?.GetShader(matrix, state);
                 scanner.RenderContext.DrawPaint(paint);
             }
         }

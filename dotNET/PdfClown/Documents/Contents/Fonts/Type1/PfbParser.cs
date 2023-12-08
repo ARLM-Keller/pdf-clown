@@ -18,9 +18,16 @@
 
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using Org.BouncyCastle.Asn1.Pkcs;
 using PdfClown.Bytes;
+using PdfClown.Tokens;
+using PdfClown.Util;
+using static PdfClown.Documents.Functions.Type4.ArithmeticOperators;
 
 namespace PdfClown.Documents.Contents.Fonts.Type1
 {
@@ -46,17 +53,14 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         /// the binary marker.
         private static readonly int BINARY_MARKER = 0x02;
 
-        /// The record types in the pfb-file.
-        private static readonly int[] PFB_RECORDS = { ASCII_MARKER, BINARY_MARKER, ASCII_MARKER };
-
-        /// buffersize.
-        //private static readonly int BUFFER_SIZE = 0xffff;
+        ///the EOF marker.
+        private static readonly int EOF_MARKER = 0x03;
 
         /// the parsed pfb-data.
         private Memory<byte> pfbdata;
 
         /// the lengths of the records.
-        private int[] lengths;
+        private readonly int[] lengths = new int[3];
 
         // sample (pfb-file)
         // 00000000 80 01 8b 15  00 00 25 21  50 53 2d 41  64 6f 62 65  
@@ -101,37 +105,92 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         private void ParsePfb(IInputStream input)
         {
             input.Seek(0);
-            pfbdata = new byte[input.Length - PFB_HEADER_LENGTH];
-            lengths = new int[PFB_RECORDS.Length];
-            int pointer = 0;
-            for (int records = 0; records < PFB_RECORDS.Length; records++)
+            // read into segments and keep them
+            List<int> typeList = new(3);
+            List<Memory<byte>> barrList = new(3);
+            int total = 0;
+            do
             {
-                if (input.ReadByte() != START_MARKER)
+                int r = input.ReadByte();
+                if (r == -1 && total > 0)
+                {
+                    break; // EOF
+                }
+                if (r != START_MARKER)
                 {
                     throw new IOException("Start marker missing");
                 }
-
-                if (input.ReadByte() != PFB_RECORDS[records])
+                int recordType = input.ReadByte();
+                if (recordType == EOF_MARKER)
                 {
-                    throw new IOException("Incorrect record type");
+                    break;
+                }
+                if (recordType != ASCII_MARKER && recordType != BINARY_MARKER)
+                {
+                    throw new IOException("Incorrect record type: " + recordType);
                 }
 
-                int size = input.ReadByte();
-                size += input.ReadByte() << 8;
-                size += input.ReadByte() << 16;
-                size += input.ReadByte() << 24;
-                lengths[records] = size;
-                if (pointer >= pfbdata.Length)
+                int size = ConvertUtils.ReadInt32(input.ReadSpan(4), Util.IO.ByteOrderEnum.LittleEndian);
+
+                //Debug.WriteLine($"debug: record type: {recordType}, segment size: {size}");
+                var ar = input.ReadMemory(size);
+                if (ar.Length != size)
                 {
-                    throw new EndOfStreamException("attempted to read past EOF");
+                    throw new IOException("EOF while reading PFB font");
                 }
-                int got = input.Read(pfbdata.Span.Slice(pointer, size));
-                if (got < 0)
-                {
-                    throw new EndOfStreamException();
-                }
-                pointer += got;
+                total += size;
+                typeList.Add(recordType);
+                barrList.Add(ar);
             }
+            while (true);
+
+            // We now have ASCII and binary segments. Lets arrange these so that the ASCII segments
+            // come first, then the binary segments, then the last ASCII segment if it is
+            // 0000... cleartomark
+
+            pfbdata = new byte[total];
+            var pfbdataSpan = pfbdata.Span;
+            Memory<byte> cleartomarkSegment = null;
+            int dstPos = 0;
+
+            // copy the ASCII segments
+            for (int i = 0; i < typeList.Count; ++i)
+            {
+                if (typeList[i] != ASCII_MARKER)
+                {
+                    continue;
+                }
+                var ar = barrList[i];
+                if (i == typeList.Count - 1 && ar.Length < 600 && Charset.ASCII.GetString(ar.Span).Contains("cleartomark"))
+                {
+                    cleartomarkSegment = ar;
+                    continue;
+                }
+                ar.Span.CopyTo(pfbdataSpan.Slice(dstPos, ar.Length));
+                dstPos += ar.Length;
+            }
+            lengths[0] = dstPos;
+
+            // copy the binary segments
+            for (int i = 0; i < typeList.Count; ++i)
+            {
+                if (typeList[i] != BINARY_MARKER)
+                {
+                    continue;
+                }
+                var ar = barrList[i];
+                ar.Span.CopyTo(pfbdataSpan.Slice(dstPos, ar.Length));
+                dstPos += ar.Length;
+            }
+            lengths[1] = dstPos - lengths[0];
+
+            if (!cleartomarkSegment.IsEmpty)
+            {
+                cleartomarkSegment.Span.CopyTo(pfbdataSpan.Slice(dstPos, cleartomarkSegment.Length));
+                lengths[2] = cleartomarkSegment.Length;
+            }
+
+            
         }
 
         /**

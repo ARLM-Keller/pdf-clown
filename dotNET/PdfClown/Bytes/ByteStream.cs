@@ -97,6 +97,12 @@ namespace PdfClown.Bytes
             this.Write(data);
         }
 
+        public ByteStream(IInputStream data, int begin, int len)
+        {
+            data.Seek(begin);
+            SetBuffer(data.ReadMemory(len));
+        }
+
         public long Available { get => length - position; }
 
         public bool IsAvailable => length > position;

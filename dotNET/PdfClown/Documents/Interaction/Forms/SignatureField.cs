@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.ColorSpaces;
@@ -31,9 +30,11 @@ using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations;
+using PdfClown.Documents.Interaction.Forms.Signature;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -59,56 +60,19 @@ namespace PdfClown.Documents.Interaction.Forms
         */
         public override object Value
         {
-            get => ValueDictionary;
-            set
-            {
-                if (!(value == null
-                    || value is PdfDictionary))
-                    throw new ArgumentException("Value MUST be a PdfDictionary");
-
-                ValueDictionary = (PdfDictionary)value;
-            }
+            get => SignatureDictionary;
+            set => SignatureDictionary = (SignatureDictionary)value;
         }
 
-        private PdfDictionary ValueDictionary
+        public SignatureDictionary SignatureDictionary
         {
-            get => BaseDataObject.Resolve<PdfDictionary>(PdfName.V);
-            set => BaseDataObject[PdfName.V] = value;
-        }
-
-        public PdfArray ByteRange
-        {
-            get => ValueDictionary.Resolve<PdfArray>(PdfName.ByteRange);
-            set => ValueDictionary[PdfName.ByteRange] = value;
-        }
-
-        public PdfObject Contents
-        {
-            get => ValueDictionary.Resolve(PdfName.Contents);
-            set => ValueDictionary[PdfName.Contents] = (PdfDirectObject)value;
-        }
-
-        public string Filter
-        {
-            get => ValueDictionary.GetString(PdfName.Filter);
-            set => ValueDictionary.SetName(PdfName.Filter, value);
-        }
-
-        public DateTime? DateM
-        {
-            get => ValueDictionary.GetNDate(PdfName.M);
-            set => ValueDictionary.SetDate(PdfName.M, value);
-        }
-
-        public string SignatureName
-        {
-            get => ValueDictionary.GetString(PdfName.Name);
-            set => ValueDictionary.SetText(PdfName.Name, value);
+            get => Wrap<SignatureDictionary>(BaseDataObject.Get<PdfDictionary>(PdfName.V));
+            set => BaseDataObject[PdfName.V] = value?.BaseDataObject;
         }
 
         public void RefreshAppearence(string text)
         {
-            var nameArray = SignatureName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var nameArray = SignatureDictionary.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var widget = Widgets[0];
             var rect = widget.Box;
 
@@ -123,7 +87,7 @@ namespace PdfClown.Documents.Interaction.Forms
             var availible = horizontal ? (box.Width / 2) - 4 : box.Width - 4;
             var headerFontSize = availible / maxSize;
             var composer = new PrimitiveComposer(normalAppearanceState);
-            
+
             composer.BeginLocalState();
             composer.ApplyMatrix(GraphicsState.GetRotationMatrix(box, widget.Page.Rotate));
             composer.SetFillColor(DeviceRGBColor.Black);

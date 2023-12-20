@@ -93,7 +93,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public override void PrepareForDecryption(PdfEncryption encryption, PdfArray documentIDArray, DecryptionMaterial decryptionMaterial)
         {
-            if (!(decryptionMaterial is PublicKeyDecryptionMaterial))
+            if (!(decryptionMaterial is PublicKeyDecryptionMaterial material))
             {
                 throw new IOException(
                         "Provided decryption material is not compatible with the document");
@@ -113,8 +113,6 @@ namespace PdfClown.Documents.Encryption
                     : 40);
                 DecryptMetadata = encryption.IsEncryptMetaData;
             }
-
-            PublicKeyDecryptionMaterial material = (PublicKeyDecryptionMaterial)decryptionMaterial;
 
             try
             {
@@ -154,7 +152,7 @@ namespace PdfClown.Documents.Encryption
                         // Impl: if a matching certificate was previously found it is an error,
                         // here we just don't care about it
                         RecipientID rid = ri.RecipientID;
-                        if (!foundRecipient && rid.Match(materialCert))
+                        if (!foundRecipient && rid.Match(certificate))
                         {
                             foundRecipient = true;
                             var privateKey = material.PrivateKey;
@@ -170,9 +168,9 @@ namespace PdfClown.Documents.Encryption
                             extraInfo.Append('\n');
                             extraInfo.Append(j);
                             extraInfo.Append(": ");
-                            if (ri is KeyTransRecipientInformation)
+                            if (ri is KeyTransRecipientInformation recipientInfo)
                             {
-                                appendCertInfo(extraInfo, (KeyTransRecipientInformation)ri, certificate, materialCert);
+                                AppendCertInfo(extraInfo, recipientInfo, certificate, materialCert);
                             }
                         }
 
@@ -196,8 +194,10 @@ namespace PdfClown.Documents.Encryption
                 byte[] accessBytes = new byte[4];
                 Array.Copy(envelopedData, 20, accessBytes, 0, 4);
 
-                AccessPermission currentAccessPermission = new AccessPermission(accessBytes);
-                currentAccessPermission.IsReadOnly = true;
+                var currentAccessPermission = new AccessPermission(accessBytes)
+                {
+                    IsReadOnly = true
+                };
                 CurrentAccessPermission = currentAccessPermission;
 
                 // what we will put in the SHA1 = the seed + each byte contained in the recipients array
@@ -256,7 +256,7 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        private void appendCertInfo(StringBuilder extraInfo, KeyTransRecipientInformation ktRid, X509Certificate certificate, X509CertificateEntry materialCert)
+        private void AppendCertInfo(StringBuilder extraInfo, KeyTransRecipientInformation ktRid, X509Certificate certificate, X509CertificateEntry materialCert)
         {
 
             BigInteger ridSerialNumber = null;// TODO ktRid.GetSerialNumber();

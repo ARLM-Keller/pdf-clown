@@ -272,7 +272,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             var document = field.Document;
             var widget = field.Widgets[0];
             var size = widget.Box.Size;
-            var signatureName = field.SignatureName;
+            var signatureName = field.SignatureDictionary.Name;
             var appearance = widget.Appearance;
             widget.DefaultAppearence = "/Helv " + FontSize + " Tf 0 0 0 rg";
 

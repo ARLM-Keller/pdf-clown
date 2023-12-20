@@ -45,6 +45,8 @@ using System.Text.RegularExpressions;
 using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Documents.Contents.Fonts;
 using System.Collections.Concurrent;
+using PdfClown.Documents.Interaction.Forms.Signature;
+using System.Linq;
 
 namespace PdfClown.Documents
 {
@@ -395,6 +397,17 @@ namespace PdfClown.Documents
         internal void RegisterTrueTypeFontForClosing(TrueTypeFont ttf)
         {
             throw new NotImplementedException();
+        }
+
+        internal IEnumerable<SignatureDictionary> GetSignatureDictionaries()
+        {
+            if (!(BaseDataObject.ContainsKey(PdfName.AcroForm)))
+                yield break;
+            foreach (var sigField in this.Form.Fields.OfType<SignatureField>())
+            {
+                if (sigField.SignatureDictionary != null)
+                    yield return sigField.SignatureDictionary;
+            }
         }
 
         /**

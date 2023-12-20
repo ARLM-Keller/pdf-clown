@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using Org.BouncyCastle.Pkcs;
 using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Encryption;
@@ -367,7 +368,9 @@ namespace PdfClown.Tokens
                 DecryptionMaterial decryptionMaterial;
                 if (keyStoreInputStream != null)
                 {
-                    var ks = new Org.BouncyCastle.Pkcs.Pkcs12Store(keyStoreInputStream, password.ToCharArray());// KeyStore.getInstance("PKCS12");
+                    var builder = new Pkcs12StoreBuilder();
+                    var ks = builder.Build();
+                    ks.Load(keyStoreInputStream, password.ToCharArray());// KeyStore.getInstance("PKCS12");
                     decryptionMaterial = new PublicKeyDecryptionMaterial(ks, keyAlias, password);
                 }
                 else

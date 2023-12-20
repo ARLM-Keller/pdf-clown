@@ -42,7 +42,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         /// the pdf header length.
         /// (start-marker (1 byte), ascii-/binary-marker(1 byte), size(4 byte))
         /// 3*6 == 18
-        private static readonly int PFB_HEADER_LENGTH = 18;
+        //private static readonly int PFB_HEADER_LENGTH = 18;
 
         /// the start marker.
         private static readonly int START_MARKER = 0x80;

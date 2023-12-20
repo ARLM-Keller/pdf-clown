@@ -154,7 +154,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
                 }
                 else
                 {
-                    Extension.AddRange(gsubProcessedGlyphs, chunk);
+                    gsubProcessedGlyphs.AddRange(chunk);
                 }
             }
 

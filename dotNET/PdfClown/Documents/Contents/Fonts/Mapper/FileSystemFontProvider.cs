@@ -325,7 +325,7 @@ namespace PdfClown.Documents.Contents.Fonts
                     List<FSFontInfo> cachedInfos = LoadDiskCache(fonts);
                     if (cachedInfos != null && cachedInfos.Count > 0)
                     {
-                        Extension.AddRange(fontInfoList, cachedInfos);
+                        fontInfoList.AddRange(cachedInfos);
                     }
                     else
                     {

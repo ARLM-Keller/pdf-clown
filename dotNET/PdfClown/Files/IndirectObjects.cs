@@ -72,16 +72,16 @@ namespace PdfClown.Files
             matching internal indirect object.</para>
           </remarks>
         */
-        private Dictionary<int, PdfIndirectObject> importedObjects = new Dictionary<int, PdfIndirectObject>();
+        private Dictionary<int, PdfIndirectObject> importedObjects = new();
         /**
           <summary>Collection of newly-registered indirect objects.</summary>
         */
-        private SortedDictionary<int, PdfIndirectObject> modifiedObjects = new SortedDictionary<int, PdfIndirectObject>();
+        private SortedDictionary<int, PdfIndirectObject> modifiedObjects = new();
         /**
           <summary>Collection of instantiated original indirect objects.</summary>
           <remarks>This collection is used as a cache to avoid unconsistent parsing duplications.</remarks>
         */
-        private SortedDictionary<int, PdfIndirectObject> wokenObjects = new SortedDictionary<int, PdfIndirectObject>();
+        private SortedDictionary<int, PdfIndirectObject> wokenObjects = new();
 
         /**
           <summary>Object counter.</summary>
@@ -128,7 +128,7 @@ namespace PdfClown.Files
         public PdfIndirectObject Add(PdfDataObject obj)
         {
             // Register a new indirect object wrapping the data object inside!
-            PdfIndirectObject indirectObject = new PdfIndirectObject(
+            var indirectObject = new PdfIndirectObject(
               file,
               obj,
               new XRefEntry(++lastObjectNumber, 0));
@@ -259,8 +259,7 @@ namespace PdfClown.Files
                               index,
                               XRefEntry.GenerationUnreusable,
                               0,
-                              XRefEntry.UsageEnum.Free
-                              );
+                              XRefEntry.UsageEnum.Free);
                         }
 
                         // Awake the object!

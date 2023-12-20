@@ -32,7 +32,7 @@ namespace PdfClown.Util.Collections
 {
     public delegate IList<Interval<T>> DefaultIntervalsCallback<T>(IList<Interval<T>> intervals) where T : IComparable<T>;
 
-    public static class Extension
+    public static class CollectinoExtensions
     {
 
         public static void AddRange<T>(this Stack<T> collection, IEnumerable<T> enumerable)

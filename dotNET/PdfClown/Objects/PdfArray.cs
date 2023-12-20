@@ -67,7 +67,7 @@ namespace PdfClown.Objects
             : this(items.Length)
         {
             Updateable = false;
-            Extension.AddRange(this, items);
+            this.AddRange(items);
             Updateable = true;
         }
 
@@ -75,7 +75,31 @@ namespace PdfClown.Objects
             : this(items.Count())
         {
             Updateable = false;
-            Extension.AddRange(this, items);
+            this.AddRange(items);
+            Updateable = true;
+        }
+
+        public PdfArray(int[] items)
+            : this(items.Length)
+        {
+            Updateable = false;
+            this.AddRange(items.Select(x => PdfInteger.Get(x)));
+            Updateable = true;
+        }
+
+        public PdfArray(float[] items)
+            : this(items.Length)
+        {
+            Updateable = false;
+            this.AddRange(items.Select(x => PdfReal.Get(x)));
+            Updateable = true;
+        }
+
+        public PdfArray(double[] items)
+            : this(items.Length)
+        {
+            Updateable = false;
+            this.AddRange(items.Select(x => PdfReal.Get(x)));
             Updateable = true;
         }
 

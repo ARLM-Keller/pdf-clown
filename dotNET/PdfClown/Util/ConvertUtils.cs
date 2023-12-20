@@ -115,6 +115,13 @@ namespace PdfClown.Util
                           HexValue[Char.ToUpper(c2) - '0']);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte ReadHexByte(Span<byte> span)
+        {
+            return (byte)(HexValue[Char.ToUpper((char)span[0]) - '0'] << 4 |
+                          HexValue[Char.ToUpper((char)span[1]) - '0']);
+        }
+
         //public static int ReadInt(this byte[] data, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
         //{
         //    return data.Length switch

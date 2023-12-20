@@ -25,6 +25,7 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Documents.Contents.Layers;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
@@ -603,8 +604,16 @@ namespace PdfClown.Documents.Contents.Composition
         {
             // Doesn't the font exist in the context resources?
             if (!Scanner.ContentContext.Resources.Fonts.ContainsKey(name))
+            {
+                var mapping = FontMappers.Instance.GetTrueTypeFont(name.StringValue, null);
+                if (mapping?.Font != null)
+                {
+                    var fallbackFont = FontType0.Load(Scanner.ContentContext.Resources.Document, mapping.Font, false);
+                    SetFont(fallbackFont, size, name);
+                    return;
+                }
                 throw new ArgumentException("No font resource associated to the given argument.", "name");
-
+            }
             SetFont_(name, size);
         }
 
@@ -616,7 +625,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="value">Font.</param>
           <param name="size">Scaling factor (points).</param>
         */
-        public void SetFont(Font value, double size) => SetFont_(GetResourceName(value), size);
+        public void SetFont(Font value, double size, PdfName defaultName = null) => SetFont_(GetResourceName(value, defaultName), size);
 
         /**
           <summary>Sets the line cap style [PDF:1.6:4.3.2].</summary>
@@ -1168,7 +1177,7 @@ namespace PdfClown.Documents.Contents.Composition
             return null;
         }
 
-        private PdfName GetResourceName<T>(T value) where T : PdfObjectWrapper
+        private PdfName GetResourceName<T>(T value, PdfName defaultName = null) where T : PdfObjectWrapper
         {
             if (value is colors::DeviceGrayColorSpace)
                 return PdfName.DeviceGray;
@@ -1185,11 +1194,18 @@ namespace PdfClown.Documents.Contents.Composition
                 // No key found?
                 if (name == null)
                 {
-                    // Insert the resource within the collection!
-                    int resourceIndex = resourceItemsObject.Count;
-                    do
-                    { name = new PdfName((++resourceIndex).ToString()); }
-                    while (resourceItemsObject.ContainsKey(name));
+                    if (defaultName == null)
+                    {
+                        // Insert the resource within the collection!
+                        int resourceIndex = resourceItemsObject.Count;
+                        do
+                        { name = new PdfName((++resourceIndex).ToString()); }
+                        while (resourceItemsObject.ContainsKey(name));
+                    }
+                    else
+                    {
+                        name = defaultName;
+                    }
                     resourceItemsObject[name] = value.BaseObject;
                 }
                 return name;

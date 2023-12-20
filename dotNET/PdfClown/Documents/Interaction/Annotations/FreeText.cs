@@ -426,7 +426,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
 
                 var block = new BlockComposer(composer);
-                block.Begin(SKRect.Inflate(textBounds, -2, -2), XAlignmentEnum.Left, YAlignmentEnum.Top);
+                block.Begin(SKRect.Inflate(textBounds, -1, -1), XAlignmentEnum.Left, YAlignmentEnum.Top);
                 composer.SetFillColor(DeviceRGBColor.Default);
                 composer.SetFont(font, fontSize);
                 block.ShowText(Contents);

@@ -149,6 +149,8 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public IndexControlPoint LastControlPoint => GetControlPoint(Points.Length - 1);
 
+        public bool ClosePath { get; internal set; }
+
         public IndexControlPoint GetControlPoint(int index)
         {
             return controlPoints.TryGetValue(index, out var controlPoint) ? controlPoint
@@ -213,8 +215,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             using (var path = new SKPath())
             {
-                path.AddPoly(Points.ToArray());
-                path.Close();
+                path.AddPoly(Points.ToArray(), ClosePath);
                 DrawPath(canvas, path);
             }
         }

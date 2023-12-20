@@ -41,12 +41,16 @@ namespace PdfClown.Documents.Interaction.Annotations
     public sealed class Polygon : VertexShape
     {
         public Polygon(Page page, SKRect box, string text)
-            : base(page, box, text, PdfName.Polygon)
-        { }
+            : base(page, box, text, PdfName.Polygon)        
+        {
+            base.ClosePath = true;
+        }
 
         public Polygon(PdfDirectObject baseObject)
             : base(baseObject)
-        { }
+        {
+            base.ClosePath = true;
+        }
 
     }
 }

@@ -8,9 +8,5 @@
     <ProjectReference Include="..\..\PdfClown.Viewer\PdfClown.Viewer\PdfClown.Viewer.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="ginPluJBIG.fip">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  
 </Project>

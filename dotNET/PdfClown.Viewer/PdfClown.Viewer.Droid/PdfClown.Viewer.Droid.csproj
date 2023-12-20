@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0-android</TargetFrameworks>
+    <TargetFrameworks>net7.0-android</TargetFrameworks>
     <AssemblyTitle>PdfClown.Viewer.Droid</AssemblyTitle>
     <Product>PdfClown.Viewer.Droid</Product>
     <Copyright>Copyright ©  2014</Copyright>

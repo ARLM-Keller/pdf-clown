@@ -1,16 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0-android</TargetFrameworks>
+    <TargetFrameworks>net7.0-android</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <AssemblyTitle>PdfClown.Viewer.Test.Droid</AssemblyTitle>
     <Product>PdfClown.Viewer.Test.Droid</Product>
+    <XamarinGoogleGuavaListenableFutureOptOut>true</XamarinGoogleGuavaListenableFutureOptOut>
+    <XamarinGoogleGuavaOptOut>true</XamarinGoogleGuavaOptOut>
   </PropertyGroup>
   <PropertyGroup>
     <IntermediateOutputPath>C:\DRD</IntermediateOutputPath>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
-  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Standard.pdf" />
     <EmbeddedResource Include="eastman.pdf" />
@@ -20,5 +19,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\PdfClown.Viewer\PdfClown.Viewer.Droid\PdfClown.Viewer.Droid.csproj" />
     <ProjectReference Include="..\PdfClown.Viewer.Test\PdfClown.Viewer.Test.csproj" />
-  </ItemGroup>
+  </ItemGroup>  
 </Project>

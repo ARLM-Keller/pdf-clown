@@ -210,7 +210,7 @@ namespace PdfClown.Viewer
         private SerializationModeEnum GetMode()
         {
             return ((IEnumerable<Field>)Fields).Any(x => x is SignatureField signature
-                                                                && signature.Contents != null)
+                        && !signature.SignatureDictionary.Contents.IsEmpty)
                             ? SerializationModeEnum.Incremental
                             : SerializationModeEnum.Standard;
         }
